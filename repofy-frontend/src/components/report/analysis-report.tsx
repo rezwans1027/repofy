@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Check,
@@ -21,16 +21,24 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { MetricBar } from "@/components/ui/metric-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { reportData, demoProfile } from "@/lib/demo-data";
+import { reportData as staticReportData, demoProfile } from "@/lib/demo-data";
+
+export type ReportData = typeof staticReportData;
+const ReportDataContext = createContext<ReportData>(staticReportData);
+function useReportData() {
+  return useContext(ReportDataContext);
+}
 
 interface AnalysisReportProps {
   username: string;
   avatarUrl?: string;
+  data?: ReportData;
 }
 
 // ── Section 1: Top Banner ──────────────────────────────────────────
 
 function TopBanner({ username, avatarUrl }: { username: string; avatarUrl?: string }) {
+  const reportData = useReportData();
   const scoreColor =
     reportData.overallScore >= 80
       ? "text-emerald-400"
@@ -58,16 +66,16 @@ function TopBanner({ username, avatarUrl }: { username: string; avatarUrl?: stri
                 />
               ) : (
                 <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-cyan/30 bg-secondary font-mono text-xl font-bold text-cyan">
-                  {demoProfile.name.charAt(0)}
+                  {username.charAt(0).toUpperCase()}
                 </div>
               )}
             </div>
             <div>
               <h1 className="font-mono text-lg font-bold tracking-tight">
-                {demoProfile.name}
+                @{username}
               </h1>
               <p className="font-mono text-sm text-muted-foreground">
-                @{username}
+                Developer Report
               </p>
               <div className="mt-1.5 flex items-center gap-2">
                 <Badge className="bg-cyan/15 text-cyan border border-cyan/30 text-[10px]">
@@ -122,6 +130,7 @@ function TopBanner({ username, avatarUrl }: { username: string; avatarUrl?: stri
 // ── Section 2: Summary ─────────────────────────────────────────────
 
 function Summary() {
+  const reportData = useReportData();
   return (
     <AnimateOnView delay={0.05}>
       <div className="rounded-lg border border-border bg-card p-5">
@@ -139,6 +148,7 @@ function Summary() {
 // ── Section 3: Radar Chart ─────────────────────────────────────────
 
 function RadarSection() {
+  const reportData = useReportData();
   return (
     <AnimateOnView delay={0.05}>
       <div className="rounded-lg border border-border bg-card p-5">
@@ -170,6 +180,7 @@ function RadarSection() {
 // ── Section 4: Stats Overview ──────────────────────────────────────
 
 function StatsOverview() {
+  const reportData = useReportData();
   const stats = [
     { label: "Repositories", value: reportData.stats.repos },
     { label: "Total Stars", value: reportData.stats.stars },
@@ -230,6 +241,7 @@ function StatsOverview() {
 // ── Section 5: Activity Breakdown ──────────────────────────────────
 
 function ActivityBreakdown() {
+  const reportData = useReportData();
   const segments = [
     { label: "Push", pct: reportData.activityBreakdown.push, color: "#22D3EE" },
     { label: "PR", pct: reportData.activityBreakdown.pr, color: "#A78BFA" },
@@ -280,6 +292,7 @@ function ActivityBreakdown() {
 // ── Section 6: Language Profile ─────────────────────────────────────
 
 function LanguageProfile() {
+  const reportData = useReportData();
   const langs = reportData.languageProfile.languages;
 
   return (
@@ -333,6 +346,7 @@ function LanguageProfile() {
 // ── Section 7: Top Repos ────────────────────────────────────────────
 
 function TopRepos() {
+  const reportData = useReportData();
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const gradeColor = (grade: string) => {
@@ -461,6 +475,7 @@ function TopRepos() {
 // ── Section 8: Strengths ────────────────────────────────────────────
 
 function Strengths() {
+  const reportData = useReportData();
   return (
     <AnimateOnView delay={0.05} className="h-full">
       <div className="rounded-lg border border-border bg-card p-5 h-full">
@@ -486,6 +501,7 @@ function Strengths() {
 // ── Section 9: Weaknesses ───────────────────────────────────────────
 
 function Weaknesses() {
+  const reportData = useReportData();
   return (
     <AnimateOnView delay={0.05} className="h-full">
       <div className="rounded-lg border border-border bg-card p-5 h-full">
@@ -511,6 +527,7 @@ function Weaknesses() {
 // ── Section 10: Red Flags ───────────────────────────────────────────
 
 function RedFlags() {
+  const reportData = useReportData();
   const severityStyle = {
     Minor: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
     Notable: "bg-orange-500/15 text-orange-400 border-orange-500/30",
@@ -549,6 +566,7 @@ function RedFlags() {
 // ── Section 11: Interview Questions ─────────────────────────────────
 
 function InterviewQuestions() {
+  const reportData = useReportData();
   return (
     <AnimateOnView delay={0.05}>
       <div className="rounded-lg border border-border bg-card p-5">
@@ -579,13 +597,13 @@ function InterviewQuestions() {
 
 // ── Section 12: Export Bar ──────────────────────────────────────────
 
-function ExportBar() {
+function ExportBar({ username }: { username: string }) {
   return (
     <div className="fixed bottom-0 left-0 right-0 lg:left-48 z-50 border-t border-border bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <p className="hidden font-mono text-xs text-muted-foreground sm:block">
           Report generated for{" "}
-          <span className="text-cyan">@{demoProfile.username}</span>
+          <span className="text-cyan">@{username}</span>
         </p>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Button
@@ -620,23 +638,25 @@ function ExportBar() {
 
 // ── Main Report Component ───────────────────────────────────────────
 
-export function AnalysisReport({ username, avatarUrl }: AnalysisReportProps) {
+export function AnalysisReport({ username, avatarUrl, data }: AnalysisReportProps) {
   return (
-    <div className="space-y-4 pb-20">
-      <TopBanner username={username} avatarUrl={avatarUrl} />
-      <Summary />
-      <RadarSection />
-      <StatsOverview />
-      <ActivityBreakdown />
-      <LanguageProfile />
-      <TopRepos />
-      <div className="grid gap-4 lg:grid-cols-2 items-stretch">
-        <Strengths />
-        <Weaknesses />
+    <ReportDataContext.Provider value={data ?? staticReportData}>
+      <div className="space-y-4 pb-20">
+        <TopBanner username={username} avatarUrl={avatarUrl} />
+        <Summary />
+        <RadarSection />
+        <StatsOverview />
+        <ActivityBreakdown />
+        <LanguageProfile />
+        <TopRepos />
+        <div className="grid gap-4 lg:grid-cols-2 items-stretch">
+          <Strengths />
+          <Weaknesses />
+        </div>
+        <RedFlags />
+        <InterviewQuestions />
+        <ExportBar username={username} />
       </div>
-      <RedFlags />
-      <InterviewQuestions />
-      <ExportBar />
-    </div>
+    </ReportDataContext.Provider>
   );
 }

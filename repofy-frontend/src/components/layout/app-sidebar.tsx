@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Search, Settings } from "lucide-react";
+import { Search, FileText, Settings } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Search", icon: Search, number: 1 },
-  { href: "/settings", label: "Settings", icon: Settings, number: 2 },
+  { href: "/reports", label: "Reports", icon: FileText, number: 2 },
+  { href: "/settings", label: "Settings", icon: Settings, number: 3 },
 ];
 
 export function AppSidebar() {
@@ -21,7 +22,8 @@ export function AppSidebar() {
           {NAV_ITEMS.map(({ href, label, icon: Icon, number }) => {
             const isActive =
               pathname === href || pathname.startsWith(href + "/") ||
-              (href === "/dashboard" && pathname.startsWith("/profile"));
+              (href === "/dashboard" && pathname.startsWith("/profile")) ||
+              (href === "/reports" && (pathname.startsWith("/report/") || pathname.startsWith("/generate/")));
 
             return (
               <li key={href}>
@@ -55,7 +57,8 @@ export function AppSidebar() {
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive =
               pathname === href || pathname.startsWith(href + "/") ||
-              (href === "/dashboard" && pathname.startsWith("/profile"));
+              (href === "/dashboard" && pathname.startsWith("/profile")) ||
+              (href === "/reports" && (pathname.startsWith("/report/") || pathname.startsWith("/generate/")));
 
             return (
               <Link
