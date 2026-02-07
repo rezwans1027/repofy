@@ -1,13 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
 import { HeatmapGrid } from "@/components/ui/heatmap-grid";
 import { CountUp } from "@/components/ui/count-up";
 import { Badge } from "@/components/ui/badge";
-import { generateHeatmapData } from "@/lib/demo-data";
 import {
   Star,
   GitFork,
@@ -28,7 +26,7 @@ export interface ProfileData {
   stars: number;
   followers: number;
   contributions: number;
-  contributionHeatmap?: number[][] | null;
+  contributionHeatmap: number[][];
   languages: { name: string; color: string; percentage: number; repoCount?: number }[];
   joinedYear?: number;
   activityBreakdown?: {
@@ -64,10 +62,6 @@ interface ProfileSectionsProps {
 }
 
 export function ProfileSections({ user, repos }: ProfileSectionsProps) {
-  const heatmapData = useMemo(
-    () => user.contributionHeatmap ?? generateHeatmapData(),
-    [user.contributionHeatmap],
-  );
 
   const stats = [
     { label: "Repositories", value: user.repos, icon: BookOpen },
@@ -386,7 +380,7 @@ export function ProfileSections({ user, repos }: ProfileSectionsProps) {
           subtitle="Last 52 weeks of contributions"
         />
         <div className="rounded-lg border border-border bg-card p-4">
-          <HeatmapGrid data={heatmapData} />
+          <HeatmapGrid data={user.contributionHeatmap} />
           <div className="mt-3 flex items-center justify-end gap-1.5 text-xs text-muted-foreground font-mono">
             <span>Less</span>
             {[0, 1, 2, 3, 4].map((level) => (
