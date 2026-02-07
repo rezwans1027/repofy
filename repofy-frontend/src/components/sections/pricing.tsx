@@ -8,33 +8,35 @@ import { Badge } from "@/components/ui/badge";
 
 const plans = [
   {
-    name: "Single Report",
-    price: "$9",
-    period: "one-time",
-    description: "One developer evaluation. Full analysis.",
+    name: "Beta",
+    price: "Free",
+    period: "during beta",
+    description: "Full access. No strings.",
     features: [
       "Complete code DNA analysis",
       "Language fingerprint breakdown",
       "Commit pattern analysis",
-      "PDF export",
+      "Unlimited evaluations",
     ],
-    cta: "Generate Report",
-    highlighted: false,
+    cta: "Get Started",
+    highlighted: true,
+    comingSoon: false,
   },
   {
     name: "Pipeline",
     price: "$49",
     period: "/mo",
-    description: "Unlimited reports. Built for teams that hire.",
+    description: "Team dashboard, API access, and candidate comparison.",
     features: [
-      "Everything in Single Report",
-      "Unlimited evaluations",
+      "Everything in Beta",
       "Team dashboard",
       "API access",
       "Candidate comparison",
+      "PDF export",
     ],
-    cta: "Start Pipeline",
-    highlighted: true,
+    cta: "Coming Soon",
+    highlighted: false,
+    comingSoon: true,
   },
 ];
 
@@ -44,7 +46,7 @@ export function Pricing() {
       <AnimateOnView>
         <SectionHeader
           title="Pricing"
-          subtitle="No free tier. No bait. You pay for signal."
+          subtitle="Free while in beta. No credit card. No catch."
         />
       </AnimateOnView>
 
@@ -67,7 +69,12 @@ export function Pricing() {
                   </span>
                   {plan.highlighted && (
                     <Badge className="bg-cyan/10 text-cyan border-cyan/20 ml-2 font-mono text-[10px]">
-                      Popular
+                      Current
+                    </Badge>
+                  )}
+                  {plan.comingSoon && (
+                    <Badge variant="outline" className="ml-2 font-mono text-[10px]">
+                      Coming Soon
                     </Badge>
                   )}
                 </div>
@@ -92,6 +99,7 @@ export function Pricing() {
                       : "w-full font-mono"
                   }
                   variant={plan.highlighted ? "default" : "outline"}
+                  disabled={plan.comingSoon}
                 >
                   {plan.cta}
                 </Button>
