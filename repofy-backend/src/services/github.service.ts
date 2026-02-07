@@ -336,7 +336,8 @@ async function fetchContributionCalendar(
       totalContributions: calendar.totalContributions,
       heatmap: mapContributionsToHeatmap(calendar.weeks),
     };
-  } catch {
+  } catch (err) {
+    console.warn("[Repofy] Failed to fetch contribution calendar:", err);
     return null;
   }
 }

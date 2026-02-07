@@ -9,6 +9,7 @@ import {
   type RepoData,
 } from "@/components/profile/profile-sections";
 import { StickyCTABar } from "@/components/profile/sticky-cta-bar";
+import { generateHeatmapData } from "@/lib/demo-data";
 import {
   ArrowLeft,
   MapPin,
@@ -92,7 +93,7 @@ export default function ProfilePage({
           stars: d.stats.totalStars,
           followers: d.profile.followers,
           contributions: d.contributions?.totalContributions ?? d.activity.totalEvents,
-          contributionHeatmap: d.contributions?.heatmap ?? null,
+          contributionHeatmap: d.contributions?.heatmap ?? generateHeatmapData(),
           languages: d.languages.map(
             (l: { name: string; color: string; percentage: number; repoCount: number }) => ({
               name: l.name,
