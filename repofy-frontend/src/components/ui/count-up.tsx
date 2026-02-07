@@ -13,7 +13,7 @@ interface CountUpProps {
 
 export function CountUp({
   end,
-  duration = 2000,
+  duration = 1000,
   suffix = "",
   prefix = "",
   className,

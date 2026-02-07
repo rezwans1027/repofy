@@ -1,8 +1,6 @@
 "use client";
 
-import { use, useMemo } from "react";
-import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -10,12 +8,9 @@ import { HeatmapGrid } from "@/components/ui/heatmap-grid";
 import { CountUp } from "@/components/ui/count-up";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { fakeUsers, fakeRepos, generateHeatmapData } from "@/lib/demo-data";
+import type { FakeUser, FakeRepo } from "@/lib/demo-data";
+import { generateHeatmapData } from "@/lib/demo-data";
 import {
-  ArrowLeft,
-  MapPin,
-  Building2,
-  Calendar,
   Star,
   GitFork,
   BookOpen,
@@ -24,25 +19,13 @@ import {
   Sparkles,
 } from "lucide-react";
 
-export default function ProfilePage({
-  params,
-}: {
-  params: Promise<{ username: string }>;
-}) {
-  const { username } = use(params);
-  const user = fakeUsers.find((u) => u.username === username);
-  const repos = fakeRepos[username];
+interface ProfileSectionsProps {
+  user: FakeUser;
+  repos: FakeRepo[];
+}
 
+export function ProfileSections({ user, repos }: ProfileSectionsProps) {
   const heatmapData = useMemo(() => generateHeatmapData(), []);
-
-  if (!user || !repos) {
-    notFound();
-  }
-
-  const initials = user.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("");
 
   const stats = [
     { label: "Repositories", value: user.repos, icon: BookOpen },
@@ -53,49 +36,6 @@ export default function ProfilePage({
 
   return (
     <div className="space-y-12">
-      {/* Back link */}
-      <Link
-        href="/dashboard"
-        className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-cyan transition-colors"
-      >
-        <ArrowLeft className="size-3" />
-        back to search
-      </Link>
-
-      {/* Profile Header */}
-      <AnimateOnView>
-        <div className="flex flex-col sm:flex-row items-start gap-6">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-secondary font-mono text-2xl font-bold text-cyan border-2 border-cyan/20">
-            {initials}
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-baseline gap-3">
-              <h1 className="font-mono text-2xl font-bold tracking-tight">
-                {user.name}
-              </h1>
-              <span className="font-mono text-sm text-muted-foreground">
-                @{user.username}
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground">{user.bio}</p>
-            <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <MapPin className="size-3" />
-                {user.location}
-              </span>
-              <span className="flex items-center gap-1">
-                <Building2 className="size-3" />
-                {user.company}
-              </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="size-3" />
-                Joined {user.joinedYear}
-              </span>
-            </div>
-          </div>
-        </div>
-      </AnimateOnView>
-
       {/* Stats Grid */}
       <AnimateOnView delay={0.1}>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -121,21 +61,26 @@ export default function ProfilePage({
       <AnimateOnView delay={0.15}>
         <SectionHeader title="Top Languages" />
         <div className="space-y-3">
-          {/* Language bar */}
-          <div className="flex h-4 overflow-hidden rounded-full">
-            {user.languages.map((lang) => (
-              <motion.div
-                key={lang.name}
-                className="h-full"
-                style={{ backgroundColor: lang.color }}
-                initial={{ width: 0 }}
-                whileInView={{ width: `${lang.percentage}%` }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              />
-            ))}
+          <div className="h-4 overflow-hidden rounded-full">
+            <motion.div
+              className="flex h-full origin-left"
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {user.languages.map((lang) => (
+                <div
+                  key={lang.name}
+                  className="h-full"
+                  style={{
+                    backgroundColor: lang.color,
+                    width: `${lang.percentage}%`,
+                  }}
+                />
+              ))}
+            </motion.div>
           </div>
-          {/* Language legend */}
           <div className="flex flex-wrap gap-3">
             {user.languages.map((lang) => (
               <div key={lang.name} className="flex items-center gap-1.5">
@@ -236,29 +181,6 @@ export default function ProfilePage({
         </div>
       </AnimateOnView>
 
-      {/* Start Analysis CTA */}
-      <AnimateOnView delay={0.3}>
-        <div className="flex flex-col items-center gap-4 rounded-lg border border-cyan/20 bg-cyan/5 p-8">
-          <Sparkles className="size-8 text-cyan" />
-          <div className="text-center">
-            <h3 className="font-mono text-lg font-bold">
-              Ready to analyze{" "}
-              <span className="text-cyan">@{user.username}</span>?
-            </h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Generate a hiring-grade developer evaluation from their code.
-            </p>
-          </div>
-          <Button
-            size="lg"
-            className="bg-cyan text-background hover:bg-cyan/90 font-mono text-sm px-8"
-            onClick={() => {}}
-          >
-            <Sparkles className="size-4" />
-            Start Analysis
-          </Button>
-        </div>
-      </AnimateOnView>
     </div>
   );
 }
