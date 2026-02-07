@@ -66,7 +66,7 @@ export default function ProfilePage({
       try {
         const res = await fetch(
           `${API_URL}/github/${encodeURIComponent(username)}`,
-          { signal: controller.signal },
+          { signal: controller.signal, cache: "no-store" },
         );
         const json = await res.json();
         if (!json.success || !json.data) {
@@ -91,7 +91,8 @@ export default function ProfilePage({
           repos: d.profile.publicRepos,
           stars: d.stats.totalStars,
           followers: d.profile.followers,
-          contributions: d.activity.totalEvents,
+          contributions: d.contributions?.totalContributions ?? d.activity.totalEvents,
+          contributionHeatmap: d.contributions?.heatmap ?? null,
           languages: d.languages.map(
             (l: { name: string; color: string; percentage: number; repoCount: number }) => ({
               name: l.name,

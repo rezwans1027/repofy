@@ -11,6 +11,7 @@ import type {
   GitHubStats,
   GitHubUserData,
   GitHubSearchResult,
+  ContributionCalendar,
 } from "../types";
 
 // ── Error class ───────────────────────────────────────────────────────
@@ -92,6 +93,28 @@ async function ghFetch<T>(path: string): Promise<T> {
     throw new GitHubError(`GitHub API error: ${res.status}`, res.status);
   }
 
+  return res.json() as Promise<T>;
+}
+
+// ── GitHub GraphQL API helper ─────────────────────────────────────────
+
+const GITHUB_GRAPHQL = "https://api.github.com/graphql";
+
+async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+  const token = env.githubToken;
+  if (!token || token.startsWith("<")) {
+    throw new GitHubError("GitHub token required for GraphQL API", 401);
+  }
+  const res = await fetch(GITHUB_GRAPHQL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      "User-Agent": "Repofy",
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+  if (!res.ok) throw new GitHubError(`GitHub GraphQL error: ${res.status}`, res.status);
   return res.json() as Promise<T>;
 }
 
@@ -231,6 +254,93 @@ function buildStats(
   return { totalStars, totalForks, originalRepos, accountAgeDays };
 }
 
+// ── Contribution calendar (GraphQL) ───────────────────────────────────
+
+interface GQLContributionDay {
+  contributionCount: number;
+}
+
+interface GQLContributionWeek {
+  contributionDays: GQLContributionDay[];
+}
+
+interface GQLContributionResponse {
+  data: {
+    user: {
+      contributionsCollection: {
+        contributionCalendar: {
+          totalContributions: number;
+          weeks: GQLContributionWeek[];
+        };
+      };
+    };
+  };
+}
+
+const CONTRIBUTION_QUERY = `
+  query($username: String!) {
+    user(login: $username) {
+      contributionsCollection {
+        contributionCalendar {
+          totalContributions
+          weeks {
+            contributionDays {
+              contributionCount
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+function mapContributionsToHeatmap(weeks: GQLContributionWeek[]): number[][] {
+  // Build 7 rows (days) x N cols (weeks)
+  const rows: number[][] = Array.from({ length: 7 }, () => []);
+  for (const week of weeks) {
+    for (let day = 0; day < 7; day++) {
+      const count = week.contributionDays[day]?.contributionCount ?? 0;
+      rows[day].push(count);
+    }
+  }
+
+  // Collect all non-zero counts for quartile bucketing
+  const nonZero = rows.flat().filter((c) => c > 0).sort((a, b) => a - b);
+  if (nonZero.length === 0) return rows.map((row) => row.map(() => 0));
+
+  const q1 = nonZero[Math.floor(nonZero.length * 0.25)];
+  const q2 = nonZero[Math.floor(nonZero.length * 0.5)];
+  const q3 = nonZero[Math.floor(nonZero.length * 0.75)];
+
+  function toLevel(count: number): number {
+    if (count === 0) return 0;
+    if (count <= q1) return 1;
+    if (count <= q2) return 2;
+    if (count <= q3) return 3;
+    return 4;
+  }
+
+  return rows.map((row) => row.map(toLevel));
+}
+
+async function fetchContributionCalendar(
+  username: string,
+): Promise<ContributionCalendar | null> {
+  try {
+    const result = await ghGraphQL<GQLContributionResponse>(
+      CONTRIBUTION_QUERY,
+      { username },
+    );
+    const calendar = result.data.user.contributionsCollection.contributionCalendar;
+    return {
+      totalContributions: calendar.totalContributions,
+      heatmap: mapContributionsToHeatmap(calendar.weeks),
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ── Public entry point ────────────────────────────────────────────────
 
 export async function searchGitHubUsers(
@@ -266,12 +376,13 @@ export async function searchGitHubUsers(
 export async function fetchGitHubUserData(
   username: string,
 ): Promise<GitHubUserData> {
-  const [user, rawRepos, events] = await Promise.all([
+  const [user, rawRepos, events, contributions] = await Promise.all([
     ghFetch<GitHubApiUser>(`/users/${username}`),
     fetchAllRepos(username),
     ghFetch<GitHubApiEvent[]>(
       `/users/${username}/events/public?per_page=100`,
     ),
+    fetchContributionCalendar(username),
   ]);
 
   const repositories = rawRepos.map(mapRepo).sort((a, b) => b.stars - a.stars);
@@ -284,5 +395,6 @@ export async function fetchGitHubUserData(
     languages: buildLanguageBreakdown(rawRepos),
     activity: buildActivitySummary(events),
     stats: buildStats(user, rawRepos),
+    contributions,
   };
 }
