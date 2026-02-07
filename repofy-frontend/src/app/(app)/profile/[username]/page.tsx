@@ -33,7 +33,7 @@ export default function ProfilePage({
     .join("");
 
   return (
-    <div className="space-y-12 pb-20">
+    <div className="space-y-5 pb-20">
       {/* Back link */}
       <Link
         href="/dashboard"
@@ -45,14 +45,14 @@ export default function ProfilePage({
 
       {/* Profile Header */}
       <AnimateOnView>
-        <div className="rounded-lg border border-border bg-card p-6">
-          <div className="flex flex-col sm:flex-row items-start gap-6">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-secondary font-mono text-2xl font-bold text-cyan border-2 border-cyan/20">
+        <div className="rounded-lg border border-border bg-card p-4">
+          <div className="flex flex-col sm:flex-row items-start gap-4">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-secondary font-mono text-lg font-bold text-cyan border-2 border-cyan/20">
               {initials}
             </div>
-            <div className="space-y-2">
-              <div className="flex items-baseline gap-3">
-                <h1 className="font-mono text-2xl font-bold tracking-tight">
+            <div className="space-y-1.5">
+              <div className="flex items-baseline gap-2">
+                <h1 className="font-mono text-lg font-bold tracking-tight">
                   {user.name}
                 </h1>
                 <span className="font-mono text-sm text-muted-foreground">

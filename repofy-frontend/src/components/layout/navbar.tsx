@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/components/providers/auth-provider";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function Navbar() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const isLandingPage = pathname === "/";
 
   async function handleSignOut() {
     const supabase = createClient();
@@ -23,7 +25,7 @@ export function Navbar() {
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link
           href={user ? "/dashboard" : "/"}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 hover:opacity-60 transition-opacity duration-150 ease-out will-change-[opacity]"
         >
           <span className="text-cyan font-mono text-lg font-bold tracking-tight">
             repofy
@@ -33,6 +35,14 @@ export function Navbar() {
 
         {isLoading ? (
           <Skeleton className="h-8 w-24" />
+        ) : user && isLandingPage ? (
+          <Button
+            size="sm"
+            className="bg-cyan text-background hover:bg-cyan/90 font-mono text-xs"
+            asChild
+          >
+            <Link href="/dashboard">Dashboard</Link>
+          </Button>
         ) : user ? (
           <div className="flex items-center gap-3">
             <span className="font-mono text-xs text-muted-foreground hidden sm:inline">
