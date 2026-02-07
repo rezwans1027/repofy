@@ -5,20 +5,53 @@ import { motion, LayoutGroup } from "framer-motion";
 import { TerminalWindow } from "@/components/ui/terminal-window";
 import { ProfileSections } from "@/components/profile/profile-sections";
 import { StickyCTABar } from "@/components/profile/sticky-cta-bar";
-import { fakeUsers, fakeRepos } from "@/lib/demo-data";
+import { fakeUsers, fakeRepos, type FakeUser, type FakeRepo } from "@/lib/demo-data";
 import {
   MapPin,
   Building2,
   Calendar,
   Search,
   ArrowLeft,
+  Loader2,
 } from "lucide-react";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
+type RepofySearchProfile = {
+  name: string | null;
+  username: string;
+  avatarUrl: string;
+  bio: string | null;
+  location: string | null;
+  company: string | null;
+  repos: number;
+};
+
+function mapApiProfileToFakeUser(p: RepofySearchProfile): FakeUser {
+  return {
+    username: p.username,
+    name: p.name ?? p.username,
+    bio: p.bio ?? "",
+    location: p.location ?? "",
+    company: p.company ?? "",
+    joinedYear: new Date().getFullYear(),
+    repos: p.repos ?? 0,
+    stars: 0,
+    followers: 0,
+    contributions: 0,
+    languages: [],
+    prActivity: { opened: 0, merged: 0, reviewed: 0 },
+    commitStreak: { current: 0, longest: 0 },
+    topCollaborators: [],
+  };
+}
+
 export default function DashboardPage() {
   const [query, setQuery] = useState("");
   const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
+  const [searchResult, setSearchResult] = useState<RepofySearchProfile | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   const filteredUsers = useMemo(() => {
     if (!query.trim()) return [];
@@ -30,12 +63,50 @@ export default function DashboardPage() {
     );
   }, [query]);
 
-  const selectedUser = selectedUsername
-    ? fakeUsers.find((u) => u.username === selectedUsername) ?? null
-    : null;
-  const selectedRepos = selectedUsername ? fakeRepos[selectedUsername] : null;
+  useEffect(() => {
+    const q = query.trim();
+    if (!q) {
+      setSearchResult(null);
+      setSearchError(null);
+      return;
+    }
+    const t = setTimeout(async () => {
+      setSearchLoading(true);
+      setSearchError(null);
+      try {
+        const res = await fetch(
+          `/api/repofy-search?username=${encodeURIComponent(q)}`
+        );
+        if (res.ok) {
+          const data: RepofySearchProfile = await res.json();
+          setSearchResult(data);
+        } else if (res.status === 404) {
+          setSearchResult(null);
+          setSearchError("User not found");
+        } else {
+          setSearchResult(null);
+          setSearchError("Search failed");
+        }
+      } catch {
+        setSearchResult(null);
+        setSearchError("Search failed");
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [query]);
 
-  function handleSelect(username: string) {
+  const selectedUser = selectedUsername
+    ? searchResult?.username === selectedUsername
+      ? mapApiProfileToFakeUser(searchResult)
+      : fakeUsers.find((u) => u.username === selectedUsername) ?? null
+    : null;
+  const selectedRepos: FakeRepo[] | null = selectedUsername
+    ? fakeRepos[selectedUsername] ?? []
+    : null;
+
+  function handleSelect(username: string, fromApi?: boolean) {
     setSelectedUsername(username);
     window.history.pushState({ fromDashboard: true }, "", `/profile/${username}`);
   }
@@ -97,7 +168,88 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-6 w-full max-w-2xl space-y-3">
-            {query.trim() && filteredUsers.length > 0
+            {query.trim() && searchLoading && (
+              <div className="rounded-lg border border-border bg-card p-6 flex items-center justify-center gap-2">
+                <Loader2 className="size-4 animate-spin text-cyan" />
+                <span className="font-mono text-sm text-muted-foreground">
+                  Searching GitHub...
+                </span>
+              </div>
+            )}
+
+            {query.trim() && !searchLoading && searchResult && (
+              <motion.div
+                layoutId={`card-${searchResult.username}`}
+                onClick={() => handleSelect(searchResult.username)}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ layout: { duration: 0.35, ease: EASE } }}
+                style={{ borderRadius: 8 }}
+                className="cursor-pointer border border-border bg-card p-4 transition-colors hover:border-cyan/50"
+              >
+                <div className="flex items-center gap-4">
+                  {searchResult.avatarUrl ? (
+                    <img
+                      src={searchResult.avatarUrl}
+                      alt=""
+                      className="h-12 w-12 shrink-0 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-secondary font-mono text-lg font-bold text-cyan">
+                      {(searchResult.name ?? searchResult.username)
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-mono text-sm font-bold text-foreground">
+                        {searchResult.name ?? searchResult.username}
+                      </span>
+                      <span className="font-mono text-xs text-muted-foreground">
+                        @{searchResult.username}
+                      </span>
+                    </div>
+                    {searchResult.bio && (
+                      <p className="mt-0.5 text-xs text-muted-foreground truncate">
+                        {searchResult.bio}
+                      </p>
+                    )}
+                    <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                      {searchResult.location && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="size-3" />
+                          {searchResult.location}
+                        </span>
+                      )}
+                      {searchResult.company && (
+                        <span className="flex items-center gap-1">
+                          <Building2 className="size-3" />
+                          {searchResult.company}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1 font-mono">
+                        {searchResult.repos} repos
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {query.trim() && !searchLoading && searchError && (
+              <div className="rounded-lg border border-border bg-card p-6 text-center">
+                <p className="font-mono text-sm text-muted-foreground">
+                  <span className="text-yellow-500">warn:</span> {searchError}
+                  {searchError === "User not found" && ` for "${query}"`}
+                </p>
+              </div>
+            )}
+
+            {query.trim() && !searchLoading && !searchResult && !searchError && filteredUsers.length > 0
               ? filteredUsers.map((user, i) => (
                   <motion.div
                     key={user.username}
@@ -153,11 +305,11 @@ export default function DashboardPage() {
                     </div>
                   </motion.div>
                 ))
-              : query.trim() && (
+              : query.trim() && !searchLoading && (searchError || !searchResult) && (
                   <div className="rounded-lg border border-border bg-card p-6 text-center">
                     <p className="font-mono text-sm text-muted-foreground">
-                      <span className="text-yellow-500">warn:</span> No users
-                      found matching &quot;{query}&quot;
+                      <span className="text-yellow-500">warn:</span>{" "}
+                      {searchError ?? `No users found matching "${query}"`}
                     </p>
                   </div>
                 )}
@@ -168,7 +320,7 @@ export default function DashboardPage() {
   }
 
   // ── Profile view (expanded card) ──
-  if (!selectedUser || !selectedRepos) return null;
+  if (!selectedUser) return null;
 
   const initials = selectedUser.name
     .split(" ")
@@ -234,7 +386,7 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.3, ease: EASE }}
         >
-          <ProfileSections user={selectedUser} repos={selectedRepos} />
+          <ProfileSections user={selectedUser} repos={selectedRepos ?? []} />
         </motion.div>
 
         <StickyCTABar username={selectedUser.username} />

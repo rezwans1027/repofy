@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const GITHUB_GRAPHQL_URL = "https://api.github.com/graphql";
 
 const USER_PROFILE_QUERY = `
