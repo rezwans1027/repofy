@@ -28,6 +28,7 @@ export interface ProfileData {
   stars: number;
   followers: number;
   contributions: number;
+  contributionHeatmap?: number[][] | null;
   languages: { name: string; color: string; percentage: number; repoCount?: number }[];
   joinedYear?: number;
   activityBreakdown?: {
@@ -63,7 +64,10 @@ interface ProfileSectionsProps {
 }
 
 export function ProfileSections({ user, repos }: ProfileSectionsProps) {
-  const heatmapData = useMemo(() => generateHeatmapData(), []);
+  const heatmapData = useMemo(
+    () => user.contributionHeatmap ?? generateHeatmapData(),
+    [user.contributionHeatmap],
+  );
 
   const stats = [
     { label: "Repositories", value: user.repos, icon: BookOpen },

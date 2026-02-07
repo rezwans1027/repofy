@@ -30,7 +30,7 @@ export function RadarChart({ data, size = 280 }: RadarChartProps) {
     .join(" ") + " Z";
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} className="mx-auto w-full max-w-[280px]">
+    <svg viewBox={`0 0 ${size} ${size}`} className="mx-auto w-full max-w-[280px]" style={{ overflow: "visible" }}>
       {/* Grid levels */}
       {levels.map((level) => {
         const levelPoints = data.map((_, i) => {

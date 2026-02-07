@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 
@@ -10,6 +11,7 @@ interface StickyCTABarProps {
 }
 
 export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
+  const router = useRouter();
   const [show, setShow] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setShow(true), delay);
@@ -32,7 +34,7 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
         <Button
           size="lg"
           className="bg-cyan text-background hover:bg-cyan/90 font-mono text-sm px-8 w-full sm:w-auto"
-          onClick={() => {}}
+          onClick={() => router.push(`/report/${username}`)}
         >
           <Sparkles className="size-4" />
           Start Analysis

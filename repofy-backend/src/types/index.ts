@@ -103,6 +103,11 @@ export interface GitHubStats {
   accountAgeDays: number;
 }
 
+export interface ContributionCalendar {
+  totalContributions: number;
+  heatmap: number[][]; // 7 rows (days) x 52 cols (weeks), values 0-4
+}
+
 export interface GitHubUserData {
   profile: GitHubProfile;
   repositories: GitHubRepo[];
@@ -110,6 +115,7 @@ export interface GitHubUserData {
   languages: LanguageBreakdown[];
   activity: ActivitySummary;
   stats: GitHubStats;
+  contributions: ContributionCalendar | null;
 }
 
 // ── GitHub search types ───────────────────────────────────────────────
