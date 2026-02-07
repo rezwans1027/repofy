@@ -177,7 +177,7 @@ export default function DashboardPage() {
 
   return (
     <LayoutGroup>
-      <div className="space-y-8 pb-20">
+      <div className="space-y-5 pb-20">
         <motion.button
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
@@ -193,15 +193,15 @@ export default function DashboardPage() {
           layoutId={`card-${selectedUsername}`}
           transition={{ layout: { duration: 0.35, ease: EASE } }}
           style={{ borderRadius: 8 }}
-          className="border border-border bg-card p-6"
+          className="border border-border bg-card p-4"
         >
-          <div className="flex flex-col sm:flex-row items-start gap-6">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-secondary font-mono text-2xl font-bold text-cyan border-2 border-cyan/20">
+          <div className="flex flex-col sm:flex-row items-start gap-4">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-secondary font-mono text-lg font-bold text-cyan border-2 border-cyan/20">
               {initials}
             </div>
-            <div className="space-y-2">
-              <div className="flex items-baseline gap-3">
-                <h1 className="font-mono text-2xl font-bold tracking-tight">
+            <div className="space-y-1.5">
+              <div className="flex items-baseline gap-2">
+                <h1 className="font-mono text-lg font-bold tracking-tight">
                   {selectedUser.name}
                 </h1>
                 <span className="font-mono text-sm text-muted-foreground">

@@ -16,7 +16,7 @@ export function AppSidebar() {
   return (
     <>
       {/* Desktop: left rail */}
-      <nav className="fixed left-0 top-14 hidden h-[calc(100vh-3.5rem)] w-48 flex-col justify-between border-r border-border px-4 py-6 lg:flex">
+      <nav className="fixed left-0 top-14 hidden h-[calc(100vh-3.5rem)] w-48 flex-col justify-center border-r border-border px-4 lg:flex">
         <ul className="space-y-1">
           {NAV_ITEMS.map(({ href, label, icon: Icon, number }) => {
             const isActive =
