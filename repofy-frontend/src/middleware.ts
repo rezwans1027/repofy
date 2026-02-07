@@ -44,9 +44,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Protect /dashboard routes — redirect unauthenticated users to /login
-  const isDashboard = pathname.startsWith("/dashboard");
-  if (!user && isDashboard) {
+  // Protect app routes — redirect unauthenticated users to /login
+  const isProtected = pathname.startsWith("/dashboard") || pathname.startsWith("/profile") || pathname.startsWith("/settings");
+  if (!user && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
