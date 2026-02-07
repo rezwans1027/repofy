@@ -18,11 +18,8 @@ export function TerminalWindow({
         className
       )}
     >
-      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-        <span className="h-3 w-3 rounded-full bg-[#EF4444]" />
-        <span className="h-3 w-3 rounded-full bg-[#FBBF24]" />
-        <span className="h-3 w-3 rounded-full bg-[#22C55E]" />
-        <span className="ml-2 font-mono text-xs text-muted-foreground">
+      <div className="flex items-center border-b border-border px-4 py-3">
+        <span className="font-mono text-xs text-muted-foreground">
           {title}
         </span>
       </div>

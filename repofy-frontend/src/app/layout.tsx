@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { AuthProvider } from "@/components/providers/auth-provider";
 import { AnalysisProvider } from "@/components/providers/analysis-provider";
 import "./globals.css";
 
@@ -31,7 +32,9 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         <ThemeProvider>
-          <AnalysisProvider>{children}</AnalysisProvider>
+          <AuthProvider>
+            <AnalysisProvider>{children}</AnalysisProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
