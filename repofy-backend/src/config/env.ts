@@ -10,4 +10,5 @@ export const env = {
   supabaseUrl: process.env.SUPABASE_URL || "",
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
   supabaseJwtSecret: process.env.SUPABASE_JWT_SECRET || "",
+  githubToken: process.env.GITHUB_TOKEN || "",
 } as const;

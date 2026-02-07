@@ -10,7 +10,7 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-10">
-      <AnimateOnView>
+      <AnimateOnView delay={0}>
         <SectionHeader
           title="Settings"
           subtitle="Manage your account preferences"
@@ -18,7 +18,7 @@ export default function SettingsPage() {
       </AnimateOnView>
 
       {/* Account Info */}
-      <AnimateOnView delay={0.1}>
+      <AnimateOnView delay={0.05}>
         <div className="rounded-lg border border-border bg-card p-6 space-y-4">
           <h3 className="font-mono text-sm font-bold">Account</h3>
           <div className="space-y-3">
@@ -70,7 +70,7 @@ export default function SettingsPage() {
       </AnimateOnView>
 
       {/* Placeholder sections */}
-      <AnimateOnView delay={0.15}>
+      <AnimateOnView delay={0.1}>
         <div className="rounded-lg border border-dashed border-border p-6 text-center">
           <p className="font-mono text-xs text-muted-foreground">
             More settings coming soon — notifications, API keys, theme

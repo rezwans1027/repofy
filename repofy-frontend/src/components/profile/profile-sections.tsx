@@ -7,7 +7,6 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { HeatmapGrid } from "@/components/ui/heatmap-grid";
 import { CountUp } from "@/components/ui/count-up";
 import { Badge } from "@/components/ui/badge";
-import type { FakeUser, FakeRepo } from "@/lib/demo-data";
 import { generateHeatmapData } from "@/lib/demo-data";
 import {
   Star,
@@ -20,11 +19,47 @@ import {
   Eye,
   Zap,
   Trophy,
+  Activity,
+  CircleDot,
 } from "lucide-react";
 
+export interface ProfileData {
+  repos: number;
+  stars: number;
+  followers: number;
+  contributions: number;
+  languages: { name: string; color: string; percentage: number; repoCount?: number }[];
+  joinedYear?: number;
+  activityBreakdown?: {
+    pushEvents: number;
+    prEvents: number;
+    issueEvents: number;
+    reviewEvents: number;
+  };
+  prActivity?: { opened: number; merged: number; reviewed: number };
+  commitStreak?: { current: number; longest: number };
+  topCollaborators?: {
+    username: string;
+    initials: string;
+    contributions: number;
+  }[];
+}
+
+export interface RepoData {
+  name: string;
+  description: string;
+  language: string;
+  languageColor: string;
+  stars: number;
+  forks: number;
+  updatedAt: string;
+  topics: string[];
+  url?: string;
+}
+
 interface ProfileSectionsProps {
-  user: FakeUser;
-  repos: FakeRepo[];
+  user: ProfileData;
+  repos: RepoData[];
 }
 
 export function ProfileSections({ user, repos }: ProfileSectionsProps) {
@@ -94,6 +129,9 @@ export function ProfileSections({ user, repos }: ProfileSectionsProps) {
                 <span className="font-mono text-xs text-muted-foreground">
                   {lang.name}{" "}
                   <span className="text-foreground">{lang.percentage}%</span>
+                  {lang.repoCount != null && (
+                    <span className="text-muted-foreground/60"> ({lang.repoCount})</span>
+                  )}
                 </span>
               </div>
             ))}
@@ -118,9 +156,20 @@ export function ProfileSections({ user, repos }: ProfileSectionsProps) {
               transition={{ delay: i * 0.05 }}
             >
               <div className="flex items-start justify-between">
-                <h3 className="font-mono text-sm font-bold text-cyan">
-                  {repo.name}
-                </h3>
+                {repo.url ? (
+                  <a
+                    href={repo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-sm font-bold text-cyan hover:underline underline-offset-2"
+                  >
+                    {repo.name}
+                  </a>
+                ) : (
+                  <h3 className="font-mono text-sm font-bold text-cyan">
+                    {repo.name}
+                  </h3>
+                )}
                 <Badge
                   variant="secondary"
                   className="font-mono text-[10px] shrink-0"
@@ -165,111 +214,166 @@ export function ProfileSections({ user, repos }: ProfileSectionsProps) {
         </div>
       </AnimateOnView>
 
-      {/* 4. PR Activity + Merge Rate */}
-      <AnimateOnView delay={0.16}>
-        <SectionHeader title="Pull Request Activity" />
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-lg border border-border bg-card p-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <GitPullRequest className="size-4" />
-              <span className="font-mono text-xs">Opened</span>
-            </div>
-            <CountUp
-              end={user.prActivity.opened}
-              className="text-xl font-bold text-foreground"
-            />
-          </div>
-          <div className="rounded-lg border border-border bg-card p-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <GitMerge className="size-4" />
-              <span className="font-mono text-xs">Merged</span>
-            </div>
-            <CountUp
-              end={user.prActivity.merged}
-              className="text-xl font-bold text-foreground"
-            />
-          </div>
-          <div className="rounded-lg border border-border bg-card p-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <Eye className="size-4" />
-              <span className="font-mono text-xs">Reviewed</span>
-            </div>
-            <CountUp
-              end={user.prActivity.reviewed}
-              className="text-xl font-bold text-foreground"
-            />
-          </div>
-          <div className="rounded-lg border border-border bg-card p-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <GitMerge className="size-4" />
-              <span className="font-mono text-xs">Merge Rate</span>
-            </div>
-            <CountUp
-              end={Math.round((user.prActivity.merged / user.prActivity.opened) * 100)}
-              suffix="%"
-              className="text-xl font-bold text-foreground"
-            />
-          </div>
-        </div>
-      </AnimateOnView>
-
-      {/* 5. Top Collaborators */}
-      <AnimateOnView delay={0.18}>
-        <SectionHeader title="Top Collaborators" />
-        <div className="flex flex-wrap gap-3">
-          {user.topCollaborators.map((collab) => (
-            <div
-              key={collab.username}
-              className="flex items-center gap-2.5 rounded-lg border border-border bg-card px-3 py-2"
-            >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary font-mono text-xs font-bold text-cyan">
-                {collab.initials}
+      {/* 4. Activity Breakdown (real users from events API) */}
+      {user.activityBreakdown && (
+        <AnimateOnView delay={0.16}>
+          <SectionHeader title="Recent Activity" subtitle="Last 100 public events" />
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="rounded-lg border border-border bg-card p-3">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Activity className="size-4" />
+                <span className="font-mono text-xs">Pushes</span>
               </div>
-              <div>
-                <p className="font-mono text-xs font-bold text-foreground">
-                  @{collab.username}
-                </p>
-                <p className="font-mono text-[10px] text-muted-foreground">
-                  {collab.contributions} contributions
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </AnimateOnView>
-
-      {/* 6. Commit Streak */}
-      <AnimateOnView delay={0.2}>
-        <SectionHeader title="Commit Streak" />
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-lg border border-border bg-card p-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <Zap className="size-4" />
-              <span className="font-mono text-xs">Current Streak</span>
-            </div>
-            <div className="flex items-baseline gap-1">
               <CountUp
-                end={user.commitStreak.current}
+                end={user.activityBreakdown.pushEvents}
                 className="text-xl font-bold text-foreground"
               />
-              <span className="font-mono text-xs text-muted-foreground">days</span>
             </div>
-          </div>
-          <div className="rounded-lg border border-border bg-card p-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <Trophy className="size-4" />
-              <span className="font-mono text-xs">Longest Streak</span>
-            </div>
-            <div className="flex items-baseline gap-1">
+            <div className="rounded-lg border border-border bg-card p-3">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <GitPullRequest className="size-4" />
+                <span className="font-mono text-xs">PRs Opened</span>
+              </div>
               <CountUp
-                end={user.commitStreak.longest}
+                end={user.activityBreakdown.prEvents}
                 className="text-xl font-bold text-foreground"
               />
-              <span className="font-mono text-xs text-muted-foreground">days</span>
+            </div>
+            <div className="rounded-lg border border-border bg-card p-3">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <CircleDot className="size-4" />
+                <span className="font-mono text-xs">Issues</span>
+              </div>
+              <CountUp
+                end={user.activityBreakdown.issueEvents}
+                className="text-xl font-bold text-foreground"
+              />
+            </div>
+            <div className="rounded-lg border border-border bg-card p-3">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Eye className="size-4" />
+                <span className="font-mono text-xs">Reviews</span>
+              </div>
+              <CountUp
+                end={user.activityBreakdown.reviewEvents}
+                className="text-xl font-bold text-foreground"
+              />
             </div>
           </div>
-        </div>
-      </AnimateOnView>
+        </AnimateOnView>
+      )}
+
+      {/* 5. PR Activity + Merge Rate (only for demo users with data) */}
+      {user.prActivity && (
+        <AnimateOnView delay={0.16}>
+          <SectionHeader title="Pull Request Activity" />
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="rounded-lg border border-border bg-card p-3">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <GitPullRequest className="size-4" />
+                <span className="font-mono text-xs">Opened</span>
+              </div>
+              <CountUp
+                end={user.prActivity.opened}
+                className="text-xl font-bold text-foreground"
+              />
+            </div>
+            <div className="rounded-lg border border-border bg-card p-3">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <GitMerge className="size-4" />
+                <span className="font-mono text-xs">Merged</span>
+              </div>
+              <CountUp
+                end={user.prActivity.merged}
+                className="text-xl font-bold text-foreground"
+              />
+            </div>
+            <div className="rounded-lg border border-border bg-card p-3">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Eye className="size-4" />
+                <span className="font-mono text-xs">Reviewed</span>
+              </div>
+              <CountUp
+                end={user.prActivity.reviewed}
+                className="text-xl font-bold text-foreground"
+              />
+            </div>
+            <div className="rounded-lg border border-border bg-card p-3">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <GitMerge className="size-4" />
+                <span className="font-mono text-xs">Merge Rate</span>
+              </div>
+              <CountUp
+                end={Math.round((user.prActivity.merged / user.prActivity.opened) * 100)}
+                suffix="%"
+                className="text-xl font-bold text-foreground"
+              />
+            </div>
+          </div>
+        </AnimateOnView>
+      )}
+
+      {/* 5. Top Collaborators (only for demo users with data) */}
+      {user.topCollaborators && user.topCollaborators.length > 0 && (
+        <AnimateOnView delay={0.18}>
+          <SectionHeader title="Top Collaborators" />
+          <div className="flex flex-wrap gap-3">
+            {user.topCollaborators.map((collab) => (
+              <div
+                key={collab.username}
+                className="flex items-center gap-2.5 rounded-lg border border-border bg-card px-3 py-2"
+              >
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary font-mono text-xs font-bold text-cyan">
+                  {collab.initials}
+                </div>
+                <div>
+                  <p className="font-mono text-xs font-bold text-foreground">
+                    @{collab.username}
+                  </p>
+                  <p className="font-mono text-[10px] text-muted-foreground">
+                    {collab.contributions} contributions
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </AnimateOnView>
+      )}
+
+      {/* 6. Commit Streak (only for demo users with data) */}
+      {user.commitStreak && (
+        <AnimateOnView delay={0.2}>
+          <SectionHeader title="Commit Streak" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-lg border border-border bg-card p-3">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Zap className="size-4" />
+                <span className="font-mono text-xs">Current Streak</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <CountUp
+                  end={user.commitStreak.current}
+                  className="text-xl font-bold text-foreground"
+                />
+                <span className="font-mono text-xs text-muted-foreground">days</span>
+              </div>
+            </div>
+            <div className="rounded-lg border border-border bg-card p-3">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Trophy className="size-4" />
+                <span className="font-mono text-xs">Longest Streak</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <CountUp
+                  end={user.commitStreak.longest}
+                  className="text-xl font-bold text-foreground"
+                />
+                <span className="font-mono text-xs text-muted-foreground">days</span>
+              </div>
+            </div>
+          </div>
+        </AnimateOnView>
+      )}
 
       {/* 7. Contribution Heatmap */}
       <AnimateOnView delay={0.22}>
