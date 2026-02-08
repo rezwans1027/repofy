@@ -26,7 +26,8 @@ export interface ProfileData {
   stars: number;
   followers: number;
   contributions: number;
-  contributionHeatmap: number[][];
+  contributionsIsEstimate?: boolean;
+  contributionHeatmap: number[][] | null;
   languages: { name: string; color: string; percentage: number; repoCount?: number }[];
   joinedYear?: number;
   activityBreakdown?: {
@@ -67,7 +68,7 @@ export function ProfileSections({ user, repos }: ProfileSectionsProps) {
     { label: "Repositories", value: user.repos, icon: BookOpen },
     { label: "Stars Earned", value: user.stars, icon: Star },
     { label: "Followers", value: user.followers, icon: Users },
-    { label: "Contributions", value: user.contributions, icon: Flame },
+    { label: user.contributionsIsEstimate ? "Recent Events" : "Contributions", value: user.contributions, icon: Flame },
   ];
 
   return (
@@ -380,27 +381,35 @@ export function ProfileSections({ user, repos }: ProfileSectionsProps) {
           subtitle="Last 52 weeks of contributions"
         />
         <div className="rounded-lg border border-border bg-card p-4">
-          <HeatmapGrid data={user.contributionHeatmap} />
-          <div className="mt-3 flex items-center justify-end gap-1.5 text-xs text-muted-foreground font-mono">
-            <span>Less</span>
-            {[0, 1, 2, 3, 4].map((level) => (
-              <div
-                key={level}
-                className="h-2.5 w-2.5 rounded-[2px]"
-                style={{
-                  backgroundColor:
-                    [
-                      "var(--secondary)",
-                      "#064E3B",
-                      "#065F46",
-                      "#047857",
-                      "#22D3EE",
-                    ][level],
-                }}
-              />
-            ))}
-            <span>More</span>
-          </div>
+          {user.contributionHeatmap ? (
+            <>
+              <HeatmapGrid data={user.contributionHeatmap} />
+              <div className="mt-3 flex items-center justify-end gap-1.5 text-xs text-muted-foreground font-mono">
+                <span>Less</span>
+                {[0, 1, 2, 3, 4].map((level) => (
+                  <div
+                    key={level}
+                    className="h-2.5 w-2.5 rounded-[2px]"
+                    style={{
+                      backgroundColor:
+                        [
+                          "var(--secondary)",
+                          "#064E3B",
+                          "#065F46",
+                          "#047857",
+                          "#22D3EE",
+                        ][level],
+                    }}
+                  />
+                ))}
+                <span>More</span>
+              </div>
+            </>
+          ) : (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Contribution data unavailable — GitHub token not configured.
+            </p>
+          )}
         </div>
       </AnimateOnView>
 

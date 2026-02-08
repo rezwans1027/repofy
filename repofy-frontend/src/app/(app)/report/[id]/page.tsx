@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { AnalysisReport } from "@/components/report/analysis-report";
 import type { ReportData } from "@/components/report/analysis-report";
@@ -19,6 +20,8 @@ export default function ReportPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const searchParams = useSearchParams();
+  const fromProfile = searchParams.get("from") === "profile";
   const [report, setReport] = useState<ReportRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -39,6 +42,11 @@ export default function ReportPage({
         setLoading(false);
       });
   }, [id]);
+
+  const backHref = fromProfile && report
+    ? `/profile/${report.analyzed_username}`
+    : "/reports";
+  const backLabel = fromProfile && report ? "back to profile" : "back to reports";
 
   if (loading) {
     return (
@@ -69,7 +77,7 @@ export default function ReportPage({
               Report not found
             </p>
             <p className="mt-2 text-xs text-muted-foreground/70">
-              This report may have been deleted or you don't have access to it.
+              This report may have been deleted or you don&apos;t have access to it.
             </p>
           </div>
         </div>
@@ -81,11 +89,11 @@ export default function ReportPage({
     <div>
       <div className="mb-4">
         <Link
-          href="/reports"
+          href={backHref}
           className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-cyan transition-colors"
         >
           <ArrowLeft className="size-3" />
-          back to reports
+          {backLabel}
         </Link>
       </div>
       <AnalysisReport

@@ -19,11 +19,14 @@ function buildReportData(ai: AIAnalysisResponse, github: GitHubUserData) {
   const { profile, topRepositories, languages, activity, stats, contributions } = github;
 
   // Activity percentages from raw event counts
-  const totalEvents = activity.totalEvents || 1;
-  const pushPct = Math.round((activity.pushEvents / totalEvents) * 100);
-  const prPct = Math.round((activity.prEvents / totalEvents) * 100);
-  const issuePct = Math.round((activity.issueEvents / totalEvents) * 100);
-  const reviewPct = 100 - pushPct - prPct - issuePct; // remainder to avoid > 100
+  const totalEvents = activity.totalEvents;
+  let pushPct = 0, prPct = 0, issuePct = 0, reviewPct = 0;
+  if (totalEvents > 0) {
+    pushPct = Math.round((activity.pushEvents / totalEvents) * 100);
+    prPct = Math.round((activity.prEvents / totalEvents) * 100);
+    issuePct = Math.round((activity.issueEvents / totalEvents) * 100);
+    reviewPct = Math.max(100 - pushPct - prPct - issuePct, 0); // remainder to avoid > 100
+  }
 
   // Computed ratios
   const starsPerRepo =
