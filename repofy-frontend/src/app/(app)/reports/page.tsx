@@ -189,12 +189,12 @@ export default function ReportsPage() {
     <motion.div
       initial="hidden"
       animate="visible"
-      variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
+      variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
       className="space-y-4"
     >
       <motion.h1
         variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
-        transition={{ duration: 0.35, ease: "easeOut" }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="font-mono text-lg font-bold"
       >
         Reports
@@ -203,7 +203,7 @@ export default function ReportsPage() {
       {/* Filter bar */}
       <motion.div
         variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
-        transition={{ duration: 0.35, ease: "easeOut" }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="flex flex-wrap items-center gap-2"
       >
         <div className="relative">
@@ -312,7 +312,7 @@ export default function ReportsPage() {
 
       <motion.div
         variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
-        transition={{ duration: 0.35, ease: "easeOut" }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="overflow-x-auto rounded-lg border border-border bg-card"
       >
         <table className="w-full">
