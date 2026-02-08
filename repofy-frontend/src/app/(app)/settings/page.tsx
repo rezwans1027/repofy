@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/auth-provider";
 import { createClient } from "@/lib/supabase/client";
-import { SectionHeader } from "@/components/ui/section-header";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -23,10 +22,12 @@ export default function SettingsPage() {
   return (
     <div className="space-y-10">
       <AnimateOnView delay={0}>
-        <SectionHeader
-          title="Settings"
-          subtitle="Manage your account preferences"
-        />
+        <div className="mb-4">
+          <h2 className="font-mono text-base font-bold tracking-tight sm:text-lg">
+            Settings
+          </h2>
+          <p className="text-muted-foreground mt-1 text-xs">Manage your account preferences</p>
+        </div>
       </AnimateOnView>
 
       {/* Account Info */}

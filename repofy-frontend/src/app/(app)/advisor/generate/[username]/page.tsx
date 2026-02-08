@@ -28,9 +28,18 @@ export default function GenerateAdvicePage({
   const [error, setError] = useState<string | null>(null);
 
   const fetchAdvice = useCallback(async () => {
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.refreshSession();
+    const accessToken = session?.access_token;
+
     const res = await fetch(
       `${API_URL}/advice/${encodeURIComponent(username)}`,
-      { method: "POST" },
+      {
+        method: "POST",
+        headers: {
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+      },
     );
     const json = await res.json();
     if (!res.ok || !json.success) {
@@ -54,13 +63,7 @@ export default function GenerateAdvicePage({
 
         const supabase = createClient();
 
-        // Delete any existing advice for this user/username combo
-        await supabase
-          .from("advice")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("analyzed_username", username);
-
+        // Insert first, then clean up old rows so data is never lost
         const { data: row, error: insertError } = await supabase
           .from("advice")
           .insert({
@@ -74,7 +77,15 @@ export default function GenerateAdvicePage({
 
         if (insertError) throw insertError;
 
-        router.replace(`/advisor/${row.id}`);
+        // Remove previous advice for the same user/username, keeping the new one
+        await supabase
+          .from("advice")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("analyzed_username", username)
+          .neq("id", row.id);
+
+        router.replace(`/advisor/${row.id}?from=profile`);
       } catch (err) {
         console.error("Failed to save advice:", err);
         setError("Failed to save advice. Please try again.");
