@@ -52,7 +52,7 @@ function TopBanner({ username, avatarUrl }: { username: string; avatarUrl?: stri
       : "bg-yellow-500/15 text-yellow-400 border-yellow-500/30";
 
   return (
-    <AnimateOnView>
+    <AnimateOnView delay={0}>
       <div className="rounded-lg border border-border bg-card p-5">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           {/* Left: avatar + info */}
@@ -132,7 +132,7 @@ function TopBanner({ username, avatarUrl }: { username: string; avatarUrl?: stri
 function Summary() {
   const reportData = useReportData();
   return (
-    <AnimateOnView delay={0.05}>
+    <AnimateOnView delay={0.06}>
       <div className="rounded-lg border border-border bg-card p-5">
         <SectionHeader title="Executive Summary" />
         <div className="border-l-2 border-cyan/40 pl-4">
@@ -150,7 +150,7 @@ function Summary() {
 function RadarSection() {
   const reportData = useReportData();
   return (
-    <AnimateOnView delay={0.05}>
+    <AnimateOnView delay={0.12}>
       <div className="rounded-lg border border-border bg-card p-5">
         <SectionHeader
           title="Developer DNA"
@@ -197,7 +197,7 @@ function StatsOverview() {
   ];
 
   return (
-    <AnimateOnView delay={0.05}>
+    <AnimateOnView delay={0.18}>
       <div className="rounded-lg border border-border bg-card p-5">
         <SectionHeader title="Stats Overview" />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -250,7 +250,7 @@ function ActivityBreakdown() {
   ];
 
   return (
-    <AnimateOnView delay={0.05}>
+    <AnimateOnView delay={0.24}>
       <div className="rounded-lg border border-border bg-card p-5">
         <SectionHeader title="Activity Breakdown" />
         {/* Stacked bar */}
@@ -296,7 +296,7 @@ function LanguageProfile() {
   const langs = reportData.languageProfile.languages;
 
   return (
-    <AnimateOnView delay={0.05}>
+    <AnimateOnView delay={0.3}>
       <div className="rounded-lg border border-border bg-card p-5">
         <SectionHeader title="Language Profile" />
         {/* Stacked bar */}
@@ -357,7 +357,7 @@ function TopRepos() {
   };
 
   return (
-    <AnimateOnView delay={0.05}>
+    <AnimateOnView delay={0.36}>
       <div className="rounded-lg border border-border bg-card p-5">
         <SectionHeader
           title="Top Repositories"
@@ -477,7 +477,7 @@ function TopRepos() {
 function Strengths() {
   const reportData = useReportData();
   return (
-    <AnimateOnView delay={0.05} className="h-full">
+    <AnimateOnView delay={0.42} className="h-full">
       <div className="rounded-lg border border-border bg-card p-5 h-full">
         <SectionHeader title="Strengths" />
         <div className="space-y-3">
@@ -503,7 +503,7 @@ function Strengths() {
 function Weaknesses() {
   const reportData = useReportData();
   return (
-    <AnimateOnView delay={0.05} className="h-full">
+    <AnimateOnView delay={0.42} className="h-full">
       <div className="rounded-lg border border-border bg-card p-5 h-full">
         <SectionHeader title="Areas for Improvement" />
         <div className="space-y-3">
@@ -535,7 +535,7 @@ function RedFlags() {
   };
 
   return (
-    <AnimateOnView delay={0.05}>
+    <AnimateOnView delay={0.48}>
       <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-5">
         <SectionHeader title="Red Flags" />
         <div className="space-y-3">
@@ -568,7 +568,7 @@ function RedFlags() {
 function InterviewQuestions() {
   const reportData = useReportData();
   return (
-    <AnimateOnView delay={0.05}>
+    <AnimateOnView delay={0.54}>
       <div className="rounded-lg border border-border bg-card p-5">
         <SectionHeader
           title="Suggested Interview Questions"
