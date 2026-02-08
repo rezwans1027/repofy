@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { FileText, ArrowRight, Search, Filter, ArrowUpDown, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FileText, ArrowRight, Search, Filter, ArrowUpDown, Check, Trash2, X, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,9 @@ export default function ReportsPage() {
   const [scoreMax, setScoreMax] = useState(100);
   const [sortBy, setSortBy] = useState<"date" | "score">("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -97,6 +101,49 @@ export default function ReportsPage() {
         : "text-red-400";
 
   const activeFilterCount = (selectedRecs.size > 0 ? 1 : 0) + (scoreMin > 0 || scoreMax < 100 ? 1 : 0);
+
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const allFilteredSelected = filteredReports.length > 0 && filteredReports.every((r) => selected.has(r.id));
+
+  const toggleSelectAll = () => {
+    if (allFilteredSelected) {
+      setSelected((prev) => {
+        const next = new Set(prev);
+        filteredReports.forEach((r) => next.delete(r.id));
+        return next;
+      });
+    } else {
+      setSelected((prev) => {
+        const next = new Set(prev);
+        filteredReports.forEach((r) => next.add(r.id));
+        return next;
+      });
+    }
+  };
+
+  const exitSelectMode = () => {
+    setSelectMode(false);
+    setSelected(new Set());
+  };
+
+  async function handleDelete() {
+    setDeleting(true);
+    const supabase = createClient();
+    const ids = [...selected];
+    await supabase.from("reports").delete().in("id", ids);
+    setReports((prev) => prev.filter((r) => !selected.has(r.id)));
+    setSelected(new Set());
+    setSelectMode(false);
+    setDeleting(false);
+  }
 
   const sortOptions = [
     { by: "date" as const, dir: "desc" as const, label: "Newest first" },
@@ -306,6 +353,16 @@ export default function ReportsPage() {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <Button
+          variant={selectMode ? "secondary" : "outline"}
+          size="sm"
+          className="h-8 gap-1.5 font-mono text-xs ml-auto"
+          onClick={selectMode ? exitSelectMode : () => setSelectMode(true)}
+        >
+          {selectMode ? <X className="size-3.5" /> : <CheckCircle2 className="size-3.5" />}
+          {selectMode ? "Cancel" : "Select"}
+        </Button>
       </motion.div>
 
       <motion.div
@@ -316,6 +373,13 @@ export default function ReportsPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-border bg-secondary/30">
+              <th className={`overflow-hidden transition-all duration-200 ease-out ${selectMode ? "w-10 px-3 py-3 opacity-100" : "w-0 max-w-0 p-0 opacity-0"}`}>
+                <Checkbox
+                  checked={allFilteredSelected}
+                  onCheckedChange={toggleSelectAll}
+                  className="rounded-full"
+                />
+              </th>
               <th className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Username
               </th>
@@ -336,7 +400,7 @@ export default function ReportsPage() {
           <tbody>
             {filteredReports.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-12 text-center">
+                <td colSpan={selectMode ? 6 : 5} className="px-4 py-12 text-center">
                   <p className="font-mono text-sm text-muted-foreground">No reports match your filters</p>
                   <button
                     type="button"
@@ -349,14 +413,30 @@ export default function ReportsPage() {
               </tr>
             ) : (
               filteredReports.map((report) => (
-                <tr key={report.id} className="group border-b border-border last:border-0 transition-colors hover:bg-secondary/20">
+                <tr
+                  key={report.id}
+                  className={`group border-b border-border last:border-0 transition-colors hover:bg-secondary/20 ${selectMode ? "cursor-pointer" : ""} ${selected.has(report.id) ? "bg-secondary/30" : ""}`}
+                  onClick={selectMode ? () => toggleSelect(report.id) : undefined}
+                >
+                  <td className={`overflow-hidden transition-all duration-200 ease-out ${selectMode ? "w-10 px-3 py-3 opacity-100" : "w-0 max-w-0 p-0 opacity-0"}`}>
+                    <Checkbox
+                      checked={selected.has(report.id)}
+                      onCheckedChange={() => toggleSelect(report.id)}
+                      className="rounded-full"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </td>
                   <td className="px-4 py-3">
-                    <Link
-                      href={`/report/${report.id}`}
-                      className="font-mono text-sm font-bold group-hover:text-cyan transition-colors"
-                    >
-                      @{report.analyzed_username}
-                    </Link>
+                    {selectMode ? (
+                      <span className="font-mono text-sm font-bold">@{report.analyzed_username}</span>
+                    ) : (
+                      <Link
+                        href={`/report/${report.id}`}
+                        className="font-mono text-sm font-bold group-hover:text-cyan transition-colors"
+                      >
+                        @{report.analyzed_username}
+                      </Link>
+                    )}
                   </td>
                   <td className="px-4 py-3 font-mono text-sm text-muted-foreground">
                     {report.analyzed_name || "—"}
@@ -384,6 +464,34 @@ export default function ReportsPage() {
           </tbody>
         </table>
       </motion.div>
+
+      <AnimatePresence>
+        {selected.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2"
+          >
+            <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-2.5 shadow-lg">
+              <span className="font-mono text-sm text-muted-foreground">
+                {selected.size} selected
+              </span>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="h-8 gap-1.5 font-mono text-xs"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                <Trash2 className="size-3.5" />
+                {deleting ? "Deleting…" : "Delete"}
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

@@ -1,38 +1,45 @@
 "use client";
 
+import Link from "next/link";
 import { SectionHeader } from "@/components/ui/section-header";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { TerminalWindow } from "@/components/ui/terminal-window";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ArrowRight } from "lucide-react";
 
 const plans = [
   {
     name: "Beta",
     price: "Free",
     period: "during beta",
-    description: "Full access. No strings.",
+    description: "Everything. No limits. No catch.",
     features: [
-      "Complete code DNA analysis",
-      "Language fingerprint breakdown",
-      "Commit pattern analysis",
-      "Unlimited evaluations",
+      "AI developer analysis",
+      "AI profile advisor with action plans",
+      "Side-by-side candidate comparison",
+      "6-axis Developer DNA radar chart",
+      "Per-repo code quality grades",
+      "Strengths, red flags & interview questions",
+      "PDF export for reports, advice & comparisons",
+      "Reports dashboard with search & filters",
     ],
-    cta: "Get Started",
+    cta: "Get Started Free",
     highlighted: true,
     comingSoon: false,
   },
   {
     name: "Pipeline",
-    price: "$49",
+    price: "$29",
     period: "/mo",
-    description: "Team dashboard, API access, and candidate comparison.",
+    description: "For teams who hire at scale.",
     features: [
       "Everything in Beta",
-      "Team dashboard",
-      "API access",
-      "Candidate comparison",
-      "PDF export",
+      "Team dashboard & shared reports",
+      "API access for integrations",
+      "Custom evaluation criteria",
+      "Candidate pipeline management",
+      "Priority support",
     ],
     cta: "Coming Soon",
     highlighted: false,
@@ -46,7 +53,7 @@ export function Pricing() {
       <AnimateOnView>
         <SectionHeader
           title="Pricing"
-          subtitle="Free while in beta. No credit card. No catch."
+          subtitle="Free while in beta. Full access. No credit card required."
         />
       </AnimateOnView>
 
@@ -54,7 +61,7 @@ export function Pricing() {
         {plans.map((plan, i) => (
           <AnimateOnView key={plan.name} delay={0.1 * i}>
             <TerminalWindow
-              title={plan.name.toLowerCase().replace(" ", "-")}
+              title={plan.name.toLowerCase()}
               className={
                 plan.highlighted ? "border-cyan/30 ring-1 ring-cyan/20" : ""
               }
@@ -92,17 +99,25 @@ export function Pricing() {
                     </li>
                   ))}
                 </ul>
-                <Button
-                  className={
-                    plan.highlighted
-                      ? "w-full bg-cyan text-background hover:bg-cyan/90 font-mono"
-                      : "w-full font-mono"
-                  }
-                  variant={plan.highlighted ? "default" : "outline"}
-                  disabled={plan.comingSoon}
-                >
-                  {plan.cta}
-                </Button>
+                {plan.highlighted ? (
+                  <Button
+                    className="w-full bg-cyan text-background hover:bg-cyan/90 font-mono"
+                    asChild
+                  >
+                    <Link href="/login">
+                      {plan.cta}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button
+                    className="w-full font-mono"
+                    variant="outline"
+                    disabled
+                  >
+                    {plan.cta}
+                  </Button>
+                )}
               </div>
             </TerminalWindow>
           </AnimateOnView>
