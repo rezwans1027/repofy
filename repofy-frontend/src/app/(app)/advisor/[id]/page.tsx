@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { AdviceReport } from "@/components/advice/advice-report";
 import type { AdviceData } from "@/components/advice/advice-report";
@@ -20,6 +21,8 @@ export default function AdvicePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const searchParams = useSearchParams();
+  const fromProfile = searchParams.get("from") === "profile";
   const [advice, setAdvice] = useState<AdviceRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -40,6 +43,11 @@ export default function AdvicePage({
         setLoading(false);
       });
   }, [id]);
+
+  const backHref = fromProfile && advice
+    ? `/profile/${advice.analyzed_username}`
+    : "/advisor";
+  const backLabel = fromProfile && advice ? "back to profile" : "back to advisor";
 
   if (loading) {
     return (
@@ -82,11 +90,11 @@ export default function AdvicePage({
     <div>
       <div className="mb-4">
         <Link
-          href="/advisor"
+          href={backHref}
           className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-emerald-400 transition-colors"
         >
           <ArrowLeft className="size-3" />
-          back to advisor
+          {backLabel}
         </Link>
       </div>
       <AdviceReport
