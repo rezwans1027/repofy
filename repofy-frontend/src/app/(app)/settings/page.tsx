@@ -1,12 +1,24 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/auth-provider";
+import { createClient } from "@/lib/supabase/client";
 import { SectionHeader } from "@/components/ui/section-header";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 
 export default function SettingsPage() {
   const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  async function handleSignOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/");
+    router.refresh();
+  }
 
   return (
     <div className="space-y-10">
@@ -69,13 +81,24 @@ export default function SettingsPage() {
         </div>
       </AnimateOnView>
 
-      {/* Placeholder sections */}
+      {/* Sign Out */}
       <AnimateOnView delay={0.1}>
-        <div className="rounded-lg border border-dashed border-border p-6 text-center">
-          <p className="font-mono text-xs text-muted-foreground">
-            More settings coming soon — notifications, API keys, theme
-            preferences.
-          </p>
+        <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+          <h3 className="font-mono text-sm font-bold">Session</h3>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs text-muted-foreground">
+              Sign out of your account
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleSignOut}
+              className="font-mono text-xs gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </AnimateOnView>
     </div>

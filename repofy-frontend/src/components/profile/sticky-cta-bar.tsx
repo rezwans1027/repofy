@@ -49,7 +49,7 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
   return (
     <>
       <div
-        className={`fixed bottom-0 left-0 right-0 lg:left-48 z-50 border-t border-border bg-background/80 backdrop-blur-md transition-all duration-500 ${show ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
+        className={`fixed bottom-0 left-0 right-0 lg:left-48 z-50 border-t border-border bg-background/80 backdrop-blur-md transition-[transform,opacity] duration-500 ${show ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
       >
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <div className="hidden sm:block">
