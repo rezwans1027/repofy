@@ -36,7 +36,12 @@ export const searchGitHub: RequestHandler = async (req, res) => {
       res.status(err.statusCode).json(response);
       return;
     }
-    throw err;
+    console.error("searchGitHub unexpected error:", err);
+    const response: ApiResponse = {
+      success: false,
+      error: "Internal server error",
+    };
+    res.status(500).json(response);
   }
 };
 
@@ -68,6 +73,11 @@ export const getGitHubUser: RequestHandler = async (req, res) => {
       res.status(err.statusCode).json(response);
       return;
     }
-    throw err;
+    console.error("getGitHubUser unexpected error:", err);
+    const response: ApiResponse = {
+      success: false,
+      error: "Internal server error",
+    };
+    res.status(500).json(response);
   }
 };

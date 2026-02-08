@@ -21,9 +21,18 @@ export default function GeneratePage({
   const [error, setError] = useState<string | null>(null);
 
   const fetchReport = useCallback(async () => {
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.refreshSession();
+    const accessToken = session?.access_token;
+
     const res = await fetch(
       `${API_URL}/analyze/${encodeURIComponent(username)}`,
-      { method: "POST" },
+      {
+        method: "POST",
+        headers: {
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+      },
     );
     const json = await res.json();
     if (!res.ok || !json.success) {
@@ -47,13 +56,7 @@ export default function GeneratePage({
 
         const supabase = createClient();
 
-        // Delete any existing reports (type='report') for this user before inserting
-        await supabase
-          .from("reports")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("analyzed_username", username);
-
+        // Insert first, then clean up old rows so data is never lost
         const { data: row, error: insertError } = await supabase
           .from("reports")
           .insert({
@@ -69,7 +72,15 @@ export default function GeneratePage({
 
         if (insertError) throw insertError;
 
-        router.replace(`/report/${row.id}`);
+        // Remove previous reports for the same user/username, keeping the new one
+        await supabase
+          .from("reports")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("analyzed_username", username)
+          .neq("id", row.id);
+
+        router.replace(`/report/${row.id}?from=profile`);
       } catch (err) {
         console.error("Failed to save report:", err);
         setError("Failed to save report. Please try again.");

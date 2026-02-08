@@ -1,6 +1,5 @@
 import { RequestHandler } from "express";
-import jwt from "jsonwebtoken";
-import { env } from "../config/env";
+import { supabaseAdmin } from "../config/supabase";
 import { ApiResponse } from "../types";
 
 declare global {
@@ -12,7 +11,7 @@ declare global {
   }
 }
 
-export const requireAuth: RequestHandler = (req, res, next) => {
+export const requireAuth: RequestHandler = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Bearer ")) {
@@ -26,16 +25,18 @@ export const requireAuth: RequestHandler = (req, res, next) => {
 
   const token = authHeader.split(" ")[1];
 
-  try {
-    const payload = jwt.verify(token, env.supabaseJwtSecret) as jwt.JwtPayload;
-    req.userId = payload.sub;
-    req.userEmail = payload.email;
-    next();
-  } catch {
+  const { data, error } = await supabaseAdmin.auth.getUser(token);
+
+  if (error || !data.user) {
     const response: ApiResponse = {
       success: false,
       error: "Invalid or expired token",
     };
     res.status(401).json(response);
+    return;
   }
+
+  req.userId = data.user.id;
+  req.userEmail = data.user.email;
+  next();
 };

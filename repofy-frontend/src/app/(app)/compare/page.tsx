@@ -39,6 +39,16 @@ export default function ComparePage() {
   const [reportDataB, setReportDataB] = useState<FullReport | null>(null);
   const comparisonRef = useRef<HTMLDivElement>(null);
 
+  const handleSelectA = (id: string) => {
+    setReportIdA(id);
+    if (!id) setReportDataA(null);
+  };
+
+  const handleSelectB = (id: string) => {
+    setReportIdB(id);
+    if (!id) setReportDataB(null);
+  };
+
   // Fetch report list on mount
   useEffect(() => {
     const supabase = createClient();
@@ -53,10 +63,8 @@ export default function ComparePage() {
 
   // Fetch full report A when selected
   useEffect(() => {
-    if (!reportIdA) {
-      setReportDataA(null);
-      return;
-    }
+    if (!reportIdA) return;
+    let cancelled = false;
     const supabase = createClient();
     supabase
       .from("reports")
@@ -64,16 +72,15 @@ export default function ComparePage() {
       .eq("id", reportIdA)
       .single()
       .then(({ data }) => {
-        setReportDataA((data as FullReport) ?? null);
+        if (!cancelled) setReportDataA((data as FullReport) ?? null);
       });
+    return () => { cancelled = true; };
   }, [reportIdA]);
 
   // Fetch full report B when selected
   useEffect(() => {
-    if (!reportIdB) {
-      setReportDataB(null);
-      return;
-    }
+    if (!reportIdB) return;
+    let cancelled = false;
     const supabase = createClient();
     supabase
       .from("reports")
@@ -81,8 +88,9 @@ export default function ComparePage() {
       .eq("id", reportIdB)
       .single()
       .then(({ data }) => {
-        setReportDataB((data as FullReport) ?? null);
+        if (!cancelled) setReportDataB((data as FullReport) ?? null);
       });
+    return () => { cancelled = true; };
   }, [reportIdB]);
 
   const bothLoaded = reportDataA && reportDataB;
@@ -140,14 +148,14 @@ export default function ComparePage() {
         <CandidatePicker
           reports={reports}
           value={reportIdA}
-          onValueChange={setReportIdA}
+          onValueChange={handleSelectA}
           disabledId={reportIdB}
           slot="A"
         />
         <CandidatePicker
           reports={reports}
           value={reportIdB}
-          onValueChange={setReportIdB}
+          onValueChange={handleSelectB}
           disabledId={reportIdA}
           slot="B"
         />
