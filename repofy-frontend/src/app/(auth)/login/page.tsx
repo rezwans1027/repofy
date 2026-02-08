@@ -14,12 +14,30 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  function validate() {
+    const newErrors: typeof errors = {};
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = "Enter a valid email address";
+    }
+    if (!password) {
+      newErrors.password = "Password is required";
+    }
+    return newErrors;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    setErrors({});
     setIsLoading(true);
 
     const supabase = createClient();
@@ -29,7 +47,7 @@ export default function LoginPage() {
     });
 
     if (error) {
-      setError(error.message);
+      setErrors({ form: error.message });
       setIsLoading(false);
       return;
     }
@@ -55,7 +73,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <div className="space-y-2">
               <label className="font-mono text-xs text-muted-foreground">
                 email
@@ -66,11 +84,19 @@ export default function LoginPage() {
                   type="email"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+                  }}
+                  aria-invalid={!!errors.email}
                   className="pl-10 font-mono text-sm"
-                  required
                 />
               </div>
+              {errors.email && (
+                <p className="font-mono text-xs text-destructive">
+                  <span className="font-bold">error:</span> {errors.email}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -83,9 +109,12 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                  }}
+                  aria-invalid={!!errors.password}
                   className="pl-10 pr-10 font-mono text-sm"
-                  required
                 />
                 <button
                   type="button"
@@ -99,12 +128,16 @@ export default function LoginPage() {
                   )}
                 </button>
               </div>
+              {errors.password && (
+                <p className="font-mono text-xs text-destructive">
+                  <span className="font-bold">error:</span> {errors.password}
+                </p>
+              )}
             </div>
 
-            {error && (
+            {errors.form && (
               <p className="font-mono text-sm text-destructive">
-                <span className="text-destructive font-bold">error:</span>{" "}
-                {error}
+                <span className="font-bold">error:</span> {errors.form}
               </p>
             )}
 

@@ -2,14 +2,14 @@ import { Navbar } from "@/components/layout/navbar";
 import { SectionNav } from "@/components/layout/section-nav";
 import { PageContainer } from "@/components/layout/page-container";
 import { Footer } from "@/components/layout/footer";
-import { AnalysisInput } from "@/components/sections/analysis-input";
-import { ProfileSummary } from "@/components/sections/profile-summary";
-import { CodeDna } from "@/components/sections/code-dna";
-import { LanguageFingerprint } from "@/components/sections/language-fingerprint";
-import { CommitSignature } from "@/components/sections/commit-signature";
-import { Verdict } from "@/components/sections/verdict";
+import { Hero } from "@/components/sections/hero";
+import { FeaturesOverview } from "@/components/sections/features-overview";
+import { AnalysisPreview } from "@/components/sections/analysis-preview";
+import { AdvisorPreview } from "@/components/sections/advisor-preview";
+import { ComparePreview } from "@/components/sections/compare-preview";
 import { HowItWorks } from "@/components/sections/how-it-works";
 import { Pricing } from "@/components/sections/pricing";
+import { FinalCta } from "@/components/sections/final-cta";
 
 export default function Home() {
   return (
@@ -17,14 +17,14 @@ export default function Home() {
       <Navbar />
       <SectionNav />
       <PageContainer>
-        <AnalysisInput />
-        <ProfileSummary />
-        <CodeDna />
-        <LanguageFingerprint />
-        <CommitSignature />
-        <Verdict />
+        <Hero />
+        <FeaturesOverview />
+        <AnalysisPreview />
+        <AdvisorPreview />
+        <ComparePreview />
         <HowItWorks />
         <Pricing />
+        <FinalCta />
       </PageContainer>
       <Footer />
     </>

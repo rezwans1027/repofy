@@ -5,7 +5,7 @@ export function Footer() {
         <div className="flex items-center gap-3">
           <span className="text-cyan font-mono text-sm font-bold">repofy</span>
           <span className="text-muted-foreground text-sm">
-            Built for developers who hire developers.
+            AI-powered GitHub analysis for technical hiring.
           </span>
         </div>
         <div className="flex items-center gap-4">

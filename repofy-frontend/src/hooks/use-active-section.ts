@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { SECTIONS, SectionId } from "@/lib/constants";
 
 export function useActiveSection(): SectionId {
-  const [activeSection, setActiveSection] = useState<SectionId>("analysis-input");
+  const [activeSection, setActiveSection] = useState<SectionId>("hero");
 
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
