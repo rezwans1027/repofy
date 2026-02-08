@@ -10,7 +10,14 @@ import { createClient } from "@/lib/supabase/client";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
-export default function GeneratePage({
+const ADVICE_PHASES = [
+  "Scanning profile...",
+  "Analyzing skill gaps...",
+  "Researching market trends...",
+  "Building your action plan...",
+];
+
+export default function GenerateAdvicePage({
   params,
 }: {
   params: Promise<{ username: string }>;
@@ -20,14 +27,14 @@ export default function GeneratePage({
   const { user } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
-  const fetchReport = useCallback(async () => {
+  const fetchAdvice = useCallback(async () => {
     const res = await fetch(
-      `${API_URL}/analyze/${encodeURIComponent(username)}`,
+      `${API_URL}/advice/${encodeURIComponent(username)}`,
       { method: "POST" },
     );
     const json = await res.json();
     if (!res.ok || !json.success) {
-      throw new Error(json.error || "Analysis failed");
+      throw new Error(json.error || "Advice generation failed");
     }
     return json.data;
   }, [username]);
@@ -35,44 +42,42 @@ export default function GeneratePage({
   const handleComplete = useCallback(
     async (data: unknown) => {
       if (!user) {
-        setError("You must be logged in to generate a report.");
+        setError("You must be logged in to generate advice.");
         return;
       }
 
       try {
-        const { analyzedName, report } = data as {
+        const { analyzedName, advice } = data as {
           analyzedName: string | null;
-          report: Record<string, unknown>;
+          advice: Record<string, unknown>;
         };
 
         const supabase = createClient();
 
-        // Delete any existing reports (type='report') for this user before inserting
+        // Delete any existing advice for this user/username combo
         await supabase
-          .from("reports")
+          .from("advice")
           .delete()
           .eq("user_id", user.id)
           .eq("analyzed_username", username);
 
         const { data: row, error: insertError } = await supabase
-          .from("reports")
+          .from("advice")
           .insert({
             user_id: user.id,
             analyzed_username: username,
             analyzed_name: analyzedName,
-            overall_score: (report as { overallScore: number }).overallScore,
-            recommendation: (report as { recommendation: string }).recommendation,
-            report_data: report,
+            advice_data: advice,
           })
           .select("id")
           .single();
 
         if (insertError) throw insertError;
 
-        router.replace(`/report/${row.id}`);
+        router.replace(`/advisor/${row.id}`);
       } catch (err) {
-        console.error("Failed to save report:", err);
-        setError("Failed to save report. Please try again.");
+        console.error("Failed to save advice:", err);
+        setError("Failed to save advice. Please try again.");
       }
     },
     [user, username, router],
@@ -88,7 +93,7 @@ export default function GeneratePage({
         <div className="mb-4">
           <Link
             href={`/profile/${username}`}
-            className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-cyan transition-colors"
+            className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-emerald-400 transition-colors"
           >
             <ArrowLeft className="size-3" />
             back to profile
@@ -102,7 +107,7 @@ export default function GeneratePage({
                 setError(null);
                 router.refresh();
               }}
-              className="mt-4 font-mono text-xs text-cyan hover:underline"
+              className="mt-4 font-mono text-xs text-emerald-400 hover:underline"
             >
               Try again
             </button>
@@ -117,16 +122,19 @@ export default function GeneratePage({
       <div className="mb-4">
         <Link
           href={`/profile/${username}`}
-          className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-cyan transition-colors"
+          className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-emerald-400 transition-colors"
         >
           <ArrowLeft className="size-3" />
           back to profile
         </Link>
       </div>
       <AnalysisLoading
-        fetchReport={fetchReport}
+        fetchReport={fetchAdvice}
         onComplete={handleComplete}
         onError={handleError}
+        phases={ADVICE_PHASES}
+        accentColor="text-emerald-400"
+        title="repofy — advisor engine"
       />
     </div>
   );

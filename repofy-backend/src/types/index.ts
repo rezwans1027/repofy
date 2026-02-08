@@ -141,3 +141,62 @@ export interface GitHubSearchResult {
   repos: number;
   followers: number;
 }
+
+// ── AI Analysis types ─────────────────────────────────────────────────
+
+export interface AIAnalysisResponse {
+  candidateLevel: string;
+  overallScore: number;
+  recommendation: string;
+  summary: string;
+  radarAxes: { axis: string; value: number }[];
+  radarBreakdown: { label: string; score: number; note: string }[];
+  statsInterpretation: string;
+  activityInterpretation: string;
+  languageInterpretation: string;
+  topRepos: {
+    name: string;
+    codeQuality: string;
+    testing: string;
+    cicd: string;
+    verdict: string;
+    isBestWork: boolean;
+  }[];
+  strengths: { text: string; evidence: string }[];
+  weaknesses: { text: string; evidence: string }[];
+  redFlags: { text: string; severity: string; explanation: string }[];
+  interviewQuestions: { question: string; why: string }[];
+}
+
+// ── AI Advice types ──────────────────────────────────────────────────
+
+export interface AIAdviceResponse {
+  summary: string;
+  projectIdeas: {
+    title: string;
+    description: string;
+    techStack: string[];
+    difficulty: "Beginner" | "Intermediate" | "Advanced";
+    why: string;
+  }[];
+  repoImprovements: {
+    repoName: string;
+    improvements: {
+      area: "Testing" | "Documentation" | "CI/CD" | "Code Quality" | "Architecture";
+      suggestion: string;
+      priority: "High" | "Medium" | "Low";
+    }[];
+  }[];
+  skillsToLearn: {
+    skill: string;
+    reason: string;
+    demandLevel: "High" | "Medium" | "Growing";
+    relatedTo: string;
+  }[];
+  contributionAdvice: { title: string; detail: string }[];
+  profileOptimizations: { area: string; current: string; suggestion: string }[];
+  actionPlan: {
+    timeframe: "30 days" | "60 days" | "90 days";
+    actions: string[];
+  }[];
+}

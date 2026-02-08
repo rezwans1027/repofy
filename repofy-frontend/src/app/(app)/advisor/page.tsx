@@ -1,0 +1,242 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Lightbulb, ArrowRight, Search, ArrowUpDown, Check } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+interface AdviceListItem {
+  id: string;
+  analyzed_username: string;
+  generated_at: string;
+  analyzed_name: string | null;
+}
+
+export default function AdvisorPage() {
+  const [items, setItems] = useState<AdviceListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("advice")
+      .select("id, analyzed_username, analyzed_name, generated_at")
+      .order("generated_at", { ascending: false })
+      .then(({ data }) => {
+        setItems((data as AdviceListItem[]) ?? []);
+        setLoading(false);
+      });
+  }, []);
+
+  const filteredItems = useMemo(() => {
+    const q = searchQuery.toLowerCase();
+    const filtered = items.filter((r) => {
+      if (q && !r.analyzed_username.toLowerCase().includes(q) && !(r.analyzed_name?.toLowerCase().includes(q)))
+        return false;
+      return true;
+    });
+
+    return filtered.sort((a, b) => {
+      const mul = sortDir === "asc" ? 1 : -1;
+      return (new Date(a.generated_at).getTime() - new Date(b.generated_at).getTime()) * mul;
+    });
+  }, [items, searchQuery, sortDir]);
+
+  const sortOptions = [
+    { dir: "desc" as const, label: "Newest first" },
+    { dir: "asc" as const, label: "Oldest first" },
+  ];
+  const currentSortLabel = sortOptions.find((o) => o.dir === sortDir)?.label ?? "Newest first";
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-6 w-24" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-8 w-72" />
+          <Skeleton className="h-8 w-32" />
+        </div>
+        <div className="overflow-hidden rounded-lg border border-border bg-card">
+          <div className="border-b border-border bg-secondary/30 px-4 py-3">
+            <div className="flex gap-12">
+              {[64, 48, 48].map((w, i) => (
+                <Skeleton key={i} className="h-3" style={{ width: w }} />
+              ))}
+            </div>
+          </div>
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="flex items-center gap-12 border-b border-border last:border-0 px-4 py-3.5">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="space-y-4"
+      >
+        <h1 className="font-mono text-lg font-bold">Advisor</h1>
+        <div className="flex min-h-[40vh] items-center justify-center">
+          <div className="text-center">
+            <Lightbulb className="mx-auto size-10 text-muted-foreground/30" />
+            <p className="mt-3 font-mono text-sm text-muted-foreground">
+              No advice generated yet
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground/70">
+              Search for a developer and get actionable profile advice.
+            </p>
+            <Link
+              href="/dashboard"
+              className="mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-emerald-400 hover:underline"
+            >
+              Go to search
+              <ArrowRight className="size-3" />
+            </Link>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
+      className="space-y-4"
+    >
+      <motion.h1
+        variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="font-mono text-lg font-bold"
+      >
+        Advisor
+      </motion.h1>
+
+      {/* Filter bar */}
+      <motion.div
+        variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="flex flex-wrap items-center gap-2"
+      >
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-8 w-72 pl-8 font-mono text-xs"
+          />
+        </div>
+
+        {/* Sort dropdown */}
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8 gap-1.5 font-mono text-xs">
+              <ArrowUpDown className="size-3.5" />
+              {currentSortLabel}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuLabel className="font-mono text-[11px] text-muted-foreground">Sort by</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {sortOptions.map((opt) => (
+              <DropdownMenuItem
+                key={opt.label}
+                className="gap-2 font-mono text-xs"
+                onClick={() => setSortDir(opt.dir)}
+              >
+                <Check className={`size-3.5 ${sortDir === opt.dir ? "opacity-100" : "opacity-0"}`} />
+                {opt.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </motion.div>
+
+      <motion.div
+        variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="overflow-x-auto rounded-lg border border-border bg-card"
+      >
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-border bg-secondary/30">
+              <th className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                Username
+              </th>
+              <th className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                Name
+              </th>
+              <th className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                Date
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredItems.length === 0 ? (
+              <tr>
+                <td colSpan={3} className="px-4 py-12 text-center">
+                  <p className="font-mono text-sm text-muted-foreground">No advice matches your search</p>
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="mt-2 font-mono text-xs text-emerald-400 hover:underline"
+                  >
+                    Clear search
+                  </button>
+                </td>
+              </tr>
+            ) : (
+              filteredItems.map((item) => (
+                <tr key={item.id} className="group border-b border-border last:border-0 transition-colors hover:bg-secondary/20">
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/advisor/${item.id}`}
+                      className="font-mono text-sm font-bold group-hover:text-emerald-400 transition-colors"
+                    >
+                      @{item.analyzed_username}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 font-mono text-sm text-muted-foreground">
+                    {item.analyzed_name || "—"}
+                  </td>
+                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                    {new Date(item.generated_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </motion.div>
+    </motion.div>
+  );
+}
