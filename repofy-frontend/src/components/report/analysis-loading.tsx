@@ -12,43 +12,58 @@ const phases = [
 ];
 
 interface AnalysisLoadingProps {
-  onComplete: () => void;
+  onComplete: (reportData?: unknown) => void;
+  /** If provided, runs this async task and calls onComplete with the result when done */
+  fetchReport?: () => Promise<unknown>;
 }
 
-export function AnalysisLoading({ onComplete }: AnalysisLoadingProps) {
+export function AnalysisLoading({ onComplete, fetchReport }: AnalysisLoadingProps) {
   const [currentPhase, setCurrentPhase] = useState(0);
   const [progress, setProgress] = useState(0);
   const [fading, setFading] = useState(false);
 
   useEffect(() => {
-    // Phase progression: ~1.2s apart
+    // Phase progression: ~2s apart (allow time for API)
     const timers = phases.map((_, i) =>
-      setTimeout(() => setCurrentPhase(i), i * 1200),
+      setTimeout(() => setCurrentPhase(i), i * 2000),
     );
     return () => timers.forEach(clearTimeout);
   }, []);
 
   useEffect(() => {
-    // Smooth progress bar over 5s
+    const duration = fetchReport ? 30000 : 4800; // 30s max for real API, 5s for demo
     const start = Date.now();
-    const duration = 4800;
+
     const tick = () => {
       const elapsed = Date.now() - start;
-      const pct = Math.min(elapsed / duration, 1);
+      const pct = Math.min(elapsed / duration, 0.95); // Cap at 95% until done
       setProgress(pct * 100);
-      if (pct < 1) requestAnimationFrame(tick);
+      if (pct < 0.95) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
 
-    // Fade out at 4.5s, fire onComplete at 5s
-    const fadeTimer = setTimeout(() => setFading(true), 4500);
-    const completeTimer = setTimeout(onComplete, 5000);
-
-    return () => {
-      clearTimeout(fadeTimer);
-      clearTimeout(completeTimer);
+    const done = (result?: unknown) => {
+      setProgress(100);
+      setFading(true);
+      setTimeout(() => onComplete(result), 300);
     };
-  }, [onComplete]);
+
+    if (fetchReport) {
+      fetchReport()
+        .then(done)
+        .catch((err) => {
+          console.error("Analysis fetch failed:", err);
+          done(undefined);
+        });
+    } else {
+      const fadeTimer = setTimeout(() => setFading(true), duration - 300);
+      const completeTimer = setTimeout(() => onComplete(), duration);
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(completeTimer);
+      };
+    }
+  }, [onComplete, fetchReport]);
 
   return (
     <AnimatePresence>
