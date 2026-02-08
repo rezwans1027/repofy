@@ -28,7 +28,7 @@ export class GitHubError extends Error {
 
 // ── Language colors ───────────────────────────────────────────────────
 
-const LANGUAGE_COLORS: Record<string, string> = {
+export const LANGUAGE_COLORS: Record<string, string> = {
   JavaScript: "#f1e05a",
   TypeScript: "#3178c6",
   Python: "#3572A5",
@@ -60,7 +60,7 @@ const LANGUAGE_COLORS: Record<string, string> = {
   OCaml: "#3be133",
 };
 
-const DEFAULT_COLOR = "#8b949e";
+export const DEFAULT_COLOR = "#8b949e";
 
 // ── GitHub API helpers ────────────────────────────────────────────────
 

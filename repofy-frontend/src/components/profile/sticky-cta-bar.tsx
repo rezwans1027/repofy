@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Lightbulb } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { createClient } from "@/lib/supabase/client";
 
@@ -14,18 +14,20 @@ interface StickyCTABarProps {
   delay?: number;
 }
 
+type DialogType = "report" | "advice" | null;
+
 export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
   const router = useRouter();
   const { user } = useAuth();
   const [show, setShow] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState<DialogType>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setShow(true), delay);
     return () => clearTimeout(t);
   }, [delay]);
 
-  const handleClick = async () => {
+  const handleAnalysisClick = async () => {
     if (!user) {
       router.push(`/generate/${username}`);
       return;
@@ -40,9 +42,30 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
       .limit(1);
 
     if (data && data.length > 0) {
-      setDialogOpen(true);
+      setDialogOpen("report");
     } else {
       router.push(`/generate/${username}`);
+    }
+  };
+
+  const handleAdviceClick = async () => {
+    if (!user) {
+      router.push(`/advisor/generate/${username}`);
+      return;
+    }
+
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("advice")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("analyzed_username", username)
+      .limit(1);
+
+    if (data && data.length > 0) {
+      setDialogOpen("advice");
+    } else {
+      router.push(`/advisor/generate/${username}`);
     }
   };
 
@@ -57,17 +80,28 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
               Analyze <span className="text-cyan">@{username}</span>
             </p>
             <p className="text-xs text-muted-foreground">
-              Generate a hiring-grade developer evaluation
+              Generate a report or get actionable advice
             </p>
           </div>
-          <Button
-            size="lg"
-            className="bg-cyan text-background hover:bg-cyan/90 font-mono text-sm px-8 w-full sm:w-auto"
-            onClick={handleClick}
-          >
-            <Sparkles className="size-4" />
-            Start Analysis
-          </Button>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button
+              size="lg"
+              className="bg-cyan text-background hover:bg-cyan/90 font-mono text-sm px-6 flex-1 sm:flex-initial"
+              onClick={handleAnalysisClick}
+            >
+              <Sparkles className="size-4" />
+              Start Analysis
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="font-mono text-sm px-6 flex-1 sm:flex-initial border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-400"
+              onClick={handleAdviceClick}
+            >
+              <Lightbulb className="size-4" />
+              Get Advice
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -81,7 +115,7 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
                 className="absolute inset-0 bg-black/50"
-                onClick={() => setDialogOpen(false)}
+                onClick={() => setDialogOpen(null)}
               />
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -90,28 +124,41 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
                 transition={{ duration: 0.15 }}
                 className="relative w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-lg"
               >
-                <h2 className="font-mono text-lg font-semibold">Report already exists</h2>
+                <h2 className="font-mono text-lg font-semibold">
+                  {dialogOpen === "report" ? "Report already exists" : "Advice already exists"}
+                </h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  A report for <span className="font-mono font-medium text-foreground">@{username}</span> already exists. Generate a new report and replace the old one?
+                  {dialogOpen === "report"
+                    ? <>A report for <span className="font-mono font-medium text-foreground">@{username}</span> already exists. Generate a new report and replace the old one?</>
+                    : <>Advice for <span className="font-mono font-medium text-foreground">@{username}</span> already exists. Generate new advice and replace the old one?</>
+                  }
                 </p>
                 <div className="mt-6 flex justify-end gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     className="font-mono text-xs"
-                    onClick={() => setDialogOpen(false)}
+                    onClick={() => setDialogOpen(null)}
                   >
                     Cancel
                   </Button>
                   <Button
                     size="sm"
-                    className="bg-cyan text-background hover:bg-cyan/90 font-mono text-xs"
+                    className={
+                      dialogOpen === "report"
+                        ? "bg-cyan text-background hover:bg-cyan/90 font-mono text-xs"
+                        : "bg-emerald-500 text-background hover:bg-emerald-500/90 font-mono text-xs"
+                    }
                     onClick={() => {
-                      setDialogOpen(false);
-                      router.push(`/generate/${username}`);
+                      setDialogOpen(null);
+                      if (dialogOpen === "report") {
+                        router.push(`/generate/${username}`);
+                      } else {
+                        router.push(`/advisor/generate/${username}`);
+                      }
                     }}
                   >
-                    Replace report
+                    {dialogOpen === "report" ? "Replace report" : "Replace advice"}
                   </Button>
                 </div>
               </motion.div>

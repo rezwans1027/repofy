@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Terminal } from "lucide-react";
 
-const phases = [
+const DEFAULT_PHASES = [
   "Scanning profile...",
   "Reading top repositories...",
   "Analyzing code patterns...",
@@ -12,43 +12,100 @@ const phases = [
 ];
 
 interface AnalysisLoadingProps {
-  onComplete: () => void;
+  fetchReport: () => Promise<unknown>;
+  onComplete: (data: unknown) => void;
+  onError: (message: string) => void;
+  phases?: string[];
+  accentColor?: string;
+  title?: string;
 }
 
-export function AnalysisLoading({ onComplete }: AnalysisLoadingProps) {
+export function AnalysisLoading({
+  fetchReport,
+  onComplete,
+  onError,
+  phases: phasesProp,
+  accentColor,
+  title,
+}: AnalysisLoadingProps) {
+  const phases = phasesProp ?? DEFAULT_PHASES;
   const [currentPhase, setCurrentPhase] = useState(0);
   const [progress, setProgress] = useState(0);
   const [fading, setFading] = useState(false);
+  const fetchStarted = useRef(false);
 
+  // Phase progression: ~1.2s apart
   useEffect(() => {
-    // Phase progression: ~1.2s apart
     const timers = phases.map((_, i) =>
       setTimeout(() => setCurrentPhase(i), i * 1200),
     );
     return () => timers.forEach(clearTimeout);
   }, []);
 
+  // Start fetch on mount + animate progress bar
   useEffect(() => {
-    // Smooth progress bar over 5s
-    const start = Date.now();
-    const duration = 4800;
-    const tick = () => {
-      const elapsed = Date.now() - start;
-      const pct = Math.min(elapsed / duration, 1);
-      setProgress(pct * 100);
-      if (pct < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
+    if (fetchStarted.current) return;
+    fetchStarted.current = true;
 
-    // Fade out at 4.5s, fire onComplete at 5s
-    const fadeTimer = setTimeout(() => setFading(true), 4500);
-    const completeTimer = setTimeout(onComplete, 5000);
+    const mountTime = Date.now();
+    const MIN_DISPLAY_MS = 3000;
+    let fetchResult: { data?: unknown; error?: string } | null = null;
+    let cancelled = false;
+
+    // Progress animation: fill to ~85% over ~8s, then slow crawl
+    const progressRef = { value: 0 };
+    const animateProgress = () => {
+      if (cancelled) return;
+      const elapsed = Date.now() - mountTime;
+      // Fast phase: 0-85% over first 8 seconds
+      if (elapsed < 8000) {
+        progressRef.value = (elapsed / 8000) * 85;
+      } else {
+        // Slow crawl from 85% toward 95% (never reaches 100 until data arrives)
+        const extra = (elapsed - 8000) / 30000; // ~30s to crawl 10%
+        progressRef.value = 85 + Math.min(extra * 10, 10);
+      }
+      setProgress(progressRef.value);
+      requestAnimationFrame(animateProgress);
+    };
+    requestAnimationFrame(animateProgress);
+
+    // Fire API call
+    fetchReport()
+      .then((data) => {
+        fetchResult = { data };
+      })
+      .catch((err) => {
+        fetchResult = { error: err instanceof Error ? err.message : "Analysis failed" };
+      })
+      .finally(() => {
+        if (cancelled) return;
+
+        const elapsed = Date.now() - mountTime;
+        const remaining = Math.max(MIN_DISPLAY_MS - elapsed, 0);
+
+        setTimeout(() => {
+          if (cancelled) return;
+          cancelled = true;
+
+          if (fetchResult?.error) {
+            onError(fetchResult.error);
+            return;
+          }
+
+          // Snap to 100% and fade out
+          setProgress(100);
+          setCurrentPhase(phases.length); // mark all phases complete
+          setTimeout(() => setFading(true), 400);
+          setTimeout(() => onComplete(fetchResult!.data), 800);
+        }, remaining);
+      });
 
     return () => {
-      clearTimeout(fadeTimer);
-      clearTimeout(completeTimer);
+      cancelled = true;
     };
-  }, [onComplete]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <AnimatePresence>
@@ -65,9 +122,9 @@ export function AnalysisLoading({ onComplete }: AnalysisLoadingProps) {
             <div className="rounded-lg border border-border bg-card overflow-hidden">
               {/* Title bar */}
               <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-                <Terminal className="size-3.5 text-cyan" />
+                <Terminal className={`size-3.5 ${accentColor ? accentColor : "text-cyan"}`} />
                 <span className="font-mono text-xs text-muted-foreground">
-                  repofy — analysis engine
+                  {title ?? "repofy — analysis engine"}
                 </span>
               </div>
 

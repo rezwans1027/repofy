@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useRef, useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Check,
@@ -9,7 +10,8 @@ import {
   ChevronDown,
   Award,
   FileDown,
-  Link2,
+  Loader2,
+  RefreshCw,
   SlidersHorizontal,
   Star,
   GitFork,
@@ -345,7 +347,7 @@ function LanguageProfile() {
 
 // ── Section 7: Top Repos ────────────────────────────────────────────
 
-function TopRepos() {
+function TopRepos({ expandAll }: { expandAll?: boolean }) {
   const reportData = useReportData();
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -371,7 +373,7 @@ function TopRepos() {
             >
               <button
                 onClick={() =>
-                  setExpanded(expanded === repo.name ? null : repo.name)
+                  !expandAll && setExpanded(expanded === repo.name ? null : repo.name)
                 }
                 className="flex w-full items-center justify-between p-3 text-left hover:bg-secondary/30 transition-colors"
               >
@@ -391,15 +393,17 @@ function TopRepos() {
                     <Star className="size-3" />
                     {repo.stars}
                   </span>
-                  <ChevronDown
-                    className={`size-4 text-muted-foreground transition-transform ${
-                      expanded === repo.name ? "rotate-180" : ""
-                    }`}
-                  />
+                  {!expandAll && (
+                    <ChevronDown
+                      className={`size-4 text-muted-foreground transition-transform ${
+                        expanded === repo.name ? "rotate-180" : ""
+                      }`}
+                    />
+                  )}
                 </div>
               </button>
 
-              {expanded === repo.name && (
+              {(expandAll || expanded === repo.name) && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
@@ -597,7 +601,124 @@ function InterviewQuestions() {
 
 // ── Section 12: Export Bar ──────────────────────────────────────────
 
-function ExportBar({ username }: { username: string }) {
+interface ExportBarProps {
+  username: string;
+  reportRef: React.RefObject<HTMLDivElement | null>;
+  onBeforeExport: () => void;
+  onAfterExport: () => void;
+}
+
+function ExportBar({ username, reportRef, onBeforeExport, onAfterExport }: ExportBarProps) {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportPDF = async () => {
+    if (!reportRef.current || isExporting) return;
+
+    setIsExporting(true);
+    onBeforeExport();
+
+    try {
+      // Wait for React re-render + animations to settle
+      await new Promise((r) => setTimeout(r, 300));
+
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas-pro"),
+        import("jspdf"),
+      ]);
+
+      const element = reportRef.current;
+
+      // Read the --background CSS variable (already a hex like #111113)
+      const bgColor =
+        getComputedStyle(document.documentElement).getPropertyValue("--background").trim();
+      const resolvedBg = bgColor || "#0A0A0B";
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: resolvedBg,
+        onclone: (doc, clonedEl) => {
+          // Strip stylesheets that contain unsupported CSS (tw-animate, shadcn)
+          // to prevent html2canvas "Unsupported angle type" errors
+          const sheets = doc.querySelectorAll('style, link[rel="stylesheet"]');
+          sheets.forEach((sheet) => {
+            if (sheet instanceof HTMLStyleElement && sheet.textContent) {
+              // Remove any gradient declarations that html2canvas can't parse
+              sheet.textContent = sheet.textContent.replace(
+                /[^;{}]*(?:conic|linear|radial)-gradient\([^)]*(?:in\s+(?:oklch|oklab|srgb|display-p3|hsl|lab|lch)[^)]*)\)[^;{}]*/gi,
+                "",
+              );
+            }
+          });
+
+          // Force all animated elements to their final state
+          const animated = clonedEl.querySelectorAll("*");
+          animated.forEach((el) => {
+            const htmlEl = el as HTMLElement;
+            const computed = getComputedStyle(htmlEl);
+            // Strip any background-image gradients that may still cause issues
+            if (computed.backgroundImage && computed.backgroundImage !== "none") {
+              htmlEl.style.backgroundImage = "none";
+            }
+            htmlEl.style.opacity = "1";
+            htmlEl.style.transform = "none";
+          });
+          // Force SVG animated elements (radar chart circles/paths)
+          const svgAnimated = clonedEl.querySelectorAll("circle, path");
+          svgAnimated.forEach((el) => {
+            el.removeAttribute("style");
+            (el as HTMLElement).style.opacity = "1";
+          });
+        },
+      });
+
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = 210;
+      const pdfHeight = 297;
+
+      // How many canvas pixels correspond to one A4 page
+      const pageCanvasHeight = Math.floor(
+        canvas.height * (pdfHeight / ((canvas.height * pdfWidth) / canvas.width))
+      );
+      const totalPages = Math.ceil(canvas.height / pageCanvasHeight);
+
+      for (let page = 0; page < totalPages; page++) {
+        const sliceY = page * pageCanvasHeight;
+        const sliceH = Math.min(pageCanvasHeight, canvas.height - sliceY);
+
+        // Create a per-page canvas slice
+        const pageCanvas = document.createElement("canvas");
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = pageCanvasHeight; // always full page height
+        const ctx = pageCanvas.getContext("2d")!;
+
+        // Fill with background so the last (partial) page has no white
+        ctx.fillStyle = resolvedBg;
+        ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+
+        // Draw the slice of the captured content
+        ctx.drawImage(
+          canvas,
+          0, sliceY, canvas.width, sliceH,
+          0, 0, canvas.width, sliceH,
+        );
+
+        const pageData = pageCanvas.toDataURL("image/png");
+        if (page > 0) pdf.addPage();
+        pdf.addImage(pageData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      }
+
+      const date = new Date().toISOString().split("T")[0];
+      pdf.save(`repofy-report-${username}-${date}.pdf`);
+    } catch (err) {
+      console.error("PDF export failed:", err);
+    } finally {
+      onAfterExport();
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="fixed bottom-0 left-0 right-0 lg:left-48 z-50 border-t border-border bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
@@ -609,26 +730,26 @@ function ExportBar({ username }: { username: string }) {
           <Button
             size="sm"
             className="bg-cyan text-background hover:bg-cyan/90 font-mono text-xs flex-1 sm:flex-initial"
+            onClick={handleExportPDF}
+            disabled={isExporting}
           >
-            <FileDown className="size-3.5" />
-            Export PDF
+            {isExporting ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <FileDown className="size-3.5" />
+            )}
+            {isExporting ? "Exporting…" : "Export PDF"}
           </Button>
           <Button
+            asChild
             size="sm"
             variant="outline"
             className="font-mono text-xs flex-1 sm:flex-initial"
           >
-            <Link2 className="size-3.5" />
-            Share Link
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="font-mono text-xs flex-1 sm:flex-initial opacity-50 cursor-not-allowed"
-            disabled
-          >
-            <SlidersHorizontal className="size-3.5" />
-            Role Filter
+            <Link href={`/generate/${username}`}>
+              <RefreshCw className="size-3.5" />
+              Re-run
+            </Link>
           </Button>
         </div>
       </div>
@@ -639,23 +760,33 @@ function ExportBar({ username }: { username: string }) {
 // ── Main Report Component ───────────────────────────────────────────
 
 export function AnalysisReport({ username, avatarUrl, data }: AnalysisReportProps) {
+  const reportRef = useRef<HTMLDivElement>(null);
+  const [pdfMode, setPdfMode] = useState(false);
+
   return (
     <ReportDataContext.Provider value={data ?? staticReportData}>
       <div className="space-y-4 pb-20">
-        <TopBanner username={username} avatarUrl={avatarUrl} />
-        <Summary />
-        <RadarSection />
-        <StatsOverview />
-        <ActivityBreakdown />
-        <LanguageProfile />
-        <TopRepos />
-        <div className="grid gap-4 lg:grid-cols-2 items-stretch">
-          <Strengths />
-          <Weaknesses />
+        <div ref={reportRef} data-pdf-target className="space-y-4">
+          <TopBanner username={username} avatarUrl={avatarUrl} />
+          <Summary />
+          <RadarSection />
+          <StatsOverview />
+          <ActivityBreakdown />
+          <LanguageProfile />
+          <TopRepos expandAll={pdfMode} />
+          <div className="grid gap-4 lg:grid-cols-2 items-stretch">
+            <Strengths />
+            <Weaknesses />
+          </div>
+          <RedFlags />
+          <InterviewQuestions />
         </div>
-        <RedFlags />
-        <InterviewQuestions />
-        <ExportBar username={username} />
+        <ExportBar
+          username={username}
+          reportRef={reportRef}
+          onBeforeExport={() => setPdfMode(true)}
+          onAfterExport={() => setPdfMode(false)}
+        />
       </div>
     </ReportDataContext.Provider>
   );
