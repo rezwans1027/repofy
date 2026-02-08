@@ -9,6 +9,8 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { createClient } from "@/lib/supabase/client";
 import { reportData } from "@/lib/demo-data";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+
 export default function GeneratePage({
   params,
 }: {
@@ -26,12 +28,30 @@ export default function GeneratePage({
     }
 
     try {
+      let analyzedName: string | null = null;
+      try {
+        const res = await fetch(`${API_URL}/github/${encodeURIComponent(username)}`);
+        const json = await res.json();
+        if (json.success && json.data?.profile?.name) {
+          analyzedName = json.data.profile.name;
+        }
+      } catch {}
+
       const supabase = createClient();
+
+      // Delete any existing reports for this user before inserting
+      await supabase
+        .from("reports")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("analyzed_username", username);
+
       const { data, error: insertError } = await supabase
         .from("reports")
         .insert({
           user_id: user.id,
           analyzed_username: username,
+          analyzed_name: analyzedName,
           overall_score: reportData.overallScore,
           recommendation: reportData.recommendation,
           report_data: reportData,

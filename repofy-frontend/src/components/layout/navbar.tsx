@@ -21,8 +21,8 @@ export function Navbar() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
+    <header className="fixed top-0 left-0 right-0 z-50 h-14 border-b border-border bg-background/80 backdrop-blur-md">
+      <div className="absolute left-0 lg:left-48 top-0 flex h-14 items-center px-4 sm:px-6">
         <Link
           href={user ? "/dashboard" : "/"}
           className="flex items-center gap-2 hover:opacity-60 transition-opacity duration-150 ease-out will-change-[opacity]"
@@ -32,7 +32,9 @@ export function Navbar() {
           </span>
           <span className="text-muted-foreground font-mono text-xs">v0.1</span>
         </Link>
+      </div>
 
+      <div className="absolute right-0 top-0 flex h-14 items-center px-4 sm:px-6">
         {isLoading ? (
           <Skeleton className="h-8 w-24" />
         ) : user && isLandingPage ? (
