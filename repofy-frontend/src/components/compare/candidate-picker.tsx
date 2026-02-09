@@ -16,14 +16,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-
-export interface ReportListItem {
-  id: string;
-  analyzed_username: string;
-  overall_score: number;
-  recommendation: string;
-  analyzed_name: string | null;
-}
+import type { ReportListItem } from "@/hooks/use-reports";
 
 interface CandidatePickerProps {
   reports: ReportListItem[];

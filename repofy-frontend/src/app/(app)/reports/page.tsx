@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { FileText, ArrowRight, Search, Filter, ArrowUpDown, Check, Trash2, X, CheckCircle2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,19 +19,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-interface ReportListItem {
-  id: string;
-  analyzed_username: string;
-  overall_score: number;
-  recommendation: string;
-  generated_at: string;
-  analyzed_name: string | null;
-}
+import { useReports, useDeleteReports, type ReportListItem } from "@/hooks/use-reports";
 
 export default function ReportsPage() {
-  const [reports, setReports] = useState<ReportListItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: reports = [], isLoading: loading } = useReports();
+  const deleteReports = useDeleteReports();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRecs, setSelectedRecs] = useState<Set<string>>(new Set());
   const [scoreMin, setScoreMin] = useState(0);
@@ -41,23 +32,6 @@ export default function ReportsPage() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from("reports")
-      .select("id, analyzed_username, analyzed_name, overall_score, recommendation, generated_at")
-      .order("generated_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (error) {
-          console.error("Reports fetch error:", error);
-        } else {
-          setReports((data as ReportListItem[]) ?? []);
-        }
-        setLoading(false);
-      });
-  }, []);
 
   const allRecs = ["Strong Hire", "Hire", "Weak Hire", "No Hire"] as const;
 
@@ -81,7 +55,7 @@ export default function ReportsPage() {
 
   const filteredReports = useMemo(() => {
     const q = searchQuery.toLowerCase();
-    const filtered = reports.filter((r) => {
+    const filtered = reports.filter((r: ReportListItem) => {
       if (q && !r.analyzed_username.toLowerCase().includes(q) && !(r.analyzed_name?.toLowerCase().includes(q)))
         return false;
       if (selectedRecs.size > 0 && !selectedRecs.has(r.recommendation))
@@ -90,7 +64,7 @@ export default function ReportsPage() {
       return true;
     });
 
-    return filtered.sort((a, b) => {
+    return filtered.sort((a: ReportListItem, b: ReportListItem) => {
       const mul = sortDir === "asc" ? 1 : -1;
       if (sortBy === "score") return (a.overall_score - b.overall_score) * mul;
       return (new Date(a.generated_at).getTime() - new Date(b.generated_at).getTime()) * mul;
@@ -115,19 +89,19 @@ export default function ReportsPage() {
     });
   };
 
-  const allFilteredSelected = filteredReports.length > 0 && filteredReports.every((r) => selected.has(r.id));
+  const allFilteredSelected = filteredReports.length > 0 && filteredReports.every((r: ReportListItem) => selected.has(r.id));
 
   const toggleSelectAll = () => {
     if (allFilteredSelected) {
       setSelected((prev) => {
         const next = new Set(prev);
-        filteredReports.forEach((r) => next.delete(r.id));
+        filteredReports.forEach((r: ReportListItem) => next.delete(r.id));
         return next;
       });
     } else {
       setSelected((prev) => {
         const next = new Set(prev);
-        filteredReports.forEach((r) => next.add(r.id));
+        filteredReports.forEach((r: ReportListItem) => next.add(r.id));
         return next;
       });
     }
@@ -139,18 +113,10 @@ export default function ReportsPage() {
   };
 
   async function handleDelete() {
-    setDeleting(true);
-    const supabase = createClient();
     const ids = [...selected];
-    const { error } = await supabase.from("reports").delete().in("id", ids);
-    if (error) {
-      console.error("Delete reports error:", error);
-    } else {
-      setReports((prev) => prev.filter((r) => !selected.has(r.id)));
-      setSelected(new Set());
-      setSelectMode(false);
-    }
-    setDeleting(false);
+    await deleteReports.mutateAsync(ids);
+    setSelected(new Set());
+    setSelectMode(false);
   }
 
   const sortOptions = [
@@ -420,7 +386,7 @@ export default function ReportsPage() {
                 </td>
               </tr>
             ) : (
-              filteredReports.map((report) => (
+              filteredReports.map((report: ReportListItem) => (
                 <tr
                   key={report.id}
                   className={`group border-b border-border last:border-0 transition-colors hover:bg-secondary/20 ${selectMode ? "cursor-pointer" : ""} ${selected.has(report.id) ? "bg-secondary/30" : ""}`}
@@ -491,10 +457,10 @@ export default function ReportsPage() {
                 size="sm"
                 className="h-8 gap-1.5 font-mono text-xs"
                 onClick={handleDelete}
-                disabled={deleting}
+                disabled={deleteReports.isPending}
               >
                 <Trash2 className="size-3.5" />
-                {deleting ? "Deleting…" : "Delete"}
+                {deleteReports.isPending ? "Deleting…" : "Delete"}
               </Button>
             </div>
           </motion.div>

@@ -6,9 +6,9 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AnalysisLoading } from "@/components/report/analysis-loading";
 import { useAuth } from "@/components/providers/auth-provider";
+import { api } from "@/lib/api-client";
 import { createClient } from "@/lib/supabase/client";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function GeneratePage({
   params,
@@ -18,27 +18,15 @@ export default function GeneratePage({
   const { username } = use(params);
   const router = useRouter();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
   const fetchReport = useCallback(async () => {
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.refreshSession();
-    const accessToken = session?.access_token;
-
-    const res = await fetch(
-      `${API_URL}/analyze/${encodeURIComponent(username)}`,
-      {
-        method: "POST",
-        headers: {
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        },
-      },
-    );
-    const json = await res.json();
-    if (!res.ok || !json.success) {
-      throw new Error(json.error || "Analysis failed");
-    }
-    return json.data;
+    const data = await api.post<{
+      analyzedName: string | null;
+      report: Record<string, unknown>;
+    }>(`/analyze/${encodeURIComponent(username)}`, { auth: true });
+    return data;
   }, [username]);
 
   const handleComplete = useCallback(
@@ -56,7 +44,6 @@ export default function GeneratePage({
 
         const supabase = createClient();
 
-        // Insert first, then clean up old rows so data is never lost
         const { data: row, error: insertError } = await supabase
           .from("reports")
           .insert({
@@ -64,7 +51,8 @@ export default function GeneratePage({
             analyzed_username: username,
             analyzed_name: analyzedName,
             overall_score: (report as { overallScore: number }).overallScore,
-            recommendation: (report as { recommendation: string }).recommendation,
+            recommendation: (report as { recommendation: string })
+              .recommendation,
             report_data: report,
           })
           .select("id")
@@ -72,7 +60,6 @@ export default function GeneratePage({
 
         if (insertError) throw insertError;
 
-        // Remove previous reports for the same user/username, keeping the new one
         await supabase
           .from("reports")
           .delete()
@@ -80,13 +67,14 @@ export default function GeneratePage({
           .eq("analyzed_username", username)
           .neq("id", row.id);
 
+        queryClient.invalidateQueries({ queryKey: ["reports"] });
         router.replace(`/report/${row.id}?from=profile`);
       } catch (err) {
         console.error("Failed to save report:", err);
         setError("Failed to save report. Please try again.");
       }
     },
-    [user, username, router],
+    [user, username, router, queryClient],
   );
 
   const handleError = useCallback((message: string) => {

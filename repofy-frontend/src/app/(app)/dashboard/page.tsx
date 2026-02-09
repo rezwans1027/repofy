@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
@@ -11,63 +11,15 @@ import {
   Search,
   Loader2,
 } from "lucide-react";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-
-interface SearchResult {
-  username: string;
-  name: string | null;
-  avatarUrl: string;
-  bio: string | null;
-  location: string | null;
-  company: string | null;
-  repos: number;
-  followers: number;
-}
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useGitHubSearch } from "@/hooks/use-github";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
-
-  // Debounced search
-  useEffect(() => {
-    const trimmed = query.trim();
-    if (!trimmed) {
-      setResults([]);
-      setIsSearching(false);
-      return;
-    }
-
-    setIsSearching(true);
-    const timer = setTimeout(async () => {
-      abortRef.current?.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
-
-      try {
-        const res = await fetch(
-          `${API_URL}/github/search?q=${encodeURIComponent(trimmed)}`,
-          { signal: controller.signal },
-        );
-        const json = await res.json();
-        if (json.success) {
-          setResults(json.data ?? []);
-        }
-      } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") return;
-      } finally {
-        if (!controller.signal.aborted) setIsSearching(false);
-      }
-    }, 300);
-
-    return () => {
-      clearTimeout(timer);
-      setIsSearching(false);
-    };
-  }, [query]);
+  const debouncedQuery = useDebouncedValue(query.trim(), 300);
+  const { data: results = [], isFetching: isSearching } =
+    useGitHubSearch(debouncedQuery);
 
   return (
     <div className="flex flex-col items-center pt-[25vh]">

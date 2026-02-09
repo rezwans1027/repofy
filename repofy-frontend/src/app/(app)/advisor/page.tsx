@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lightbulb, ArrowRight, Search, ArrowUpDown, Check, Trash2, X, CheckCircle2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -17,48 +16,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-interface AdviceListItem {
-  id: string;
-  analyzed_username: string;
-  generated_at: string;
-  analyzed_name: string | null;
-}
+import { useAdviceList, useDeleteAdvice, type AdviceListItem } from "@/hooks/use-advice";
 
 export default function AdvisorPage() {
-  const [items, setItems] = useState<AdviceListItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: items = [], isLoading: loading } = useAdviceList();
+  const deleteAdvice = useDeleteAdvice();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from("advice")
-      .select("id, analyzed_username, analyzed_name, generated_at")
-      .order("generated_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (error) {
-          console.error("Advisor fetch error:", error);
-        } else {
-          setItems((data as AdviceListItem[]) ?? []);
-        }
-        setLoading(false);
-      });
-  }, []);
 
   const filteredItems = useMemo(() => {
     const q = searchQuery.toLowerCase();
-    const filtered = items.filter((r) => {
+    const filtered = items.filter((r: AdviceListItem) => {
       if (q && !r.analyzed_username.toLowerCase().includes(q) && !(r.analyzed_name?.toLowerCase().includes(q)))
         return false;
       return true;
     });
 
-    return filtered.sort((a, b) => {
+    return filtered.sort((a: AdviceListItem, b: AdviceListItem) => {
       const mul = sortDir === "asc" ? 1 : -1;
       return (new Date(a.generated_at).getTime() - new Date(b.generated_at).getTime()) * mul;
     });
@@ -79,19 +55,19 @@ export default function AdvisorPage() {
     });
   };
 
-  const allFilteredSelected = filteredItems.length > 0 && filteredItems.every((r) => selected.has(r.id));
+  const allFilteredSelected = filteredItems.length > 0 && filteredItems.every((r: AdviceListItem) => selected.has(r.id));
 
   const toggleSelectAll = () => {
     if (allFilteredSelected) {
       setSelected((prev) => {
         const next = new Set(prev);
-        filteredItems.forEach((r) => next.delete(r.id));
+        filteredItems.forEach((r: AdviceListItem) => next.delete(r.id));
         return next;
       });
     } else {
       setSelected((prev) => {
         const next = new Set(prev);
-        filteredItems.forEach((r) => next.add(r.id));
+        filteredItems.forEach((r: AdviceListItem) => next.add(r.id));
         return next;
       });
     }
@@ -103,18 +79,10 @@ export default function AdvisorPage() {
   };
 
   async function handleDelete() {
-    setDeleting(true);
-    const supabase = createClient();
     const ids = [...selected];
-    const { error } = await supabase.from("advice").delete().in("id", ids);
-    if (error) {
-      console.error("Delete advice error:", error);
-    } else {
-      setItems((prev) => prev.filter((r) => !selected.has(r.id)));
-      setSelected(new Set());
-      setSelectMode(false);
-    }
-    setDeleting(false);
+    await deleteAdvice.mutateAsync(ids);
+    setSelected(new Set());
+    setSelectMode(false);
   }
 
   if (loading) {
@@ -283,7 +251,7 @@ export default function AdvisorPage() {
                 </td>
               </tr>
             ) : (
-              filteredItems.map((item) => (
+              filteredItems.map((item: AdviceListItem) => (
                 <tr
                   key={item.id}
                   className={`group border-b border-border last:border-0 transition-colors hover:bg-secondary/20 ${selectMode ? "cursor-pointer" : ""} ${selected.has(item.id) ? "bg-secondary/30" : ""}`}
@@ -344,10 +312,10 @@ export default function AdvisorPage() {
                 size="sm"
                 className="h-8 gap-1.5 font-mono text-xs"
                 onClick={handleDelete}
-                disabled={deleting}
+                disabled={deleteAdvice.isPending}
               >
                 <Trash2 className="size-3.5" />
-                {deleting ? "Deleting…" : "Delete"}
+                {deleteAdvice.isPending ? "Deleting…" : "Delete"}
               </Button>
             </div>
           </motion.div>
