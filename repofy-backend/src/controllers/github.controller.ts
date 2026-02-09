@@ -9,7 +9,8 @@ import {
 const USERNAME_RE = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/;
 
 export const searchGitHub: RequestHandler = async (req, res) => {
-  const q = (req.query.q as string || "").trim();
+  const rawQ = req.query.q;
+  const q = (Array.isArray(rawQ) ? rawQ[0] : rawQ || "").toString().trim();
 
   if (!q) {
     const response: ApiResponse<GitHubSearchResult[]> = {

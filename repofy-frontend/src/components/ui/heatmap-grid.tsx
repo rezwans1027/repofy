@@ -36,7 +36,7 @@ export function HeatmapGrid({ data }: HeatmapGridProps) {
         ref={ref}
         className="grid gap-[3px]"
         style={{
-          gridTemplateColumns: `repeat(52, 1fr)`,
+          gridTemplateColumns: `repeat(${data[0]?.length ?? 52}, 1fr)`,
           gridTemplateRows: `repeat(7, 1fr)`,
         }}
       >

@@ -40,8 +40,12 @@ export default function AdvisorPage() {
       .from("advice")
       .select("id, analyzed_username, analyzed_name, generated_at")
       .order("generated_at", { ascending: false })
-      .then(({ data }) => {
-        setItems((data as AdviceListItem[]) ?? []);
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Advisor fetch error:", error);
+        } else {
+          setItems((data as AdviceListItem[]) ?? []);
+        }
         setLoading(false);
       });
   }, []);
@@ -102,10 +106,14 @@ export default function AdvisorPage() {
     setDeleting(true);
     const supabase = createClient();
     const ids = [...selected];
-    await supabase.from("advice").delete().in("id", ids);
-    setItems((prev) => prev.filter((r) => !selected.has(r.id)));
-    setSelected(new Set());
-    setSelectMode(false);
+    const { error } = await supabase.from("advice").delete().in("id", ids);
+    if (error) {
+      console.error("Delete advice error:", error);
+    } else {
+      setItems((prev) => prev.filter((r) => !selected.has(r.id)));
+      setSelected(new Set());
+      setSelectMode(false);
+    }
     setDeleting(false);
   }
 

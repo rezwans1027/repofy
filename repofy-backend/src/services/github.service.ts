@@ -78,7 +78,15 @@ function headers(): Record<string, string> {
 }
 
 async function ghFetch<T>(path: string): Promise<T> {
-  const res = await fetch(`${GITHUB_API}${path}`, { headers: headers() });
+  const res = await fetch(`${GITHUB_API}${path}`, {
+    headers: headers(),
+    signal: AbortSignal.timeout(15_000),
+  }).catch((err) => {
+    if (err instanceof DOMException && err.name === "TimeoutError") {
+      throw new GitHubError("GitHub API request timed out", 504);
+    }
+    throw err;
+  });
 
   if (!res.ok) {
     if (res.status === 404) {
@@ -113,6 +121,12 @@ async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>):
       "User-Agent": "Repofy",
     },
     body: JSON.stringify({ query, variables }),
+    signal: AbortSignal.timeout(15_000),
+  }).catch((err) => {
+    if (err instanceof DOMException && err.name === "TimeoutError") {
+      throw new GitHubError("GitHub GraphQL request timed out", 504);
+    }
+    throw err;
   });
   if (!res.ok) throw new GitHubError(`GitHub GraphQL error: ${res.status}`, res.status);
   return res.json() as Promise<T>;
