@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { supabaseAdmin } from "../config/supabase";
+import { getSupabaseAdmin } from "../config/supabase";
 import { ApiResponse } from "../types";
 
 declare global {
@@ -25,7 +25,7 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
 
   const token = authHeader.split(" ")[1];
 
-  const { data, error } = await supabaseAdmin.auth.getUser(token);
+  const { data, error } = await getSupabaseAdmin().auth.getUser(token);
 
   if (error || !data.user) {
     const response: ApiResponse = {

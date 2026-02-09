@@ -33,6 +33,8 @@ interface FullReport {
 
 export default function ComparePage() {
   const [reports, setReports] = useState<ReportListItem[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [reportIdA, setReportIdA] = useState("");
   const [reportIdB, setReportIdB] = useState("");
   const [reportDataA, setReportDataA] = useState<FullReport | null>(null);
@@ -56,8 +58,14 @@ export default function ComparePage() {
       .from("reports")
       .select("id, analyzed_username, analyzed_name, overall_score, recommendation, generated_at")
       .order("generated_at", { ascending: false })
-      .then(({ data }) => {
-        setReports((data as ReportListItem[]) ?? []);
+      .then(({ data, error: err }) => {
+        if (err) {
+          setError("Failed to load reports");
+          console.error("Compare fetch error:", err);
+        } else {
+          setReports((data as ReportListItem[]) ?? []);
+        }
+        setLoading(false);
       });
   }, []);
 
@@ -99,7 +107,37 @@ export default function ComparePage() {
   const dataA = reportDataA?.report_data;
   const dataB = reportDataB?.report_data;
 
-  // Not yet loaded
+  // Loading state
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-6 w-48 animate-pulse rounded bg-secondary" />
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="h-24 animate-pulse rounded-lg border border-border bg-card" />
+          <div className="h-24 animate-pulse rounded-lg border border-border bg-card" />
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <h1 className="font-mono text-lg font-bold">Compare</h1>
+        <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-6 text-center space-y-2">
+          <p className="font-mono text-sm text-red-400">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="font-mono text-xs text-muted-foreground hover:text-cyan transition-colors underline underline-offset-2"
+          >
+            retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!reports) return null;
 
   // Empty state: need at least 2 reports

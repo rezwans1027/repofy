@@ -18,7 +18,7 @@ import {
   Loader2,
 } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3003/api";
 
 function timeAgo(dateStr: string): string {
   const seconds = Math.floor(
@@ -61,6 +61,10 @@ export default function ProfilePage({
   useEffect(() => {
     const controller = new AbortController();
     setIsLoading(true);
+    setError(null);
+    setProfileData(null);
+    setProfileRepos(null);
+    setApiProfile(null);
 
     (async () => {
       try {

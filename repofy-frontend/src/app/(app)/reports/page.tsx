@@ -49,8 +49,12 @@ export default function ReportsPage() {
       .from("reports")
       .select("id, analyzed_username, analyzed_name, overall_score, recommendation, generated_at")
       .order("generated_at", { ascending: false })
-      .then(({ data }) => {
-        setReports((data as ReportListItem[]) ?? []);
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Reports fetch error:", error);
+        } else {
+          setReports((data as ReportListItem[]) ?? []);
+        }
         setLoading(false);
       });
   }, []);
@@ -138,10 +142,14 @@ export default function ReportsPage() {
     setDeleting(true);
     const supabase = createClient();
     const ids = [...selected];
-    await supabase.from("reports").delete().in("id", ids);
-    setReports((prev) => prev.filter((r) => !selected.has(r.id)));
-    setSelected(new Set());
-    setSelectMode(false);
+    const { error } = await supabase.from("reports").delete().in("id", ids);
+    if (error) {
+      console.error("Delete reports error:", error);
+    } else {
+      setReports((prev) => prev.filter((r) => !selected.has(r.id)));
+      setSelected(new Set());
+      setSelectMode(false);
+    }
     setDeleting(false);
   }
 
