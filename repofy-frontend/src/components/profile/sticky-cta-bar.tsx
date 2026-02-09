@@ -22,8 +22,10 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
   const [show, setShow] = useState(false);
   const [dialogOpen, setDialogOpen] = useState<DialogType>(null);
 
-  const { data: reportExists } = useExistingReport(user?.id, username);
-  const { data: adviceExists } = useExistingAdvice(user?.id, username);
+  const { data: reportExists, isLoading: reportLoading } =
+    useExistingReport(user?.id, username);
+  const { data: adviceExists, isLoading: adviceLoading } =
+    useExistingAdvice(user?.id, username);
 
   useEffect(() => {
     const t = setTimeout(() => setShow(true), delay);
@@ -31,7 +33,7 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
   }, [delay]);
 
   const handleAnalysisClick = () => {
-    if (!user) {
+    if (!user || reportLoading) {
       router.push(`/generate/${username}`);
       return;
     }
@@ -44,7 +46,7 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
   };
 
   const handleAdviceClick = () => {
-    if (!user) {
+    if (!user || adviceLoading) {
       router.push(`/advisor/generate/${username}`);
       return;
     }

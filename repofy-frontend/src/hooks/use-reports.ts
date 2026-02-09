@@ -4,6 +4,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/providers/auth-provider";
 import type { ReportData } from "@/components/report/analysis-report";
 
 export interface ReportListItem {
@@ -22,8 +23,10 @@ interface ReportRow {
 }
 
 export function useReports() {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ["reports", "list"],
+    queryKey: ["reports", "list", user?.id],
     queryFn: async () => {
       const supabase = createClient();
       const { data, error } = await supabase
@@ -35,6 +38,7 @@ export function useReports() {
       if (error) throw error;
       return (data as ReportListItem[]) ?? [];
     },
+    enabled: !!user,
     staleTime: 0,
   });
 }
