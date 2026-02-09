@@ -26,3 +26,8 @@ export function getQueryClient() {
   }
   return browserQueryClient;
 }
+
+/** Drop all cached data — call on sign-out / user switch. */
+export function resetQueryClient() {
+  browserQueryClient?.clear();
+}

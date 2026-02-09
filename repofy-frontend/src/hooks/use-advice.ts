@@ -4,6 +4,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/providers/auth-provider";
 import type { AdviceData } from "@/components/advice/advice-report";
 
 export interface AdviceListItem {
@@ -21,8 +22,10 @@ interface AdviceRow {
 }
 
 export function useAdviceList() {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ["advice", "list"],
+    queryKey: ["advice", "list", user?.id],
     queryFn: async () => {
       const supabase = createClient();
       const { data, error } = await supabase
@@ -32,6 +35,7 @@ export function useAdviceList() {
       if (error) throw error;
       return (data as AdviceListItem[]) ?? [];
     },
+    enabled: !!user,
     staleTime: 0,
   });
 }
