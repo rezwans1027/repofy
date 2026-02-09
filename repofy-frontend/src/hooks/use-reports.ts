@@ -44,8 +44,10 @@ export function useReports() {
 }
 
 export function useReport(id: string) {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ["reports", "detail", id],
+    queryKey: ["reports", "detail", user?.id, id],
     queryFn: async () => {
       const supabase = createClient();
       const { data, error } = await supabase
@@ -56,7 +58,7 @@ export function useReport(id: string) {
       if (error) throw error;
       return data as ReportRow;
     },
-    enabled: !!id,
+    enabled: !!user && !!id,
   });
 }
 

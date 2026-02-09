@@ -41,8 +41,10 @@ export function useAdviceList() {
 }
 
 export function useAdvice(id: string) {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ["advice", "detail", id],
+    queryKey: ["advice", "detail", user?.id, id],
     queryFn: async () => {
       const supabase = createClient();
       const { data, error } = await supabase
@@ -53,7 +55,7 @@ export function useAdvice(id: string) {
       if (error) throw error;
       return data as AdviceRow;
     },
-    enabled: !!id,
+    enabled: !!user && !!id,
   });
 }
 
