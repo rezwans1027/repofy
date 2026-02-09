@@ -15,7 +15,7 @@ export default function ReportPage({
   const { id } = use(params);
   const searchParams = useSearchParams();
   const fromProfile = searchParams.get("from") === "profile";
-  const { data: report, isLoading: loading, error } = useReport(id);
+  const { data: report, isPending: loading, error } = useReport(id);
 
   const backHref = fromProfile && report
     ? `/profile/${report.analyzed_username}`
