@@ -6,7 +6,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Lightbulb } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
-import { createClient } from "@/lib/supabase/client";
+import { useExistingReport } from "@/hooks/use-reports";
+import { useExistingAdvice } from "@/hooks/use-advice";
 
 interface StickyCTABarProps {
   username: string;
@@ -21,47 +22,34 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
   const [show, setShow] = useState(false);
   const [dialogOpen, setDialogOpen] = useState<DialogType>(null);
 
+  const { data: reportExists } = useExistingReport(user?.id, username);
+  const { data: adviceExists } = useExistingAdvice(user?.id, username);
+
   useEffect(() => {
     const t = setTimeout(() => setShow(true), delay);
     return () => clearTimeout(t);
   }, [delay]);
 
-  const handleAnalysisClick = async () => {
+  const handleAnalysisClick = () => {
     if (!user) {
       router.push(`/generate/${username}`);
       return;
     }
 
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("reports")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("analyzed_username", username)
-      .limit(1);
-
-    if (data && data.length > 0) {
+    if (reportExists) {
       setDialogOpen("report");
     } else {
       router.push(`/generate/${username}`);
     }
   };
 
-  const handleAdviceClick = async () => {
+  const handleAdviceClick = () => {
     if (!user) {
       router.push(`/advisor/generate/${username}`);
       return;
     }
 
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("advice")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("analyzed_username", username)
-      .limit(1);
-
-    if (data && data.length > 0) {
+    if (adviceExists) {
       setDialogOpen("advice");
     } else {
       router.push(`/advisor/generate/${username}`);

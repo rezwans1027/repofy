@@ -1,18 +1,11 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { AnalysisReport } from "@/components/report/analysis-report";
-import type { ReportData } from "@/components/report/analysis-report";
-import { createClient } from "@/lib/supabase/client";
-
-interface ReportRow {
-  id: string;
-  analyzed_username: string;
-  report_data: ReportData;
-}
+import { useReport } from "@/hooks/use-reports";
 
 export default function ReportPage({
   params,
@@ -22,26 +15,7 @@ export default function ReportPage({
   const { id } = use(params);
   const searchParams = useSearchParams();
   const fromProfile = searchParams.get("from") === "profile";
-  const [report, setReport] = useState<ReportRow | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from("reports")
-      .select("id, analyzed_username, report_data")
-      .eq("id", id)
-      .single()
-      .then(({ data, error: fetchError }) => {
-        if (fetchError || !data) {
-          setError(true);
-        } else {
-          setReport(data as ReportRow);
-        }
-        setLoading(false);
-      });
-  }, [id]);
+  const { data: report, isLoading: loading, error } = useReport(id);
 
   const backHref = fromProfile && report
     ? `/profile/${report.analyzed_username}`

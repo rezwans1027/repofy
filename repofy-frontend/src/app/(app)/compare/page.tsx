@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { GitCompareArrows, ArrowRight } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import type { ReportData } from "@/components/report/analysis-report";
 import {
   CandidatePicker,
-  type ReportListItem,
 } from "@/components/compare/candidate-picker";
 import { ComparisonVerdict } from "@/components/compare/comparison-verdict";
 import { ComparisonRadarChart } from "@/components/compare/comparison-radar-chart";
@@ -24,88 +22,21 @@ import {
   TopReposList,
 } from "@/components/compare/comparison-side-by-side";
 import { ComparisonExportBar } from "@/components/compare/comparison-export-bar";
-
-interface FullReport {
-  id: string;
-  analyzed_username: string;
-  report_data: ReportData;
-}
+import { useReports, useReport } from "@/hooks/use-reports";
 
 export default function ComparePage() {
-  const [reports, setReports] = useState<ReportListItem[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: reports, isLoading: loading, error } = useReports();
   const [reportIdA, setReportIdA] = useState("");
   const [reportIdB, setReportIdB] = useState("");
-  const [reportDataA, setReportDataA] = useState<FullReport | null>(null);
-  const [reportDataB, setReportDataB] = useState<FullReport | null>(null);
+  const { data: reportDataA } = useReport(reportIdA);
+  const { data: reportDataB } = useReport(reportIdB);
   const comparisonRef = useRef<HTMLDivElement>(null);
-
-  const handleSelectA = (id: string) => {
-    setReportIdA(id);
-    if (!id) setReportDataA(null);
-  };
-
-  const handleSelectB = (id: string) => {
-    setReportIdB(id);
-    if (!id) setReportDataB(null);
-  };
-
-  // Fetch report list on mount
-  useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from("reports")
-      .select("id, analyzed_username, analyzed_name, overall_score, recommendation, generated_at")
-      .order("generated_at", { ascending: false })
-      .then(({ data, error: err }) => {
-        if (err) {
-          setError("Failed to load reports");
-          console.error("Compare fetch error:", err);
-        } else {
-          setReports((data as ReportListItem[]) ?? []);
-        }
-        setLoading(false);
-      });
-  }, []);
-
-  // Fetch full report A when selected
-  useEffect(() => {
-    if (!reportIdA) return;
-    let cancelled = false;
-    const supabase = createClient();
-    supabase
-      .from("reports")
-      .select("id, analyzed_username, report_data")
-      .eq("id", reportIdA)
-      .single()
-      .then(({ data }) => {
-        if (!cancelled) setReportDataA((data as FullReport) ?? null);
-      });
-    return () => { cancelled = true; };
-  }, [reportIdA]);
-
-  // Fetch full report B when selected
-  useEffect(() => {
-    if (!reportIdB) return;
-    let cancelled = false;
-    const supabase = createClient();
-    supabase
-      .from("reports")
-      .select("id, analyzed_username, report_data")
-      .eq("id", reportIdB)
-      .single()
-      .then(({ data }) => {
-        if (!cancelled) setReportDataB((data as FullReport) ?? null);
-      });
-    return () => { cancelled = true; };
-  }, [reportIdB]);
 
   const bothLoaded = reportDataA && reportDataB;
   const usernameA = reportDataA?.analyzed_username ?? "";
   const usernameB = reportDataB?.analyzed_username ?? "";
-  const dataA = reportDataA?.report_data;
-  const dataB = reportDataB?.report_data;
+  const dataA = reportDataA?.report_data as ReportData | undefined;
+  const dataB = reportDataB?.report_data as ReportData | undefined;
 
   // Loading state
   if (loading) {
@@ -126,7 +57,7 @@ export default function ComparePage() {
       <div className="space-y-4">
         <h1 className="font-mono text-lg font-bold">Compare</h1>
         <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-6 text-center space-y-2">
-          <p className="font-mono text-sm text-red-400">{error}</p>
+          <p className="font-mono text-sm text-red-400">{error.message}</p>
           <button
             onClick={() => window.location.reload()}
             className="font-mono text-xs text-muted-foreground hover:text-cyan transition-colors underline underline-offset-2"
@@ -186,14 +117,14 @@ export default function ComparePage() {
         <CandidatePicker
           reports={reports}
           value={reportIdA}
-          onValueChange={handleSelectA}
+          onValueChange={setReportIdA}
           disabledId={reportIdB}
           slot="A"
         />
         <CandidatePicker
           reports={reports}
           value={reportIdB}
-          onValueChange={handleSelectB}
+          onValueChange={setReportIdB}
           disabledId={reportIdA}
           slot="B"
         />

@@ -1,19 +1,11 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { AdviceReport } from "@/components/advice/advice-report";
-import type { AdviceData } from "@/components/advice/advice-report";
-import { createClient } from "@/lib/supabase/client";
-
-interface AdviceRow {
-  id: string;
-  analyzed_username: string;
-  user_id: string;
-  advice_data: AdviceData;
-}
+import { useAdvice } from "@/hooks/use-advice";
 
 export default function AdvicePage({
   params,
@@ -23,26 +15,7 @@ export default function AdvicePage({
   const { id } = use(params);
   const searchParams = useSearchParams();
   const fromProfile = searchParams.get("from") === "profile";
-  const [advice, setAdvice] = useState<AdviceRow | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from("advice")
-      .select("id, analyzed_username, user_id, advice_data")
-      .eq("id", id)
-      .single()
-      .then(({ data, error: fetchError }) => {
-        if (fetchError || !data) {
-          setError(true);
-        } else {
-          setAdvice(data as AdviceRow);
-        }
-        setLoading(false);
-      });
-  }, [id]);
+  const { data: advice, isLoading: loading, error } = useAdvice(id);
 
   const backHref = fromProfile && advice
     ? `/profile/${advice.analyzed_username}`
