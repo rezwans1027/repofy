@@ -33,11 +33,6 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
   }, [delay]);
 
   const handleAnalysisClick = () => {
-    if (!user || reportLoading) {
-      router.push(`/generate/${username}`);
-      return;
-    }
-
     if (reportExists) {
       setDialogOpen("report");
     } else {
@@ -46,11 +41,6 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
   };
 
   const handleAdviceClick = () => {
-    if (!user || adviceLoading) {
-      router.push(`/advisor/generate/${username}`);
-      return;
-    }
-
     if (adviceExists) {
       setDialogOpen("advice");
     } else {
@@ -76,6 +66,7 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
             <Button
               size="lg"
               className="bg-cyan text-background hover:bg-cyan/90 font-mono text-sm px-6 flex-1 sm:flex-initial"
+              disabled={!!user && reportLoading}
               onClick={handleAnalysisClick}
             >
               <Sparkles className="size-4" />
@@ -85,6 +76,7 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
               size="lg"
               variant="outline"
               className="font-mono text-sm px-6 flex-1 sm:flex-initial border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-400"
+              disabled={!!user && adviceLoading}
               onClick={handleAdviceClick}
             >
               <Lightbulb className="size-4" />
