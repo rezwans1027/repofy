@@ -15,7 +15,7 @@ export default function AdvicePage({
   const { id } = use(params);
   const searchParams = useSearchParams();
   const fromProfile = searchParams.get("from") === "profile";
-  const { data: advice, isLoading: loading, error } = useAdvice(id);
+  const { data: advice, isPending: loading, error } = useAdvice(id);
 
   const backHref = fromProfile && advice
     ? `/profile/${advice.analyzed_username}`
