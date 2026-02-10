@@ -3,6 +3,7 @@
 import { use } from "react";
 import { useSearchParams } from "next/navigation";
 import { AdviceReport } from "@/components/advice/advice-report";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useAdvice } from "@/hooks/use-advice";
 import { BackLink } from "@/components/ui/back-link";
 import { ErrorCard } from "@/components/ui/error-card";
@@ -15,7 +16,9 @@ export default function AdvicePage({
   const { id } = use(params);
   const searchParams = useSearchParams();
   const fromProfile = searchParams.get("from") === "profile";
-  const { data: advice, isPending: loading, error } = useAdvice(id);
+  const { isLoading: authLoading } = useAuth();
+  const { data: advice, isLoading: queryLoading, error } = useAdvice(id);
+  const loading = authLoading || queryLoading;
 
   const backHref = fromProfile && advice
     ? `/profile/${advice.analyzed_username}`

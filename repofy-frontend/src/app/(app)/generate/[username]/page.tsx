@@ -60,12 +60,13 @@ export default function GeneratePage({
 
         if (insertError) throw insertError;
 
-        await supabase
+        const { error: cleanupError } = await supabase
           .from("reports")
           .delete()
           .eq("user_id", user.id)
           .eq("analyzed_username", username)
           .neq("id", row.id);
+        if (cleanupError) console.error("Failed to clean up old reports:", cleanupError);
 
         queryClient.invalidateQueries({ queryKey: ["reports"] });
         router.replace(`/report/${row.id}?from=profile`);

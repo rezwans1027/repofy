@@ -61,20 +61,22 @@ export function createSupabaseQueries<TList, TRow>(
     });
   }
 
-  function useExisting(userId: string | undefined, username: string) {
+  function useExisting(username: string) {
+    const { user } = useAuth();
+
     return useQuery({
-      queryKey: [queryKeyPrefix, "exists", userId, username],
+      queryKey: [queryKeyPrefix, "exists", user?.id, username],
       queryFn: async () => {
         const supabase = createClient();
         const { data } = await supabase
           .from(table)
           .select("id")
-          .eq("user_id", userId!)
+          .eq("user_id", user!.id)
           .eq("analyzed_username", username)
           .limit(1);
         return data && data.length > 0;
       },
-      enabled: !!userId,
+      enabled: !!user,
     });
   }
 

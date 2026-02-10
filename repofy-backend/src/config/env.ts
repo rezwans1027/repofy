@@ -18,7 +18,6 @@ export const env = {
   trustProxy: process.env.TRUST_PROXY === "true",
   supabaseUrl: requireEnv("SUPABASE_URL"),
   supabaseServiceRoleKey: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
-  supabaseJwtSecret: process.env.SUPABASE_JWT_SECRET || "",
   githubToken: requireEnv("GITHUB_TOKEN"),
   openaiApiKey: requireEnv("OPENAI_API_KEY"),
   openaiModel: process.env.OPENAI_MODEL || "gpt-4o",

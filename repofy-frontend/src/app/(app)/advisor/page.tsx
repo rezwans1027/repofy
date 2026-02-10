@@ -16,11 +16,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useAdviceList, useDeleteAdvice, type AdviceListItem } from "@/hooks/use-advice";
 import { useSelectableList } from "@/hooks/use-selectable-list";
 
 export default function AdvisorPage() {
-  const { data: items = [], isPending: loading } = useAdviceList();
+  const { isLoading: authLoading } = useAuth();
+  const { data: items = [], isLoading: queryLoading } = useAdviceList();
+  const loading = authLoading || queryLoading;
   const deleteAdvice = useDeleteAdvice();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");

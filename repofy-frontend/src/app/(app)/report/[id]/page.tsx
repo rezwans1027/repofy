@@ -3,6 +3,7 @@
 import { use } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnalysisReport } from "@/components/report/analysis-report";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useReport } from "@/hooks/use-reports";
 import { BackLink } from "@/components/ui/back-link";
 import { ErrorCard } from "@/components/ui/error-card";
@@ -15,7 +16,9 @@ export default function ReportPage({
   const { id } = use(params);
   const searchParams = useSearchParams();
   const fromProfile = searchParams.get("from") === "profile";
-  const { data: report, isPending: loading, error } = useReport(id);
+  const { isLoading: authLoading } = useAuth();
+  const { data: report, isLoading: queryLoading, error } = useReport(id);
+  const loading = authLoading || queryLoading;
 
   const backHref = fromProfile && report
     ? `/profile/${report.analyzed_username}`

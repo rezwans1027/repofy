@@ -23,9 +23,9 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
   const [dialogOpen, setDialogOpen] = useState<DialogType>(null);
 
   const { data: reportExists, isLoading: reportLoading } =
-    useExistingReport(user?.id, username);
+    useExistingReport(username);
   const { data: adviceExists, isLoading: adviceLoading } =
-    useExistingAdvice(user?.id, username);
+    useExistingAdvice(username);
 
   useEffect(() => {
     const t = setTimeout(() => setShow(true), delay);
