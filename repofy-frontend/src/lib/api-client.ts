@@ -31,7 +31,7 @@ async function request<T>(
   path: string,
   opts: RequestOptions = {},
 ): Promise<T> {
-  const { auth, body, signal, ...rest } = opts;
+  const { auth, body, signal, headers: callerHeaders, ...rest } = opts;
   const headers: Record<string, string> = {};
 
   if (auth) {
@@ -49,10 +49,10 @@ async function request<T>(
 
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
-    headers,
+    ...rest,
+    headers: { ...(callerHeaders as Record<string, string>), ...headers },
     body: body !== undefined ? JSON.stringify(body) : undefined,
     signal,
-    ...rest,
   });
 
   let json: Record<string, unknown>;

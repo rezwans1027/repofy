@@ -53,7 +53,7 @@ export default function GenerateAdvicePage({
 
         const adviceRow = {
           user_id: user.id,
-          analyzed_username: username,
+          analyzed_username: username.toLowerCase(),
           analyzed_name: analyzedName,
           advice_data: advice,
         };
@@ -84,7 +84,7 @@ export default function GenerateAdvicePage({
             .from("advice")
             .delete()
             .eq("user_id", user.id)
-            .eq("analyzed_username", username)
+            .eq("analyzed_username", username.toLowerCase())
             .neq("id", row.id);
           if (cleanupError)
             console.error("Cleanup of old advice failed:", cleanupError);
