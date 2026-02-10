@@ -44,28 +44,50 @@ export default function GeneratePage({
 
         const supabase = createClient();
 
-        // Atomic upsert — inserts or replaces the existing report in one
-        // DB operation.  Requires the UNIQUE (user_id, analyzed_username)
-        // constraint from migration 003.
-        const { data: row, error: upsertError } = await supabase
+        const reportRow = {
+          user_id: user.id,
+          analyzed_username: username,
+          analyzed_name: analyzedName,
+          overall_score: (report as { overallScore: number }).overallScore,
+          recommendation: (report as { recommendation: string })
+            .recommendation,
+          report_data: report,
+          generated_at: new Date().toISOString(),
+        };
+
+        // Try atomic upsert (works after migration 003 adds unique constraint)
+        const { data: upserted, error: upsertError } = await supabase
           .from("reports")
-          .upsert(
-            {
-              user_id: user.id,
-              analyzed_username: username,
-              analyzed_name: analyzedName,
-              overall_score: (report as { overallScore: number }).overallScore,
-              recommendation: (report as { recommendation: string })
-                .recommendation,
-              report_data: report,
-              generated_at: new Date().toISOString(),
-            },
-            { onConflict: "user_id,analyzed_username" },
-          )
+          .upsert(reportRow, { onConflict: "user_id,analyzed_username" })
           .select("id")
           .single();
 
-        if (upsertError) throw upsertError;
+        let row: { id: string };
+
+        if (upsertError) {
+          // 42P10 = constraint not found — migration not yet applied
+          if (upsertError.code !== "42P10") throw upsertError;
+
+          // Fallback: insert + best-effort cleanup of old rows
+          const { data: inserted, error: insertError } = await supabase
+            .from("reports")
+            .insert(reportRow)
+            .select("id")
+            .single();
+          if (insertError) throw insertError;
+          row = inserted;
+
+          const { error: cleanupError } = await supabase
+            .from("reports")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("analyzed_username", username)
+            .neq("id", row.id);
+          if (cleanupError)
+            console.error("Cleanup of old reports failed:", cleanupError);
+        } else {
+          row = upserted;
+        }
 
         queryClient.invalidateQueries({ queryKey: ["reports"] });
         router.replace(`/report/${row.id}?from=profile`);
