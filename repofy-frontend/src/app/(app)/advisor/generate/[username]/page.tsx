@@ -64,13 +64,18 @@ export default function GenerateAdvicePage({
 
         if (insertError) throw insertError;
 
-        const { error: cleanupError } = await supabase
-          .from("advice")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("analyzed_username", username)
-          .neq("id", row.id);
-        if (cleanupError) console.error("Failed to clean up old advice:", cleanupError);
+        // Best-effort cleanup: retry once to handle transient failures
+        for (let attempt = 0; attempt < 2; attempt++) {
+          const { error: cleanupError } = await supabase
+            .from("advice")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("analyzed_username", username)
+            .neq("id", row.id);
+          if (!cleanupError) break;
+          if (attempt === 1)
+            console.error("Cleanup of old advice failed after retry:", cleanupError);
+        }
 
         queryClient.invalidateQueries({ queryKey: ["advice"] });
         router.replace(`/advisor/${row.id}?from=profile`);
