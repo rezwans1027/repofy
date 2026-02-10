@@ -140,6 +140,7 @@ const ADVICE_JSON_SCHEMA = {
 
 export async function generateAdvice(
   githubData: GitHubUserData,
+  signal?: AbortSignal,
 ): Promise<AIAdviceResponse> {
   const userMessage = buildUserMessage(
     githubData,
@@ -157,7 +158,7 @@ export async function generateAdvice(
       json_schema: ADVICE_JSON_SCHEMA,
     },
     temperature: 0.7,
-  });
+  }, { signal });
 
   const content = completion.choices[0]?.message?.content;
   if (!content) {

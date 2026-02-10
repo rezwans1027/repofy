@@ -68,8 +68,8 @@ export function RepoImprovements({ repoImprovements, expandAll = false }: RepoIm
                   className="border-t border-border"
                 >
                   <div className="p-4 space-y-3">
-                    {repo.improvements.map((imp) => (
-                      <div key={`${imp.area}-${imp.priority}`} className="flex gap-3">
+                    {repo.improvements.map((imp, i) => (
+                      <div key={`${imp.area}-${imp.priority}-${i}`} className="flex gap-3">
                         <div className="mt-0.5 shrink-0">
                           <Badge className={`border text-[9px] w-14 justify-center ${PRIORITY_STYLES[imp.priority] ?? ""}`}>
                             {imp.priority}

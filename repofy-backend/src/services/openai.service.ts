@@ -148,6 +148,7 @@ const JSON_SCHEMA = {
 
 export async function generateAnalysis(
   githubData: GitHubUserData,
+  signal?: AbortSignal,
 ): Promise<AIAnalysisResponse> {
   const userMessage = buildUserMessage(
     githubData,
@@ -165,7 +166,7 @@ export async function generateAnalysis(
       json_schema: JSON_SCHEMA,
     },
     temperature: 0.7,
-  });
+  }, { signal });
 
   const content = completion.choices[0]?.message?.content;
   if (!content) {

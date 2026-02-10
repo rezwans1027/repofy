@@ -21,8 +21,8 @@ export const analyzeUser: RequestHandler = async (req, res) => {
   }
 
   try {
-    const githubData = await fetchGitHubUserData(username);
-    const aiAnalysis = await generateAnalysis(githubData);
+    const githubData = await fetchGitHubUserData(username, req.signal);
+    const aiAnalysis = await generateAnalysis(githubData, req.signal);
     const report = buildReportData(aiAnalysis, githubData);
 
     sendSuccess(res, {
