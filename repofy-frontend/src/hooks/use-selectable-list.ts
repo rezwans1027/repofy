@@ -39,8 +39,8 @@ export function useSelectableList() {
         await deleteFn(ids);
         setSelected(new Set());
         setSelectMode(false);
-      } catch {
-        // mutation error — UI stays in select mode so user can retry
+      } catch (err) {
+        console.error("Delete failed:", err);
       }
     },
     [selected],

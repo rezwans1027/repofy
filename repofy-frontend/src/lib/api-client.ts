@@ -18,8 +18,13 @@ interface RequestOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
 }
 
-// Module-level singleton — avoids creating a new client per request
-const supabase = createClient();
+// Lazy singleton — defers client creation until first use,
+// safe if this module is ever evaluated in a server context.
+let _supabase: ReturnType<typeof createClient> | null = null;
+function getSupabase() {
+  if (!_supabase) _supabase = createClient();
+  return _supabase;
+}
 
 async function request<T>(
   method: string,
@@ -32,7 +37,7 @@ async function request<T>(
   if (auth) {
     const {
       data: { session },
-    } = await supabase.auth.refreshSession();
+    } = await getSupabase().auth.refreshSession();
     if (session?.access_token) {
       headers["Authorization"] = `Bearer ${session.access_token}`;
     }

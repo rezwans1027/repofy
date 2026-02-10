@@ -19,12 +19,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useReports, useDeleteReports, type ReportListItem } from "@/hooks/use-reports";
 import { recommendationStyle } from "@/lib/styles";
 import { useSelectableList } from "@/hooks/use-selectable-list";
 
 export default function ReportsPage() {
-  const { data: reports = [], isPending: loading } = useReports();
+  const { isLoading: authLoading } = useAuth();
+  const { data: reports = [], isLoading: queryLoading } = useReports();
+  const loading = authLoading || queryLoading;
   const deleteReports = useDeleteReports();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRecs, setSelectedRecs] = useState<Set<string>>(new Set());
