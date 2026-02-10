@@ -19,7 +19,7 @@ import {
 import { useAdviceList, useDeleteAdvice, type AdviceListItem } from "@/hooks/use-advice";
 
 export default function AdvisorPage() {
-  const { data: items = [], isLoading: loading } = useAdviceList();
+  const { data: items = [], isPending: loading } = useAdviceList();
   const deleteAdvice = useDeleteAdvice();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
@@ -80,9 +80,13 @@ export default function AdvisorPage() {
 
   async function handleDelete() {
     const ids = [...selected];
-    await deleteAdvice.mutateAsync(ids);
-    setSelected(new Set());
-    setSelectMode(false);
+    try {
+      await deleteAdvice.mutateAsync(ids);
+      setSelected(new Set());
+      setSelectMode(false);
+    } catch {
+      // mutation error — UI stays in select mode so user can retry
+    }
   }
 
   if (loading) {
