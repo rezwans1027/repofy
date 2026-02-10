@@ -51,25 +51,47 @@ export default function GenerateAdvicePage({
 
         const supabase = createClient();
 
-        // Atomic upsert — inserts or replaces the existing advice in one
-        // DB operation.  Requires the UNIQUE (user_id, analyzed_username)
-        // constraint from migration 003.
-        const { data: row, error: upsertError } = await supabase
+        const adviceRow = {
+          user_id: user.id,
+          analyzed_username: username,
+          analyzed_name: analyzedName,
+          advice_data: advice,
+          generated_at: new Date().toISOString(),
+        };
+
+        // Try atomic upsert (works after migration 003 adds unique constraint)
+        const { data: upserted, error: upsertError } = await supabase
           .from("advice")
-          .upsert(
-            {
-              user_id: user.id,
-              analyzed_username: username,
-              analyzed_name: analyzedName,
-              advice_data: advice,
-              generated_at: new Date().toISOString(),
-            },
-            { onConflict: "user_id,analyzed_username" },
-          )
+          .upsert(adviceRow, { onConflict: "user_id,analyzed_username" })
           .select("id")
           .single();
 
-        if (upsertError) throw upsertError;
+        let row: { id: string };
+
+        if (upsertError) {
+          // 42P10 = constraint not found — migration not yet applied
+          if (upsertError.code !== "42P10") throw upsertError;
+
+          // Fallback: insert + best-effort cleanup of old rows
+          const { data: inserted, error: insertError } = await supabase
+            .from("advice")
+            .insert(adviceRow)
+            .select("id")
+            .single();
+          if (insertError) throw insertError;
+          row = inserted;
+
+          const { error: cleanupError } = await supabase
+            .from("advice")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("analyzed_username", username)
+            .neq("id", row.id);
+          if (cleanupError)
+            console.error("Cleanup of old advice failed:", cleanupError);
+        } else {
+          row = upserted;
+        }
 
         queryClient.invalidateQueries({ queryKey: ["advice"] });
         router.replace(`/advisor/${row.id}?from=profile`);
