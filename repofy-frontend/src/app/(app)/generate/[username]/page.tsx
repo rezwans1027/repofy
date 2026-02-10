@@ -44,29 +44,28 @@ export default function GeneratePage({
 
         const supabase = createClient();
 
-        // Delete existing reports first so we never end up with duplicates
-        const { error: deleteError } = await supabase
+        // Atomic upsert — inserts or replaces the existing report in one
+        // DB operation.  Requires the UNIQUE (user_id, analyzed_username)
+        // constraint from migration 003.
+        const { data: row, error: upsertError } = await supabase
           .from("reports")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("analyzed_username", username);
-        if (deleteError) throw deleteError;
-
-        const { data: row, error: insertError } = await supabase
-          .from("reports")
-          .insert({
-            user_id: user.id,
-            analyzed_username: username,
-            analyzed_name: analyzedName,
-            overall_score: (report as { overallScore: number }).overallScore,
-            recommendation: (report as { recommendation: string })
-              .recommendation,
-            report_data: report,
-          })
+          .upsert(
+            {
+              user_id: user.id,
+              analyzed_username: username,
+              analyzed_name: analyzedName,
+              overall_score: (report as { overallScore: number }).overallScore,
+              recommendation: (report as { recommendation: string })
+                .recommendation,
+              report_data: report,
+              generated_at: new Date().toISOString(),
+            },
+            { onConflict: "user_id,analyzed_username" },
+          )
           .select("id")
           .single();
 
-        if (insertError) throw insertError;
+        if (upsertError) throw upsertError;
 
         queryClient.invalidateQueries({ queryKey: ["reports"] });
         router.replace(`/report/${row.id}?from=profile`);
