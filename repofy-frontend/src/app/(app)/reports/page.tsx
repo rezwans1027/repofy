@@ -22,7 +22,7 @@ import {
 import { useReports, useDeleteReports, type ReportListItem } from "@/hooks/use-reports";
 
 export default function ReportsPage() {
-  const { data: reports = [], isLoading: loading } = useReports();
+  const { data: reports = [], isPending: loading } = useReports();
   const deleteReports = useDeleteReports();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRecs, setSelectedRecs] = useState<Set<string>>(new Set());
@@ -114,9 +114,13 @@ export default function ReportsPage() {
 
   async function handleDelete() {
     const ids = [...selected];
-    await deleteReports.mutateAsync(ids);
-    setSelected(new Set());
-    setSelectMode(false);
+    try {
+      await deleteReports.mutateAsync(ids);
+      setSelected(new Set());
+      setSelectMode(false);
+    } catch {
+      // mutation error — UI stays in select mode so user can retry
+    }
   }
 
   const sortOptions = [

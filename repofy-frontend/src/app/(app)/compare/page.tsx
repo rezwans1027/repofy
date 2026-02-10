@@ -25,7 +25,7 @@ import { ComparisonExportBar } from "@/components/compare/comparison-export-bar"
 import { useReports, useReport } from "@/hooks/use-reports";
 
 export default function ComparePage() {
-  const { data: reports, isLoading: loading, error } = useReports();
+  const { data: reports, isPending: loading, error } = useReports();
   const [reportIdA, setReportIdA] = useState("");
   const [reportIdB, setReportIdB] = useState("");
   const { data: reportDataA } = useReport(reportIdA);
