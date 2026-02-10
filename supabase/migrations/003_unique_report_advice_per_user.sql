@@ -33,3 +33,21 @@ CREATE POLICY "Users can update their own advice"
   ON public.advice FOR UPDATE
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
+
+-- 4. Auto-set generated_at to now() on update so upserts get a
+--    server-side timestamp without relying on the client clock.
+CREATE OR REPLACE FUNCTION public.set_generated_at()
+RETURNS trigger AS $$
+BEGIN
+  NEW.generated_at := now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_reports_generated_at
+  BEFORE UPDATE ON public.reports
+  FOR EACH ROW EXECUTE FUNCTION public.set_generated_at();
+
+CREATE TRIGGER trg_advice_generated_at
+  BEFORE UPDATE ON public.advice
+  FOR EACH ROW EXECUTE FUNCTION public.set_generated_at();
