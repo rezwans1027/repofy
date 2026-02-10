@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { ReportData } from "@/components/report/analysis-report";
+import { recommendationStyle } from "@/lib/styles";
 
 interface ComparisonVerdictProps {
   usernameA: string;
@@ -70,20 +71,7 @@ export function ComparisonVerdict({
   const scoreColor = (score: number) =>
     score >= 80 ? "text-emerald-400" : score >= 60 ? "text-yellow-400" : "text-red-400";
 
-  const recStyle = (rec: string) => {
-    switch (rec) {
-      case "Strong Hire":
-        return "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
-      case "Hire":
-        return "bg-cyan/15 text-cyan border-cyan/30";
-      case "Weak Hire":
-        return "bg-blue-500/15 text-blue-400 border-blue-500/30";
-      case "No Hire":
-        return "bg-yellow-500/15 text-yellow-400 border-yellow-500/30";
-      default:
-        return "bg-secondary text-muted-foreground border-border";
-    }
-  };
+  const recStyle = recommendationStyle;
 
   const differentiators = generateDifferentiators(reportA, reportB);
 

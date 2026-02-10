@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { SectionHeader } from "@/components/ui/section-header";
 import type { ReportData } from "@/components/report/analysis-report";
 import { cn } from "@/lib/utils";
+import { gradeColor, SEVERITY_STYLES } from "@/lib/styles";
 
 // ── Generic 2-column layout ──────────────────────────────────────
 
@@ -94,11 +95,6 @@ export function WeaknessesList({ weaknesses }: { weaknesses: ReportData["weaknes
 }
 
 export function RedFlagsList({ redFlags }: { redFlags: ReportData["redFlags"] }) {
-  const severityStyle: Record<string, string> = {
-    Minor: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
-    Notable: "bg-orange-500/15 text-orange-400 border-orange-500/30",
-    Concerning: "bg-red-500/15 text-red-400 border-red-500/30",
-  };
 
   return (
     <div className="space-y-3">
@@ -109,7 +105,7 @@ export function RedFlagsList({ redFlags }: { redFlags: ReportData["redFlags"] })
             <div className="flex items-center gap-2">
               <p className="text-sm">{flag.text}</p>
               <Badge
-                className={`border text-[9px] shrink-0 ${severityStyle[flag.severity] ?? ""}`}
+                className={`border text-[9px] shrink-0 ${SEVERITY_STYLES[flag.severity] ?? ""}`}
               >
                 {flag.severity}
               </Badge>
@@ -146,12 +142,6 @@ export function InterviewQuestionsList({
 }
 
 export function TopReposList({ repos }: { repos: ReportData["topRepos"] }) {
-  const gradeColor = (grade: string) => {
-    if (grade.startsWith("A")) return "text-emerald-400";
-    if (grade.startsWith("B")) return "text-cyan";
-    if (grade.startsWith("C")) return "text-yellow-400";
-    return "text-red-400";
-  };
 
   return (
     <div className="space-y-3">

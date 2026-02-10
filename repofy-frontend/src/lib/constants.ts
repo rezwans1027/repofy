@@ -10,6 +10,16 @@ export const SECTIONS = [
 
 export type SectionId = (typeof SECTIONS)[number]["id"];
 
+export const PROTECTED_ROUTES = [
+  "/dashboard",
+  "/profile",
+  "/settings",
+  "/report",
+  "/generate",
+  "/compare",
+  "/advisor",
+] as const;
+
 export const TYPEWRITER_USERNAMES = [
   "torvalds",
   "gaearon",

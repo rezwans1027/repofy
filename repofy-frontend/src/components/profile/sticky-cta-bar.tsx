@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -32,21 +32,21 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
     return () => clearTimeout(t);
   }, [delay]);
 
-  const handleAnalysisClick = () => {
+  const handleAnalysisClick = useCallback(() => {
     if (reportExists) {
       setDialogOpen("report");
     } else {
       router.push(`/generate/${username}`);
     }
-  };
+  }, [reportExists, router, username]);
 
-  const handleAdviceClick = () => {
+  const handleAdviceClick = useCallback(() => {
     if (adviceExists) {
       setDialogOpen("advice");
     } else {
       router.push(`/advisor/generate/${username}`);
     }
-  };
+  }, [adviceExists, router, username]);
 
   return (
     <>

@@ -1,11 +1,11 @@
 "use client";
 
 import { use } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { AnalysisReport } from "@/components/report/analysis-report";
 import { useReport } from "@/hooks/use-reports";
+import { BackLink } from "@/components/ui/back-link";
+import { ErrorCard } from "@/components/ui/error-card";
 
 export default function ReportPage({
   params,
@@ -36,40 +36,19 @@ export default function ReportPage({
   if (error || !report) {
     return (
       <div>
-        <div className="mb-4">
-          <Link
-            href="/reports"
-            className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-cyan transition-colors"
-          >
-            <ArrowLeft className="size-3" />
-            back to reports
-          </Link>
-        </div>
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <div className="rounded-lg border border-border bg-card p-6 text-center max-w-md">
-            <p className="font-mono text-sm text-muted-foreground">
-              Report not found
-            </p>
-            <p className="mt-2 text-xs text-muted-foreground/70">
-              This report may have been deleted or you don&apos;t have access to it.
-            </p>
-          </div>
-        </div>
+        <BackLink href="/reports" label="back to reports" />
+        <ErrorCard
+          message="Report not found"
+          detail="This report may have been deleted or you don't have access to it."
+          variant="neutral"
+        />
       </div>
     );
   }
 
   return (
     <div>
-      <div className="mb-4">
-        <Link
-          href={backHref}
-          className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-cyan transition-colors"
-        >
-          <ArrowLeft className="size-3" />
-          {backLabel}
-        </Link>
-      </div>
+      <BackLink href={backHref} label={backLabel} />
       <AnalysisReport
         username={report.analyzed_username}
         data={report.report_data}

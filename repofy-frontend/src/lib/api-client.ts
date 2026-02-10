@@ -18,6 +18,9 @@ interface RequestOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
 }
 
+// Module-level singleton — avoids creating a new client per request
+const supabase = createClient();
+
 async function request<T>(
   method: string,
   path: string,
@@ -27,7 +30,6 @@ async function request<T>(
   const headers: Record<string, string> = {};
 
   if (auth) {
-    const supabase = createClient();
     const {
       data: { session },
     } = await supabase.auth.refreshSession();
@@ -48,12 +50,21 @@ async function request<T>(
     ...rest,
   });
 
-  const json = await res.json();
-
-  if (!res.ok || json.success === false) {
-    throw new ApiError(json.error || `Request failed`, res.status);
+  let json: Record<string, unknown>;
+  try {
+    json = await res.json();
+  } catch {
+    throw new ApiError("Server returned non-JSON response", res.status);
   }
 
+  if (!res.ok || json.success === false) {
+    throw new ApiError(
+      (json.error as string) || `Request failed`,
+      res.status,
+    );
+  }
+
+  // Note: for production, validate with Zod before casting
   return json.data as T;
 }
 
