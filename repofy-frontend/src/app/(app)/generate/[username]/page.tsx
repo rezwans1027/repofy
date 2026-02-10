@@ -52,7 +52,6 @@ export default function GeneratePage({
           recommendation: (report as { recommendation: string })
             .recommendation,
           report_data: report,
-          generated_at: new Date().toISOString(),
         };
 
         // Try atomic upsert (works after migration 003 adds unique constraint)

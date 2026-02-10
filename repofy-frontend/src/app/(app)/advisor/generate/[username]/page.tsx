@@ -56,7 +56,6 @@ export default function GenerateAdvicePage({
           analyzed_username: username,
           analyzed_name: analyzedName,
           advice_data: advice,
-          generated_at: new Date().toISOString(),
         };
 
         // Try atomic upsert (works after migration 003 adds unique constraint)
