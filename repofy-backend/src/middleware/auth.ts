@@ -13,23 +13,27 @@ declare global {
 }
 
 export const requireAuth: RequestHandler = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
+  try {
+    const authHeader = req.headers.authorization;
 
-  if (!authHeader?.startsWith("Bearer ")) {
-    sendError(res, 401, "Missing or invalid authorization header");
-    return;
+    if (!authHeader?.startsWith("Bearer ")) {
+      sendError(res, 401, "Missing or invalid authorization header");
+      return;
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    const { data, error } = await getSupabaseAdmin().auth.getUser(token);
+
+    if (error || !data.user) {
+      sendError(res, 401, "Invalid or expired token");
+      return;
+    }
+
+    req.userId = data.user.id;
+    req.userEmail = data.user.email;
+    next();
+  } catch (err) {
+    next(err);
   }
-
-  const token = authHeader.split(" ")[1];
-
-  const { data, error } = await getSupabaseAdmin().auth.getUser(token);
-
-  if (error || !data.user) {
-    sendError(res, 401, "Invalid or expired token");
-    return;
-  }
-
-  req.userId = data.user.id;
-  req.userEmail = data.user.email;
-  next();
 };

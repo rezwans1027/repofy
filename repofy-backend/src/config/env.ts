@@ -15,6 +15,7 @@ export const env = {
   corsOrigin: process.env.CORS_ORIGIN || "http://localhost:3002",
   nodeEnv: process.env.NODE_ENV || "development",
   isProduction: process.env.NODE_ENV === "production",
+  trustProxy: process.env.TRUST_PROXY === "true",
   supabaseUrl: requireEnv("SUPABASE_URL"),
   supabaseServiceRoleKey: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
   supabaseJwtSecret: process.env.SUPABASE_JWT_SECRET || "",
