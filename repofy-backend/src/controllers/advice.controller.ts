@@ -66,6 +66,7 @@ export const adviseUser: RequestHandler = async (req, res) => {
       advice,
     });
   } catch (err) {
+    if (req.signal?.aborted || res.headersSent) return;
     if (err instanceof GitHubError) {
       sendError(res, err.statusCode, err.message);
       return;

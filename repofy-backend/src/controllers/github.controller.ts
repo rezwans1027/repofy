@@ -21,6 +21,7 @@ export const searchGitHub: RequestHandler = async (req, res) => {
     const data = await searchGitHubUsers(q, req.signal);
     sendSuccess(res, data);
   } catch (err) {
+    if (req.signal?.aborted || res.headersSent) return;
     if (err instanceof GitHubError) {
       sendError(res, err.statusCode, err.message);
       return;
@@ -42,6 +43,7 @@ export const getGitHubUser: RequestHandler = async (req, res) => {
     const data = await fetchGitHubUserData(username, req.signal);
     sendSuccess(res, data);
   } catch (err) {
+    if (req.signal?.aborted || res.headersSent) return;
     if (err instanceof GitHubError) {
       sendError(res, err.statusCode, err.message);
       return;
