@@ -30,6 +30,7 @@ export const analyzeUser: RequestHandler = async (req, res) => {
       report,
     });
   } catch (err) {
+    if (req.signal?.aborted || res.headersSent) return;
     if (err instanceof GitHubError) {
       sendError(res, err.statusCode, err.message);
       return;
