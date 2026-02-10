@@ -44,6 +44,14 @@ export default function GeneratePage({
 
         const supabase = createClient();
 
+        // Delete existing reports first so we never end up with duplicates
+        const { error: deleteError } = await supabase
+          .from("reports")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("analyzed_username", username);
+        if (deleteError) throw deleteError;
+
         const { data: row, error: insertError } = await supabase
           .from("reports")
           .insert({
@@ -59,19 +67,6 @@ export default function GeneratePage({
           .single();
 
         if (insertError) throw insertError;
-
-        // Best-effort cleanup: retry once to handle transient failures
-        for (let attempt = 0; attempt < 2; attempt++) {
-          const { error: cleanupError } = await supabase
-            .from("reports")
-            .delete()
-            .eq("user_id", user.id)
-            .eq("analyzed_username", username)
-            .neq("id", row.id);
-          if (!cleanupError) break;
-          if (attempt === 1)
-            console.error("Cleanup of old reports failed after retry:", cleanupError);
-        }
 
         queryClient.invalidateQueries({ queryKey: ["reports"] });
         router.replace(`/report/${row.id}?from=profile`);

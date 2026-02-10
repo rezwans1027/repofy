@@ -51,6 +51,14 @@ export default function GenerateAdvicePage({
 
         const supabase = createClient();
 
+        // Delete existing advice first so we never end up with duplicates
+        const { error: deleteError } = await supabase
+          .from("advice")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("analyzed_username", username);
+        if (deleteError) throw deleteError;
+
         const { data: row, error: insertError } = await supabase
           .from("advice")
           .insert({
@@ -63,19 +71,6 @@ export default function GenerateAdvicePage({
           .single();
 
         if (insertError) throw insertError;
-
-        // Best-effort cleanup: retry once to handle transient failures
-        for (let attempt = 0; attempt < 2; attempt++) {
-          const { error: cleanupError } = await supabase
-            .from("advice")
-            .delete()
-            .eq("user_id", user.id)
-            .eq("analyzed_username", username)
-            .neq("id", row.id);
-          if (!cleanupError) break;
-          if (attempt === 1)
-            console.error("Cleanup of old advice failed after retry:", cleanupError);
-        }
 
         queryClient.invalidateQueries({ queryKey: ["advice"] });
         router.replace(`/advisor/${row.id}?from=profile`);
