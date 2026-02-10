@@ -65,15 +65,16 @@ export function createSupabaseQueries<TList, TRow>(
     const { user } = useAuth();
 
     return useQuery({
-      queryKey: [queryKeyPrefix, "exists", user?.id, username],
+      queryKey: [queryKeyPrefix, "exists", user?.id, username.toLowerCase()],
       queryFn: async () => {
         const supabase = createClient();
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from(table)
           .select("id")
           .eq("user_id", user!.id)
-          .eq("analyzed_username", username)
+          .eq("analyzed_username", username.toLowerCase())
           .limit(1);
+        if (error) throw error;
         return data && data.length > 0;
       },
       enabled: !!user,

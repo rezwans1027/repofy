@@ -46,7 +46,7 @@ export default function GeneratePage({
 
         const reportRow = {
           user_id: user.id,
-          analyzed_username: username,
+          analyzed_username: username.toLowerCase(),
           analyzed_name: analyzedName,
           overall_score: (report as { overallScore: number }).overallScore,
           recommendation: (report as { recommendation: string })
@@ -80,7 +80,7 @@ export default function GeneratePage({
             .from("reports")
             .delete()
             .eq("user_id", user.id)
-            .eq("analyzed_username", username)
+            .eq("analyzed_username", username.toLowerCase())
             .neq("id", row.id);
           if (cleanupError)
             console.error("Cleanup of old reports failed:", cleanupError);

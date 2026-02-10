@@ -1,27 +1,35 @@
 -- Enforce one report and one advice per (user, analyzed_username).
 -- This enables atomic upserts and prevents duplicate rows.
 
--- 1. Clean up any existing duplicates (keep the most recent per pair)
+-- 1. Normalize existing usernames to lowercase
+UPDATE public.reports SET analyzed_username = lower(analyzed_username)
+WHERE analyzed_username IS DISTINCT FROM lower(analyzed_username);
+
+UPDATE public.advice SET analyzed_username = lower(analyzed_username)
+WHERE analyzed_username IS DISTINCT FROM lower(analyzed_username);
+
+-- 2a. Clean up any duplicates (keep the most recent per normalized pair)
 DELETE FROM public.reports
 WHERE id NOT IN (
-  SELECT DISTINCT ON (user_id, analyzed_username) id
+  SELECT DISTINCT ON (user_id, lower(analyzed_username)) id
   FROM public.reports
-  ORDER BY user_id, analyzed_username, generated_at DESC
+  ORDER BY user_id, lower(analyzed_username), generated_at DESC
 );
 
 DELETE FROM public.advice
 WHERE id NOT IN (
-  SELECT DISTINCT ON (user_id, analyzed_username) id
+  SELECT DISTINCT ON (user_id, lower(analyzed_username)) id
   FROM public.advice
-  ORDER BY user_id, analyzed_username, generated_at DESC
+  ORDER BY user_id, lower(analyzed_username), generated_at DESC
 );
 
--- 2. Add unique constraints
-ALTER TABLE public.reports
-  ADD CONSTRAINT reports_user_analyzed_unique UNIQUE (user_id, analyzed_username);
+-- 2. Add case-insensitive unique indexes
+--    GitHub usernames are case-insensitive, so enforce uniqueness on lower()
+CREATE UNIQUE INDEX reports_user_analyzed_unique
+  ON public.reports (user_id, lower(analyzed_username));
 
-ALTER TABLE public.advice
-  ADD CONSTRAINT advice_user_analyzed_unique UNIQUE (user_id, analyzed_username);
+CREATE UNIQUE INDEX advice_user_analyzed_unique
+  ON public.advice (user_id, lower(analyzed_username));
 
 -- 3. Add UPDATE policies (required for upsert's ON CONFLICT DO UPDATE)
 CREATE POLICY "Users can update their own reports"

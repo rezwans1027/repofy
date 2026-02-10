@@ -68,14 +68,11 @@ export const DEFAULT_COLOR = "#8b949e";
 const GITHUB_API = "https://api.github.com";
 
 function headers(): Record<string, string> {
-  const h: Record<string, string> = {
+  return {
     Accept: "application/vnd.github.v3+json",
     "User-Agent": "Repofy",
+    Authorization: `Bearer ${env.githubToken}`,
   };
-  if (env.githubToken && !env.githubToken.startsWith("<")) {
-    h.Authorization = `Bearer ${env.githubToken}`;
-  }
-  return h;
 }
 
 async function ghFetch<T>(path: string, signal?: AbortSignal): Promise<T> {
@@ -97,7 +94,7 @@ async function ghFetch<T>(path: string, signal?: AbortSignal): Promise<T> {
     }
     if (res.status === 403 || res.status === 429) {
       throw new GitHubError(
-        "GitHub API rate limit exceeded. Try again later or provide a GITHUB_TOKEN.",
+        "GitHub API rate limit exceeded. Try again later.",
         429,
       );
     }
@@ -112,17 +109,13 @@ async function ghFetch<T>(path: string, signal?: AbortSignal): Promise<T> {
 const GITHUB_GRAPHQL = "https://api.github.com/graphql";
 
 async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>, signal?: AbortSignal): Promise<T> {
-  const token = env.githubToken;
-  if (!token || token.startsWith("<")) {
-    throw new GitHubError("GitHub token required for GraphQL API", 401);
-  }
   const signals = [AbortSignal.timeout(15_000)];
   if (signal) signals.push(signal);
   const res = await fetch(GITHUB_GRAPHQL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${env.githubToken}`,
       "User-Agent": "Repofy",
     },
     body: JSON.stringify({ query, variables }),

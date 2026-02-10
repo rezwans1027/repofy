@@ -14,16 +14,20 @@ declare global {
 
 export const requireAuth: RequestHandler = async (req, res, next) => {
   try {
+    if (res.headersSent) return;
+
     const authHeader = req.headers.authorization;
 
     if (!authHeader?.startsWith("Bearer ")) {
-      sendError(res, 401, "Missing or invalid authorization header");
+      if (!res.headersSent) sendError(res, 401, "Missing or invalid authorization header");
       return;
     }
 
     const token = authHeader.split(" ")[1];
 
     const { data, error } = await getSupabaseAdmin().auth.getUser(token);
+
+    if (res.headersSent) return;
 
     if (error || !data.user) {
       sendError(res, 401, "Invalid or expired token");
@@ -34,6 +38,6 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
     req.userEmail = data.user.email;
     next();
   } catch (err) {
-    next(err);
+    if (!res.headersSent) next(err);
   }
 };
