@@ -1,4 +1,5 @@
 import { env } from "../config/env";
+import { logger } from "../lib/logger";
 import type {
   GitHubApiUser,
   GitHubApiRepo,
@@ -134,12 +135,14 @@ async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>):
 
 // ── Paginated repo fetch ──────────────────────────────────────────────
 
+const MAX_REPO_PAGES = 10; // Cap at 1000 repos max
+
 async function fetchAllRepos(username: string): Promise<GitHubApiRepo[]> {
   const repos: GitHubApiRepo[] = [];
   let page = 1;
   const perPage = 100;
 
-  while (true) {
+  while (page <= MAX_REPO_PAGES) {
     const batch = await ghFetch<GitHubApiRepo[]>(
       `/users/${username}/repos?per_page=${perPage}&page=${page}&sort=updated`,
     );
@@ -351,7 +354,7 @@ async function fetchContributionCalendar(
       heatmap: mapContributionsToHeatmap(calendar.weeks),
     };
   } catch (err) {
-    console.warn("[Repofy] Failed to fetch contribution calendar:", err);
+    logger.warn("Failed to fetch contribution calendar:", err);
     return null;
   }
 }

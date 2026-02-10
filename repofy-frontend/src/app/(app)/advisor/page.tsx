@@ -17,14 +17,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAdviceList, useDeleteAdvice, type AdviceListItem } from "@/hooks/use-advice";
+import { useSelectableList } from "@/hooks/use-selectable-list";
 
 export default function AdvisorPage() {
   const { data: items = [], isPending: loading } = useAdviceList();
   const deleteAdvice = useDeleteAdvice();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [selectMode, setSelectMode] = useState(false);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const {
+    selected,
+    selectMode,
+    setSelectMode,
+    toggleSelect,
+    toggleSelectAll,
+    exitSelectMode,
+    handleDelete,
+  } = useSelectableList();
 
   const filteredItems = useMemo(() => {
     const q = searchQuery.toLowerCase();
@@ -46,48 +54,8 @@ export default function AdvisorPage() {
   ];
   const currentSortLabel = sortOptions.find((o) => o.dir === sortDir)?.label ?? "Newest first";
 
-  const toggleSelect = (id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
+  const filteredIds = useMemo(() => filteredItems.map((r) => r.id), [filteredItems]);
   const allFilteredSelected = filteredItems.length > 0 && filteredItems.every((r: AdviceListItem) => selected.has(r.id));
-
-  const toggleSelectAll = () => {
-    if (allFilteredSelected) {
-      setSelected((prev) => {
-        const next = new Set(prev);
-        filteredItems.forEach((r: AdviceListItem) => next.delete(r.id));
-        return next;
-      });
-    } else {
-      setSelected((prev) => {
-        const next = new Set(prev);
-        filteredItems.forEach((r: AdviceListItem) => next.add(r.id));
-        return next;
-      });
-    }
-  };
-
-  const exitSelectMode = () => {
-    setSelectMode(false);
-    setSelected(new Set());
-  };
-
-  async function handleDelete() {
-    const ids = [...selected];
-    try {
-      await deleteAdvice.mutateAsync(ids);
-      setSelected(new Set());
-      setSelectMode(false);
-    } catch {
-      // mutation error — UI stays in select mode so user can retry
-    }
-  }
 
   if (loading) {
     return (
@@ -225,17 +193,17 @@ export default function AdvisorPage() {
               <th className={`overflow-hidden transition-all duration-200 ease-out ${selectMode ? "w-10 px-3 py-3 opacity-100" : "w-0 max-w-0 p-0 opacity-0"}`}>
                 <Checkbox
                   checked={allFilteredSelected}
-                  onCheckedChange={toggleSelectAll}
+                  onCheckedChange={() => toggleSelectAll(filteredIds)}
                   className="rounded-full"
                 />
               </th>
-              <th className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <th scope="col" className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Username
               </th>
-              <th className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <th scope="col" className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Name
               </th>
-              <th className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <th scope="col" className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Date
               </th>
             </tr>
@@ -315,7 +283,7 @@ export default function AdvisorPage() {
                 variant="destructive"
                 size="sm"
                 className="h-8 gap-1.5 font-mono text-xs"
-                onClick={handleDelete}
+                onClick={() => handleDelete((ids) => deleteAdvice.mutateAsync(ids))}
                 disabled={deleteAdvice.isPending}
               >
                 <Trash2 className="size-3.5" />

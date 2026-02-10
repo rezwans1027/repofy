@@ -2,13 +2,13 @@
 
 import { use, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { AnalysisLoading } from "@/components/report/analysis-loading";
 import { useAuth } from "@/components/providers/auth-provider";
 import { api } from "@/lib/api-client";
 import { createClient } from "@/lib/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { BackLink } from "@/components/ui/back-link";
+import { ErrorCard } from "@/components/ui/error-card";
 
 export default function GeneratePage({
   params,
@@ -84,44 +84,25 @@ export default function GeneratePage({
   if (error) {
     return (
       <div>
-        <div className="mb-4">
-          <Link
-            href={`/profile/${username}`}
-            className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-cyan transition-colors"
+        <BackLink href={`/profile/${username}`} label="back to profile" />
+        <ErrorCard message={error}>
+          <button
+            onClick={() => {
+              setError(null);
+              router.refresh();
+            }}
+            className="mt-4 font-mono text-xs text-cyan hover:underline"
           >
-            <ArrowLeft className="size-3" />
-            back to profile
-          </Link>
-        </div>
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-6 text-center max-w-md">
-            <p className="font-mono text-sm text-red-400">{error}</p>
-            <button
-              onClick={() => {
-                setError(null);
-                router.refresh();
-              }}
-              className="mt-4 font-mono text-xs text-cyan hover:underline"
-            >
-              Try again
-            </button>
-          </div>
-        </div>
+            Try again
+          </button>
+        </ErrorCard>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="mb-4">
-        <Link
-          href={`/profile/${username}`}
-          className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-cyan transition-colors"
-        >
-          <ArrowLeft className="size-3" />
-          back to profile
-        </Link>
-      </div>
+      <BackLink href={`/profile/${username}`} label="back to profile" />
       <AnalysisLoading
         fetchReport={fetchReport}
         onComplete={handleComplete}

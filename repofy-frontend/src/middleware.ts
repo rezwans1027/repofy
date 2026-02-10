@@ -1,14 +1,23 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { PROTECTED_ROUTES } from "@/lib/constants";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error(
+      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY env vars",
+    );
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
@@ -45,7 +54,9 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protect app routes — redirect unauthenticated users to /login
-  const isProtected = pathname.startsWith("/dashboard") || pathname.startsWith("/profile") || pathname.startsWith("/settings") || pathname.startsWith("/report") || pathname.startsWith("/generate") || pathname.startsWith("/compare") || pathname.startsWith("/advisor");
+  const isProtected = PROTECTED_ROUTES.some((route) =>
+    pathname.startsWith(route),
+  );
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";

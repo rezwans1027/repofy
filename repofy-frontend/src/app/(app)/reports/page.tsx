@@ -20,18 +20,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useReports, useDeleteReports, type ReportListItem } from "@/hooks/use-reports";
+import { recommendationStyle } from "@/lib/styles";
+import { useSelectableList } from "@/hooks/use-selectable-list";
 
 export default function ReportsPage() {
   const { data: reports = [], isPending: loading } = useReports();
   const deleteReports = useDeleteReports();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRecs, setSelectedRecs] = useState<Set<string>>(new Set());
-  const [scoreMin, setScoreMin] = useState(0);
-  const [scoreMax, setScoreMax] = useState(100);
+  const [scoreRange, setScoreRange] = useState({ min: 0, max: 100 });
   const [sortBy, setSortBy] = useState<"date" | "score">("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [selectMode, setSelectMode] = useState(false);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const {
+    selected,
+    selectMode,
+    setSelectMode,
+    toggleSelect,
+    toggleSelectAll,
+    exitSelectMode,
+    handleDelete,
+  } = useSelectableList();
 
   const allRecs = ["Strong Hire", "Hire", "Weak Hire", "No Hire"] as const;
 
@@ -47,8 +55,7 @@ export default function ReportsPage() {
   const clearFilters = () => {
     setSearchQuery("");
     setSelectedRecs(new Set());
-    setScoreMin(0);
-    setScoreMax(100);
+    setScoreRange({ min: 0, max: 100 });
     setSortBy("date");
     setSortDir("desc");
   };
@@ -60,7 +67,7 @@ export default function ReportsPage() {
         return false;
       if (selectedRecs.size > 0 && !selectedRecs.has(r.recommendation))
         return false;
-      if (r.overall_score < scoreMin || r.overall_score > scoreMax) return false;
+      if (r.overall_score < scoreRange.min || r.overall_score > scoreRange.max) return false;
       return true;
     });
 
@@ -69,7 +76,7 @@ export default function ReportsPage() {
       if (sortBy === "score") return (a.overall_score - b.overall_score) * mul;
       return (new Date(a.generated_at).getTime() - new Date(b.generated_at).getTime()) * mul;
     });
-  }, [reports, searchQuery, selectedRecs, scoreMin, scoreMax, sortBy, sortDir]);
+  }, [reports, searchQuery, selectedRecs, scoreRange, sortBy, sortDir]);
 
   const scoreColor = (score: number) =>
     score >= 80
@@ -78,50 +85,10 @@ export default function ReportsPage() {
         ? "text-yellow-400"
         : "text-red-400";
 
-  const activeFilterCount = (selectedRecs.size > 0 ? 1 : 0) + (scoreMin > 0 || scoreMax < 100 ? 1 : 0);
+  const activeFilterCount = (selectedRecs.size > 0 ? 1 : 0) + (scoreRange.min > 0 || scoreRange.max < 100 ? 1 : 0);
 
-  const toggleSelect = (id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
+  const filteredIds = useMemo(() => filteredReports.map((r) => r.id), [filteredReports]);
   const allFilteredSelected = filteredReports.length > 0 && filteredReports.every((r: ReportListItem) => selected.has(r.id));
-
-  const toggleSelectAll = () => {
-    if (allFilteredSelected) {
-      setSelected((prev) => {
-        const next = new Set(prev);
-        filteredReports.forEach((r: ReportListItem) => next.delete(r.id));
-        return next;
-      });
-    } else {
-      setSelected((prev) => {
-        const next = new Set(prev);
-        filteredReports.forEach((r: ReportListItem) => next.add(r.id));
-        return next;
-      });
-    }
-  };
-
-  const exitSelectMode = () => {
-    setSelectMode(false);
-    setSelected(new Set());
-  };
-
-  async function handleDelete() {
-    const ids = [...selected];
-    try {
-      await deleteReports.mutateAsync(ids);
-      setSelected(new Set());
-      setSelectMode(false);
-    } catch {
-      // mutation error — UI stays in select mode so user can retry
-    }
-  }
 
   const sortOptions = [
     { by: "date" as const, dir: "desc" as const, label: "Newest first" },
@@ -131,20 +98,7 @@ export default function ReportsPage() {
   ];
   const currentSortLabel = sortOptions.find((o) => o.by === sortBy && o.dir === sortDir)?.label ?? "Newest first";
 
-  const recStyle = (rec: string) => {
-    switch (rec) {
-      case "Strong Hire":
-        return "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
-      case "Hire":
-        return "bg-cyan/15 text-cyan border-cyan/30";
-      case "Weak Hire":
-        return "bg-blue-500/15 text-blue-400 border-blue-500/30";
-      case "No Hire":
-        return "bg-yellow-500/15 text-yellow-400 border-yellow-500/30";
-      default:
-        return "bg-secondary text-muted-foreground border-border";
-    }
-  };
+  const recStyle = recommendationStyle;
 
   if (loading) {
     return (
@@ -275,31 +229,31 @@ export default function ReportsPage() {
                 min={0}
                 max={100}
                 step={1}
-                value={[scoreMin, scoreMax]}
-                onValueChange={([lo, hi]) => { setScoreMin(lo); setScoreMax(hi); }}
+                value={[scoreRange.min, scoreRange.max]}
+                onValueChange={([lo, hi]) => setScoreRange({ min: lo, max: hi })}
                 className="[&_[data-slot=slider-range]]:bg-cyan [&_[data-slot=slider-thumb]]:border-cyan"
               />
               <div className="flex items-center gap-1.5">
                 <Input
                   type="number"
                   min={0}
-                  max={scoreMax}
-                  value={scoreMin}
+                  max={scoreRange.max}
+                  value={scoreRange.min}
                   onChange={(e) => {
-                    const v = Math.max(0, Math.min(Number(e.target.value) || 0, scoreMax));
-                    setScoreMin(v);
+                    const v = Math.max(0, Math.min(Number(e.target.value) || 0, scoreRange.max));
+                    setScoreRange((prev) => ({ ...prev, min: v }));
                   }}
                   className="h-7 w-16 font-mono text-xs text-center"
                 />
                 <span className="text-xs text-muted-foreground">–</span>
                 <Input
                   type="number"
-                  min={scoreMin}
+                  min={scoreRange.min}
                   max={100}
-                  value={scoreMax}
+                  value={scoreRange.max}
                   onChange={(e) => {
-                    const v = Math.min(100, Math.max(Number(e.target.value) || 0, scoreMin));
-                    setScoreMax(v);
+                    const v = Math.min(100, Math.max(Number(e.target.value) || 0, scoreRange.min));
+                    setScoreRange((prev) => ({ ...prev, max: v }));
                   }}
                   className="h-7 w-16 font-mono text-xs text-center"
                 />
@@ -354,23 +308,23 @@ export default function ReportsPage() {
               <th className={`overflow-hidden transition-all duration-200 ease-out ${selectMode ? "w-10 px-3 py-3 opacity-100" : "w-0 max-w-0 p-0 opacity-0"}`}>
                 <Checkbox
                   checked={allFilteredSelected}
-                  onCheckedChange={toggleSelectAll}
+                  onCheckedChange={() => toggleSelectAll(filteredIds)}
                   className="rounded-full"
                 />
               </th>
-              <th className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <th scope="col" className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Username
               </th>
-              <th className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <th scope="col" className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Name
               </th>
-              <th className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <th scope="col" className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Score
               </th>
-              <th className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <th scope="col" className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Recommendation
               </th>
-              <th className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <th scope="col" className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Date
               </th>
             </tr>
@@ -460,7 +414,7 @@ export default function ReportsPage() {
                 variant="destructive"
                 size="sm"
                 className="h-8 gap-1.5 font-mono text-xs"
-                onClick={handleDelete}
+                onClick={() => handleDelete((ids) => deleteReports.mutateAsync(ids))}
                 disabled={deleteReports.isPending}
               >
                 <Trash2 className="size-3.5" />

@@ -1,11 +1,11 @@
 "use client";
 
 import { use } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { AdviceReport } from "@/components/advice/advice-report";
 import { useAdvice } from "@/hooks/use-advice";
+import { BackLink } from "@/components/ui/back-link";
+import { ErrorCard } from "@/components/ui/error-card";
 
 export default function AdvicePage({
   params,
@@ -36,40 +36,19 @@ export default function AdvicePage({
   if (error || !advice) {
     return (
       <div>
-        <div className="mb-4">
-          <Link
-            href="/advisor"
-            className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-emerald-400 transition-colors"
-          >
-            <ArrowLeft className="size-3" />
-            back to advisor
-          </Link>
-        </div>
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <div className="rounded-lg border border-border bg-card p-6 text-center max-w-md">
-            <p className="font-mono text-sm text-muted-foreground">
-              Advice not found
-            </p>
-            <p className="mt-2 text-xs text-muted-foreground/70">
-              This advice may have been deleted or you don&apos;t have access to it.
-            </p>
-          </div>
-        </div>
+        <BackLink href="/advisor" label="back to advisor" hoverColor="hover:text-emerald-400" />
+        <ErrorCard
+          message="Advice not found"
+          detail="This advice may have been deleted or you don't have access to it."
+          variant="neutral"
+        />
       </div>
     );
   }
 
   return (
     <div>
-      <div className="mb-4">
-        <Link
-          href={backHref}
-          className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-emerald-400 transition-colors"
-        >
-          <ArrowLeft className="size-3" />
-          {backLabel}
-        </Link>
-      </div>
+      <BackLink href={backHref} label={backLabel} hoverColor="hover:text-emerald-400" />
       <AdviceReport
         username={advice.analyzed_username}
         data={advice.advice_data}

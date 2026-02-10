@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { getSupabaseAdmin } from "../config/supabase";
-import { ApiResponse } from "../types";
+import { sendError } from "../lib/response";
 
 declare global {
   namespace Express {
@@ -15,11 +15,7 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Bearer ")) {
-    const response: ApiResponse = {
-      success: false,
-      error: "Missing or invalid authorization header",
-    };
-    res.status(401).json(response);
+    sendError(res, 401, "Missing or invalid authorization header");
     return;
   }
 
@@ -28,11 +24,7 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
   const { data, error } = await getSupabaseAdmin().auth.getUser(token);
 
   if (error || !data.user) {
-    const response: ApiResponse = {
-      success: false,
-      error: "Invalid or expired token",
-    };
-    res.status(401).json(response);
+    sendError(res, 401, "Invalid or expired token");
     return;
   }
 
