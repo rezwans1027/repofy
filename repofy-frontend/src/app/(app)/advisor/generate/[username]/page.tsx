@@ -51,26 +51,25 @@ export default function GenerateAdvicePage({
 
         const supabase = createClient();
 
-        // Delete existing advice first so we never end up with duplicates
-        const { error: deleteError } = await supabase
+        // Atomic upsert — inserts or replaces the existing advice in one
+        // DB operation.  Requires the UNIQUE (user_id, analyzed_username)
+        // constraint from migration 003.
+        const { data: row, error: upsertError } = await supabase
           .from("advice")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("analyzed_username", username);
-        if (deleteError) throw deleteError;
-
-        const { data: row, error: insertError } = await supabase
-          .from("advice")
-          .insert({
-            user_id: user.id,
-            analyzed_username: username,
-            analyzed_name: analyzedName,
-            advice_data: advice,
-          })
+          .upsert(
+            {
+              user_id: user.id,
+              analyzed_username: username,
+              analyzed_name: analyzedName,
+              advice_data: advice,
+              generated_at: new Date().toISOString(),
+            },
+            { onConflict: "user_id,analyzed_username" },
+          )
           .select("id")
           .single();
 
-        if (insertError) throw insertError;
+        if (upsertError) throw upsertError;
 
         queryClient.invalidateQueries({ queryKey: ["advice"] });
         router.replace(`/advisor/${row.id}?from=profile`);
