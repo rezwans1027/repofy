@@ -18,7 +18,7 @@ export const searchGitHub: RequestHandler = async (req, res) => {
   }
 
   try {
-    const data = await searchGitHubUsers(q);
+    const data = await searchGitHubUsers(q, req.signal);
     sendSuccess(res, data);
   } catch (err) {
     if (err instanceof GitHubError) {
@@ -39,7 +39,7 @@ export const getGitHubUser: RequestHandler = async (req, res) => {
   }
 
   try {
-    const data = await fetchGitHubUserData(username);
+    const data = await fetchGitHubUserData(username, req.signal);
     sendSuccess(res, data);
   } catch (err) {
     if (err instanceof GitHubError) {

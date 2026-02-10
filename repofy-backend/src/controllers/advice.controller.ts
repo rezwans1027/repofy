@@ -57,8 +57,8 @@ export const adviseUser: RequestHandler = async (req, res) => {
   }
 
   try {
-    const githubData = await fetchGitHubUserData(username);
-    const aiAdvice = await generateAdvice(githubData);
+    const githubData = await fetchGitHubUserData(username, req.signal);
+    const aiAdvice = await generateAdvice(githubData, req.signal);
     const advice = buildAdviceData(aiAdvice, githubData);
 
     sendSuccess(res, {
