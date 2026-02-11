@@ -11,15 +11,15 @@ WHERE analyzed_username IS DISTINCT FROM lower(analyzed_username);
 UPDATE public.advice SET analyzed_username = lower(analyzed_username)
 WHERE analyzed_username IS DISTINCT FROM lower(analyzed_username);
 
--- 2. Drop functional indexes if they exist (old 003)
-DROP INDEX IF EXISTS public.reports_user_analyzed_unique;
-DROP INDEX IF EXISTS public.advice_user_analyzed_unique;
-
--- 3. Drop plain constraints if they exist (new 003), so we can recreate cleanly
+-- 2. Drop constraints first (releases any constraint-owned indexes),
+--    then drop standalone functional indexes (old 003).
 ALTER TABLE public.reports
   DROP CONSTRAINT IF EXISTS reports_user_analyzed_unique;
 ALTER TABLE public.advice
   DROP CONSTRAINT IF EXISTS advice_user_analyzed_unique;
+
+DROP INDEX IF EXISTS public.reports_user_analyzed_unique;
+DROP INDEX IF EXISTS public.advice_user_analyzed_unique;
 
 -- 4. Dedup any rows that collide after normalization
 DELETE FROM public.reports
