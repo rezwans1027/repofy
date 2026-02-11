@@ -33,11 +33,12 @@ GITHUB PROFILE:
 - Account created: ${profile.createdAt}
 
 STATS:
-- Total stars: ${stats.totalStars}
-- Total forks: ${stats.totalForks}
+- Total stars: ${stats.totalStars}${stats.reposTruncated ? " (based on first 1000 repos — actual total may be higher)" : ""}
+- Total forks: ${stats.totalForks}${stats.reposTruncated ? " (truncated)" : ""}
 - Original repos (non-fork): ${stats.originalRepos}
 - Account age: ${stats.accountAgeDays} days
 - Total contributions (last year): ${contributions?.totalContributions ?? "N/A"}
+- Repo data truncated: ${stats.reposTruncated ? "Yes — user has more than 1000 repos; stats are approximate" : "No"}
 
 TOP REPOSITORIES (up to 6):
 ${repoSummaries.join("\n")}
