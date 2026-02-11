@@ -1,4 +1,4 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 
 interface SearchResult {
@@ -63,7 +63,6 @@ export function useGitHubSearch(debouncedQuery: string) {
       ),
     enabled: debouncedQuery.trim().length > 0,
     staleTime: 30 * 1000,
-    placeholderData: keepPreviousData,
   });
 }
 

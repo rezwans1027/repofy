@@ -16,9 +16,10 @@ interface ComparisonVerdictProps {
 function generateDifferentiators(a: ReportData, b: ReportData): string[] {
   const bullets: string[] = [];
 
-  // Compare radar axes — find the 2 largest gaps
-  const axisGaps = a.radarAxes.map((axA, i) => {
-    const axB = b.radarAxes[i];
+  // Compare radar axes — find the 2 largest gaps (match by label, not index)
+  const bByAxis = new Map(b.radarAxes.map((ax) => [ax.axis, ax]));
+  const axisGaps = a.radarAxes.map((axA) => {
+    const axB = bByAxis.get(axA.axis);
     return {
       axis: axA.axis,
       delta: Math.round((axA.value - (axB?.value ?? 0)) * 100),

@@ -24,10 +24,22 @@ const JSON_SCHEMA = {
       summary: { type: "string" },
       radarAxes: {
         type: "array",
+        minItems: 6,
+        maxItems: 6,
         items: {
           type: "object",
           properties: {
-            axis: { type: "string" },
+            axis: {
+              type: "string",
+              enum: [
+                "Code Quality",
+                "Project Complexity",
+                "Technical Breadth",
+                "Eng. Practices",
+                "Consistency",
+                "Collaboration",
+              ],
+            },
             value: { type: "number" },
           },
           required: ["axis", "value"],
@@ -36,10 +48,22 @@ const JSON_SCHEMA = {
       },
       radarBreakdown: {
         type: "array",
+        minItems: 6,
+        maxItems: 6,
         items: {
           type: "object",
           properties: {
-            label: { type: "string" },
+            label: {
+              type: "string",
+              enum: [
+                "Code Quality",
+                "Project Complexity",
+                "Technical Breadth",
+                "Eng. Practices",
+                "Consistency",
+                "Collaboration",
+              ],
+            },
             score: { type: "number" },
             note: { type: "string" },
           },

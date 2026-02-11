@@ -36,11 +36,12 @@ export function AnalysisLoading({
 
   // Phase progression: ~1.2s apart
   useEffect(() => {
+    setCurrentPhase(0);
     const timers = phases.map((_, i) =>
       setTimeout(() => setCurrentPhase(i), i * 1200),
     );
     return () => timers.forEach(clearTimeout);
-  }, []);
+  }, [phases]);
 
   // Start fetch on mount + animate progress bar
   useEffect(() => {
