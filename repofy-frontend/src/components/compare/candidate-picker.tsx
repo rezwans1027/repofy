@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Check, ChevronsUpDown, Search } from "lucide-react";
 import {
   Popover,
@@ -36,6 +36,7 @@ export function CandidatePicker({
   placeholder = "Search candidates…",
 }: CandidatePickerProps) {
   const [open, setOpen] = useState(false);
+  const listboxId = useId();
 
   const borderColor =
     slot === "A"
@@ -67,6 +68,8 @@ export function CandidatePicker({
           <button
             role="combobox"
             aria-expanded={open}
+            aria-haspopup="listbox"
+            aria-controls={listboxId}
             className={cn(
               "flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 text-left font-mono text-xs transition-colors",
               borderColor,
@@ -100,7 +103,7 @@ export function CandidatePicker({
               placeholder="Type username or name…"
               className="font-mono text-xs"
             />
-            <CommandList>
+            <CommandList id={listboxId}>
               <CommandEmpty className="py-4 text-center font-mono text-xs text-muted-foreground">
                 No candidates found.
               </CommandEmpty>

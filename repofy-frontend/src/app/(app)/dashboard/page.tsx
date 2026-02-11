@@ -90,7 +90,7 @@ export default function DashboardPage() {
       </motion.div>
 
       <div className="mt-6 w-full max-w-2xl space-y-3">
-        {results.length > 0
+        {query.trim() && results.length > 0
           ? results.map((user, i) => (
               <motion.div
                 key={user.username}
