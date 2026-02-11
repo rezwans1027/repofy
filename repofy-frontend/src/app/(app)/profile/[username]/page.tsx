@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useMemo } from "react";
 import Link from "next/link";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import {
@@ -17,8 +17,7 @@ import {
   ExternalLink,
   Loader2,
 } from "lucide-react";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import { useGitHubProfile } from "@/hooks/use-github";
 
 function timeAgo(dateStr: string): string {
   const seconds = Math.floor(
@@ -45,106 +44,63 @@ export default function ProfilePage({
   params: Promise<{ username: string }>;
 }) {
   const { username } = use(params);
+  const { data: raw, isLoading, error } = useGitHubProfile(username);
 
-  const [profileData, setProfileData] = useState<ProfileData | null>(null);
-  const [profileRepos, setProfileRepos] = useState<RepoData[] | null>(null);
-  const [apiProfile, setApiProfile] = useState<{
-    name: string | null;
-    avatarUrl: string;
-    bio: string | null;
-    location: string | null;
-    company: string | null;
-  } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const apiProfile = useMemo(() => {
+    if (!raw) return null;
+    return {
+      name: raw.profile.name,
+      avatarUrl: raw.profile.avatarUrl,
+      bio: raw.profile.bio,
+      location: raw.profile.location,
+      company: raw.profile.company,
+    };
+  }, [raw]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    setIsLoading(true);
+  const profileData: ProfileData | null = useMemo(() => {
+    if (!raw) return null;
+    return {
+      repos: raw.profile.publicRepos,
+      stars: raw.stats.totalStars,
+      followers: raw.profile.followers,
+      contributions:
+        raw.contributions?.totalContributions ?? raw.activity.totalEvents,
+      contributionsIsEstimate: raw.contributions == null,
+      contributionHeatmap: raw.contributions?.heatmap ?? null,
+      languages: raw.languages.map((l) => ({
+        name: l.name,
+        color: l.color,
+        percentage: l.percentage,
+        repoCount: l.repoCount,
+      })),
+      joinedYear: new Date(raw.profile.createdAt).getFullYear(),
+      activityBreakdown: {
+        pushEvents: raw.activity.pushEvents,
+        prEvents: raw.activity.prEvents,
+        issueEvents: raw.activity.issueEvents,
+        reviewEvents: raw.activity.reviewEvents,
+      },
+    };
+  }, [raw]);
 
-    (async () => {
-      try {
-        const res = await fetch(
-          `${API_URL}/github/${encodeURIComponent(username)}`,
-          { signal: controller.signal, cache: "no-store" },
-        );
-        const json = await res.json();
-        if (!json.success || !json.data) {
-          setError(json.error || "Failed to load profile data");
-          return;
-        }
+  const profileRepos: RepoData[] | null = useMemo(() => {
+    if (!raw) return null;
+    const colorMap: Record<string, string> = Object.fromEntries(
+      raw.languages.map((l) => [l.name, l.color]),
+    );
+    return raw.topRepositories.map((repo) => ({
+      name: repo.name,
+      description: repo.description ?? "",
+      language: repo.language ?? "",
+      languageColor: colorMap[repo.language ?? ""] ?? "#8b949e",
+      stars: repo.stars,
+      forks: repo.forks,
+      updatedAt: timeAgo(repo.pushedAt),
+      topics: repo.topics,
+      url: repo.url,
+    }));
+  }, [raw]);
 
-        const d = json.data;
-        const colorMap: Record<string, string> = Object.fromEntries(
-          d.languages.map((l: { name: string; color: string }) => [l.name, l.color]),
-        );
-
-        setApiProfile({
-          name: d.profile.name,
-          avatarUrl: d.profile.avatarUrl,
-          bio: d.profile.bio,
-          location: d.profile.location,
-          company: d.profile.company,
-        });
-
-        setProfileData({
-          repos: d.profile.publicRepos,
-          stars: d.stats.totalStars,
-          followers: d.profile.followers,
-          contributions: d.contributions?.totalContributions ?? d.activity.totalEvents,
-          contributionsIsEstimate: d.contributions == null,
-          contributionHeatmap: d.contributions?.heatmap ?? null,
-          languages: d.languages.map(
-            (l: { name: string; color: string; percentage: number; repoCount: number }) => ({
-              name: l.name,
-              color: l.color,
-              percentage: l.percentage,
-              repoCount: l.repoCount,
-            }),
-          ),
-          joinedYear: new Date(d.profile.createdAt).getFullYear(),
-          activityBreakdown: {
-            pushEvents: d.activity.pushEvents,
-            prEvents: d.activity.prEvents,
-            issueEvents: d.activity.issueEvents,
-            reviewEvents: d.activity.reviewEvents,
-          },
-        });
-
-        setProfileRepos(
-          d.topRepositories.map(
-            (repo: {
-              name: string;
-              description: string | null;
-              language: string | null;
-              stars: number;
-              forks: number;
-              pushedAt: string;
-              topics: string[];
-              url: string;
-            }) => ({
-              name: repo.name,
-              description: repo.description ?? "",
-              language: repo.language ?? "",
-              languageColor: colorMap[repo.language ?? ""] ?? "#8b949e",
-              stars: repo.stars,
-              forks: repo.forks,
-              updatedAt: timeAgo(repo.pushedAt),
-              topics: repo.topics,
-              url: repo.url,
-            }),
-          ),
-        );
-      } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") return;
-        setError("Failed to connect to the API");
-      } finally {
-        if (!controller.signal.aborted) setIsLoading(false);
-      }
-    })();
-
-    return () => controller.abort();
-  }, [username]);
   return (
     <div className="space-y-5 pb-20">
       <div className="flex items-center justify-between">
@@ -254,7 +210,9 @@ export default function ProfilePage({
       {/* Error */}
       {!isLoading && error && (
         <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-6 text-center space-y-2">
-          <p className="font-mono text-sm text-red-400">{error}</p>
+          <p className="font-mono text-sm text-red-400">
+            {error.message || "Failed to load profile data"}
+          </p>
           <button
             onClick={() => window.location.reload()}
             className="font-mono text-xs text-muted-foreground hover:text-cyan transition-colors underline underline-offset-2"

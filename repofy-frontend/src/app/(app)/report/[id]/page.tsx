@@ -1,18 +1,12 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
-import Link from "next/link";
+import { use } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { AnalysisReport } from "@/components/report/analysis-report";
-import type { ReportData } from "@/components/report/analysis-report";
-import { createClient } from "@/lib/supabase/client";
-
-interface ReportRow {
-  id: string;
-  analyzed_username: string;
-  report_data: ReportData;
-}
+import { useAuth } from "@/components/providers/auth-provider";
+import { useReport } from "@/hooks/use-reports";
+import { BackLink } from "@/components/ui/back-link";
+import { ErrorCard } from "@/components/ui/error-card";
 
 export default function ReportPage({
   params,
@@ -22,26 +16,9 @@ export default function ReportPage({
   const { id } = use(params);
   const searchParams = useSearchParams();
   const fromProfile = searchParams.get("from") === "profile";
-  const [report, setReport] = useState<ReportRow | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from("reports")
-      .select("id, analyzed_username, report_data")
-      .eq("id", id)
-      .single()
-      .then(({ data, error: fetchError }) => {
-        if (fetchError || !data) {
-          setError(true);
-        } else {
-          setReport(data as ReportRow);
-        }
-        setLoading(false);
-      });
-  }, [id]);
+  const { isLoading: authLoading } = useAuth();
+  const { data: report, isLoading: queryLoading, error } = useReport(id);
+  const loading = authLoading || queryLoading;
 
   const backHref = fromProfile && report
     ? `/profile/${report.analyzed_username}`
@@ -62,40 +39,19 @@ export default function ReportPage({
   if (error || !report) {
     return (
       <div>
-        <div className="mb-4">
-          <Link
-            href="/reports"
-            className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-cyan transition-colors"
-          >
-            <ArrowLeft className="size-3" />
-            back to reports
-          </Link>
-        </div>
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <div className="rounded-lg border border-border bg-card p-6 text-center max-w-md">
-            <p className="font-mono text-sm text-muted-foreground">
-              Report not found
-            </p>
-            <p className="mt-2 text-xs text-muted-foreground/70">
-              This report may have been deleted or you don&apos;t have access to it.
-            </p>
-          </div>
-        </div>
+        <BackLink href="/reports" label="back to reports" />
+        <ErrorCard
+          message="Report not found"
+          detail="This report may have been deleted or you don't have access to it."
+          variant="neutral"
+        />
       </div>
     );
   }
 
   return (
     <div>
-      <div className="mb-4">
-        <Link
-          href={backHref}
-          className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-cyan transition-colors"
-        >
-          <ArrowLeft className="size-3" />
-          {backLabel}
-        </Link>
-      </div>
+      <BackLink href={backHref} label={backLabel} />
       <AnalysisReport
         username={report.analyzed_username}
         data={report.report_data}

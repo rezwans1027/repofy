@@ -2,9 +2,11 @@ import { Router } from "express";
 import { adviseUser } from "../controllers/advice.controller";
 import { asyncHandler } from "../middleware/asyncHandler";
 import { requireAuth } from "../middleware/auth";
+import { aiRateLimit } from "../middleware/rateLimit";
+import { timeout } from "../middleware/timeout";
 
 const router = Router();
 
-router.post("/advice/:username", asyncHandler(requireAuth), asyncHandler(adviseUser));
+router.post("/advice/:username", aiRateLimit, timeout(120_000), requireAuth, asyncHandler(adviseUser));
 
 export default router;

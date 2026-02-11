@@ -2,13 +2,13 @@
 
 import { use, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { AnalysisLoading } from "@/components/report/analysis-loading";
 import { useAuth } from "@/components/providers/auth-provider";
+import { api } from "@/lib/api-client";
 import { createClient } from "@/lib/supabase/client";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import { useQueryClient } from "@tanstack/react-query";
+import { BackLink } from "@/components/ui/back-link";
+import { ErrorCard } from "@/components/ui/error-card";
 
 export default function GeneratePage({
   params,
@@ -18,27 +18,15 @@ export default function GeneratePage({
   const { username } = use(params);
   const router = useRouter();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
   const fetchReport = useCallback(async () => {
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.refreshSession();
-    const accessToken = session?.access_token;
-
-    const res = await fetch(
-      `${API_URL}/analyze/${encodeURIComponent(username)}`,
-      {
-        method: "POST",
-        headers: {
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        },
-      },
-    );
-    const json = await res.json();
-    if (!res.ok || !json.success) {
-      throw new Error(json.error || "Analysis failed");
-    }
-    return json.data;
+    const data = await api.post<{
+      analyzedName: string | null;
+      report: Record<string, unknown>;
+    }>(`/analyze/${encodeURIComponent(username)}`, { auth: true });
+    return data;
   }, [username]);
 
   const handleComplete = useCallback(
@@ -56,37 +44,58 @@ export default function GeneratePage({
 
         const supabase = createClient();
 
-        // Insert first, then clean up old rows so data is never lost
-        const { data: row, error: insertError } = await supabase
+        const reportRow = {
+          user_id: user.id,
+          analyzed_username: username.toLowerCase(),
+          analyzed_name: analyzedName,
+          overall_score: (report as { overallScore: number }).overallScore,
+          recommendation: (report as { recommendation: string })
+            .recommendation,
+          report_data: report,
+        };
+
+        // Try atomic upsert (works after migration 003 adds unique constraint)
+        const { data: upserted, error: upsertError } = await supabase
           .from("reports")
-          .insert({
-            user_id: user.id,
-            analyzed_username: username,
-            analyzed_name: analyzedName,
-            overall_score: (report as { overallScore: number }).overallScore,
-            recommendation: (report as { recommendation: string }).recommendation,
-            report_data: report,
-          })
+          .upsert(reportRow, { onConflict: "user_id,analyzed_username" })
           .select("id")
           .single();
 
-        if (insertError) throw insertError;
+        let row: { id: string };
 
-        // Remove previous reports for the same user/username, keeping the new one
-        await supabase
-          .from("reports")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("analyzed_username", username)
-          .neq("id", row.id);
+        if (upsertError) {
+          // 42P10 = constraint not found — migration not yet applied
+          if (upsertError.code !== "42P10") throw upsertError;
 
+          // Fallback: insert + best-effort cleanup of old rows
+          const { data: inserted, error: insertError } = await supabase
+            .from("reports")
+            .insert(reportRow)
+            .select("id")
+            .single();
+          if (insertError) throw insertError;
+          row = inserted;
+
+          const { error: cleanupError } = await supabase
+            .from("reports")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("analyzed_username", username.toLowerCase())
+            .neq("id", row.id);
+          if (cleanupError)
+            console.error("Cleanup of old reports failed:", cleanupError);
+        } else {
+          row = upserted;
+        }
+
+        queryClient.invalidateQueries({ queryKey: ["reports"] });
         router.replace(`/report/${row.id}?from=profile`);
       } catch (err) {
         console.error("Failed to save report:", err);
         setError("Failed to save report. Please try again.");
       }
     },
-    [user, username, router],
+    [user, username, router, queryClient],
   );
 
   const handleError = useCallback((message: string) => {
@@ -96,44 +105,25 @@ export default function GeneratePage({
   if (error) {
     return (
       <div>
-        <div className="mb-4">
-          <Link
-            href={`/profile/${username}`}
-            className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-cyan transition-colors"
+        <BackLink href={`/profile/${username}`} label="back to profile" />
+        <ErrorCard message={error}>
+          <button
+            onClick={() => {
+              setError(null);
+              router.refresh();
+            }}
+            className="mt-4 font-mono text-xs text-cyan hover:underline"
           >
-            <ArrowLeft className="size-3" />
-            back to profile
-          </Link>
-        </div>
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-6 text-center max-w-md">
-            <p className="font-mono text-sm text-red-400">{error}</p>
-            <button
-              onClick={() => {
-                setError(null);
-                router.refresh();
-              }}
-              className="mt-4 font-mono text-xs text-cyan hover:underline"
-            >
-              Try again
-            </button>
-          </div>
-        </div>
+            Try again
+          </button>
+        </ErrorCard>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="mb-4">
-        <Link
-          href={`/profile/${username}`}
-          className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-cyan transition-colors"
-        >
-          <ArrowLeft className="size-3" />
-          back to profile
-        </Link>
-      </div>
+      <BackLink href={`/profile/${username}`} label="back to profile" />
       <AnalysisLoading
         fetchReport={fetchReport}
         onComplete={handleComplete}

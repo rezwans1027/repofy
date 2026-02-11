@@ -21,6 +21,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
       setIsLoading(false);
+    }).catch((err) => {
+      console.error("Failed to get user:", err);
+      setIsLoading(false);
     });
 
     const {

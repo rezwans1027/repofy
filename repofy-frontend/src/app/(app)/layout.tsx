@@ -2,10 +2,11 @@
 
 import { Navbar } from "@/components/layout/navbar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
+import { QueryProvider } from "@/components/providers/query-provider";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <QueryProvider>
       <Navbar />
       <AppSidebar />
       <main className="min-h-screen pt-14 lg:pl-48">
@@ -16,6 +17,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </main>
-    </>
+    </QueryProvider>
   );
 }

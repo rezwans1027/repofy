@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { env } from "../config/env";
-import type { ApiResponse, GitHubUserData, AIAdviceResponse } from "../types";
+import type { GitHubUserData, AIAdviceResponse } from "../types";
 import {
   fetchGitHubUserData,
   GitHubError,
@@ -8,8 +8,9 @@ import {
   DEFAULT_COLOR,
 } from "../services/github.service";
 import { generateAdvice } from "../services/advice.service";
-
-const USERNAME_RE = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/;
+import { USERNAME_RE } from "../lib/validators";
+import { sendError, sendSuccess } from "../lib/response";
+import { logger } from "../lib/logger";
 
 function buildAdviceData(ai: AIAdviceResponse, github: GitHubUserData) {
   const { topRepositories } = github;
@@ -46,50 +47,31 @@ export const adviseUser: RequestHandler = async (req, res) => {
   const username = req.params.username as string;
 
   if (!USERNAME_RE.test(username)) {
-    const response: ApiResponse = {
-      success: false,
-      error: "Invalid GitHub username format",
-    };
-    res.status(400).json(response);
+    sendError(res, 400, "Invalid GitHub username format");
     return;
   }
 
   if (!env.openaiApiKey) {
-    const response: ApiResponse = {
-      success: false,
-      error: "OpenAI API key is not configured",
-    };
-    res.status(503).json(response);
+    sendError(res, 500, "OpenAI API key is not configured");
     return;
   }
 
   try {
-    const githubData = await fetchGitHubUserData(username);
-    const aiAdvice = await generateAdvice(githubData);
+    const githubData = await fetchGitHubUserData(username, req.signal);
+    const aiAdvice = await generateAdvice(githubData, req.signal);
     const advice = buildAdviceData(aiAdvice, githubData);
 
-    const response: ApiResponse = {
-      success: true,
-      data: {
-        analyzedName: githubData.profile.name,
-        advice,
-      },
-    };
-    res.json(response);
+    sendSuccess(res, {
+      analyzedName: githubData.profile.name,
+      advice,
+    });
   } catch (err) {
+    if (req.signal?.aborted || res.headersSent) return;
     if (err instanceof GitHubError) {
-      const response: ApiResponse = {
-        success: false,
-        error: err.message,
-      };
-      res.status(err.statusCode).json(response);
+      sendError(res, err.statusCode, err.message);
       return;
     }
-    console.error("[Repofy] Advice error:", err);
-    const response: ApiResponse = {
-      success: false,
-      error: "Advice generation failed. Please try again.",
-    };
-    res.status(500).json(response);
+    logger.error("Advice error:", err);
+    sendError(res, 500, "Advice generation failed. Please try again.");
   }
 };
