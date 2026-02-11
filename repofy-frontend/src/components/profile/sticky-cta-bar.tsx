@@ -65,6 +65,7 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
           <div className="flex gap-2 w-full sm:w-auto">
             <Button
               size="lg"
+              data-testid="generate-report-btn"
               className="bg-cyan text-background hover:bg-cyan/90 font-mono text-sm px-6 flex-1 sm:flex-initial"
               disabled={!!user && reportLoading}
               onClick={handleAnalysisClick}

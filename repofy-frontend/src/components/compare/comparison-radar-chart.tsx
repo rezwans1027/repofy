@@ -84,7 +84,7 @@ export function ComparisonRadarChart({
   const strokeOpacityB = hovered === "A" ? 0.3 : 1;
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <div data-testid="comparison-radar" className="rounded-lg border border-border bg-card p-5">
       <SectionHeader
         title="Developer DNA Comparison"
         subtitle="6-axis capability overlay"
