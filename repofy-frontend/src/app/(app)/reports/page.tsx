@@ -199,7 +199,7 @@ export default function ReportsPage() {
         {/* Filter dropdown */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 gap-1.5 font-mono text-xs">
+            <Button variant="outline" size="sm" data-testid="reports-filter" className="h-8 gap-1.5 font-mono text-xs">
               <Filter className="size-3.5" />
               Filter
               {activeFilterCount > 0 && (
@@ -292,6 +292,7 @@ export default function ReportsPage() {
         <Button
           variant={selectMode ? "secondary" : "outline"}
           size="sm"
+          data-testid="select-mode-btn"
           className="h-8 gap-1.5 font-mono text-xs ml-auto"
           onClick={selectMode ? exitSelectMode : () => setSelectMode(true)}
         >
@@ -350,6 +351,7 @@ export default function ReportsPage() {
               filteredReports.map((report: ReportListItem) => (
                 <tr
                   key={report.id}
+                  data-testid={`report-row-${report.id}`}
                   className={`group border-b border-border last:border-0 transition-colors hover:bg-secondary/20 ${selectMode ? "cursor-pointer" : ""} ${selected.has(report.id) ? "bg-secondary/30" : ""}`}
                   onClick={selectMode ? () => toggleSelect(report.id) : undefined}
                 >
@@ -416,6 +418,7 @@ export default function ReportsPage() {
               <Button
                 variant="destructive"
                 size="sm"
+                data-testid="delete-selected-btn"
                 className="h-8 gap-1.5 font-mono text-xs"
                 onClick={() => handleDelete((ids) => deleteReports.mutateAsync(ids))}
                 disabled={deleteReports.isPending}

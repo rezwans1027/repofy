@@ -57,6 +57,14 @@ export const adviseUser: RequestHandler = async (req, res) => {
   }
 
   try {
+    if (env.mockAi) {
+      const { MOCK_ADVICE_RESPONSE } = await import("../testing/mock-ai");
+      const githubData = await fetchGitHubUserData(username, req.signal);
+      const advice = buildAdviceData(MOCK_ADVICE_RESPONSE, githubData);
+      sendSuccess(res, { analyzedName: githubData.profile.name, advice });
+      return;
+    }
+
     const githubData = await fetchGitHubUserData(username, req.signal);
     const aiAdvice = await generateAdvice(githubData, req.signal);
     const advice = buildAdviceData(aiAdvice, githubData);

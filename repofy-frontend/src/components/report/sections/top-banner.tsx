@@ -42,7 +42,7 @@ export function TopBanner({ username, avatarUrl, data }: TopBannerProps) {
               )}
             </div>
             <div>
-              <h1 className="font-mono text-lg font-bold tracking-tight">
+              <h1 data-testid="report-heading" className="font-mono text-lg font-bold tracking-tight">
                 @{username}
               </h1>
               <p className="font-mono text-sm text-muted-foreground">

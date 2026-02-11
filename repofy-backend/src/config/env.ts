@@ -19,6 +19,7 @@ export const env = {
   nodeEnv: process.env.NODE_ENV || "development",
   isProduction: process.env.NODE_ENV === "production",
   trustProxy: process.env.TRUST_PROXY === "true",
+  mockAi: process.env.MOCK_AI === "true" && process.env.NODE_ENV !== "production",
   supabaseUrl: requireEnv("SUPABASE_URL"),
   supabaseServiceRoleKey: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
   githubToken: requireEnv("GITHUB_TOKEN"),
