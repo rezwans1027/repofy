@@ -170,6 +170,30 @@ const JSON_SCHEMA = {
   },
 } as const;
 
+const CANONICAL_AXES = [
+  "Code Quality",
+  "Project Complexity",
+  "Technical Breadth",
+  "Eng. Practices",
+  "Consistency",
+  "Collaboration",
+] as const;
+
+/** Re-order and deduplicate radar arrays to the canonical 6-axis order. */
+function normalizeRadar(response: AIAnalysisResponse): AIAnalysisResponse {
+  const axisMap = new Map(response.radarAxes.map((a) => [a.axis, a]));
+  const breakdownMap = new Map(response.radarBreakdown.map((b) => [b.label, b]));
+
+  response.radarAxes = CANONICAL_AXES.map((axis) =>
+    axisMap.get(axis) ?? { axis, value: 0 },
+  );
+  response.radarBreakdown = CANONICAL_AXES.map((label) =>
+    breakdownMap.get(label) ?? { label, score: 0, note: "" },
+  );
+
+  return response;
+}
+
 export async function generateAnalysis(
   githubData: GitHubUserData,
   signal?: AbortSignal,
@@ -197,5 +221,5 @@ export async function generateAnalysis(
     throw new Error("OpenAI returned empty response");
   }
 
-  return JSON.parse(content) as AIAnalysisResponse;
+  return normalizeRadar(JSON.parse(content) as AIAnalysisResponse);
 }
