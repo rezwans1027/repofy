@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const debouncedQuery = useDebouncedValue(query.trim(), 300);
   const { data: results = [], isFetching: isSearching } =
     useGitHubSearch(debouncedQuery);
+  const searchSettled = !isSearching && debouncedQuery === query.trim();
 
   return (
     <div className="flex flex-col items-center pt-[25vh]">
@@ -73,13 +74,13 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {!query.trim() && !isSearching && (
+            {!query.trim() && searchSettled && (
               <p className="font-mono text-xs text-muted-foreground flex items-center gap-2">
                 <Search className="size-3" />
                 Type a GitHub username to search
               </p>
             )}
-            {isSearching && (
+            {query.trim() && !searchSettled && (
               <p className="font-mono text-xs text-muted-foreground flex items-center gap-2">
                 <Loader2 className="size-3 animate-spin" />
                 Searching GitHub...
@@ -142,7 +143,7 @@ export default function DashboardPage() {
                 </div>
               </motion.div>
             ))
-          : query.trim() && !isSearching && (
+          : query.trim() && searchSettled && (
               <div className="rounded-lg border border-border bg-card p-6 text-center">
                 <p className="font-mono text-sm text-muted-foreground">
                   <span className="text-yellow-500">warn:</span> No users
