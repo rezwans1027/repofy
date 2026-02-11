@@ -101,6 +101,7 @@ export interface GitHubStats {
   totalForks: number;
   originalRepos: number;
   accountAgeDays: number;
+  reposTruncated: boolean;
 }
 
 export interface ContributionCalendar {

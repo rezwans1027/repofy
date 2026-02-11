@@ -34,6 +34,20 @@ export function ComparisonRadarChart({
 
   const [hovered, setHovered] = useState<"A" | "B" | null>(null);
 
+  // Build a lookup of B values keyed by axis label so comparisons are
+  // correct even if the backend returns axes in a different order.
+  const bByLabel = useMemo(
+    () => new Map(dataB.map((d) => [d.axis, d])),
+    [dataB],
+  );
+
+  // Normalised B data aligned to A's axis order (fallback to 0)
+  const alignedB = useMemo(
+    () =>
+      dataA.map((d) => bByLabel.get(d.axis) ?? { axis: d.axis, value: 0 }),
+    [dataA, bByLabel],
+  );
+
   const pointsA = useMemo(
     () =>
       dataA.map((d, i) => {
@@ -48,14 +62,14 @@ export function ComparisonRadarChart({
 
   const pointsB = useMemo(
     () =>
-      dataB.map((d, i) => {
+      alignedB.map((d, i) => {
         const angle = angleSlice * i - Math.PI / 2;
         return {
           x: center + radius * d.value * Math.cos(angle),
           y: center + radius * d.value * Math.sin(angle),
         };
       }),
-    [dataB, center, radius, angleSlice]
+    [alignedB, center, radius, angleSlice]
   );
 
   const toPath = (pts: { x: number; y: number }[]) =>
@@ -223,8 +237,8 @@ export function ComparisonRadarChart({
             <span className="font-mono text-[10px] uppercase tracking-wider text-violet-400 text-right">B</span>
             <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground text-right">Delta</span>
 
-            {breakdownA.map((axA, i) => {
-              const axB = breakdownB[i];
+            {breakdownA.map((axA) => {
+              const axB = breakdownB.find((b) => b.label === axA.label);
               const delta = +(axA.score - (axB?.score ?? 0)).toFixed(1);
               const deltaColor = delta > 0 ? "text-cyan" : delta < 0 ? "text-violet-400" : "text-muted-foreground";
               return (

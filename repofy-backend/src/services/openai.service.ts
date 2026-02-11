@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { env } from "../config/env";
 import { SYSTEM_PROMPT } from "../lib/prompts";
+import { buildUserMessage } from "../lib/build-user-message";
 import type { GitHubUserData, AIAnalysisResponse } from "../types";
 
 const client = new OpenAI({ apiKey: env.openaiApiKey });
@@ -23,10 +24,22 @@ const JSON_SCHEMA = {
       summary: { type: "string" },
       radarAxes: {
         type: "array",
+        minItems: 6,
+        maxItems: 6,
         items: {
           type: "object",
           properties: {
-            axis: { type: "string" },
+            axis: {
+              type: "string",
+              enum: [
+                "Code Quality",
+                "Project Complexity",
+                "Technical Breadth",
+                "Eng. Practices",
+                "Consistency",
+                "Collaboration",
+              ],
+            },
             value: { type: "number" },
           },
           required: ["axis", "value"],
@@ -35,10 +48,22 @@ const JSON_SCHEMA = {
       },
       radarBreakdown: {
         type: "array",
+        minItems: 6,
+        maxItems: 6,
         items: {
           type: "object",
           properties: {
-            label: { type: "string" },
+            label: {
+              type: "string",
+              enum: [
+                "Code Quality",
+                "Project Complexity",
+                "Technical Breadth",
+                "Eng. Practices",
+                "Consistency",
+                "Collaboration",
+              ],
+            },
             score: { type: "number" },
             note: { type: "string" },
           },
@@ -145,64 +170,41 @@ const JSON_SCHEMA = {
   },
 } as const;
 
-function buildUserMessage(data: GitHubUserData): string {
-  const { profile, topRepositories, languages, activity, stats, contributions } = data;
+const CANONICAL_AXES = [
+  "Code Quality",
+  "Project Complexity",
+  "Technical Breadth",
+  "Eng. Practices",
+  "Consistency",
+  "Collaboration",
+] as const;
 
-  const repoSummaries = topRepositories.map(
-    (r) =>
-      `- ${r.name}: ${r.description || "No description"} | ` +
-      `Language: ${r.language || "N/A"} | Stars: ${r.stars} | Forks: ${r.forks} | ` +
-      `Topics: [${r.topics.join(", ")}] | Fork: ${r.isFork} | Archived: ${r.isArchived} | ` +
-      `Last pushed: ${r.pushedAt}`,
+/** Re-order and deduplicate radar arrays to the canonical 6-axis order. */
+function normalizeRadar(response: AIAnalysisResponse): AIAnalysisResponse {
+  const axisMap = new Map(response.radarAxes.map((a) => [a.axis, a]));
+  const breakdownMap = new Map(response.radarBreakdown.map((b) => [b.label, b]));
+
+  response.radarAxes = CANONICAL_AXES.map((axis) =>
+    axisMap.get(axis) ?? { axis, value: 0 },
+  );
+  response.radarBreakdown = CANONICAL_AXES.map((label) =>
+    breakdownMap.get(label) ?? { label, score: 0, note: "" },
   );
 
-  const langSummary = languages
-    .slice(0, 8)
-    .map((l) => `${l.name}: ${l.percentage}% (${l.repoCount} repos)`)
-    .join(", ");
-
-  return `
-GITHUB PROFILE:
-- Username: ${profile.username}
-- Name: ${profile.name || "N/A"}
-- Bio: ${profile.bio || "N/A"}
-- Company: ${profile.company || "N/A"}
-- Location: ${profile.location || "N/A"}
-- Public repos: ${profile.publicRepos}
-- Followers: ${profile.followers} | Following: ${profile.following}
-- Account created: ${profile.createdAt}
-
-STATS:
-- Total stars: ${stats.totalStars}
-- Total forks: ${stats.totalForks}
-- Original repos (non-fork): ${stats.originalRepos}
-- Account age: ${stats.accountAgeDays} days
-- Total contributions (last year): ${contributions?.totalContributions ?? "N/A"}
-
-TOP REPOSITORIES (up to 6):
-${repoSummaries.join("\n")}
-
-LANGUAGES: ${langSummary}
-
-RECENT ACTIVITY (last 100 events):
-- Total events: ${activity.totalEvents}
-- Push events: ${activity.pushEvents}
-- PR events: ${activity.prEvents}
-- Issue events: ${activity.issueEvents}
-- Review events: ${activity.reviewEvents}
-- Recently active repos: ${activity.recentActiveRepos.slice(0, 5).join(", ")}
-
-Analyze this profile and return the structured JSON assessment.
-`;
+  return response;
 }
 
 export async function generateAnalysis(
   githubData: GitHubUserData,
+  signal?: AbortSignal,
 ): Promise<AIAnalysisResponse> {
-  const userMessage = buildUserMessage(githubData);
+  const userMessage = buildUserMessage(
+    githubData,
+    "Analyze this profile and return the structured JSON assessment.",
+  );
 
   const completion = await client.chat.completions.create({
-    model: "gpt-4o",
+    model: env.openaiModel,
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: userMessage },
@@ -212,12 +214,12 @@ export async function generateAnalysis(
       json_schema: JSON_SCHEMA,
     },
     temperature: 0.7,
-  });
+  }, { signal });
 
   const content = completion.choices[0]?.message?.content;
   if (!content) {
     throw new Error("OpenAI returned empty response");
   }
 
-  return JSON.parse(content) as AIAnalysisResponse;
+  return normalizeRadar(JSON.parse(content) as AIAnalysisResponse);
 }

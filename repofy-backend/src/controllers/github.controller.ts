@@ -1,47 +1,33 @@
 import { RequestHandler } from "express";
-import { ApiResponse, GitHubUserData, GitHubSearchResult } from "../types";
 import {
   fetchGitHubUserData,
   searchGitHubUsers,
   GitHubError,
 } from "../services/github.service";
-
-const USERNAME_RE = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/;
+import { USERNAME_RE } from "../lib/validators";
+import { sendError, sendSuccess } from "../lib/response";
+import { logger } from "../lib/logger";
 
 export const searchGitHub: RequestHandler = async (req, res) => {
-  const q = (req.query.q as string || "").trim();
+  const rawQ = req.query.q;
+  const q = (Array.isArray(rawQ) ? rawQ[0] : rawQ || "").toString().trim();
 
   if (!q) {
-    const response: ApiResponse<GitHubSearchResult[]> = {
-      success: true,
-      data: [],
-    };
-    res.json(response);
+    sendSuccess(res, []);
     return;
   }
 
   try {
-    const data = await searchGitHubUsers(q);
-    const response: ApiResponse<GitHubSearchResult[]> = {
-      success: true,
-      data,
-    };
-    res.json(response);
+    const data = await searchGitHubUsers(q, req.signal);
+    sendSuccess(res, data);
   } catch (err) {
+    if (req.signal?.aborted || res.headersSent) return;
     if (err instanceof GitHubError) {
-      const response: ApiResponse = {
-        success: false,
-        error: err.message,
-      };
-      res.status(err.statusCode).json(response);
+      sendError(res, err.statusCode, err.message);
       return;
     }
-    console.error("searchGitHub unexpected error:", err);
-    const response: ApiResponse = {
-      success: false,
-      error: "Internal server error",
-    };
-    res.status(500).json(response);
+    logger.error("searchGitHub unexpected error:", err);
+    sendError(res, 500, "Internal server error");
   }
 };
 
@@ -49,35 +35,20 @@ export const getGitHubUser: RequestHandler = async (req, res) => {
   const username = req.params.username as string;
 
   if (!USERNAME_RE.test(username)) {
-    const response: ApiResponse = {
-      success: false,
-      error: "Invalid GitHub username format",
-    };
-    res.status(400).json(response);
+    sendError(res, 400, "Invalid GitHub username format");
     return;
   }
 
   try {
-    const data = await fetchGitHubUserData(username);
-    const response: ApiResponse<GitHubUserData> = {
-      success: true,
-      data,
-    };
-    res.json(response);
+    const data = await fetchGitHubUserData(username, req.signal);
+    sendSuccess(res, data);
   } catch (err) {
+    if (req.signal?.aborted || res.headersSent) return;
     if (err instanceof GitHubError) {
-      const response: ApiResponse = {
-        success: false,
-        error: err.message,
-      };
-      res.status(err.statusCode).json(response);
+      sendError(res, err.statusCode, err.message);
       return;
     }
-    console.error("getGitHubUser unexpected error:", err);
-    const response: ApiResponse = {
-      success: false,
-      error: "Internal server error",
-    };
-    res.status(500).json(response);
+    logger.error("getGitHubUser unexpected error:", err);
+    sendError(res, 500, "Internal server error");
   }
 };

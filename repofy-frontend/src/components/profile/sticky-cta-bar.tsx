@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Lightbulb } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
-import { createClient } from "@/lib/supabase/client";
+import { useExistingReport } from "@/hooks/use-reports";
+import { useExistingAdvice } from "@/hooks/use-advice";
 
 interface StickyCTABarProps {
   username: string;
@@ -21,52 +22,31 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
   const [show, setShow] = useState(false);
   const [dialogOpen, setDialogOpen] = useState<DialogType>(null);
 
+  const { data: reportExists, isLoading: reportLoading } =
+    useExistingReport(username);
+  const { data: adviceExists, isLoading: adviceLoading } =
+    useExistingAdvice(username);
+
   useEffect(() => {
     const t = setTimeout(() => setShow(true), delay);
     return () => clearTimeout(t);
   }, [delay]);
 
-  const handleAnalysisClick = async () => {
-    if (!user) {
-      router.push(`/generate/${username}`);
-      return;
-    }
-
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("reports")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("analyzed_username", username)
-      .limit(1);
-
-    if (data && data.length > 0) {
+  const handleAnalysisClick = useCallback(() => {
+    if (reportExists) {
       setDialogOpen("report");
     } else {
       router.push(`/generate/${username}`);
     }
-  };
+  }, [reportExists, router, username]);
 
-  const handleAdviceClick = async () => {
-    if (!user) {
-      router.push(`/advisor/generate/${username}`);
-      return;
-    }
-
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("advice")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("analyzed_username", username)
-      .limit(1);
-
-    if (data && data.length > 0) {
+  const handleAdviceClick = useCallback(() => {
+    if (adviceExists) {
       setDialogOpen("advice");
     } else {
       router.push(`/advisor/generate/${username}`);
     }
-  };
+  }, [adviceExists, router, username]);
 
   return (
     <>
@@ -86,6 +66,7 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
             <Button
               size="lg"
               className="bg-cyan text-background hover:bg-cyan/90 font-mono text-sm px-6 flex-1 sm:flex-initial"
+              disabled={!!user && reportLoading}
               onClick={handleAnalysisClick}
             >
               <Sparkles className="size-4" />
@@ -95,6 +76,7 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
               size="lg"
               variant="outline"
               className="font-mono text-sm px-6 flex-1 sm:flex-initial border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-400"
+              disabled={!!user && adviceLoading}
               onClick={handleAdviceClick}
             >
               <Lightbulb className="size-4" />

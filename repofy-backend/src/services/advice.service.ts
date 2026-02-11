@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { env } from "../config/env";
 import { ADVICE_SYSTEM_PROMPT } from "../lib/prompts";
+import { buildUserMessage } from "../lib/build-user-message";
 import type { GitHubUserData, AIAdviceResponse } from "../types";
 
 const client = new OpenAI({ apiKey: env.openaiApiKey });
@@ -137,65 +138,17 @@ const ADVICE_JSON_SCHEMA = {
   },
 } as const;
 
-function buildUserMessage(data: GitHubUserData): string {
-  const { profile, topRepositories, languages, activity, stats, contributions } = data;
-
-  const repoSummaries = topRepositories.map(
-    (r) =>
-      `- ${r.name}: ${r.description || "No description"} | ` +
-      `Language: ${r.language || "N/A"} | Stars: ${r.stars} | Forks: ${r.forks} | ` +
-      `Topics: [${r.topics.join(", ")}] | Fork: ${r.isFork} | Archived: ${r.isArchived} | ` +
-      `Last pushed: ${r.pushedAt}`,
-  );
-
-  const langSummary = languages
-    .slice(0, 8)
-    .map((l) => `${l.name}: ${l.percentage}% (${l.repoCount} repos)`)
-    .join(", ");
-
-  return `
-GITHUB PROFILE:
-- Username: ${profile.username}
-- Name: ${profile.name || "N/A"}
-- Bio: ${profile.bio || "N/A"}
-- Company: ${profile.company || "N/A"}
-- Location: ${profile.location || "N/A"}
-- Blog/Website: ${profile.blog || "N/A"}
-- Public repos: ${profile.publicRepos}
-- Followers: ${profile.followers} | Following: ${profile.following}
-- Account created: ${profile.createdAt}
-
-STATS:
-- Total stars: ${stats.totalStars}
-- Total forks: ${stats.totalForks}
-- Original repos (non-fork): ${stats.originalRepos}
-- Account age: ${stats.accountAgeDays} days
-- Total contributions (last year): ${contributions?.totalContributions ?? "N/A"}
-
-TOP REPOSITORIES (up to 6):
-${repoSummaries.join("\n")}
-
-LANGUAGES: ${langSummary}
-
-RECENT ACTIVITY (last 100 events):
-- Total events: ${activity.totalEvents}
-- Push events: ${activity.pushEvents}
-- PR events: ${activity.prEvents}
-- Issue events: ${activity.issueEvents}
-- Review events: ${activity.reviewEvents}
-- Recently active repos: ${activity.recentActiveRepos.slice(0, 5).join(", ")}
-
-Analyze this profile and provide actionable advice to improve it. Return the structured JSON response.
-`;
-}
-
 export async function generateAdvice(
   githubData: GitHubUserData,
+  signal?: AbortSignal,
 ): Promise<AIAdviceResponse> {
-  const userMessage = buildUserMessage(githubData);
+  const userMessage = buildUserMessage(
+    githubData,
+    "Analyze this profile and provide actionable advice to improve it. Return the structured JSON response.",
+  );
 
   const completion = await client.chat.completions.create({
-    model: "gpt-4o",
+    model: env.openaiModel,
     messages: [
       { role: "system", content: ADVICE_SYSTEM_PROMPT },
       { role: "user", content: userMessage },
@@ -205,7 +158,7 @@ export async function generateAdvice(
       json_schema: ADVICE_JSON_SCHEMA,
     },
     temperature: 0.7,
-  });
+  }, { signal });
 
   const content = completion.choices[0]?.message?.content;
   if (!content) {

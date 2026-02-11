@@ -1,42 +1,43 @@
 import { RequestHandler } from "express";
-import { supabaseAdmin } from "../config/supabase";
-import { ApiResponse } from "../types";
+import { getSupabaseAdmin } from "../config/supabase";
+import { sendError } from "../lib/response";
 
 declare global {
   namespace Express {
     interface Request {
       userId?: string;
       userEmail?: string;
+      signal?: AbortSignal;
     }
   }
 }
 
 export const requireAuth: RequestHandler = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
+  try {
+    if (res.headersSent) return;
 
-  if (!authHeader?.startsWith("Bearer ")) {
-    const response: ApiResponse = {
-      success: false,
-      error: "Missing or invalid authorization header",
-    };
-    res.status(401).json(response);
-    return;
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader?.startsWith("Bearer ")) {
+      if (!res.headersSent) sendError(res, 401, "Missing or invalid authorization header");
+      return;
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    const { data, error } = await getSupabaseAdmin().auth.getUser(token);
+
+    if (res.headersSent) return;
+
+    if (error || !data.user) {
+      sendError(res, 401, "Invalid or expired token");
+      return;
+    }
+
+    req.userId = data.user.id;
+    req.userEmail = data.user.email;
+    next();
+  } catch (err) {
+    if (!res.headersSent) next(err);
   }
-
-  const token = authHeader.split(" ")[1];
-
-  const { data, error } = await supabaseAdmin.auth.getUser(token);
-
-  if (error || !data.user) {
-    const response: ApiResponse = {
-      success: false,
-      error: "Invalid or expired token",
-    };
-    res.status(401).json(response);
-    return;
-  }
-
-  req.userId = data.user.id;
-  req.userEmail = data.user.email;
-  next();
 };

@@ -1,4 +1,5 @@
 import { env } from "../config/env";
+import { logger } from "../lib/logger";
 import type {
   GitHubApiUser,
   GitHubApiRepo,
@@ -67,18 +68,25 @@ export const DEFAULT_COLOR = "#8b949e";
 const GITHUB_API = "https://api.github.com";
 
 function headers(): Record<string, string> {
-  const h: Record<string, string> = {
+  return {
     Accept: "application/vnd.github.v3+json",
     "User-Agent": "Repofy",
+    Authorization: `Bearer ${env.githubToken}`,
   };
-  if (env.githubToken && !env.githubToken.startsWith("<")) {
-    h.Authorization = `Bearer ${env.githubToken}`;
-  }
-  return h;
 }
 
-async function ghFetch<T>(path: string): Promise<T> {
-  const res = await fetch(`${GITHUB_API}${path}`, { headers: headers() });
+async function ghFetch<T>(path: string, signal?: AbortSignal): Promise<T> {
+  const signals = [AbortSignal.timeout(15_000)];
+  if (signal) signals.push(signal);
+  const res = await fetch(`${GITHUB_API}${path}`, {
+    headers: headers(),
+    signal: AbortSignal.any(signals),
+  }).catch((err) => {
+    if (err instanceof DOMException && err.name === "TimeoutError") {
+      throw new GitHubError("GitHub API request timed out", 504);
+    }
+    throw err;
+  });
 
   if (!res.ok) {
     if (res.status === 404) {
@@ -86,7 +94,7 @@ async function ghFetch<T>(path: string): Promise<T> {
     }
     if (res.status === 403 || res.status === 429) {
       throw new GitHubError(
-        "GitHub API rate limit exceeded. Try again later or provide a GITHUB_TOKEN.",
+        "GitHub API rate limit exceeded. Try again later.",
         429,
       );
     }
@@ -100,19 +108,23 @@ async function ghFetch<T>(path: string): Promise<T> {
 
 const GITHUB_GRAPHQL = "https://api.github.com/graphql";
 
-async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
-  const token = env.githubToken;
-  if (!token || token.startsWith("<")) {
-    throw new GitHubError("GitHub token required for GraphQL API", 401);
-  }
+async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>, signal?: AbortSignal): Promise<T> {
+  const signals = [AbortSignal.timeout(15_000)];
+  if (signal) signals.push(signal);
   const res = await fetch(GITHUB_GRAPHQL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${env.githubToken}`,
       "User-Agent": "Repofy",
     },
     body: JSON.stringify({ query, variables }),
+    signal: AbortSignal.any(signals),
+  }).catch((err) => {
+    if (err instanceof DOMException && err.name === "TimeoutError") {
+      throw new GitHubError("GitHub GraphQL request timed out", 504);
+    }
+    throw err;
   });
   if (!res.ok) throw new GitHubError(`GitHub GraphQL error: ${res.status}`, res.status);
   return res.json() as Promise<T>;
@@ -120,14 +132,17 @@ async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>):
 
 // ── Paginated repo fetch ──────────────────────────────────────────────
 
-async function fetchAllRepos(username: string): Promise<GitHubApiRepo[]> {
+const MAX_REPO_PAGES = 10; // Cap at 1000 repos max
+
+async function fetchAllRepos(username: string, signal?: AbortSignal): Promise<GitHubApiRepo[]> {
   const repos: GitHubApiRepo[] = [];
   let page = 1;
   const perPage = 100;
 
-  while (true) {
+  while (page <= MAX_REPO_PAGES) {
     const batch = await ghFetch<GitHubApiRepo[]>(
       `/users/${username}/repos?per_page=${perPage}&page=${page}&sort=updated`,
+      signal,
     );
     repos.push(...batch);
     if (batch.length < perPage) break;
@@ -236,6 +251,7 @@ function buildActivitySummary(events: GitHubApiEvent[]): ActivitySummary {
 function buildStats(
   user: GitHubApiUser,
   repos: GitHubApiRepo[],
+  reposTruncated: boolean,
 ): GitHubStats {
   let totalStars = 0;
   let totalForks = 0;
@@ -251,7 +267,7 @@ function buildStats(
     (Date.now() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24),
   );
 
-  return { totalStars, totalForks, originalRepos, accountAgeDays };
+  return { totalStars, totalForks, originalRepos, accountAgeDays, reposTruncated };
 }
 
 // ── Contribution calendar (GraphQL) ───────────────────────────────────
@@ -325,11 +341,13 @@ function mapContributionsToHeatmap(weeks: GQLContributionWeek[]): number[][] {
 
 async function fetchContributionCalendar(
   username: string,
+  signal?: AbortSignal,
 ): Promise<ContributionCalendar | null> {
   try {
     const result = await ghGraphQL<GQLContributionResponse>(
       CONTRIBUTION_QUERY,
       { username },
+      signal,
     );
     const calendar = result.data.user.contributionsCollection.contributionCalendar;
     return {
@@ -337,7 +355,7 @@ async function fetchContributionCalendar(
       heatmap: mapContributionsToHeatmap(calendar.weeks),
     };
   } catch (err) {
-    console.warn("[Repofy] Failed to fetch contribution calendar:", err);
+    logger.warn("Failed to fetch contribution calendar:", err);
     return null;
   }
 }
@@ -346,9 +364,11 @@ async function fetchContributionCalendar(
 
 export async function searchGitHubUsers(
   query: string,
+  signal?: AbortSignal,
 ): Promise<GitHubSearchResult[]> {
   const search = await ghFetch<GitHubApiSearchResponse>(
     `/search/users?q=${encodeURIComponent(query)}&per_page=5`,
+    signal,
   );
 
   if (search.items.length === 0) return [];
@@ -356,7 +376,7 @@ export async function searchGitHubUsers(
   // Fetch full profiles in parallel for bio/location/company/followers/repos
   const profiles = await Promise.all(
     search.items.map((item) =>
-      ghFetch<GitHubApiUser>(`/users/${item.login}`).catch(() => null),
+      ghFetch<GitHubApiUser>(`/users/${item.login}`, signal).catch(() => null),
     ),
   );
 
@@ -376,16 +396,19 @@ export async function searchGitHubUsers(
 
 export async function fetchGitHubUserData(
   username: string,
+  signal?: AbortSignal,
 ): Promise<GitHubUserData> {
   const [user, rawRepos, events, contributions] = await Promise.all([
-    ghFetch<GitHubApiUser>(`/users/${username}`),
-    fetchAllRepos(username),
+    ghFetch<GitHubApiUser>(`/users/${username}`, signal),
+    fetchAllRepos(username, signal),
     ghFetch<GitHubApiEvent[]>(
       `/users/${username}/events/public?per_page=100`,
+      signal,
     ),
-    fetchContributionCalendar(username),
+    fetchContributionCalendar(username, signal),
   ]);
 
+  const truncated = rawRepos.length < user.public_repos;
   const repositories = rawRepos.map(mapRepo).sort((a, b) => b.stars - a.stars);
   const topRepositories = repositories.slice(0, 6);
 
@@ -395,7 +418,7 @@ export async function fetchGitHubUserData(
     topRepositories,
     languages: buildLanguageBreakdown(rawRepos),
     activity: buildActivitySummary(events),
-    stats: buildStats(user, rawRepos),
+    stats: buildStats(user, rawRepos, truncated),
     contributions,
   };
 }

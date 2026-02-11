@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lightbulb, ArrowRight, Search, ArrowUpDown, Check, Trash2, X, CheckCircle2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -17,44 +16,36 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-interface AdviceListItem {
-  id: string;
-  analyzed_username: string;
-  generated_at: string;
-  analyzed_name: string | null;
-}
+import { useAuth } from "@/components/providers/auth-provider";
+import { useAdviceList, useDeleteAdvice, type AdviceListItem } from "@/hooks/use-advice";
+import { useSelectableList } from "@/hooks/use-selectable-list";
 
 export default function AdvisorPage() {
-  const [items, setItems] = useState<AdviceListItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { isLoading: authLoading } = useAuth();
+  const { data: items = [], isLoading: queryLoading } = useAdviceList();
+  const loading = authLoading || queryLoading;
+  const deleteAdvice = useDeleteAdvice();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [selectMode, setSelectMode] = useState(false);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from("advice")
-      .select("id, analyzed_username, analyzed_name, generated_at")
-      .order("generated_at", { ascending: false })
-      .then(({ data }) => {
-        setItems((data as AdviceListItem[]) ?? []);
-        setLoading(false);
-      });
-  }, []);
+  const {
+    selected,
+    selectMode,
+    setSelectMode,
+    toggleSelect,
+    toggleSelectAll,
+    exitSelectMode,
+    handleDelete,
+  } = useSelectableList();
 
   const filteredItems = useMemo(() => {
     const q = searchQuery.toLowerCase();
-    const filtered = items.filter((r) => {
+    const filtered = items.filter((r: AdviceListItem) => {
       if (q && !r.analyzed_username.toLowerCase().includes(q) && !(r.analyzed_name?.toLowerCase().includes(q)))
         return false;
       return true;
     });
 
-    return filtered.sort((a, b) => {
+    return filtered.sort((a: AdviceListItem, b: AdviceListItem) => {
       const mul = sortDir === "asc" ? 1 : -1;
       return (new Date(a.generated_at).getTime() - new Date(b.generated_at).getTime()) * mul;
     });
@@ -66,48 +57,8 @@ export default function AdvisorPage() {
   ];
   const currentSortLabel = sortOptions.find((o) => o.dir === sortDir)?.label ?? "Newest first";
 
-  const toggleSelect = (id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const allFilteredSelected = filteredItems.length > 0 && filteredItems.every((r) => selected.has(r.id));
-
-  const toggleSelectAll = () => {
-    if (allFilteredSelected) {
-      setSelected((prev) => {
-        const next = new Set(prev);
-        filteredItems.forEach((r) => next.delete(r.id));
-        return next;
-      });
-    } else {
-      setSelected((prev) => {
-        const next = new Set(prev);
-        filteredItems.forEach((r) => next.add(r.id));
-        return next;
-      });
-    }
-  };
-
-  const exitSelectMode = () => {
-    setSelectMode(false);
-    setSelected(new Set());
-  };
-
-  async function handleDelete() {
-    setDeleting(true);
-    const supabase = createClient();
-    const ids = [...selected];
-    await supabase.from("advice").delete().in("id", ids);
-    setItems((prev) => prev.filter((r) => !selected.has(r.id)));
-    setSelected(new Set());
-    setSelectMode(false);
-    setDeleting(false);
-  }
+  const filteredIds = useMemo(() => filteredItems.map((r) => r.id), [filteredItems]);
+  const allFilteredSelected = filteredItems.length > 0 && filteredItems.every((r: AdviceListItem) => selected.has(r.id));
 
   if (loading) {
     return (
@@ -245,17 +196,17 @@ export default function AdvisorPage() {
               <th className={`overflow-hidden transition-all duration-200 ease-out ${selectMode ? "w-10 px-3 py-3 opacity-100" : "w-0 max-w-0 p-0 opacity-0"}`}>
                 <Checkbox
                   checked={allFilteredSelected}
-                  onCheckedChange={toggleSelectAll}
+                  onCheckedChange={() => toggleSelectAll(filteredIds)}
                   className="rounded-full"
                 />
               </th>
-              <th className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <th scope="col" className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Username
               </th>
-              <th className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <th scope="col" className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Name
               </th>
-              <th className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <th scope="col" className="px-4 py-3 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Date
               </th>
             </tr>
@@ -275,7 +226,7 @@ export default function AdvisorPage() {
                 </td>
               </tr>
             ) : (
-              filteredItems.map((item) => (
+              filteredItems.map((item: AdviceListItem) => (
                 <tr
                   key={item.id}
                   className={`group border-b border-border last:border-0 transition-colors hover:bg-secondary/20 ${selectMode ? "cursor-pointer" : ""} ${selected.has(item.id) ? "bg-secondary/30" : ""}`}
@@ -335,11 +286,11 @@ export default function AdvisorPage() {
                 variant="destructive"
                 size="sm"
                 className="h-8 gap-1.5 font-mono text-xs"
-                onClick={handleDelete}
-                disabled={deleting}
+                onClick={() => handleDelete((ids) => deleteAdvice.mutateAsync(ids))}
+                disabled={deleteAdvice.isPending}
               >
                 <Trash2 className="size-3.5" />
-                {deleting ? "Deleting…" : "Delete"}
+                {deleteAdvice.isPending ? "Deleting…" : "Delete"}
               </Button>
             </div>
           </motion.div>

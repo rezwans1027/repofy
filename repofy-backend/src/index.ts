@@ -1,9 +1,10 @@
 import { createApp } from "./app";
 import { env } from "./config/env";
+import { logger } from "./lib/logger";
 
 const app = createApp();
 
 app.listen(env.port, () => {
-  console.log(`[repofy-backend] Server running on port ${env.port}`);
-  console.log(`[repofy-backend] Environment: ${env.nodeEnv}`);
+  logger.info(`Server running on port ${env.port}`);
+  logger.info(`Environment: ${env.nodeEnv}`);
 });
