@@ -92,6 +92,9 @@ test.describe("Reports page", () => {
       timeout: 10000,
     });
 
+    // Count rows before deletion
+    const rowsBefore = await page.locator("tbody tr").count();
+
     // Enter select mode
     const selectBtn = page.getByRole("button", { name: /select/i });
     await expect(selectBtn).toBeVisible();
@@ -109,13 +112,23 @@ test.describe("Reports page", () => {
 
     // Selection bar must show count and delete button
     await expect(page.getByText(/1 selected/)).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /delete/i }),
-    ).toBeVisible();
+    const deleteBtn = page.getByRole("button", { name: /delete/i });
+    await expect(deleteBtn).toBeVisible();
 
-    // Cancel without deleting
-    await page.getByRole("button", { name: /cancel/i }).click();
-    await expect(page.getByText(/1 selected/)).not.toBeVisible();
+    // Click delete and verify the row is removed
+    await deleteBtn.click();
+
+    // Selection bar must disappear (select mode exits on successful delete)
+    await expect(page.getByText(/1 selected/)).not.toBeVisible({
+      timeout: 10000,
+    });
+
+    // Row count must decrease by 1 (or show empty state if it was the only report)
+    if (rowsBefore === 1) {
+      await expect(page.locator("tbody tr")).toHaveCount(0);
+    } else {
+      await expect(page.locator("tbody tr")).toHaveCount(rowsBefore - 1);
+    }
   });
 
   test("clicking a report username navigates to report detail", async ({

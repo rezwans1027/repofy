@@ -5,14 +5,24 @@ test.describe("Compare flow", () => {
   test("compare page shows empty state with fewer than 2 reports", async ({
     page,
   }) => {
-    // Navigate directly without seeding — relies on fresh test account or
-    // at most 1 report from other specs (run serially).
-    // The "Need at least 2 reports" message OR the heading must appear.
+    // Intercept Supabase to return an empty reports array
+    await page.route("**/rest/v1/reports*", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify([]),
+      }),
+    );
+
     await page.goto("/compare");
-    const heading = page
-      .getByRole("heading", { name: /compare/i })
-      .first();
-    await expect(heading).toBeVisible({ timeout: 10000 });
+
+    // Must show the specific empty-state message
+    await expect(
+      page.getByText("Need at least 2 reports to compare"),
+    ).toBeVisible({ timeout: 10000 });
+
+    // Must NOT show candidate pickers
+    await expect(page.getByRole("combobox")).toHaveCount(0);
   });
 
   test("compare page renders candidate pickers when 2 reports exist", async ({
