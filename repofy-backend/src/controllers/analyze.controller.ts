@@ -15,17 +15,17 @@ export const analyzeUser: RequestHandler = async (req, res) => {
     return;
   }
 
-  if (!env.openaiApiKey) {
-    sendError(res, 500, "OpenAI API key is not configured");
-    return;
-  }
-
   try {
     if (env.mockAi) {
       const { MOCK_ANALYSIS_RESPONSE } = await import("../testing/mock-ai");
       const githubData = await fetchGitHubUserData(username, req.signal);
       const report = buildReportData(MOCK_ANALYSIS_RESPONSE, githubData);
       sendSuccess(res, { analyzedName: githubData.profile.name, report });
+      return;
+    }
+
+    if (!env.openaiApiKey) {
+      sendError(res, 500, "OpenAI API key is not configured");
       return;
     }
 

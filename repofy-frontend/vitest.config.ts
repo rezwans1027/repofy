@@ -33,6 +33,12 @@ export default defineConfig({
         "src/components/ui/tabs.tsx",
         "src/components/ui/tooltip.tsx",
       ],
+      thresholds: {
+        lines: 75,
+        functions: 75,
+        branches: 70,
+        statements: 75,
+      },
     },
   },
 });

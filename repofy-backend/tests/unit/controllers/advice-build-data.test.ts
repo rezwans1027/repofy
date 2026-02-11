@@ -1,45 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { createGitHubUserData } from "../../fixtures/github";
 import { createAIAdviceResponse } from "../../fixtures/ai";
-import type { GitHubRepo, AIAdviceResponse } from "../../../src/types";
+import type { GitHubRepo } from "../../../src/types";
 import { LANGUAGE_COLORS, DEFAULT_COLOR } from "../../../src/services/github.service";
-
-// buildAdviceData is a local function in advice.controller.ts, so we replicate
-// its logic inline for testing, OR we test it through the controller.
-// Since it's not exported, we'll test its behavior via a re-implementation
-// matching the source code. Better approach: extract and export it or test via integration.
-// For this test, we'll import the controller and test indirectly. But since buildAdviceData
-// is not exported, let's replicate the function exactly as in the source.
-
-function buildAdviceData(ai: AIAdviceResponse, github: { topRepositories: GitHubRepo[] }) {
-  const { topRepositories } = github;
-
-  const repoImprovements = ai.repoImprovements.map((repo) => {
-    const ghRepo = topRepositories.find(
-      (r) => r.name.toLowerCase() === repo.repoName.toLowerCase(),
-    );
-    return {
-      repoName: repo.repoName,
-      repoUrl: ghRepo?.url ?? null,
-      language: ghRepo?.language ?? null,
-      languageColor: ghRepo?.language
-        ? LANGUAGE_COLORS[ghRepo.language] || DEFAULT_COLOR
-        : DEFAULT_COLOR,
-      stars: ghRepo?.stars ?? 0,
-      improvements: repo.improvements,
-    };
-  });
-
-  return {
-    summary: ai.summary,
-    projectIdeas: ai.projectIdeas,
-    repoImprovements,
-    skillsToLearn: ai.skillsToLearn,
-    contributionAdvice: ai.contributionAdvice,
-    profileOptimizations: ai.profileOptimizations,
-    actionPlan: ai.actionPlan,
-  };
-}
+import { buildAdviceData } from "../../../src/services/advice-builder.service";
 
 describe("buildAdviceData", () => {
   it("matches repos case-insensitively", () => {
@@ -72,7 +36,8 @@ describe("buildAdviceData", () => {
       ],
     });
 
-    const result = buildAdviceData(ai, { topRepositories: topRepos });
+    const github = createGitHubUserData({ topRepositories: topRepos });
+    const result = buildAdviceData(ai, github);
 
     expect(result.repoImprovements[0].repoUrl).toBe("https://github.com/octocat/Cool-Project");
     expect(result.repoImprovements[0].language).toBe("TypeScript");
@@ -90,7 +55,8 @@ describe("buildAdviceData", () => {
       ],
     });
 
-    const result = buildAdviceData(ai, { topRepositories: [] });
+    const github = createGitHubUserData({ topRepositories: [] });
+    const result = buildAdviceData(ai, github);
 
     expect(result.repoImprovements[0].repoUrl).toBeNull();
     expect(result.repoImprovements[0].language).toBeNull();
