@@ -134,10 +134,16 @@ async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>, 
 
 const MAX_REPO_PAGES = 10; // Cap at 1000 repos max
 
-async function fetchAllRepos(username: string, signal?: AbortSignal): Promise<GitHubApiRepo[]> {
+interface RepoFetchResult {
+  repos: GitHubApiRepo[];
+  truncated: boolean;
+}
+
+async function fetchAllRepos(username: string, signal?: AbortSignal): Promise<RepoFetchResult> {
   const repos: GitHubApiRepo[] = [];
   let page = 1;
   const perPage = 100;
+  let truncated = false;
 
   while (page <= MAX_REPO_PAGES) {
     const batch = await ghFetch<GitHubApiRepo[]>(
@@ -147,9 +153,12 @@ async function fetchAllRepos(username: string, signal?: AbortSignal): Promise<Gi
     repos.push(...batch);
     if (batch.length < perPage) break;
     page++;
+    if (page > MAX_REPO_PAGES && batch.length === perPage) {
+      truncated = true;
+    }
   }
 
-  return repos;
+  return { repos, truncated };
 }
 
 // ── Data transformers ─────────────────────────────────────────────────
@@ -251,6 +260,7 @@ function buildActivitySummary(events: GitHubApiEvent[]): ActivitySummary {
 function buildStats(
   user: GitHubApiUser,
   repos: GitHubApiRepo[],
+  reposTruncated: boolean,
 ): GitHubStats {
   let totalStars = 0;
   let totalForks = 0;
@@ -266,7 +276,7 @@ function buildStats(
     (Date.now() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24),
   );
 
-  return { totalStars, totalForks, originalRepos, accountAgeDays };
+  return { totalStars, totalForks, originalRepos, accountAgeDays, reposTruncated };
 }
 
 // ── Contribution calendar (GraphQL) ───────────────────────────────────
@@ -397,7 +407,7 @@ export async function fetchGitHubUserData(
   username: string,
   signal?: AbortSignal,
 ): Promise<GitHubUserData> {
-  const [user, rawRepos, events, contributions] = await Promise.all([
+  const [user, repoResult, events, contributions] = await Promise.all([
     ghFetch<GitHubApiUser>(`/users/${username}`, signal),
     fetchAllRepos(username, signal),
     ghFetch<GitHubApiEvent[]>(
@@ -407,6 +417,7 @@ export async function fetchGitHubUserData(
     fetchContributionCalendar(username, signal),
   ]);
 
+  const { repos: rawRepos, truncated } = repoResult;
   const repositories = rawRepos.map(mapRepo).sort((a, b) => b.stars - a.stars);
   const topRepositories = repositories.slice(0, 6);
 
@@ -416,7 +427,7 @@ export async function fetchGitHubUserData(
     topRepositories,
     languages: buildLanguageBreakdown(rawRepos),
     activity: buildActivitySummary(events),
-    stats: buildStats(user, rawRepos),
+    stats: buildStats(user, rawRepos, truncated),
     contributions,
   };
 }

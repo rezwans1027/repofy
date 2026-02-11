@@ -7,6 +7,9 @@ function requireEnv(name: string): string {
   if (!value) {
     throw new Error(`Missing required environment variable: ${name}`);
   }
+  if (/^<.*>$/.test(value)) {
+    throw new Error(`Environment variable ${name} contains a placeholder value — replace it with a real secret`);
+  }
   return value;
 }
 
