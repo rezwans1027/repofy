@@ -8,6 +8,7 @@ vi.stubGlobal("fetch", fetchMock);
 
 describe("GET /api/github/:username", () => {
   beforeEach(() => {
+    // Explicit reset — vi.stubGlobal mocks need manual reset despite config-level mockReset
     fetchMock.mockReset();
   });
 

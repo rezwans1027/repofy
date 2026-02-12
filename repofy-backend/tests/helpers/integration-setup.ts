@@ -56,7 +56,7 @@ export async function setupOpenAIMock(responseFactory: () => unknown) {
  * Avoids duplicating the middleware wiring across integration test files.
  */
 export async function createShortTimeoutApp(
-  method: "post",
+  method: "get" | "post" | "put" | "delete",
   path: string,
   handler: import("express").RequestHandler,
 ) {
