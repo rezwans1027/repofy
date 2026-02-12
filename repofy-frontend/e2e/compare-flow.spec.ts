@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { TIMEOUTS } from "./helpers/timeouts";
 import { generateReportViaUI } from "./helpers/seed";
 
 test.describe("Compare flow", () => {
@@ -19,7 +20,7 @@ test.describe("Compare flow", () => {
     // Must show the specific empty-state message
     await expect(
       page.getByText("Need at least 2 reports to compare"),
-    ).toBeVisible({ timeout: 10000 });
+    ).toBeVisible({ timeout: TIMEOUTS.ELEMENT });
 
     // Must NOT show candidate pickers
     await expect(page.getByRole("combobox")).toHaveCount(0);
@@ -37,7 +38,7 @@ test.describe("Compare flow", () => {
     // Must see "Compare Candidates" heading (not empty state)
     await expect(
       page.getByRole("heading", { name: /compare candidates/i }),
-    ).toBeVisible({ timeout: 10000 });
+    ).toBeVisible({ timeout: TIMEOUTS.ELEMENT });
 
     // Candidate A and B labels must be present
     await expect(page.getByText("Candidate A")).toBeVisible();
@@ -65,7 +66,7 @@ test.describe("Compare flow", () => {
     const pickerA = pickers.nth(0);
     await pickerA.click();
     const optionA = page.locator("[cmdk-item]").first();
-    await expect(optionA).toBeVisible({ timeout: 5000 });
+    await expect(optionA).toBeVisible({ timeout: TIMEOUTS.QUICK });
     await optionA.click();
 
     // Select Candidate B (pick a non-disabled option)
@@ -74,12 +75,12 @@ test.describe("Compare flow", () => {
     const optionB = page
       .locator('[cmdk-item]:not([aria-disabled="true"])')
       .first();
-    await expect(optionB).toBeVisible({ timeout: 5000 });
+    await expect(optionB).toBeVisible({ timeout: TIMEOUTS.QUICK });
     await optionB.click();
 
     // Comparison sections must render unconditionally
     await expect(page.getByText(/strengths/i).first()).toBeVisible({
-      timeout: 15000,
+      timeout: TIMEOUTS.API,
     });
     await expect(
       page.getByText(/top repositories/i).first(),
@@ -100,6 +101,6 @@ test.describe("Compare flow", () => {
     await page.goto("/compare");
 
     // The error state must show the error message and a retry button
-    await expect(page.getByText(/retry/i)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/retry/i)).toBeVisible({ timeout: TIMEOUTS.ELEMENT });
   });
 });

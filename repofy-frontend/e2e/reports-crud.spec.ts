@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { TIMEOUTS } from "./helpers/timeouts";
 import { seedReportViaApi } from "./helpers/seed";
 
 test.describe("Reports page", () => {
@@ -13,7 +14,7 @@ test.describe("Reports page", () => {
 
     // Table headers must be visible
     await expect(page.getByText("Username").first()).toBeVisible({
-      timeout: 10000,
+      timeout: TIMEOUTS.ELEMENT,
     });
 
     // Seeded report must appear in the table
@@ -23,7 +24,7 @@ test.describe("Reports page", () => {
   test("reports page search filter works", async ({ page }) => {
     await page.goto("/reports");
     await expect(page.getByText("Username").first()).toBeVisible({
-      timeout: 10000,
+      timeout: TIMEOUTS.ELEMENT,
     });
 
     // Search input must be present
@@ -53,7 +54,7 @@ test.describe("Reports page", () => {
   }) => {
     await page.goto("/reports");
     await expect(page.getByText("Username").first()).toBeVisible({
-      timeout: 10000,
+      timeout: TIMEOUTS.ELEMENT,
     });
 
     const filterBtn = page.getByRole("button", { name: /filter/i });
@@ -71,7 +72,7 @@ test.describe("Reports page", () => {
   test("reports page sort dropdown works", async ({ page }) => {
     await page.goto("/reports");
     await expect(page.getByText("Username").first()).toBeVisible({
-      timeout: 10000,
+      timeout: TIMEOUTS.ELEMENT,
     });
 
     const sortBtn = page.getByRole("button", { name: /newest first/i });
@@ -90,7 +91,7 @@ test.describe("Reports page", () => {
   test("reports page select mode and delete flow", async ({ page }) => {
     await page.goto("/reports");
     await expect(page.getByText("Username").first()).toBeVisible({
-      timeout: 10000,
+      timeout: TIMEOUTS.ELEMENT,
     });
 
     // Count rows before deletion
@@ -121,7 +122,7 @@ test.describe("Reports page", () => {
 
     // Selection bar must disappear (select mode exits on successful delete)
     await expect(page.getByText(/1 selected/)).not.toBeVisible({
-      timeout: 10000,
+      timeout: TIMEOUTS.ELEMENT,
     });
 
     // Row count must decrease by 1 (or show empty state if it was the only report)
@@ -137,7 +138,7 @@ test.describe("Reports page", () => {
   }) => {
     await page.goto("/reports");
     await expect(page.getByText("Username").first()).toBeVisible({
-      timeout: 10000,
+      timeout: TIMEOUTS.ELEMENT,
     });
 
     // Click the first report link
@@ -148,7 +149,7 @@ test.describe("Reports page", () => {
 
     // Report detail page must show back link
     await expect(page.getByText("back to reports")).toBeVisible({
-      timeout: 10000,
+      timeout: TIMEOUTS.ELEMENT,
     });
   });
 });

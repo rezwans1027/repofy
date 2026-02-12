@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { TIMEOUTS } from "./helpers/timeouts";
 
 test.describe("Search to report flow", () => {
   test("dashboard loads with search prompt", async ({ page }) => {
@@ -26,7 +27,7 @@ test.describe("Search to report flow", () => {
 
     // Wait for search results to appear (card with @username)
     await expect(page.getByText("@octocat").first()).toBeVisible({
-      timeout: 15000,
+      timeout: TIMEOUTS.API,
     });
   });
 
@@ -42,7 +43,7 @@ test.describe("Search to report flow", () => {
       page
         .getByText(/no users found matching/i)
         .first(),
-    ).toBeVisible({ timeout: 15000 });
+    ).toBeVisible({ timeout: TIMEOUTS.API });
   });
 
   test("clicking a search result navigates to profile", async ({ page }) => {
@@ -53,7 +54,7 @@ test.describe("Search to report flow", () => {
 
     // Wait for results
     const resultCard = page.getByText("@octocat").first();
-    await resultCard.waitFor({ timeout: 15000 });
+    await resultCard.waitFor({ timeout: TIMEOUTS.API });
 
     // Click the result card — the entire card is clickable
     // The card is a motion.div with onClick that pushes to /profile/{username}
@@ -69,7 +70,7 @@ test.describe("Search to report flow", () => {
     await page.goto("/profile/octocat");
 
     // Profile header shows the username
-    await expect(page.getByText("@octocat")).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText("@octocat")).toBeVisible({ timeout: TIMEOUTS.API });
 
     // "back to search" link
     await expect(page.getByText("back to search")).toBeVisible();
@@ -81,7 +82,7 @@ test.describe("Search to report flow", () => {
     // "Fetching profile data from GitHub..." text
     // Once loaded, we should see stats sections
     await expect(page.getByText(/repos/i).first()).toBeVisible({
-      timeout: 20000,
+      timeout: TIMEOUTS.PROFILE,
     });
   });
 
@@ -91,13 +92,13 @@ test.describe("Search to report flow", () => {
     await page.goto("/profile/octocat");
 
     // Wait for profile data to load
-    await expect(page.getByText("@octocat")).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText("@octocat")).toBeVisible({ timeout: TIMEOUTS.API });
 
     // The StickyCTABar appears after a short delay (50ms default)
     // It contains "Start Analysis" and "Get Advice" buttons
     await expect(
       page.getByRole("button", { name: /start analysis/i }),
-    ).toBeVisible({ timeout: 5000 });
+    ).toBeVisible({ timeout: TIMEOUTS.QUICK });
 
     await expect(
       page.getByRole("button", { name: /get advice/i }),
@@ -110,11 +111,11 @@ test.describe("Search to report flow", () => {
     await page.goto("/profile/octocat");
 
     // Wait for profile to load
-    await expect(page.getByText("@octocat")).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText("@octocat")).toBeVisible({ timeout: TIMEOUTS.API });
 
     // Click Start Analysis
     const analysisBtn = page.getByRole("button", { name: /start analysis/i });
-    await analysisBtn.waitFor({ timeout: 5000 });
+    await analysisBtn.waitFor({ timeout: TIMEOUTS.QUICK });
     await analysisBtn.click();
 
     // Should navigate to /generate/octocat
@@ -123,9 +124,9 @@ test.describe("Search to report flow", () => {
     const replaceBtn = page.getByRole("button", {
       name: /replace report/i,
     });
-    const generateUrl = page.waitForURL(/\/generate\/octocat/i, { timeout: 5000 });
+    const generateUrl = page.waitForURL(/\/generate\/octocat/i, { timeout: TIMEOUTS.QUICK });
     const dialogVisible = replaceBtn
-      .waitFor({ state: "visible", timeout: 5000 })
+      .waitFor({ state: "visible", timeout: TIMEOUTS.QUICK })
       .then(() => true)
       .catch(() => false);
 
@@ -142,7 +143,7 @@ test.describe("Search to report flow", () => {
     // The AnalysisLoading component shows phases
     await expect(
       page.getByText("Scanning profile...").first(),
-    ).toBeVisible({ timeout: 5000 });
+    ).toBeVisible({ timeout: TIMEOUTS.QUICK });
   });
 
   test("full flow: search, profile, generate, view report", async ({
@@ -155,19 +156,19 @@ test.describe("Search to report flow", () => {
 
     // Step 2: Click result to go to profile
     const resultCard = page.getByText("@octocat").first();
-    await resultCard.waitFor({ timeout: 15000 });
+    await resultCard.waitFor({ timeout: TIMEOUTS.API });
     await resultCard.click();
     await expect(page).toHaveURL(/\/profile\/octocat/i);
 
     // Step 3: Click Start Analysis
     const analysisBtn = page.getByRole("button", { name: /start analysis/i });
-    await analysisBtn.waitFor({ timeout: 10000 });
+    await analysisBtn.waitFor({ timeout: TIMEOUTS.ELEMENT });
     await analysisBtn.click();
 
     // Handle "report already exists" dialog if it appears
     const replaceBtn = page.getByRole("button", { name: /replace report/i });
     const isReplaceVisible = await replaceBtn
-      .waitFor({ state: "visible", timeout: 2000 })
+      .waitFor({ state: "visible", timeout: TIMEOUTS.DIALOG })
       .then(() => true)
       .catch(() => false);
     if (isReplaceVisible) {
@@ -176,12 +177,12 @@ test.describe("Search to report flow", () => {
 
     // Step 4: Wait for analysis to complete and redirect to report
     // With MOCK_AI=true, this should be fast
-    await page.waitForURL(/\/report\//, { timeout: 60000 });
+    await page.waitForURL(/\/report\//, { timeout: TIMEOUTS.ANALYSIS });
 
     // Step 5: Verify report page loads
     // The report page renders AnalysisReport which shows TopBanner, Summary, etc.
     await expect(page.getByText("back to").first()).toBeVisible({
-      timeout: 10000,
+      timeout: TIMEOUTS.ELEMENT,
     });
   });
 });

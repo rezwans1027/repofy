@@ -1,87 +1,88 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-
-// Mock all subsection components to simplify testing
-let capturedTopBannerProps: any = {};
-let capturedSummaryProps: any = {};
-
-vi.mock("./sections/top-banner", () => ({
-  TopBanner: (props: any) => {
-    capturedTopBannerProps = props;
-    return <div data-testid="top-banner">{props.username}</div>;
-  },
-}));
-vi.mock("./sections/summary", () => ({
-  Summary: (props: any) => {
-    capturedSummaryProps = props;
-    return <div data-testid="summary">{props.summary}</div>;
-  },
-}));
-vi.mock("./sections/radar-section", () => ({
-  RadarSection: () => <div data-testid="radar-section">Radar</div>,
-}));
-vi.mock("./sections/stats-overview", () => ({
-  StatsOverview: () => <div data-testid="stats-overview">Stats</div>,
-}));
-vi.mock("./sections/activity-breakdown", () => ({
-  ActivityBreakdown: () => <div data-testid="activity-breakdown">Activity</div>,
-}));
-vi.mock("./sections/language-profile", () => ({
-  LanguageProfile: () => <div data-testid="language-profile">Languages</div>,
-}));
-vi.mock("./sections/top-repos", () => ({
-  TopRepos: () => <div data-testid="top-repos">Repos</div>,
-}));
-vi.mock("./sections/strengths", () => ({
-  Strengths: () => <div data-testid="strengths">Strengths</div>,
-}));
-vi.mock("./sections/weaknesses", () => ({
-  Weaknesses: () => <div data-testid="weaknesses">Weaknesses</div>,
-}));
-vi.mock("./sections/red-flags", () => ({
-  RedFlags: () => <div data-testid="red-flags">Red Flags</div>,
-}));
-vi.mock("./sections/interview-questions", () => ({
-  InterviewQuestions: () => <div data-testid="interview-questions">Questions</div>,
-}));
-vi.mock("./sections/export-bar", () => ({
-  ExportBar: () => <div data-testid="export-bar">Export</div>,
-}));
-
 import { AnalysisReport } from "./analysis-report";
-import { reportData } from "@/lib/demo-data";
+import { createReportFixture } from "@/__tests__/fixtures";
+import { reportData as staticReportData } from "@/lib/demo-data";
+
+vi.mock("@/lib/export-pdf", () => ({
+  exportToPdf: vi.fn().mockResolvedValue(undefined),
+}));
 
 describe("AnalysisReport", () => {
-  it("renders all sections", () => {
-    render(<AnalysisReport username="testuser" />);
+  it("renders all sections with real content", () => {
+    const data = createReportFixture();
+    render(<AnalysisReport username="testuser" data={data} />);
 
-    expect(screen.getByTestId("top-banner")).toBeInTheDocument();
-    expect(screen.getByTestId("summary")).toBeInTheDocument();
-    expect(screen.getByTestId("radar-section")).toBeInTheDocument();
-    expect(screen.getByTestId("stats-overview")).toBeInTheDocument();
-    expect(screen.getByTestId("activity-breakdown")).toBeInTheDocument();
-    expect(screen.getByTestId("language-profile")).toBeInTheDocument();
-    expect(screen.getByTestId("top-repos")).toBeInTheDocument();
-    expect(screen.getByTestId("strengths")).toBeInTheDocument();
-    expect(screen.getByTestId("weaknesses")).toBeInTheDocument();
-    expect(screen.getByTestId("red-flags")).toBeInTheDocument();
-    expect(screen.getByTestId("interview-questions")).toBeInTheDocument();
-    expect(screen.getByTestId("export-bar")).toBeInTheDocument();
+    // TopBanner
+    expect(screen.getAllByText("@testuser").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("Senior")).toBeInTheDocument();
+    expect(screen.getByText("Strong Hire")).toBeInTheDocument();
+
+    // Summary
+    expect(screen.getByText("Executive Summary")).toBeInTheDocument();
+    expect(screen.getByText("A strong engineer with excellent code quality.")).toBeInTheDocument();
+
+    // RadarSection
+    expect(screen.getByText("Developer DNA")).toBeInTheDocument();
+
+    // StatsOverview
+    expect(screen.getByText("Stats Overview")).toBeInTheDocument();
+    expect(screen.getByText("Repositories")).toBeInTheDocument();
+
+    // ActivityBreakdown
+    expect(screen.getByText("Activity Breakdown")).toBeInTheDocument();
+
+    // LanguageProfile
+    expect(screen.getByText("Language Profile")).toBeInTheDocument();
+    expect(screen.getByText("TypeScript")).toBeInTheDocument();
+
+    // TopRepos
+    expect(screen.getByText("Top Repositories")).toBeInTheDocument();
+    expect(screen.getByText("test-repo")).toBeInTheDocument();
+
+    // Strengths
+    expect(screen.getByText("Strengths")).toBeInTheDocument();
+    expect(screen.getByText("Consistent commits")).toBeInTheDocument();
+
+    // Weaknesses
+    expect(screen.getByText("Areas for Improvement")).toBeInTheDocument();
+    expect(screen.getByText("Testing varies")).toBeInTheDocument();
+
+    // RedFlags
+    expect(screen.getByText("Red Flags")).toBeInTheDocument();
+    expect(screen.getByText("Outdated dependencies")).toBeInTheDocument();
+
+    // InterviewQuestions
+    expect(screen.getByText("Suggested Interview Questions")).toBeInTheDocument();
+    expect(screen.getByText("Describe your testing approach.")).toBeInTheDocument();
+
+    // ExportBar
+    expect(screen.getByText("Export PDF")).toBeInTheDocument();
   });
 
-  it("passes username to TopBanner", () => {
-    render(<AnalysisReport username="alexchendev" />);
-    expect(capturedTopBannerProps.username).toBe("alexchendev");
+  it("passes username to TopBanner and ExportBar", () => {
+    const data = createReportFixture();
+    render(<AnalysisReport username="alexchendev" data={data} />);
+    // Username appears in TopBanner as @alexchendev and in ExportBar
+    const userTexts = screen.getAllByText("@alexchendev");
+    expect(userTexts.length).toBeGreaterThanOrEqual(2);
   });
 
   it("uses static reportData when no data prop provided", () => {
     render(<AnalysisReport username="testuser" />);
-    expect(capturedSummaryProps.summary).toBe(reportData.summary);
+    // Should render the static demo data summary
+    expect(screen.getByText(staticReportData.summary)).toBeInTheDocument();
   });
 
   it("uses custom data when provided", () => {
-    const customData = { ...reportData, summary: "Custom summary text" };
+    const customData = createReportFixture({ summary: "Custom summary text" });
     render(<AnalysisReport username="testuser" data={customData} />);
-    expect(capturedSummaryProps.summary).toBe("Custom summary text");
+    expect(screen.getByText("Custom summary text")).toBeInTheDocument();
+  });
+
+  it("renders the avatar when avatarUrl is provided", () => {
+    const data = createReportFixture();
+    render(<AnalysisReport username="testuser" avatarUrl="https://example.com/avatar.jpg" data={data} />);
+    expect(screen.getByAltText("testuser")).toBeInTheDocument();
   });
 });
