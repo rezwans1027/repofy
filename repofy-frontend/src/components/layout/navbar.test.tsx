@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 
 // Use a stable reference that mockReset won't touch
 const authState = { user: null as any, isLoading: false };
@@ -29,7 +29,6 @@ import { Navbar } from "./navbar";
 
 describe("Navbar", () => {
   afterEach(() => {
-    cleanup();
     authState.user = null;
     authState.isLoading = false;
     currentPathname = "/";

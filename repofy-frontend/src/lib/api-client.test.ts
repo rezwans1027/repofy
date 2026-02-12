@@ -20,6 +20,7 @@ describe("ApiError", () => {
     expect(err.status).toBe(404);
     expect(err.name).toBe("ApiError");
     expect(err).toBeInstanceOf(Error);
+    expect(err).toBeInstanceOf(ApiError);
   });
 });
 
@@ -127,5 +128,27 @@ describe("api.post", () => {
     );
 
     await expect(api.post("/validate")).rejects.toThrow("Validation failed");
+  });
+});
+
+describe("api - network errors", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("propagates network error on GET", async () => {
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(
+      new TypeError("Failed to fetch"),
+    );
+
+    await expect(api.get("/offline")).rejects.toThrow("Failed to fetch");
+  });
+
+  it("propagates network error on POST", async () => {
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(
+      new TypeError("Failed to fetch"),
+    );
+
+    await expect(api.post("/offline")).rejects.toThrow("Failed to fetch");
   });
 });

@@ -1,34 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { TestProviders } from "@/__tests__/helpers/test-providers";
+import { mockChain, setupChain } from "@/__tests__/helpers/mock-supabase-chain";
 
-// Stable mock state
+// Stable mock state — allows per-test auth toggling
 const authState = { user: null as { id: string } | null };
 
 vi.mock("@/components/providers/auth-provider", () => ({
   useAuth: () => ({ user: authState.user }),
 }));
-
-// Chainable supabase mock
-const mockChain = {
-  select: vi.fn(),
-  order: vi.fn(),
-  eq: vi.fn(),
-  single: vi.fn(),
-  delete: vi.fn(),
-  in: vi.fn(),
-  limit: vi.fn(),
-};
-
-function setupChain() {
-  mockChain.select.mockReturnValue(mockChain);
-  mockChain.order.mockReturnValue(mockChain);
-  mockChain.eq.mockReturnValue(mockChain);
-  mockChain.single.mockReturnValue(mockChain);
-  mockChain.delete.mockReturnValue(mockChain);
-  mockChain.in.mockReturnValue(mockChain);
-  mockChain.limit.mockReturnValue(mockChain);
-}
 
 const mockFrom = vi.fn().mockReturnValue(mockChain);
 
@@ -114,6 +94,19 @@ describe("createSupabaseQueries", () => {
 
       expect(result.current.isFetching).toBe(false);
     });
+
+    it("transitions to error state on failure", async () => {
+      mockChain.single.mockResolvedValue({
+        data: null,
+        error: { message: "Not found" },
+      });
+
+      const { result } = renderHook(() => useById("999"), {
+        wrapper: TestProviders,
+      });
+
+      await waitFor(() => expect(result.current.isError).toBe(true));
+    });
   });
 
   describe("useExisting", () => {
@@ -141,6 +134,19 @@ describe("createSupabaseQueries", () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(result.current.data).toBe(false);
     });
+
+    it("transitions to error state on failure", async () => {
+      mockChain.limit.mockResolvedValue({
+        data: null,
+        error: { message: "Query failed" },
+      });
+
+      const { result } = renderHook(() => useExisting("testuser"), {
+        wrapper: TestProviders,
+      });
+
+      await waitFor(() => expect(result.current.isError).toBe(true));
+    });
   });
 
   describe("useDelete", () => {
@@ -155,6 +161,18 @@ describe("createSupabaseQueries", () => {
       expect(mockFrom).toHaveBeenCalledWith("test_table");
       expect(mockChain.delete).toHaveBeenCalled();
       expect(mockChain.in).toHaveBeenCalledWith("id", ["1", "2"]);
+    });
+
+    it("rejects when delete returns an error", async () => {
+      mockChain.in.mockResolvedValue({
+        error: { message: "Delete failed" },
+      });
+
+      const { result } = renderHook(() => useDelete(), {
+        wrapper: TestProviders,
+      });
+
+      await expect(result.current.mutateAsync(["1"])).rejects.toBeDefined();
     });
   });
 });

@@ -1,27 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createGitHubUserData } from "../../fixtures/github";
 import { createAIAnalysisResponse, createShuffledRadarResponse } from "../../fixtures/ai";
+import { getMockCreate } from "../../helpers/mock-openai";
 
-// Mock the openai module
 vi.mock("openai", () => {
   const mockCreate = vi.fn();
   return {
-    default: class {
-      chat = {
-        completions: {
-          create: mockCreate,
-        },
-      };
-    },
+    default: class { chat = { completions: { create: mockCreate } }; },
     __mockCreate: mockCreate,
   };
 });
-
-// Get reference to the mock after module is set up
-async function getMockCreate() {
-  const mod = await import("openai");
-  return (mod as any).__mockCreate as ReturnType<typeof vi.fn>;
-}
 
 import { generateAnalysis } from "../../../src/services/openai.service";
 

@@ -19,6 +19,7 @@ export function setupChain() {
   mockChain.select.mockReturnValue(mockChain);
   mockChain.order.mockReturnValue(mockChain);
   mockChain.eq.mockReturnValue(mockChain);
+  mockChain.single.mockReturnValue(mockChain);
   mockChain.delete.mockReturnValue(mockChain);
   mockChain.in.mockReturnValue(mockChain);
   mockChain.limit.mockReturnValue(mockChain);

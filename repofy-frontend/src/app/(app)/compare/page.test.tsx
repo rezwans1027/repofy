@@ -1,11 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { createReportListItemFixture } from "@/__tests__/fixtures";
+import { authMockFactory } from "@/__tests__/helpers/mock-auth";
 
-// Mock auth
-vi.mock("@/components/providers/auth-provider", () => ({
-  useAuth: () => ({ user: { id: "user-123" }, isLoading: false }),
-}));
+vi.mock("@/components/providers/auth-provider", () => authMockFactory());
 
 // Mock reports data
 let mockReports: any[] = [];

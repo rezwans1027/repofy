@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, act, fireEvent, cleanup } from "@testing-library/react";
+import { render, screen, act, fireEvent } from "@testing-library/react";
 import { AnalysisProvider, useAnalysis } from "./analysis-provider";
 
 function TestConsumer() {
@@ -21,7 +21,6 @@ describe("AnalysisProvider", () => {
   });
 
   afterEach(() => {
-    cleanup();
     vi.useRealTimers();
   });
 

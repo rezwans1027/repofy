@@ -10,7 +10,7 @@ function getSupabaseConfig(): { url: string; anonKey: string } {
   const content = readFileSync(envPath, "utf-8");
   const vars: Record<string, string> = {};
   for (const line of content.split("\n")) {
-    const match = line.match(/^([A-Z_]+)=(.+)$/);
+    const match = line.match(/^([A-Z0-9_]+)=(.+)$/);
     if (match) vars[match[1]] = match[2];
   }
   const url = vars["NEXT_PUBLIC_SUPABASE_URL"];
@@ -191,7 +191,8 @@ export async function generateReportViaUI(
   // Handle "report already exists" dialog
   const replaceBtn = page.getByRole("button", { name: /replace report/i });
   const isReplaceVisible = await replaceBtn
-    .isVisible({ timeout: 2000 })
+    .waitFor({ state: "visible", timeout: 2000 })
+    .then(() => true)
     .catch(() => false);
   if (isReplaceVisible) {
     await replaceBtn.click();
