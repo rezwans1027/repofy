@@ -39,7 +39,7 @@ describe("RadarChart", () => {
     const { container } = render(<RadarChart data={testData} />);
     // 5 grid levels + 1 data shape path = 6 paths
     const paths = container.querySelectorAll("path");
-    expect(paths.length).toBeGreaterThanOrEqual(6);
+    expect(paths.length).toBe(6);
   });
 
   it("renders axis lines", () => {

@@ -39,5 +39,36 @@ describe("advice.service", () => {
         "OpenAI returned empty response",
       );
     });
+
+    it("throws on malformed JSON from OpenAI", async () => {
+      mockCreate.mockResolvedValueOnce({
+        choices: [{ message: { content: "not valid json {{{" } }],
+      });
+
+      await expect(generateAdvice(createGitHubUserData())).rejects.toThrow();
+    });
+
+    it("propagates OpenAI API errors", async () => {
+      mockCreate.mockRejectedValueOnce(new Error("429 Rate limit exceeded"));
+
+      await expect(generateAdvice(createGitHubUserData())).rejects.toThrow(
+        "429 Rate limit exceeded",
+      );
+    });
+
+    it("passes signal to OpenAI client", async () => {
+      const adviceResponse = createAIAdviceResponse();
+      mockCreate.mockResolvedValueOnce({
+        choices: [{ message: { content: JSON.stringify(adviceResponse) } }],
+      });
+
+      const controller = new AbortController();
+      await generateAdvice(createGitHubUserData(), controller.signal);
+
+      expect(mockCreate).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({ signal: controller.signal }),
+      );
+    });
   });
 });

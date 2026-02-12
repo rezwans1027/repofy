@@ -25,24 +25,18 @@ vi.mock("@/lib/styles", () => ({
   recommendationStyle: () => "mock-style",
 }));
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: vi.fn(),
-    replace: vi.fn(),
-    back: vi.fn(),
-    refresh: vi.fn(),
-    prefetch: vi.fn(),
-  }),
-  usePathname: () => "/reports",
-  useParams: () => ({}),
-  useSearchParams: () => new URLSearchParams(),
-}));
+import { navState, navModule, resetNavState } from "@/__tests__/helpers/mock-navigation";
+
+navState.pathname = "/reports";
+vi.mock("next/navigation", () => navModule);
 
 import ReportsPage from "./page";
 
 describe("ReportsPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetNavState();
+    navState.pathname = "/reports";
     mockReportsData = [];
   });
 
