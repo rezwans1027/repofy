@@ -144,6 +144,62 @@ export function createProfileFixture(overrides: Record<string, unknown> = {}) {
   };
 }
 
+export function createAdviceFixture(overrides: Record<string, unknown> = {}) {
+  return {
+    summary: "Focus on testing and open-source contributions to strengthen your profile.",
+    projectIdeas: [
+      {
+        title: "Real-time Chat App",
+        description: "Build a scalable chat application with WebSockets.",
+        techStack: ["TypeScript", "Node.js", "Redis"],
+        difficulty: "Intermediate" as const,
+        why: "Demonstrates real-time architecture skills.",
+      },
+    ],
+    repoImprovements: [
+      {
+        repoName: "test-repo",
+        repoUrl: "https://github.com/testuser/test-repo",
+        language: "TypeScript",
+        languageColor: "#3178C6",
+        stars: 100,
+        improvements: [
+          {
+            area: "Testing" as const,
+            suggestion: "Add integration tests for API routes.",
+            priority: "High" as const,
+          },
+          {
+            area: "Documentation" as const,
+            suggestion: "Add API documentation with examples.",
+            priority: "Medium" as const,
+          },
+        ],
+      },
+    ],
+    skillsToLearn: [
+      {
+        skill: "Kubernetes",
+        reason: "Essential for modern deployment workflows.",
+        demandLevel: "High" as const,
+        relatedTo: "your DevOps experience",
+      },
+    ],
+    contributionAdvice: [
+      { title: "Contribute to popular OSS", detail: "Start with documentation fixes to build reputation." },
+    ],
+    profileOptimizations: [
+      { area: "Bio", current: "Developer", suggestion: "Senior Full-Stack Engineer | TypeScript & Rust" },
+    ],
+    actionPlan: [
+      { timeframe: "30 days" as const, actions: ["Add tests to top 3 repos", "Update GitHub bio"] },
+      { timeframe: "60 days" as const, actions: ["Launch side project", "Start blogging"] },
+      { timeframe: "90 days" as const, actions: ["Contribute to 2 OSS projects", "Apply to speak at meetup"] },
+    ],
+    ...overrides,
+  };
+}
+
 export function createUserFixture(overrides: Record<string, unknown> = {}) {
   return {
     id: "user-123",

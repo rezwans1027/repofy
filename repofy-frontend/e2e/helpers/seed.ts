@@ -1,6 +1,7 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import type { Page } from "@playwright/test";
+import { TIMEOUTS } from "./timeouts";
 
 const BACKEND_URL = "http://localhost:3003";
 
@@ -61,6 +62,29 @@ async function getSupabaseSession(
 export async function getAccessToken(page: Page): Promise<string> {
   const { accessToken } = await getSupabaseSession(page);
   return accessToken;
+}
+
+/**
+ * Ping the backend health endpoint and wait until it responds.
+ * Throws a clear error if the backend is unreachable.
+ */
+export async function waitForBackend(
+  page: Page,
+  timeoutMs = TIMEOUTS.API,
+): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const resp = await page.request.get(`${BACKEND_URL}/api/health`);
+      if (resp.ok()) return;
+    } catch {
+      // backend not ready yet
+    }
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  throw new Error(
+    `Backend not reachable at ${BACKEND_URL}/api/health after ${timeoutMs}ms. Is it running?`,
+  );
 }
 
 /**
@@ -177,7 +201,7 @@ export async function generateReportViaUI(
 
   // Wait for search results
   const resultCard = page.getByText(`@${username}`).first();
-  await resultCard.waitFor({ timeout: 15000 });
+  await resultCard.waitFor({ timeout: TIMEOUTS.API });
   await resultCard.click();
 
   // Wait for profile page
@@ -185,13 +209,13 @@ export async function generateReportViaUI(
 
   // Click Start Analysis
   const analysisBtn = page.getByRole("button", { name: /start analysis/i });
-  await analysisBtn.waitFor({ timeout: 10000 });
+  await analysisBtn.waitFor({ timeout: TIMEOUTS.ELEMENT });
   await analysisBtn.click();
 
   // Handle "report already exists" dialog
   const replaceBtn = page.getByRole("button", { name: /replace report/i });
   const isReplaceVisible = await replaceBtn
-    .waitFor({ state: "visible", timeout: 2000 })
+    .waitFor({ state: "visible", timeout: TIMEOUTS.DIALOG })
     .then(() => true)
     .catch(() => false);
   if (isReplaceVisible) {
@@ -199,5 +223,5 @@ export async function generateReportViaUI(
   }
 
   // Wait for report generation to complete and redirect
-  await page.waitForURL(/\/report\//, { timeout: 60000 });
+  await page.waitForURL(/\/report\//, { timeout: TIMEOUTS.ANALYSIS });
 }

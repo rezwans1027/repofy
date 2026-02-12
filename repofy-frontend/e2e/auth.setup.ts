@@ -1,4 +1,5 @@
 import { test as setup, expect } from "@playwright/test";
+import { TIMEOUTS } from "./helpers/timeouts";
 
 const authFile = "e2e/.auth/user.json";
 
@@ -19,7 +20,7 @@ setup("authenticate", async ({ page }) => {
   await page.getByRole("button", { name: /sign in/i }).click();
 
   // Wait for redirect to dashboard after successful login
-  await page.waitForURL(/\/dashboard/, { timeout: 15000 });
+  await page.waitForURL(/\/dashboard/, { timeout: TIMEOUTS.API });
 
   // Verify we actually landed on the dashboard
   await expect(page).toHaveURL(/\/dashboard/);
