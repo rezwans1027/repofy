@@ -119,26 +119,30 @@ test.describe("Search to report flow", () => {
 
     // Should navigate to /generate/octocat
     // (if report already exists, a confirmation dialog appears first)
-    const url = page.url();
-    if (url.includes("/generate/")) {
-      // Direct navigation — analysis loading screen
-      await expect(page).toHaveURL(/\/generate\/octocat/i);
+    // Wait for either the generate page or the "replace report" dialog
+    const replaceBtn = page.getByRole("button", {
+      name: /replace report/i,
+    });
+    const generateUrl = page.waitForURL(/\/generate\/octocat/i, { timeout: 5000 });
+    const dialogVisible = replaceBtn
+      .waitFor({ state: "visible", timeout: 5000 })
+      .then(() => true)
+      .catch(() => false);
 
-      // The AnalysisLoading component shows phases
-      await expect(
-        page.getByText("Scanning profile...").first(),
-      ).toBeVisible({ timeout: 5000 });
-    } else {
-      // Report already exists — dialog appears
-      // Click "Replace report" to proceed
-      const replaceBtn = page.getByRole("button", {
-        name: /replace report/i,
-      });
-      if (await replaceBtn.isVisible()) {
-        await replaceBtn.click();
-        await expect(page).toHaveURL(/\/generate\/octocat/i);
-      }
+    const showedDialog = await Promise.race([
+      generateUrl.then(() => false),
+      dialogVisible,
+    ]);
+
+    if (showedDialog) {
+      await replaceBtn.click();
+      await expect(page).toHaveURL(/\/generate\/octocat/i);
     }
+
+    // The AnalysisLoading component shows phases
+    await expect(
+      page.getByText("Scanning profile...").first(),
+    ).toBeVisible({ timeout: 5000 });
   });
 
   test("full flow: search, profile, generate, view report", async ({
@@ -162,7 +166,11 @@ test.describe("Search to report flow", () => {
 
     // Handle "report already exists" dialog if it appears
     const replaceBtn = page.getByRole("button", { name: /replace report/i });
-    if (await replaceBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+    const isReplaceVisible = await replaceBtn
+      .waitFor({ state: "visible", timeout: 2000 })
+      .then(() => true)
+      .catch(() => false);
+    if (isReplaceVisible) {
       await replaceBtn.click();
     }
 

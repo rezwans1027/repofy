@@ -5,6 +5,7 @@ import {
   createGitHubApiEvent,
   createContributionResponse,
 } from "../fixtures/github";
+import { getMockCreate } from "./mock-openai";
 
 export function mockFetchJson(data: unknown, ok = true, status = 200) {
   return Promise.resolve({
@@ -43,8 +44,7 @@ export async function setupAuthMock(valid = true) {
 }
 
 export async function setupOpenAIMock(responseFactory: () => unknown) {
-  const mod = await import("openai");
-  const mockCreate = (mod as any).__mockCreate as ReturnType<typeof vi.fn>;
+  const mockCreate = await getMockCreate();
   mockCreate.mockResolvedValue({
     choices: [{ message: { content: JSON.stringify(responseFactory()) } }],
   });
