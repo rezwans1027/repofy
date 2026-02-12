@@ -8,17 +8,12 @@ import {
   setupOpenAIMock,
   createShortTimeoutApp,
 } from "../helpers/integration-setup";
+import { getMockCreate } from "../helpers/mock-openai";
 
 const fetchMock = vi.fn();
 vi.stubGlobal("fetch", fetchMock);
 
-vi.mock("openai", () => {
-  const mockCreate = vi.fn();
-  return {
-    default: class { chat = { completions: { create: mockCreate } }; },
-    __mockCreate: mockCreate,
-  };
-});
+vi.mock("openai");
 
 vi.mock("../../src/config/supabase", () => ({
   getSupabaseAdmin: vi.fn(),
@@ -85,8 +80,7 @@ describe("POST /api/advice/:username", () => {
   it("returns 500 when OpenAI fails", async () => {
     setupGitHubMocks(fetchMock);
     await setupAuthMock(true);
-    const mod = await import("openai");
-    const mockCreate = (mod as any).__mockCreate as ReturnType<typeof vi.fn>;
+    const mockCreate = await getMockCreate();
     mockCreate.mockRejectedValue(new Error("OpenAI rate limit exceeded"));
 
     const app = getApp();
