@@ -110,5 +110,21 @@ describe("openai.service", () => {
         "OpenAI returned empty response",
       );
     });
+
+    it("throws on malformed JSON from OpenAI", async () => {
+      mockCreate.mockResolvedValueOnce({
+        choices: [{ message: { content: "not valid json {{{" } }],
+      });
+
+      await expect(generateAnalysis(createGitHubUserData())).rejects.toThrow();
+    });
+
+    it("propagates OpenAI API errors", async () => {
+      mockCreate.mockRejectedValueOnce(new Error("429 Rate limit exceeded"));
+
+      await expect(generateAnalysis(createGitHubUserData())).rejects.toThrow(
+        "429 Rate limit exceeded",
+      );
+    });
   });
 });

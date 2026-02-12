@@ -1,4 +1,4 @@
-import type { AIAnalysisResponse, AIAdviceResponse } from "../types";
+import type { AIAnalysisResponse, AIAdviceResponse } from "../../src/types";
 
 export const MOCK_ANALYSIS_RESPONSE: AIAnalysisResponse = {
   candidateLevel: "Mid-Level",

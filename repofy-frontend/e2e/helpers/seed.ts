@@ -12,7 +12,11 @@ function getSupabaseConfig(): { url: string; anonKey: string } {
   const vars: Record<string, string> = {};
   for (const line of content.split("\n")) {
     const match = line.match(/^([A-Z0-9_]+)=(.+)$/);
-    if (match) vars[match[1]] = match[2];
+    if (match) {
+      let value = match[2].split("#")[0].trim(); // strip trailing comments
+      value = value.replace(/^(['"])(.*)\1$/, "$2"); // strip wrapping quotes
+      vars[match[1]] = value;
+    }
   }
   const url = vars["NEXT_PUBLIC_SUPABASE_URL"];
   const anonKey = vars["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
