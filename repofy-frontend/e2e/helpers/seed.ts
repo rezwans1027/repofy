@@ -13,8 +13,12 @@ function getSupabaseConfig(): { url: string; anonKey: string } {
   for (const line of content.split("\n")) {
     const match = line.match(/^([A-Z0-9_]+)=(.+)$/);
     if (match) {
-      let value = match[2].split("#")[0].trim(); // strip trailing comments
-      value = value.replace(/^(['"])(.*)\1$/, "$2"); // strip wrapping quotes
+      const raw = match[2];
+      // Quoted values: extract content between matching quotes (preserves #)
+      const quoted = raw.match(/^(['"])(.*)\1/);
+      const value = quoted
+        ? quoted[2]
+        : raw.split("#")[0].trim(); // unquoted: strip trailing comments
       vars[match[1]] = value;
     }
   }
