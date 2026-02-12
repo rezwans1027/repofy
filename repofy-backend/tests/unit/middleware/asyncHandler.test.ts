@@ -29,13 +29,13 @@ describe("asyncHandler", () => {
     expect(next).toHaveBeenCalledWith(err);
   });
 
-  it("does not call next when handler resolves", async () => {
+  it("does not call next with an error when handler resolves", async () => {
     const handler = vi.fn().mockResolvedValue(undefined);
     const { req, res, next } = createMocks();
 
     await asyncHandler(handler)(req, res, next);
 
-    // next is passed to handler, but asyncHandler itself doesn't call it on success
-    expect(handler).toHaveBeenCalledWith(req, res, next);
+    // asyncHandler's catch branch should not fire on success
+    expect(next).not.toHaveBeenCalled();
   });
 });

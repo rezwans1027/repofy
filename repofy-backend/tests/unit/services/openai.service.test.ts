@@ -86,6 +86,21 @@ describe("openai.service", () => {
       expect(complexityBreakdown!.note).toBe("");
     });
 
+    it("passes signal to OpenAI client", async () => {
+      const analysisResponse = createAIAnalysisResponse();
+      mockCreate.mockResolvedValueOnce({
+        choices: [{ message: { content: JSON.stringify(analysisResponse) } }],
+      });
+
+      const controller = new AbortController();
+      await generateAnalysis(createGitHubUserData(), controller.signal);
+
+      expect(mockCreate).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({ signal: controller.signal }),
+      );
+    });
+
     it("throws on empty response", async () => {
       mockCreate.mockResolvedValueOnce({
         choices: [{ message: { content: null } }],
