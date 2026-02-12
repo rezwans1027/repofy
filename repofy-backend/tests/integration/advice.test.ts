@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import { getApp } from "../helpers/supertest-app";
-import {
-  createGitHubApiUser,
-  createGitHubApiRepo,
-  createGitHubApiEvent,
-  createContributionResponse,
-} from "../fixtures/github";
 import { createAIAdviceResponse } from "../fixtures/ai";
+import {
+  mockFetchJson,
+  setupGitHubMocks,
+  setupAuthMock,
+  setupOpenAIMock,
+} from "../helpers/integration-setup";
 
 // Mock fetch
 const fetchMock = vi.fn();
@@ -29,61 +29,15 @@ vi.mock("../../src/config/supabase", () => ({
   getSupabaseAdmin: vi.fn(),
 }));
 
-function mockFetchJson(data: unknown, ok = true, status = 200) {
-  return Promise.resolve({
-    ok,
-    status,
-    json: () => Promise.resolve(data),
-  });
-}
-
-function setupGitHubMocks() {
-  const user = createGitHubApiUser();
-  const repos = [createGitHubApiRepo()];
-  const events = [createGitHubApiEvent("PushEvent")];
-  const contributions = createContributionResponse();
-
-  fetchMock.mockImplementation((url: string) => {
-    const urlStr = url.toString();
-    if (urlStr.includes("/graphql")) return mockFetchJson(contributions);
-    if (urlStr.includes("/users/octocat/repos")) return mockFetchJson(repos);
-    if (urlStr.includes("/users/octocat/events")) return mockFetchJson(events);
-    if (urlStr.includes("/users/octocat")) return mockFetchJson(user);
-    return mockFetchJson({}, false, 404);
-  });
-}
-
-async function setupAuthMock(valid = true) {
-  const { getSupabaseAdmin } = await import("../../src/config/supabase");
-  const mockGetUser = vi.fn().mockResolvedValue(
-    valid
-      ? { data: { user: { id: "test-id", email: "test@test.com" } }, error: null }
-      : { data: { user: null }, error: { message: "Invalid token" } },
-  );
-  (getSupabaseAdmin as ReturnType<typeof vi.fn>).mockReturnValue({
-    auth: { getUser: mockGetUser },
-  });
-}
-
-async function setupOpenAIMock() {
-  const mod = await import("openai");
-  const mockCreate = (mod as any).__mockCreate as ReturnType<typeof vi.fn>;
-  const adviceResponse = createAIAdviceResponse();
-  mockCreate.mockResolvedValue({
-    choices: [{ message: { content: JSON.stringify(adviceResponse) } }],
-  });
-  return mockCreate;
-}
-
 describe("POST /api/advice/:username", () => {
   beforeEach(() => {
     fetchMock.mockReset();
   });
 
   it("returns 200 with advice data when authenticated", async () => {
-    setupGitHubMocks();
+    setupGitHubMocks(fetchMock);
     await setupAuthMock(true);
-    await setupOpenAIMock();
+    await setupOpenAIMock(() => createAIAdviceResponse());
 
     const app = getApp();
     const res = await request(app)
@@ -119,7 +73,7 @@ describe("POST /api/advice/:username", () => {
 
   it("returns error when GitHub fetch fails", async () => {
     await setupAuthMock(true);
-    await setupOpenAIMock();
+    await setupOpenAIMock(() => createAIAdviceResponse());
     fetchMock.mockReturnValue(
       Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({}) }),
     );
@@ -131,5 +85,53 @@ describe("POST /api/advice/:username", () => {
 
     expect(res.status).toBe(404);
     expect(res.body.success).toBe(false);
+  });
+
+  it("returns 500 when OpenAI fails", async () => {
+    setupGitHubMocks(fetchMock);
+    await setupAuthMock(true);
+    const mod = await import("openai");
+    const mockCreate = (mod as any).__mockCreate as ReturnType<typeof vi.fn>;
+    mockCreate.mockRejectedValue(new Error("OpenAI rate limit exceeded"));
+
+    const app = getApp();
+    const res = await request(app)
+      .post("/api/advice/octocat")
+      .set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(500);
+    expect(res.body.success).toBe(false);
+  });
+
+  it("returns 504 without double-response when request is aborted", async () => {
+    await setupAuthMock(true);
+    // Make fetch hang until the abort signal fires, then reject
+    fetchMock.mockImplementation((_url: string, opts?: { signal?: AbortSignal }) => {
+      return new Promise((_resolve, reject) => {
+        const onAbort = () => reject(new DOMException("The operation was aborted", "AbortError"));
+        if (opts?.signal?.aborted) return onAbort();
+        opts?.signal?.addEventListener("abort", onAbort);
+      });
+    });
+
+    const shortTimeoutApp = (await import("express")).default();
+    const { timeout: timeoutMw } = await import("../../src/middleware/timeout");
+    const { requireAuth } = await import("../../src/middleware/auth");
+    const { asyncHandler } = await import("../../src/middleware/asyncHandler");
+    const { adviseUser } = await import("../../src/controllers/advice.controller");
+    const { errorHandler } = await import("../../src/middleware/errorHandler");
+    shortTimeoutApp.use((await import("express")).default.json());
+    shortTimeoutApp.post("/api/advice/:username", timeoutMw(50), requireAuth, asyncHandler(adviseUser));
+    shortTimeoutApp.use(errorHandler);
+
+    const res = await request(shortTimeoutApp)
+      .post("/api/advice/octocat")
+      .set("Authorization", "Bearer valid-token");
+
+    // The timeout middleware sends 504, and the controller's abort guard
+    // prevents a second response (no "headers already sent" crash)
+    expect(res.status).toBe(504);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toContain("timed out");
   });
 });

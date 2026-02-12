@@ -2,17 +2,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import { getApp } from "../helpers/supertest-app";
 import { createGitHubApiUser, createSearchResponse } from "../fixtures/github";
+import { mockFetchJson } from "../helpers/integration-setup";
 
 const fetchMock = vi.fn();
 vi.stubGlobal("fetch", fetchMock);
-
-function mockFetchJson(data: unknown, ok = true, status = 200) {
-  return Promise.resolve({
-    ok,
-    status,
-    json: () => Promise.resolve(data),
-  });
-}
 
 describe("GET /api/github/search", () => {
   beforeEach(() => {

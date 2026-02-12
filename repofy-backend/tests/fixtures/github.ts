@@ -81,9 +81,9 @@ export function createSearchResponse(logins: string[]): GitHubApiSearchResponse 
 }
 
 export function createContributionResponse() {
-  const weeks = Array.from({ length: 52 }, () => ({
-    contributionDays: Array.from({ length: 7 }, () => ({
-      contributionCount: Math.floor(Math.random() * 5),
+  const weeks = Array.from({ length: 52 }, (_, w) => ({
+    contributionDays: Array.from({ length: 7 }, (_, d) => ({
+      contributionCount: (w * 7 + d) % 5,
     })),
   }));
 

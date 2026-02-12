@@ -1,23 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import { getApp } from "../helpers/supertest-app";
-import {
-  createGitHubApiUser,
-  createGitHubApiRepo,
-  createGitHubApiEvent,
-  createContributionResponse,
-} from "../fixtures/github";
+import { setupGitHubMocks } from "../helpers/integration-setup";
 
 const fetchMock = vi.fn();
 vi.stubGlobal("fetch", fetchMock);
-
-function mockFetchJson(data: unknown, ok = true, status = 200) {
-  return Promise.resolve({
-    ok,
-    status,
-    json: () => Promise.resolve(data),
-  });
-}
 
 describe("GET /api/github/:username", () => {
   beforeEach(() => {
@@ -25,19 +12,7 @@ describe("GET /api/github/:username", () => {
   });
 
   it("returns full user data for valid username", async () => {
-    const user = createGitHubApiUser();
-    const repos = [createGitHubApiRepo()];
-    const events = [createGitHubApiEvent("PushEvent")];
-    const contributions = createContributionResponse();
-
-    fetchMock.mockImplementation((url: string) => {
-      const urlStr = url.toString();
-      if (urlStr.includes("/graphql")) return mockFetchJson(contributions);
-      if (urlStr.includes("/users/octocat/repos")) return mockFetchJson(repos);
-      if (urlStr.includes("/users/octocat/events")) return mockFetchJson(events);
-      if (urlStr.includes("/users/octocat")) return mockFetchJson(user);
-      return mockFetchJson({}, false, 404);
-    });
+    setupGitHubMocks(fetchMock);
 
     const app = getApp();
     const res = await request(app).get("/api/github/octocat");
