@@ -8,17 +8,12 @@ import {
   setupOpenAIMock,
   createShortTimeoutApp,
 } from "../helpers/integration-setup";
+import { getMockCreate } from "../helpers/mock-openai";
 
 const fetchMock = vi.fn();
 vi.stubGlobal("fetch", fetchMock);
 
-vi.mock("openai", () => {
-  const mockCreate = vi.fn();
-  return {
-    default: class { chat = { completions: { create: mockCreate } }; },
-    __mockCreate: mockCreate,
-  };
-});
+vi.mock("openai");
 
 vi.mock("../../src/config/supabase", () => ({
   getSupabaseAdmin: vi.fn(),
@@ -42,8 +37,13 @@ describe("POST /api/analyze/:username", () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data.analyzedName).toBe("The Octocat");
-    expect(res.body.data.report).toBeDefined();
-    expect(res.body.data.report.candidateLevel).toBe("Mid-Level");
+    expect(res.body.data.report).toMatchObject({
+      candidateLevel: "Mid-Level",
+      overallScore: expect.any(Number),
+      radarAxes: expect.any(Array),
+      strengths: expect.any(Array),
+      weaknesses: expect.any(Array),
+    });
   });
 
   it("returns 401 without auth", async () => {
@@ -85,8 +85,7 @@ describe("POST /api/analyze/:username", () => {
   it("returns 500 when OpenAI fails", async () => {
     setupGitHubMocks(fetchMock);
     await setupAuthMock(true);
-    const mod = await import("openai");
-    const mockCreate = (mod as any).__mockCreate as ReturnType<typeof vi.fn>;
+    const mockCreate = await getMockCreate();
     mockCreate.mockRejectedValue(new Error("OpenAI rate limit exceeded"));
 
     const app = getApp();

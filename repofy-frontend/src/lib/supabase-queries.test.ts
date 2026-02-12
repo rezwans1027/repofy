@@ -172,7 +172,7 @@ describe("createSupabaseQueries", () => {
         wrapper: TestProviders,
       });
 
-      await expect(result.current.mutateAsync(["1"])).rejects.toBeDefined();
+      await expect(result.current.mutateAsync(["1"])).rejects.toThrow("Delete failed");
     });
   });
 });

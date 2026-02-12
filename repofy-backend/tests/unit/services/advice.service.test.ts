@@ -3,13 +3,7 @@ import { createGitHubUserData } from "../../fixtures/github";
 import { createAIAdviceResponse } from "../../fixtures/ai";
 import { getMockCreate } from "../../helpers/mock-openai";
 
-vi.mock("openai", () => {
-  const mockCreate = vi.fn();
-  return {
-    default: class { chat = { completions: { create: mockCreate } }; },
-    __mockCreate: mockCreate,
-  };
-});
+vi.mock("openai");
 
 import { generateAdvice } from "../../../src/services/advice.service";
 

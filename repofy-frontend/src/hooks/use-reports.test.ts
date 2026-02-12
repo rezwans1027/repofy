@@ -116,6 +116,6 @@ describe("useDeleteReports", () => {
       wrapper: TestProviders,
     });
 
-    await expect(result.current.mutateAsync(["report-1"])).rejects.toBeDefined();
+    await expect(result.current.mutateAsync(["report-1"])).rejects.toThrow("Delete failed");
   });
 });

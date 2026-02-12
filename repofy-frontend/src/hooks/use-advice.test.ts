@@ -115,6 +115,6 @@ describe("useDeleteAdvice", () => {
       wrapper: TestProviders,
     });
 
-    await expect(result.current.mutateAsync(["adv-1"])).rejects.toBeDefined();
+    await expect(result.current.mutateAsync(["adv-1"])).rejects.toThrow("Delete failed");
   });
 });
