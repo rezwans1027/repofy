@@ -32,10 +32,13 @@ describe("USERNAME_RE", () => {
     expect(USERNAME_RE.test("bad-")).toBe(false);
   });
 
-  it("rejects double hyphens", () => {
-    // double hyphens are technically valid in GitHub usernames
-    // but the regex requires [a-zA-Z0-9-] in the middle, so "--bad" still fails
+  it("rejects leading double hyphens", () => {
+    // "--bad" fails because of the leading hyphen, not the double hyphen
     expect(USERNAME_RE.test("--bad")).toBe(false);
+  });
+
+  it("accepts mid-string double hyphens", () => {
+    expect(USERNAME_RE.test("a--b")).toBe(true);
   });
 
   it("rejects 40+ character username", () => {

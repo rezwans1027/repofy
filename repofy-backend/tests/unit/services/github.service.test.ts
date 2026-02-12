@@ -246,5 +246,33 @@ describe("github.service", () => {
       expect(repoCalls).toHaveLength(1);
       expect(data.stats.reposTruncated).toBe(true); // 50 < 150 public_repos
     });
+
+    it("fetches multiple pages when batch equals perPage", async () => {
+      const user = createGitHubApiUser({ public_repos: 150 });
+      const fullBatch = createGitHubApiRepoList(100); // exactly perPage → triggers next page
+      const partialBatch = createGitHubApiRepoList(50); // second page, less than perPage → stops
+      const events = [createGitHubApiEvent("PushEvent")];
+      const contributions = createContributionResponse();
+
+      fetchMock.mockImplementation((url: string) => {
+        const urlStr = url.toString();
+        if (urlStr.includes("/graphql")) return mockFetchJson(contributions);
+        if (urlStr.includes("/users/octocat/repos")) {
+          if (urlStr.includes("page=2")) return mockFetchJson(partialBatch);
+          return mockFetchJson(fullBatch);
+        }
+        if (urlStr.includes("/users/octocat/events")) return mockFetchJson(events);
+        if (urlStr.includes("/users/octocat")) return mockFetchJson(user);
+        return mockFetchJson({}, false, 404);
+      });
+
+      const data = await fetchGitHubUserData("octocat");
+
+      const repoCalls = fetchMock.mock.calls.filter(
+        (c) => c[0].toString().includes("/repos"),
+      );
+      expect(repoCalls).toHaveLength(2);
+      expect(data.repositories).toHaveLength(150);
+    });
   });
 });
