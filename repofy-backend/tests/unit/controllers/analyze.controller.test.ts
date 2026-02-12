@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { Request, Response } from "express";
+import { createControllerMocks } from "../../helpers/controller-mocks";
 
 vi.mock("../../../src/services/github.service", async (importOriginal) => {
   const original = await importOriginal<typeof import("../../../src/services/github.service")>();
@@ -27,23 +27,6 @@ import { generateAnalysis } from "../../../src/services/openai.service";
 import { buildReportData } from "../../../src/services/analyze.service";
 import { env } from "../../../src/config/env";
 
-function createMocks(
-  params: Record<string, string> = { username: "octocat" },
-  query: Record<string, string> = {},
-) {
-  const req = {
-    params,
-    query,
-    signal: { aborted: false },
-  } as unknown as Request;
-  const res = {
-    headersSent: false,
-    status: vi.fn().mockReturnThis(),
-    json: vi.fn().mockReturnThis(),
-  } as unknown as Response;
-  return { req, res };
-}
-
 const mockFetchGitHubUserData = fetchGitHubUserData as ReturnType<typeof vi.fn>;
 const mockGenerateAnalysis = generateAnalysis as ReturnType<typeof vi.fn>;
 const mockBuildReportData = buildReportData as ReturnType<typeof vi.fn>;
@@ -56,7 +39,7 @@ describe("analyzeUser controller", () => {
   });
 
   it("returns 400 for invalid username", async () => {
-    const { req, res } = createMocks({ username: "-invalid" });
+    const { req, res } = createControllerMocks({ username: "-invalid" });
 
     await analyzeUser(req, res, vi.fn());
 
@@ -75,7 +58,7 @@ describe("analyzeUser controller", () => {
     mockGenerateAnalysis.mockResolvedValue(aiResult);
     mockBuildReportData.mockReturnValue(report);
 
-    const { req, res } = createMocks();
+    const { req, res } = createControllerMocks();
 
     await analyzeUser(req, res, vi.fn());
 
@@ -91,7 +74,7 @@ describe("analyzeUser controller", () => {
     mockFetchGitHubUserData.mockResolvedValue(githubData);
     mockBuildReportData.mockReturnValue({ mock: true });
 
-    const { req, res } = createMocks();
+    const { req, res } = createControllerMocks();
 
     await analyzeUser(req, res, vi.fn());
 
@@ -104,7 +87,7 @@ describe("analyzeUser controller", () => {
   it("returns 500 when openaiApiKey is missing", async () => {
     (env as any).openaiApiKey = "";
 
-    const { req, res } = createMocks();
+    const { req, res } = createControllerMocks();
 
     await analyzeUser(req, res, vi.fn());
 
@@ -117,7 +100,7 @@ describe("analyzeUser controller", () => {
 
   it("returns early when signal is aborted", async () => {
     mockFetchGitHubUserData.mockRejectedValue(new Error("aborted"));
-    const { req, res } = createMocks();
+    const { req, res } = createControllerMocks();
     (req as any).signal = { aborted: true };
 
     await analyzeUser(req, res, vi.fn());
@@ -130,7 +113,7 @@ describe("analyzeUser controller", () => {
     mockFetchGitHubUserData.mockRejectedValue(
       new GitHubError("User not found", 404),
     );
-    const { req, res } = createMocks();
+    const { req, res } = createControllerMocks();
 
     await analyzeUser(req, res, vi.fn());
 
@@ -143,7 +126,7 @@ describe("analyzeUser controller", () => {
 
   it("handles generic error with 500", async () => {
     mockFetchGitHubUserData.mockRejectedValue(new Error("boom"));
-    const { req, res } = createMocks();
+    const { req, res } = createControllerMocks();
 
     await analyzeUser(req, res, vi.fn());
 

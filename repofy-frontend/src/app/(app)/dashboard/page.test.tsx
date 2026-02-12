@@ -16,19 +16,10 @@ vi.mock("@/lib/api-client", () => ({
   },
 }));
 
-const mockPush = vi.fn();
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: mockPush,
-    replace: vi.fn(),
-    back: vi.fn(),
-    refresh: vi.fn(),
-    prefetch: vi.fn(),
-  }),
-  useParams: () => ({}),
-  usePathname: () => "/dashboard",
-  useSearchParams: () => new URLSearchParams(),
-}));
+import { navState, navModule, resetNavState } from "@/__tests__/helpers/mock-navigation";
+
+navState.pathname = "/dashboard";
+vi.mock("next/navigation", () => navModule);
 
 import DashboardPage from "./page";
 import { api } from "@/lib/api-client";
@@ -36,6 +27,8 @@ import { api } from "@/lib/api-client";
 describe("DashboardPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetNavState();
+    navState.pathname = "/dashboard";
   });
 
   it("renders search input", () => {

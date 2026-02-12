@@ -14,9 +14,9 @@ describe("RadarSection", () => {
   it("renders breakdown labels and scores", () => {
     render(<RadarSection radarAxes={data.radarAxes} radarBreakdown={data.radarBreakdown} />);
     // Labels appear in both radar chart SVG and breakdown list
-    expect(screen.getAllByText("Code Quality").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("Project Complexity").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("Technical Breadth").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Code Quality")).toHaveLength(2);
+    expect(screen.getAllByText("Project Complexity")).toHaveLength(2);
+    expect(screen.getAllByText("Technical Breadth")).toHaveLength(2);
   });
 
   it("renders breakdown notes", () => {

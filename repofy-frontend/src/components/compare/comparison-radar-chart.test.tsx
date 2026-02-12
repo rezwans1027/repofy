@@ -63,8 +63,8 @@ describe("ComparisonRadarChart", () => {
     );
     // Breakdown labels appear in the table section (not SVG text elements)
     const allCodeQuality = screen.getAllByText("Code Quality");
-    expect(allCodeQuality.length).toBeGreaterThanOrEqual(1);
+    expect(allCodeQuality).toHaveLength(2);
     const allConsistency = screen.getAllByText("Consistency");
-    expect(allConsistency.length).toBeGreaterThanOrEqual(1);
+    expect(allConsistency).toHaveLength(2);
   });
 });

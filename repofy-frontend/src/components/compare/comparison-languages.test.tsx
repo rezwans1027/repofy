@@ -35,6 +35,6 @@ describe("ComparisonLanguages", () => {
     render(<ComparisonLanguages reportA={reportA} reportB={reportB} usernameA="alice" usernameB="bob" />);
     // Rust is in A but not B, so B should show "—"
     const dashes = screen.getAllByText("—");
-    expect(dashes.length).toBeGreaterThan(0);
+    expect(dashes).toHaveLength(6);
   });
 });

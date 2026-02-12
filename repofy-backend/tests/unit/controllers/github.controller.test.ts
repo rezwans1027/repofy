@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { Request, Response } from "express";
+import { createControllerMocks } from "../../helpers/controller-mocks";
 
 vi.mock("../../../src/services/github.service", async (importOriginal) => {
   const original = await importOriginal<typeof import("../../../src/services/github.service")>();
@@ -23,30 +23,13 @@ import {
 const mockSearchGitHubUsers = searchGitHubUsers as ReturnType<typeof vi.fn>;
 const mockFetchGitHubUserData = fetchGitHubUserData as ReturnType<typeof vi.fn>;
 
-function createMocks(
-  params: Record<string, string> = {},
-  query: Record<string, string> = {},
-) {
-  const req = {
-    params,
-    query,
-    signal: { aborted: false },
-  } as unknown as Request;
-  const res = {
-    headersSent: false,
-    status: vi.fn().mockReturnThis(),
-    json: vi.fn().mockReturnThis(),
-  } as unknown as Response;
-  return { req, res };
-}
-
 describe("searchGitHub controller", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("returns empty array for empty query", async () => {
-    const { req, res } = createMocks({}, { q: "" });
+    const { req, res } = createControllerMocks({}, { q: "" });
 
     await searchGitHub(req, res, vi.fn());
 
@@ -57,7 +40,7 @@ describe("searchGitHub controller", () => {
   it("trims whitespace from query", async () => {
     const results = [{ username: "octocat" }];
     mockSearchGitHubUsers.mockResolvedValue(results);
-    const { req, res } = createMocks({}, { q: "  octocat  " });
+    const { req, res } = createControllerMocks({}, { q: "  octocat  " });
 
     await searchGitHub(req, res, vi.fn());
 
@@ -67,7 +50,7 @@ describe("searchGitHub controller", () => {
   it("returns search results on happy path", async () => {
     const results = [{ username: "octocat" }];
     mockSearchGitHubUsers.mockResolvedValue(results);
-    const { req, res } = createMocks({}, { q: "octocat" });
+    const { req, res } = createControllerMocks({}, { q: "octocat" });
 
     await searchGitHub(req, res, vi.fn());
 
@@ -78,7 +61,7 @@ describe("searchGitHub controller", () => {
     mockSearchGitHubUsers.mockRejectedValue(
       new GitHubError("rate limit exceeded", 429),
     );
-    const { req, res } = createMocks({}, { q: "octocat" });
+    const { req, res } = createControllerMocks({}, { q: "octocat" });
 
     await searchGitHub(req, res, vi.fn());
 
@@ -91,7 +74,7 @@ describe("searchGitHub controller", () => {
 
   it("handles generic error with 500", async () => {
     mockSearchGitHubUsers.mockRejectedValue(new Error("boom"));
-    const { req, res } = createMocks({}, { q: "octocat" });
+    const { req, res } = createControllerMocks({}, { q: "octocat" });
 
     await searchGitHub(req, res, vi.fn());
 
@@ -109,7 +92,7 @@ describe("getGitHubUser controller", () => {
   });
 
   it("returns 400 for invalid username", async () => {
-    const { req, res } = createMocks({ username: "-invalid" });
+    const { req, res } = createControllerMocks({ username: "-invalid" });
 
     await getGitHubUser(req, res, vi.fn());
 
@@ -123,7 +106,7 @@ describe("getGitHubUser controller", () => {
   it("returns user data on happy path", async () => {
     const userData = { profile: { username: "octocat" } };
     mockFetchGitHubUserData.mockResolvedValue(userData);
-    const { req, res } = createMocks({ username: "octocat" });
+    const { req, res } = createControllerMocks({ username: "octocat" });
 
     await getGitHubUser(req, res, vi.fn());
 
@@ -134,7 +117,7 @@ describe("getGitHubUser controller", () => {
     mockFetchGitHubUserData.mockRejectedValue(
       new GitHubError("User not found", 404),
     );
-    const { req, res } = createMocks({ username: "octocat" });
+    const { req, res } = createControllerMocks({ username: "octocat" });
 
     await getGitHubUser(req, res, vi.fn());
 
@@ -147,7 +130,7 @@ describe("getGitHubUser controller", () => {
 
   it("handles generic error with 500", async () => {
     mockFetchGitHubUserData.mockRejectedValue(new Error("boom"));
-    const { req, res } = createMocks({ username: "octocat" });
+    const { req, res } = createControllerMocks({ username: "octocat" });
 
     await getGitHubUser(req, res, vi.fn());
 

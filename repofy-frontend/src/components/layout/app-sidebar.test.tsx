@@ -1,35 +1,22 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { navState, navModule, resetNavState } from "@/__tests__/helpers/mock-navigation";
 
-// Mock usePathname
-let mockPathname = "/dashboard";
-vi.mock("next/navigation", async () => {
-  const original = await vi.importActual("next/navigation");
-  return {
-    ...original,
-    useRouter: () => ({
-      push: vi.fn(),
-      replace: vi.fn(),
-      back: vi.fn(),
-      refresh: vi.fn(),
-      prefetch: vi.fn(),
-    }),
-    usePathname: () => mockPathname,
-    useParams: () => ({}),
-    useSearchParams: () => new URLSearchParams(),
-  };
-});
+vi.mock("next/navigation", () => navModule);
 
 import { AppSidebar } from "./app-sidebar";
 
 describe("AppSidebar", () => {
+  afterEach(() => resetNavState());
+
   it("renders all navigation links", () => {
+    navState.pathname = "/dashboard";
     render(<AppSidebar />);
-    expect(screen.getAllByText("Search").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Reports").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Advisor").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Compare").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Settings").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Search")).toHaveLength(2);
+    expect(screen.getAllByText("Reports")).toHaveLength(2);
+    expect(screen.getAllByText("Advisor")).toHaveLength(2);
+    expect(screen.getAllByText("Compare")).toHaveLength(2);
+    expect(screen.getAllByText("Settings")).toHaveLength(2);
   });
 
   it("renders links with correct hrefs", () => {
@@ -44,7 +31,7 @@ describe("AppSidebar", () => {
   });
 
   it("highlights active link based on pathname", () => {
-    mockPathname = "/reports";
+    navState.pathname = "/reports";
     render(<AppSidebar />);
     // Desktop nav links with "Reports" text
     const reportsLinks = screen.getAllByText("Reports");
@@ -57,7 +44,7 @@ describe("AppSidebar", () => {
   });
 
   it("highlights Search when on /profile path", () => {
-    mockPathname = "/profile/testuser";
+    navState.pathname = "/profile/testuser";
     render(<AppSidebar />);
     const searchLinks = screen.getAllByText("Search");
     const hasActive = searchLinks.some((el) => {

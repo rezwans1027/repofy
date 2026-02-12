@@ -33,7 +33,8 @@ vi.mock("next-themes", () => ({
   ThemeProvider: ({ children }: any) => children,
 }));
 
-// Mock framer-motion
+// Mock framer-motion globally. Individual test files can opt out with
+// `vi.unmock("framer-motion")` if they need to test animation behavior.
 vi.mock("framer-motion", async () => {
   const React = await import("react");
 
