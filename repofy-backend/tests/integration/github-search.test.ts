@@ -9,6 +9,7 @@ vi.stubGlobal("fetch", fetchMock);
 
 describe("GET /api/github/search", () => {
   beforeEach(() => {
+    // Explicit reset — vi.stubGlobal mocks need manual reset despite config-level mockReset
     fetchMock.mockReset();
   });
 
@@ -45,5 +46,26 @@ describe("GET /api/github/search", () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data).toEqual([]);
+  });
+
+  it("returns 429 when GitHub API rate limit is hit", async () => {
+    fetchMock.mockReturnValue(mockFetchJson({}, false, 403));
+
+    const app = getApp();
+    const res = await request(app).get("/api/github/search?q=octocat");
+
+    expect(res.status).toBe(429);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toContain("rate limit");
+  });
+
+  it("returns error when GitHub API returns 500", async () => {
+    fetchMock.mockReturnValue(mockFetchJson({}, false, 500));
+
+    const app = getApp();
+    const res = await request(app).get("/api/github/search?q=octocat");
+
+    expect(res.status).toBe(500);
+    expect(res.body.success).toBe(false);
   });
 });
