@@ -7,18 +7,11 @@ import {
   createSearchResponse,
   createContributionResponse,
 } from "../../fixtures/github";
+import { mockFetchJson } from "../../helpers/integration-setup";
 
 // We need to mock global.fetch before importing the service
 const fetchMock = vi.fn();
 vi.stubGlobal("fetch", fetchMock);
-
-function mockFetchJson(data: unknown, ok = true, status = 200) {
-  return Promise.resolve({
-    ok,
-    status,
-    json: () => Promise.resolve(data),
-  });
-}
 
 // Import after stubbing fetch
 import { searchGitHubUsers, fetchGitHubUserData, GitHubError } from "../../../src/services/github.service";

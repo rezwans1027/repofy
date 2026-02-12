@@ -50,3 +50,25 @@ export async function setupOpenAIMock(responseFactory: () => unknown) {
   });
   return mockCreate;
 }
+
+/**
+ * Build a minimal Express app with a 50ms timeout for abort/timeout tests.
+ * Avoids duplicating the middleware wiring across integration test files.
+ */
+export async function createShortTimeoutApp(
+  method: "post",
+  path: string,
+  handler: import("express").RequestHandler,
+) {
+  const express = (await import("express")).default;
+  const { timeout: timeoutMw } = await import("../../src/middleware/timeout");
+  const { requireAuth } = await import("../../src/middleware/auth");
+  const { asyncHandler } = await import("../../src/middleware/asyncHandler");
+  const { errorHandler } = await import("../../src/middleware/errorHandler");
+
+  const app = express();
+  app.use(express.json());
+  app[method](path, timeoutMw(50), requireAuth, asyncHandler(handler));
+  app.use(errorHandler);
+  return app;
+}
