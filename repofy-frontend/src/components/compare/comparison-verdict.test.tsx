@@ -9,8 +9,8 @@ describe("ComparisonVerdict", () => {
 
   it("renders both usernames", () => {
     render(<ComparisonVerdict usernameA="alice" usernameB="bob" reportA={reportA} reportB={reportB} />);
-    expect(screen.getAllByText("@alice").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("@bob").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("@alice")).toHaveLength(2);
+    expect(screen.getByText("@bob")).toBeInTheDocument();
   });
 
   it("renders both scores", () => {

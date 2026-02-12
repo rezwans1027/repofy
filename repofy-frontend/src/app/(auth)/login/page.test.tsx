@@ -12,21 +12,10 @@ vi.mock("@/lib/supabase/client", () => ({
   }),
 }));
 
-// Track router calls
-const mockPush = vi.fn();
-const mockRefresh = vi.fn();
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: mockPush,
-    replace: vi.fn(),
-    back: vi.fn(),
-    refresh: mockRefresh,
-    prefetch: vi.fn(),
-  }),
-  useParams: () => ({}),
-  usePathname: () => "/login",
-  useSearchParams: () => new URLSearchParams(),
-}));
+import { navState, navModule, resetNavState } from "@/__tests__/helpers/mock-navigation";
+
+navState.pathname = "/login";
+vi.mock("next/navigation", () => navModule);
 
 import LoginPage from "./page";
 
@@ -37,6 +26,8 @@ function getSubmitButton() {
 describe("LoginPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetNavState();
+    navState.pathname = "/login";
   });
 
   it("renders login form with email and password inputs", () => {
@@ -94,8 +85,8 @@ describe("LoginPage", () => {
       email: "test@example.com",
       password: "password123",
     });
-    expect(mockPush).toHaveBeenCalledWith("/dashboard");
-    expect(mockRefresh).toHaveBeenCalled();
+    expect(navState.push).toHaveBeenCalledWith("/dashboard");
+    expect(navState.refresh).toHaveBeenCalled();
   });
 
   it("shows error message on authentication failure", async () => {

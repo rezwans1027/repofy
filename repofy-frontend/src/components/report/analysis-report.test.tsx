@@ -14,7 +14,7 @@ describe("AnalysisReport", () => {
     render(<AnalysisReport username="testuser" data={data} />);
 
     // TopBanner
-    expect(screen.getAllByText("@testuser").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("@testuser")).toHaveLength(2);
     expect(screen.getByText("Senior")).toBeInTheDocument();
     expect(screen.getByText("Strong Hire")).toBeInTheDocument();
 
@@ -65,7 +65,7 @@ describe("AnalysisReport", () => {
     render(<AnalysisReport username="alexchendev" data={data} />);
     // Username appears in TopBanner as @alexchendev and in ExportBar
     const userTexts = screen.getAllByText("@alexchendev");
-    expect(userTexts.length).toBeGreaterThanOrEqual(2);
+    expect(userTexts).toHaveLength(2);
   });
 
   it("uses static reportData when no data prop provided", () => {

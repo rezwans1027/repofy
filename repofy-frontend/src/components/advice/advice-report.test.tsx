@@ -13,7 +13,7 @@ describe("AdviceReport", () => {
   it("renders the username in the banner", () => {
     render(<AdviceReport username="testuser" data={data} />);
     const matches = screen.getAllByText("@testuser");
-    expect(matches.length).toBeGreaterThanOrEqual(1);
+    expect(matches).toHaveLength(2);
   });
 
   it("renders the summary text", () => {
@@ -52,6 +52,6 @@ describe("AdviceReport", () => {
     render(<AdviceReport username="testuser" data={data} />);
     // The export bar shows "Advice for @testuser"
     const allTexts = screen.getAllByText("@testuser");
-    expect(allTexts.length).toBeGreaterThanOrEqual(2); // banner + export bar
+    expect(allTexts).toHaveLength(2); // banner + export bar
   });
 });
