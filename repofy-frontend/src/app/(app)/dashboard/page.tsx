@@ -66,6 +66,7 @@ export default function DashboardPage() {
                   autoFocus
                   autoComplete="off"
                   name="repofy-search-nofill"
+                  data-testid="search-input"
                   data-1p-ignore
                   data-lpignore="true"
                   data-form-type="other"
@@ -95,6 +96,7 @@ export default function DashboardPage() {
           ? results.map((user, i) => (
               <motion.div
                 key={user.username}
+                data-testid={`search-result-${user.username}`}
                 onClick={() => router.push(`/profile/${user.username}`)}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
