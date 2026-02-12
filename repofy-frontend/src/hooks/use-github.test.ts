@@ -57,7 +57,27 @@ describe("useGitHubSearch", () => {
   });
 });
 
+describe("useGitHubSearch - errors", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("transitions to error state when API rejects", async () => {
+    vi.mocked(api.get).mockRejectedValue(new Error("Network failure"));
+
+    const { result } = renderHook(() => useGitHubSearch("testuser"), {
+      wrapper: TestProviders,
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
 describe("useGitHubProfile", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("returns profile data when username is provided", async () => {
     const mockProfile = createProfileFixture();
     vi.mocked(api.get).mockResolvedValue(mockProfile);
@@ -76,5 +96,15 @@ describe("useGitHubProfile", () => {
     });
 
     expect(result.current.isFetching).toBe(false);
+  });
+
+  it("transitions to error state when API rejects", async () => {
+    vi.mocked(api.get).mockRejectedValue(new Error("Not found"));
+
+    const { result } = renderHook(() => useGitHubProfile("baduser"), {
+      wrapper: TestProviders,
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

@@ -53,4 +53,23 @@ describe("RadarChart", () => {
     const svg = container.querySelector("svg");
     expect(svg).toHaveAttribute("viewBox", "0 0 400 400");
   });
+
+  it("renders without crashing for a single data point", () => {
+    const singleData = [{ axis: "Quality", value: 0.5 }];
+    const { container } = render(<RadarChart data={singleData} />);
+    expect(container.querySelector("svg")).toBeInTheDocument();
+    expect(container.querySelectorAll("text")).toHaveLength(1);
+    expect(container.querySelectorAll("circle")).toHaveLength(1);
+  });
+
+  it("clamps rendering for values outside [0, 1]", () => {
+    const outOfRange = [
+      { axis: "Low", value: -0.5 },
+      { axis: "High", value: 1.5 },
+      { axis: "Normal", value: 0.5 },
+    ];
+    const { container } = render(<RadarChart data={outOfRange} />);
+    expect(container.querySelector("svg")).toBeInTheDocument();
+    expect(container.querySelectorAll("circle")).toHaveLength(3);
+  });
 });

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor, cleanup } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
 import { createUserFixture } from "@/__tests__/fixtures";
 
 // The auth-provider calls createClient() at module scope,
@@ -39,10 +39,6 @@ describe("AuthProvider", () => {
     onAuthStateChangeImpl = vi.fn().mockReturnValue({
       data: { subscription: { unsubscribe: vi.fn() } },
     });
-  });
-
-  afterEach(() => {
-    cleanup();
   });
 
   it("shows loading then resolves to null user", async () => {

@@ -95,6 +95,7 @@ describe("useSelectableList", () => {
     const deleteFn = vi.fn().mockRejectedValue(new Error("fail"));
 
     act(() => {
+      result.current.setSelectMode(true);
       result.current.toggleSelect("id-1");
     });
 
@@ -103,6 +104,33 @@ describe("useSelectableList", () => {
     });
 
     expect(result.current.selected.size).toBe(1);
+    expect(result.current.selectMode).toBe(true);
+    expect(consoleSpy).toHaveBeenCalled();
     consoleSpy.mockRestore();
+  });
+
+  it("toggleSelectAll with empty array is a no-op", () => {
+    const { result } = renderHook(() => useSelectableList());
+
+    act(() => {
+      result.current.toggleSelectAll([]);
+    });
+
+    expect(result.current.selected.size).toBe(0);
+  });
+
+  it("toggleSelectAll with partial selection selects all", () => {
+    const { result } = renderHook(() => useSelectableList());
+    const ids = ["id-1", "id-2", "id-3"];
+
+    act(() => {
+      result.current.toggleSelect("id-1");
+    });
+    expect(result.current.selected.size).toBe(1);
+
+    act(() => {
+      result.current.toggleSelectAll(ids);
+    });
+    expect(result.current.selected.size).toBe(3);
   });
 });

@@ -3,28 +3,22 @@ import request from "supertest";
 import { getApp } from "../helpers/supertest-app";
 import { createAIAdviceResponse } from "../fixtures/ai";
 import {
-  mockFetchJson,
   setupGitHubMocks,
   setupAuthMock,
   setupOpenAIMock,
 } from "../helpers/integration-setup";
 
-// Mock fetch
 const fetchMock = vi.fn();
 vi.stubGlobal("fetch", fetchMock);
 
-// Mock openai
 vi.mock("openai", () => {
   const mockCreate = vi.fn();
   return {
-    default: class {
-      chat = { completions: { create: mockCreate } };
-    },
+    default: class { chat = { completions: { create: mockCreate } }; },
     __mockCreate: mockCreate,
   };
 });
 
-// Mock supabase
 vi.mock("../../src/config/supabase", () => ({
   getSupabaseAdmin: vi.fn(),
 }));

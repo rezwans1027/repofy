@@ -80,4 +80,18 @@ describe("useDebouncedValue", () => {
     });
     expect(result.current).toBe("b");
   });
+
+  it("updates immediately with delay of 0", () => {
+    const { result, rerender } = renderHook(
+      ({ value, delay }) => useDebouncedValue(value, delay),
+      { initialProps: { value: "a", delay: 0 } },
+    );
+
+    rerender({ value: "b", delay: 0 });
+
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
+    expect(result.current).toBe("b");
+  });
 });
