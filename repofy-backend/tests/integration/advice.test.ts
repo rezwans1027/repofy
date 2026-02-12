@@ -37,8 +37,12 @@ describe("POST /api/advice/:username", () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data.analyzedName).toBe("The Octocat");
-    expect(res.body.data.advice).toBeDefined();
-    expect(res.body.data.advice.summary).toBe("Focus on testing and documentation.");
+    expect(res.body.data.advice).toMatchObject({
+      summary: "Focus on testing and documentation.",
+      projectIdeas: expect.any(Array),
+      skillsToLearn: expect.any(Array),
+      actionPlan: expect.any(Array),
+    });
   });
 
   it("returns 401 without auth", async () => {
