@@ -6,6 +6,7 @@ import {
   setupGitHubMocks,
   setupAuthMock,
   setupOpenAIMock,
+  createShortTimeoutApp,
 } from "../helpers/integration-setup";
 
 const fetchMock = vi.fn();
@@ -108,15 +109,8 @@ describe("POST /api/advice/:username", () => {
       });
     });
 
-    const shortTimeoutApp = (await import("express")).default();
-    const { timeout: timeoutMw } = await import("../../src/middleware/timeout");
-    const { requireAuth } = await import("../../src/middleware/auth");
-    const { asyncHandler } = await import("../../src/middleware/asyncHandler");
     const { adviseUser } = await import("../../src/controllers/advice.controller");
-    const { errorHandler } = await import("../../src/middleware/errorHandler");
-    shortTimeoutApp.use((await import("express")).default.json());
-    shortTimeoutApp.post("/api/advice/:username", timeoutMw(50), requireAuth, asyncHandler(adviseUser));
-    shortTimeoutApp.use(errorHandler);
+    const shortTimeoutApp = await createShortTimeoutApp("post", "/api/advice/:username", adviseUser);
 
     const res = await request(shortTimeoutApp)
       .post("/api/advice/octocat")

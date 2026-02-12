@@ -6,6 +6,7 @@ import {
   setupGitHubMocks,
   setupAuthMock,
   setupOpenAIMock,
+  createShortTimeoutApp,
 } from "../helpers/integration-setup";
 
 const fetchMock = vi.fn();
@@ -108,17 +109,8 @@ describe("POST /api/analyze/:username", () => {
       });
     });
 
-    const app = getApp();
-    // Use a very short custom timeout to trigger abort quickly
-    const shortTimeoutApp = (await import("express")).default();
-    const { timeout: timeoutMw } = await import("../../src/middleware/timeout");
-    const { requireAuth } = await import("../../src/middleware/auth");
-    const { asyncHandler } = await import("../../src/middleware/asyncHandler");
     const { analyzeUser } = await import("../../src/controllers/analyze.controller");
-    const { errorHandler } = await import("../../src/middleware/errorHandler");
-    shortTimeoutApp.use((await import("express")).default.json());
-    shortTimeoutApp.post("/api/analyze/:username", timeoutMw(50), requireAuth, asyncHandler(analyzeUser));
-    shortTimeoutApp.use(errorHandler);
+    const shortTimeoutApp = await createShortTimeoutApp("post", "/api/analyze/:username", analyzeUser);
 
     const res = await request(shortTimeoutApp)
       .post("/api/analyze/octocat")
