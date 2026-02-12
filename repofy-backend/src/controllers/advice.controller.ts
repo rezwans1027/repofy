@@ -10,6 +10,10 @@ import { USERNAME_RE } from "../lib/validators";
 import { sendError, sendSuccess } from "../lib/response";
 import { logger } from "../lib/logger";
 
+// String concatenation prevents tsc from statically resolving the import,
+// keeping test fixture data out of the production build graph.
+const MOCK_AI_PATH = "../../tests/fixtures/" + "mock-ai";
+
 export const adviseUser: RequestHandler = async (req, res) => {
   const username = req.params.username as string;
 
@@ -20,7 +24,7 @@ export const adviseUser: RequestHandler = async (req, res) => {
 
   try {
     if (env.mockAi) {
-      const { MOCK_ADVICE_RESPONSE } = await import("../testing/mock-ai");
+      const { MOCK_ADVICE_RESPONSE } = await import(MOCK_AI_PATH);
       const githubData = await fetchGitHubUserData(username, req.signal);
       const advice = buildAdviceData(MOCK_ADVICE_RESPONSE, githubData);
       sendSuccess(res, { analyzedName: githubData.profile.name, advice });
