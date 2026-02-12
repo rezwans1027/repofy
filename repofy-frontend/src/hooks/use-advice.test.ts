@@ -1,32 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
-import React from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { mockChain, setupChain } from "@/__tests__/helpers/mock-supabase-chain";
+import { TestProviders } from "@/__tests__/helpers/test-providers";
 
-// Mock auth provider
 vi.mock("@/components/providers/auth-provider", () => ({
   useAuth: () => ({ user: { id: "user-123" }, isLoading: false }),
 }));
-
-// Mock supabase chain
-const mockChain = {
-  select: vi.fn(),
-  order: vi.fn(),
-  eq: vi.fn(),
-  single: vi.fn(),
-  delete: vi.fn(),
-  in: vi.fn(),
-  limit: vi.fn(),
-};
-
-function setupChain() {
-  mockChain.select.mockReturnValue(mockChain);
-  mockChain.order.mockReturnValue(mockChain);
-  mockChain.eq.mockReturnValue(mockChain);
-  mockChain.delete.mockReturnValue(mockChain);
-  mockChain.in.mockReturnValue(mockChain);
-  mockChain.limit.mockReturnValue(mockChain);
-}
 
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({
@@ -42,18 +21,6 @@ vi.mock("@/lib/supabase/client", () => ({
 
 import { useAdviceList, useAdvice, useDeleteAdvice } from "./use-advice";
 
-function createWrapper() {
-  const qc = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false, gcTime: 0 },
-      mutations: { retry: false },
-    },
-  });
-  return function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: qc }, children);
-  };
-}
-
 describe("useAdviceList", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -67,11 +34,24 @@ describe("useAdviceList", () => {
     mockChain.order.mockResolvedValue({ data: mockAdvice, error: null });
 
     const { result } = renderHook(() => useAdviceList(), {
-      wrapper: createWrapper(),
+      wrapper: TestProviders,
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(mockAdvice);
+  });
+
+  it("returns error when fetch fails", async () => {
+    mockChain.order.mockResolvedValue({
+      data: null,
+      error: { message: "DB error" },
+    });
+
+    const { result } = renderHook(() => useAdviceList(), {
+      wrapper: TestProviders,
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });
 
@@ -91,7 +71,7 @@ describe("useAdvice", () => {
     mockChain.single.mockResolvedValue({ data: mockAdvice, error: null });
 
     const { result } = renderHook(() => useAdvice("adv-1"), {
-      wrapper: createWrapper(),
+      wrapper: TestProviders,
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -109,7 +89,7 @@ describe("useDeleteAdvice", () => {
     mockChain.in.mockResolvedValue({ error: null });
 
     const { result } = renderHook(() => useDeleteAdvice(), {
-      wrapper: createWrapper(),
+      wrapper: TestProviders,
     });
 
     await result.current.mutateAsync(["adv-1"]);

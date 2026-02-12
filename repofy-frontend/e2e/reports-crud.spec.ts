@@ -1,10 +1,11 @@
 import { test, expect } from "@playwright/test";
-import { generateReportViaUI } from "./helpers/seed";
+import { seedReportViaApi } from "./helpers/seed";
 
 test.describe("Reports page", () => {
-  // Seed a report before each test so assertions are unconditional
+  // Seed a report before each test via API (faster than full UI flow)
   test.beforeEach(async ({ page }) => {
-    await generateReportViaUI(page, "octocat");
+    await page.goto("/dashboard");
+    await seedReportViaApi(page, "octocat");
   });
 
   test("reports page renders table with report data", async ({ page }) => {
