@@ -88,9 +88,19 @@ describe("github.service", () => {
       expect(data.profile.username).toBe("octocat");
       expect(data.repositories).toHaveLength(1);
       expect(data.topRepositories).toHaveLength(1);
-      expect(data.languages).toBeDefined();
-      expect(data.activity).toBeDefined();
-      expect(data.stats).toBeDefined();
+      expect(data.languages).toEqual(
+        expect.arrayContaining([expect.objectContaining({ name: expect.any(String), percentage: expect.any(Number) })]),
+      );
+      expect(data.activity).toMatchObject({
+        totalEvents: expect.any(Number),
+        pushEvents: expect.any(Number),
+        prEvents: expect.any(Number),
+      });
+      expect(data.stats).toMatchObject({
+        totalStars: expect.any(Number),
+        totalForks: expect.any(Number),
+        originalRepos: expect.any(Number),
+      });
       expect(data.contributions).not.toBeNull();
     });
 
@@ -205,13 +215,9 @@ describe("github.service", () => {
         Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve({}) }),
       );
 
-      try {
-        await searchGitHubUsers("test");
-        expect.fail("Should have thrown");
-      } catch (err) {
-        expect(err).toBeInstanceOf(GitHubError);
-        expect((err as GitHubError).statusCode).toBe(500);
-      }
+      await expect(searchGitHubUsers("test")).rejects.toMatchObject({
+        statusCode: 500,
+      });
     });
   });
 
