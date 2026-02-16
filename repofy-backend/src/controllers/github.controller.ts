@@ -1,4 +1,5 @@
 import { RequestHandler } from "express";
+import { env } from "../config/env";
 import {
   fetchGitHubUserData,
   searchGitHubUsers,
@@ -18,6 +19,12 @@ export const searchGitHub: RequestHandler = async (req, res) => {
   }
 
   try {
+    if (env.mockAi) {
+      const { buildMockSearchResults } = await import("../services/mock-ai.service");
+      sendSuccess(res, buildMockSearchResults(q));
+      return;
+    }
+
     const data = await searchGitHubUsers(q, req.signal);
     sendSuccess(res, data);
   } catch (err) {
@@ -40,6 +47,12 @@ export const getGitHubUser: RequestHandler = async (req, res) => {
   }
 
   try {
+    if (env.mockAi) {
+      const { buildMockGitHubData } = await import("../services/mock-ai.service");
+      sendSuccess(res, buildMockGitHubData(username));
+      return;
+    }
+
     const data = await fetchGitHubUserData(username, req.signal);
     sendSuccess(res, data);
   } catch (err) {

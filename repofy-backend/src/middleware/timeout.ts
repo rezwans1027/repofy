@@ -6,7 +6,7 @@ import type { RequestHandler } from "express";
  * aborts downstream work via an AbortSignal exposed on `req.signal`.
  */
 export function timeout(ms: number): RequestHandler {
-  return (req, res, next) => {
+  return function timeoutMiddleware(req, res, next) {
     const ac = new AbortController();
     // Expose abort signal so controllers/services can pass it to fetch/OpenAI calls
     req.signal = ac.signal;
