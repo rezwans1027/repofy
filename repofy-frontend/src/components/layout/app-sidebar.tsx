@@ -32,6 +32,7 @@ export function AppSidebar() {
               <li key={href}>
                 <Link
                   href={href}
+                  aria-current={isActive ? "page" : undefined}
                   className={cn(
                     "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
                     isActive
@@ -68,6 +69,7 @@ export function AppSidebar() {
               <Link
                 key={href}
                 href={href}
+                aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-1.5 whitespace-nowrap px-3 py-1 font-mono text-xs transition-colors",
                   isActive ? "text-cyan" : "text-muted-foreground"

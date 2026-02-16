@@ -54,7 +54,7 @@ export function CandidatePicker({
   const selected = reports.find((r) => r.id === value);
 
   return (
-    <div className="space-y-1.5">
+    <div data-testid={`candidate-picker-${slot.toLowerCase()}`} className="space-y-1.5">
       <p
         className={cn(
           "font-mono text-[10px] uppercase tracking-wider",

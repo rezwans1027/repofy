@@ -11,7 +11,7 @@ interface RadarSectionProps {
 export function RadarSection({ radarAxes, radarBreakdown }: RadarSectionProps) {
   return (
     <AnimateOnView delay={0.12}>
-      <div className="rounded-lg border border-border bg-card p-5">
+      <div data-testid="report-radar" className="rounded-lg border border-border bg-card p-5">
         <SectionHeader
           title="Developer DNA"
           subtitle="6-axis capability assessment"

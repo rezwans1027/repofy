@@ -75,12 +75,13 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <div className="space-y-2">
-              <label className="font-mono text-xs text-muted-foreground">
+              <label htmlFor="email" className="font-mono text-xs text-muted-foreground">
                 email
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
+                  id="email"
                   type="email"
                   placeholder="you@example.com"
                   value={email}
@@ -100,12 +101,13 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="font-mono text-xs text-muted-foreground">
+              <label htmlFor="password" className="font-mono text-xs text-muted-foreground">
                 password
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
+                  id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
