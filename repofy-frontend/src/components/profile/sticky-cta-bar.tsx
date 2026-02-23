@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
     return () => clearTimeout(t);
   }, [delay]);
 
+
   const handleAnalysisClick = useCallback(() => {
     if (reportExists) {
       setDialogOpen("report");
@@ -51,7 +53,7 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
   return (
     <>
       <div
-        className={`fixed bottom-0 left-0 right-0 lg:left-48 z-50 border-t border-border bg-background/80 backdrop-blur-md transition-[transform,opacity] duration-500 ${show ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
+        className={`fixed bottom-0 left-0 right-0 lg:left-48 z-50 border-t border-border bg-background/80 backdrop-blur-md transition-[transform,opacity] duration-500 ease-out ${show ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"}`}
       >
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <div className="hidden sm:block">
@@ -87,65 +89,68 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
         </div>
       </div>
 
-      <AnimatePresence>
-        {dialogOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="absolute inset-0 bg-black/50"
-              onClick={() => setDialogOpen(null)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
-              className="relative w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-lg"
-            >
-              <h2 className="font-mono text-lg font-semibold">
-                {dialogOpen === "report" ? "Report already exists" : "Advice already exists"}
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {dialogOpen === "report"
-                  ? <>A report for <span className="font-mono font-medium text-foreground">@{username}</span> already exists. Generate a new report and replace the old one?</>
-                  : <>Advice for <span className="font-mono font-medium text-foreground">@{username}</span> already exists. Generate new advice and replace the old one?</>
-                }
-              </p>
-              <div className="mt-6 flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="font-mono text-xs"
-                  onClick={() => setDialogOpen(null)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  size="sm"
-                  className={
-                    dialogOpen === "report"
-                      ? "bg-cyan text-background hover:bg-cyan/90 font-mono text-xs"
-                      : "bg-emerald-500 text-background hover:bg-emerald-500/90 font-mono text-xs"
+      {createPortal(
+        <AnimatePresence>
+          {dialogOpen && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="absolute inset-0 bg-black/50"
+                onClick={() => setDialogOpen(null)}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className="relative w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-lg"
+              >
+                <h2 className="font-mono text-lg font-semibold">
+                  {dialogOpen === "report" ? "Report already exists" : "Advice already exists"}
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {dialogOpen === "report"
+                    ? <>A report for <span className="font-mono font-medium text-foreground">@{username}</span> already exists. Generate a new report and replace the old one?</>
+                    : <>Advice for <span className="font-mono font-medium text-foreground">@{username}</span> already exists. Generate new advice and replace the old one?</>
                   }
-                  onClick={() => {
-                    setDialogOpen(null);
-                    if (dialogOpen === "report") {
-                      router.push(`/generate/${username}`);
-                    } else {
-                      router.push(`/advisor/generate/${username}`);
+                </p>
+                <div className="mt-6 flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="font-mono text-xs"
+                    onClick={() => setDialogOpen(null)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    className={
+                      dialogOpen === "report"
+                        ? "bg-cyan text-background hover:bg-cyan/90 font-mono text-xs"
+                        : "bg-emerald-500 text-background hover:bg-emerald-500/90 font-mono text-xs"
                     }
-                  }}
-                >
-                  {dialogOpen === "report" ? "Replace report" : "Replace advice"}
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                    onClick={() => {
+                      setDialogOpen(null);
+                      if (dialogOpen === "report") {
+                        router.push(`/generate/${username}`);
+                      } else {
+                        router.push(`/advisor/generate/${username}`);
+                      }
+                    }}
+                  >
+                    {dialogOpen === "report" ? "Replace report" : "Replace advice"}
+                  </Button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 }

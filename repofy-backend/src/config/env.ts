@@ -33,4 +33,5 @@ export const env = {
   githubToken: requireEnvUnlessMockAi("GITHUB_TOKEN"),
   openaiApiKey: requireEnvUnlessMockAi("OPENAI_API_KEY"),
   openaiModel: process.env.OPENAI_MODEL || "gpt-4o",
+  adminSecret: process.env.ADMIN_SECRET,
 } as const;
