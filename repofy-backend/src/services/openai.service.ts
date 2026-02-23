@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { env } from "../config/env";
 import { SYSTEM_PROMPT } from "../lib/prompts";
 import { buildUserMessage } from "../lib/build-user-message";
+import { logTokenUsage } from "../lib/usage-logger";
 import type { GitHubUserData, AIAnalysisResponse } from "../types";
 
 const client = new OpenAI({ apiKey: env.openaiApiKey });
@@ -215,6 +216,8 @@ export async function generateAnalysis(
     },
     temperature: 0.7,
   }, { signal });
+
+  logTokenUsage("analysis", env.openaiModel, completion.usage);
 
   const content = completion.choices[0]?.message?.content;
   if (!content) {

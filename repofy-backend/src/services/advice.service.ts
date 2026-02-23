@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { env } from "../config/env";
 import { ADVICE_SYSTEM_PROMPT } from "../lib/prompts";
 import { buildUserMessage } from "../lib/build-user-message";
+import { logTokenUsage } from "../lib/usage-logger";
 import type { GitHubUserData, AIAdviceResponse } from "../types";
 
 const client = new OpenAI({ apiKey: env.openaiApiKey });
@@ -159,6 +160,8 @@ export async function generateAdvice(
     },
     temperature: 0.7,
   }, { signal });
+
+  logTokenUsage("advice", env.openaiModel, completion.usage);
 
   const content = completion.choices[0]?.message?.content;
   if (!content) {
