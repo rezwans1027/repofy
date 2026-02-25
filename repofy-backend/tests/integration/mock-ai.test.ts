@@ -40,10 +40,11 @@ describe("MOCK_AI mode", () => {
     expect(res.body.success).toBe(true);
     expect(res.body.data.analyzedName).toBe("Mock User (octocat)");
     const report = res.body.data.report;
-    expect(report.candidateLevel).toBe("Mid-Level");
-    expect(report.overallScore).toBe(62);
-    expect(report.recommendation).toBe("Hire");
+    expect(report.candidateLevel).toBeDefined();
+    expect(report.overallScore).toBeDefined();
+    expect(report.recommendation).toBeDefined();
     expect(report.radarAxes).toHaveLength(6);
+    expect(report.narrativeReport).toBeDefined();
 
     // Mock AI path uses buildMockGitHubData — no real GitHub fetch calls
     expect(fetchMock).not.toHaveBeenCalled();
@@ -52,7 +53,7 @@ describe("MOCK_AI mode", () => {
     expect(mockCreate).not.toHaveBeenCalled();
   });
 
-  it("POST /api/advice/:username returns mock advice without calling OpenAI", async () => {
+  it("POST /api/advice/:username returns mock v2 advice without calling OpenAI", async () => {
     await setupAuthMock(true);
 
     const app = getApp();
@@ -64,10 +65,39 @@ describe("MOCK_AI mode", () => {
     expect(res.body.success).toBe(true);
     expect(res.body.data.analyzedName).toBe("Mock User (octocat)");
     const advice = res.body.data.advice;
-    expect(advice.summary).toBe("Focus on testing and documentation to level up your profile.");
-    expect(advice.projectIdeas).toHaveLength(3);
-    expect(advice.skillsToLearn).toHaveLength(3);
-    expect(advice.actionPlan).toHaveLength(3);
+
+    // V2 shape
+    expect(advice.schemaVersion).toBe("v2");
+    expect(advice.generationWarnings).toEqual([]);
+
+    // Trajectory
+    expect(advice.trajectory).toBeDefined();
+    expect(advice.trajectory.currentEstimate).toBe("Junior");
+    expect(advice.trajectory.targetEstimate).toBe("Mid-Level");
+    expect(advice.trajectory.confidence).toBe("Medium");
+    expect(advice.trajectory.calibration).toBeDefined();
+
+    // Build roadmap
+    expect(advice.buildRoadmap).toHaveLength(3);
+
+    // Weekly roadmap
+    expect(advice.weeklyRoadmap).toHaveLength(12);
+    const buildTitles = advice.buildRoadmap.map((b: { title: string }) => b.title);
+    for (const week of advice.weeklyRoadmap) {
+      expect(buildTitles).toContain(week.activeBuildTitle);
+    }
+
+    // Skill roadmap
+    expect(advice.skillRoadmap.length).toBeGreaterThanOrEqual(3);
+
+    // Success metrics
+    expect(advice.successMetrics.length).toBeGreaterThanOrEqual(5);
+
+    // Contribution strategy
+    expect(advice.contributionStrategy.length).toBeGreaterThanOrEqual(3);
+
+    // Profile optimizations
+    expect(advice.profileOptimizations.length).toBeGreaterThanOrEqual(3);
 
     // Mock AI path uses buildMockGitHubData — no real GitHub fetch calls
     expect(fetchMock).not.toHaveBeenCalled();

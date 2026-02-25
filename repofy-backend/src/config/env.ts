@@ -22,8 +22,8 @@ function requireEnvUnlessMockAi(name: string): string | undefined {
 }
 
 export const env = {
-  port: parseInt(process.env.PORT || "3003", 10),
-  corsOrigin: process.env.CORS_ORIGIN || "http://localhost:3002",
+  port: parseInt(process.env.PORT || "3001", 10),
+  corsOrigin: process.env.CORS_ORIGIN || "http://localhost:3000",
   nodeEnv: process.env.NODE_ENV || "development",
   isProduction: process.env.NODE_ENV === "production",
   trustProxy: process.env.TRUST_PROXY === "true",
@@ -32,6 +32,6 @@ export const env = {
   supabaseServiceRoleKey: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
   githubToken: requireEnvUnlessMockAi("GITHUB_TOKEN"),
   openaiApiKey: requireEnvUnlessMockAi("OPENAI_API_KEY"),
-  openaiModel: process.env.OPENAI_MODEL || "gpt-4o",
+  openaiModel: process.env.OPENAI_MODEL || "gpt-5.1",
   adminSecret: process.env.ADMIN_SECRET,
 } as const;

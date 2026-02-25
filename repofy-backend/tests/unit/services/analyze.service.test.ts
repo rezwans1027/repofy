@@ -1,8 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { buildReportData } from "../../../src/services/analyze.service";
-import { createAIAnalysisResponse } from "../../fixtures/ai";
+import { createScorerResponse, createScoringResult } from "../../fixtures/ai";
 import { createGitHubUserData } from "../../fixtures/github";
 import type { GitHubRepo, ActivitySummary } from "../../../src/types";
+
+const MOCK_NARRATIVE = "Test narrative report.";
 
 describe("buildReportData", () => {
   describe("activity percentages", () => {
@@ -16,9 +18,10 @@ describe("buildReportData", () => {
         recentActiveRepos: [],
       };
       const github = createGitHubUserData({ activity });
-      const ai = createAIAnalysisResponse();
+      const scorer = createScorerResponse();
+      const scoring = createScoringResult();
 
-      const report = buildReportData(ai, github);
+      const report = buildReportData(scorer, scoring, MOCK_NARRATIVE, github);
 
       const { push, pr, issue, review } = report.activityBreakdown;
       expect(push + pr + issue + review).toBe(100);
@@ -38,9 +41,10 @@ describe("buildReportData", () => {
         recentActiveRepos: [],
       };
       const github = createGitHubUserData({ activity });
-      const ai = createAIAnalysisResponse();
+      const scorer = createScorerResponse();
+      const scoring = createScoringResult();
 
-      const report = buildReportData(ai, github);
+      const report = buildReportData(scorer, scoring, MOCK_NARRATIVE, github);
 
       expect(report.activityBreakdown.push).toBe(0);
       expect(report.activityBreakdown.pr).toBe(0);
@@ -73,9 +77,10 @@ describe("buildReportData", () => {
           reposTruncated: false,
         },
       });
-      const ai = createAIAnalysisResponse();
+      const scorer = createScorerResponse();
+      const scoring = createScoringResult();
 
-      const report = buildReportData(ai, github);
+      const report = buildReportData(scorer, scoring, MOCK_NARRATIVE, github);
 
       expect(report.stats.starsPerRepo).toBe(5);
     });
@@ -96,9 +101,10 @@ describe("buildReportData", () => {
           createdAt: "2020-01-01T00:00:00Z",
         },
       });
-      const ai = createAIAnalysisResponse();
+      const scorer = createScorerResponse();
+      const scoring = createScoringResult();
 
-      const report = buildReportData(ai, github);
+      const report = buildReportData(scorer, scoring, MOCK_NARRATIVE, github);
 
       expect(report.stats.starsPerRepo).toBe(0);
     });
@@ -127,20 +133,21 @@ describe("buildReportData", () => {
         },
       ];
       const github = createGitHubUserData({ topRepositories: topRepos });
-      const ai = createAIAnalysisResponse({
+      const scorer = createScorerResponse({
         topRepos: [
           {
-            name: "cool-project", // lowercase vs repo "Cool-Project"
-            codeQuality: "A",
-            testing: "B",
-            cicd: "B",
-            verdict: "Excellent",
+            name: "cool-project",
+            codeQuality: "Excellent",
+            testing: "Strong",
+            cicd: "Present",
+            verdict: "Standout",
             isBestWork: true,
           },
         ],
       });
+      const scoring = createScoringResult();
 
-      const report = buildReportData(ai, github);
+      const report = buildReportData(scorer, scoring, MOCK_NARRATIVE, github);
 
       expect(report.topRepos[0].language).toBe("TypeScript");
       expect(report.topRepos[0].stars).toBe(42);
@@ -149,20 +156,21 @@ describe("buildReportData", () => {
 
     it("falls back for unmatched repos", () => {
       const github = createGitHubUserData({ topRepositories: [] });
-      const ai = createAIAnalysisResponse({
+      const scorer = createScorerResponse({
         topRepos: [
           {
             name: "nonexistent-repo",
-            codeQuality: "C",
-            testing: "D",
-            cicd: "D",
-            verdict: "Needs work",
+            codeQuality: "Weak",
+            testing: "None",
+            cicd: "None",
+            verdict: "Needs Work",
             isBestWork: false,
           },
         ],
       });
+      const scoring = createScoringResult();
 
-      const report = buildReportData(ai, github);
+      const report = buildReportData(scorer, scoring, MOCK_NARRATIVE, github);
 
       expect(report.topRepos[0].language).toBeNull();
       expect(report.topRepos[0].stars).toBe(0);
@@ -180,11 +188,29 @@ describe("buildReportData", () => {
         repoCount: 1,
       }));
       const github = createGitHubUserData({ languages });
-      const ai = createAIAnalysisResponse();
+      const scorer = createScorerResponse();
+      const scoring = createScoringResult();
 
-      const report = buildReportData(ai, github);
+      const report = buildReportData(scorer, scoring, MOCK_NARRATIVE, github);
 
       expect(report.languageProfile.languages).toHaveLength(6);
+    });
+  });
+
+  describe("new metadata fields", () => {
+    it("includes narrativeReport, riskSignals, confidenceScore, rubricVersion, modelVersion", () => {
+      const github = createGitHubUserData();
+      const scorer = createScorerResponse();
+      const scoring = createScoringResult();
+
+      const report = buildReportData(scorer, scoring, MOCK_NARRATIVE, github);
+
+      expect(report.narrativeReport).toBe(MOCK_NARRATIVE);
+      expect(report.riskSignals).toEqual({ concerningCount: 0, notableCount: 1 });
+      expect(report.confidenceScore).toBe(0.9);
+      expect(report.rubricVersion).toBe("v1.1");
+      expect(report.modelVersion).toBe("gpt-5.1");
+      expect(report.dataQualityWarnings).toEqual([]);
     });
   });
 });

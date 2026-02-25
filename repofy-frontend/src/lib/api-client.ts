@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/client";
 
 const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3003/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
 export class ApiError extends Error {
   constructor(

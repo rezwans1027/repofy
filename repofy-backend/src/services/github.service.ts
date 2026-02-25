@@ -13,6 +13,8 @@ import type {
   GitHubUserData,
   GitHubSearchResult,
   ContributionCalendar,
+  RepoSnapshot,
+  AggregateMetrics,
 } from "../types";
 
 // ── Error class ───────────────────────────────────────────────────────
@@ -104,6 +106,22 @@ async function ghFetch<T>(path: string, signal?: AbortSignal): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+/** Fetch with response object to inspect headers (e.g. Link header for pagination counts). */
+async function ghFetchRaw(path: string, signal?: AbortSignal): Promise<Response> {
+  const signals = [AbortSignal.timeout(15_000)];
+  if (signal) signals.push(signal);
+  const res = await fetch(`${GITHUB_API}${path}`, {
+    headers: headers(),
+    signal: AbortSignal.any(signals),
+  }).catch((err) => {
+    if (err instanceof DOMException && err.name === "TimeoutError") {
+      throw new GitHubError("GitHub API request timed out", 504);
+    }
+    throw err;
+  });
+  return res;
+}
+
 // ── GitHub GraphQL API helper ─────────────────────────────────────────
 
 const GITHUB_GRAPHQL = "https://api.github.com/graphql";
@@ -150,6 +168,48 @@ async function fetchAllRepos(username: string, signal?: AbortSignal): Promise<Gi
   }
 
   return repos;
+}
+
+// ── Pinned repos (GraphQL) ────────────────────────────────────────────
+
+const PINNED_REPOS_QUERY = `
+  query($username: String!) {
+    user(login: $username) {
+      pinnedItems(first: 6, types: REPOSITORY) {
+        nodes {
+          ... on Repository {
+            name
+          }
+        }
+      }
+    }
+  }
+`;
+
+interface GQLPinnedResponse {
+  data: {
+    user: {
+      pinnedItems: {
+        nodes: { name: string }[];
+      };
+    };
+  };
+}
+
+async function fetchPinnedRepoNames(username: string, signal?: AbortSignal): Promise<string[]> {
+  try {
+    const result = await ghGraphQL<GQLPinnedResponse>(
+      PINNED_REPOS_QUERY,
+      { username },
+      signal,
+    );
+    const nodes = result?.data?.user?.pinnedItems?.nodes;
+    if (!Array.isArray(nodes)) return [];
+    return nodes.filter((n) => n && typeof n.name === "string").map((n) => n.name);
+  } catch (err) {
+    logger.warn("Failed to fetch pinned repos:", err);
+    return [];
+  }
 }
 
 // ── Data transformers ─────────────────────────────────────────────────
@@ -360,6 +420,464 @@ async function fetchContributionCalendar(
   }
 }
 
+// ── Top-repo selection (pinned first, then stars) ─────────────────────
+
+function selectTopRepos(
+  allRepos: GitHubRepo[],
+  pinnedNames: string[],
+): GitHubRepo[] {
+  const selected: GitHubRepo[] = [];
+  const used = new Set<string>();
+
+  // 1. Pinned repos first (in pinned order)
+  for (const name of pinnedNames) {
+    const repo = allRepos.find((r) => r.name === name);
+    if (repo && !used.has(repo.name)) {
+      selected.push(repo);
+      used.add(repo.name);
+    }
+  }
+
+  // 2. Then highest-star non-fork repos, excluding archived unless pinned
+  const candidates = allRepos
+    .filter((r) => !used.has(r.name) && !r.isFork && !r.isArchived)
+    .sort((a, b) => b.stars - a.stars);
+
+  for (const repo of candidates) {
+    if (selected.length >= 6) break;
+    selected.push(repo);
+    used.add(repo.name);
+  }
+
+  return selected.slice(0, 6);
+}
+
+// ── Repo snapshot fetching ────────────────────────────────────────────
+
+const SOURCE_EXTENSIONS = new Set([
+  ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs",
+  ".py", ".pyx",
+  ".rs",
+  ".go",
+  ".java", ".kt", ".kts",
+  ".c", ".h", ".cpp", ".hpp", ".cc",
+  ".cs",
+  ".rb",
+  ".php",
+  ".swift",
+  ".dart",
+  ".scala",
+  ".ex", ".exs",
+  ".hs",
+  ".lua",
+  ".zig",
+  ".ml", ".mli",
+  ".r",
+  ".vue", ".svelte",
+]);
+
+const ENTRY_FILE_NAMES = [
+  "index.ts", "index.tsx", "index.js", "index.jsx",
+  "main.ts", "main.tsx", "main.js", "main.jsx",
+  "app.ts", "app.tsx", "app.js", "app.jsx",
+  "main.py", "app.py", "__main__.py",
+  "main.go", "cmd/main.go",
+  "main.rs", "src/main.rs", "src/lib.rs",
+  "Main.java",
+  "Program.cs",
+  "main.rb", "app.rb",
+];
+
+interface GitTreeEntry {
+  path: string;
+  type: "blob" | "tree";
+  size?: number;
+}
+
+interface GitTreeResponse {
+  tree: GitTreeEntry[];
+  truncated: boolean;
+}
+
+function buildTreeString(entries: GitTreeEntry[], maxDepth: number): string {
+  const lines: string[] = [];
+  for (const entry of entries) {
+    const depth = entry.path.split("/").length - 1;
+    if (depth > maxDepth) continue;
+    const indent = "  ".repeat(depth);
+    const name = entry.path.split("/").pop() || entry.path;
+    const suffix = entry.type === "tree" ? "/" : "";
+    lines.push(`${indent}${name}${suffix}`);
+  }
+  return lines.slice(0, 100).join("\n"); // cap at 100 lines
+}
+
+function hasExtension(path: string, extensions: string[]): boolean {
+  return extensions.some((ext) => path.toLowerCase().endsWith(ext));
+}
+
+export function detectSignals(entries: GitTreeEntry[]) {
+  let hasTests = false;
+  let hasCI = false;
+  let hasLintConfig = false;
+  let hasDockerfile = false;
+  let hasBuildSystem = false;
+  let srcDirPresent = false;
+  let sourceFileCount = 0;
+  let totalLOC = 0;
+  let maxFileLOC = 0;
+  let largestFilePath = "";
+
+  // Pre-compute co-indicator lookups to avoid O(n²) inner scans
+  const hasGitStyleTests = entries.some((e) => /^t\/t\d/i.test(e.path));
+  const hasBazelCoIndicator = entries.some((e) => {
+    const lp = e.path.toLowerCase();
+    return lp.endsWith(".bazelrc") || lp.endsWith("build.bazel");
+  });
+
+  for (const entry of entries) {
+    const p = entry.path.toLowerCase();
+    const filename = p.split("/").pop() || p;
+
+    // Tests (segment-boundary matching to avoid false positives like "contest/")
+    if (!hasTests) {
+      if (
+        p === "test" || p.startsWith("test/") || p.includes("/test/") ||
+        p === "tests" || p.startsWith("tests/") || p.includes("/tests/") ||
+        p === "__tests__" || p.startsWith("__tests__/") || p.includes("/__tests__/") ||
+        filename.includes(".test.") || filename.includes(".spec.") || filename.includes("_test.") ||
+        p.startsWith("selftests/") || p.includes("/selftests/") ||
+        p.startsWith("selftest/") || p.includes("/selftest/") ||
+        p.includes("tools/testing/") ||
+        ((p === "t" || p.startsWith("t/")) && hasGitStyleTests) ||
+        filename === "tox.ini" || filename === "pytest.ini" || filename === "conftest.py"
+      ) {
+        hasTests = true;
+      }
+    }
+
+    // CI
+    if (!hasCI) {
+      if (
+        p.includes(".github/workflows/") || p.includes(".circleci/") ||
+        p === "jenkinsfile" || p === ".travis.yml" || p === ".gitlab-ci.yml" ||
+        p.includes(".buildkite/") || p === "azure-pipelines.yml" ||
+        p === "appveyor.yml" || p === ".appveyor.yml" ||
+        p === "cloudbuild.yaml" || p === "cloudbuild.json" ||
+        p === ".drone.yml" || p === "bitbucket-pipelines.yml" ||
+        p === "taskcluster.yml" || p.includes(".taskcluster/")
+      ) {
+        hasCI = true;
+      }
+    }
+
+    // Lint config (match at any depth via filename extraction)
+    if (!hasLintConfig) {
+      if (
+        filename.startsWith(".eslintrc") ||
+        filename.startsWith(".prettierrc") || filename === "prettier.config.js" || filename === "prettier.config.cjs" ||
+        filename === "biome.json" || filename === "biome.jsonc" ||
+        filename === ".flake8" || filename === "setup.cfg" || filename === "ruff.toml" ||
+        filename === "eslint.config.js" || filename === "eslint.config.mjs" || filename === "eslint.config.ts" ||
+        filename === ".clang-format" || filename === ".clang-tidy" || filename === ".editorconfig" ||
+        filename === "checkpatch.pl" || p.includes("scripts/checkpatch") ||
+        filename === ".pylintrc" || filename === "pyproject.toml" || filename === "mypy.ini" || filename === ".mypy.ini" ||
+        filename === ".rubocop.yml" ||
+        filename === ".golangci.yml" || filename === ".golangci.yaml" ||
+        filename === "rustfmt.toml" || filename === ".rustfmt.toml" || filename === "clippy.toml"
+      ) {
+        hasLintConfig = true;
+      }
+    }
+
+    // Dockerfile
+    if (!hasDockerfile) {
+      if (
+        p === "dockerfile" || p.startsWith("dockerfile.") ||
+        p === "docker-compose.yml" || p === "docker-compose.yaml" ||
+        p.startsWith("docker-compose.")
+      ) {
+        hasDockerfile = true;
+      }
+    }
+
+    // Build system (match at any depth)
+    if (!hasBuildSystem) {
+      if (
+        filename === "makefile" || filename === "gnumakefile" || filename === "cmakelists.txt" || filename === "meson.build" ||
+        filename === "build.gradle" || filename === "build.gradle.kts" || filename === "pom.xml" || filename === "build.zig" ||
+        filename === ".bazelrc" || filename === "build.bazel" || (filename === "workspace" && hasBazelCoIndicator) ||
+        filename === "configure.ac" ||
+        filename === "kbuild" || filename === "kconfig"
+      ) {
+        hasBuildSystem = true;
+      }
+    }
+
+    // Src directory
+    if (!srcDirPresent && (p === "src" || p.startsWith("src/"))) {
+      srcDirPresent = true;
+    }
+
+    // Source file count and LOC estimation
+    if (entry.type === "blob") {
+      const ext = "." + (p.split(".").pop() || "");
+      if (SOURCE_EXTENSIONS.has(ext)) {
+        sourceFileCount++;
+        // Estimate LOC from file size (~40 bytes per line avg)
+        const estimatedLOC = entry.size ? Math.round(entry.size / 40) : 0;
+        totalLOC += estimatedLOC;
+        if (estimatedLOC > maxFileLOC) {
+          maxFileLOC = estimatedLOC;
+          largestFilePath = entry.path;
+        }
+      }
+    }
+  }
+
+  return {
+    hasTests, hasCI, hasLintConfig, hasDockerfile, hasBuildSystem, srcDirPresent,
+    sourceFileCount, totalLOC, maxFileLOC, largestFilePath,
+  };
+}
+
+/** Extract total count from GitHub Link header (last page). */
+function parseLinkHeaderCount(linkHeader: string | null, perPage: number): number {
+  if (!linkHeader) return 0;
+  const match = linkHeader.match(/[&?]page=(\d+)>;\s*rel="last"/);
+  if (match) return parseInt(match[1], 10) * perPage;
+  return 0;
+}
+
+async function fetchRepoSnapshot(
+  username: string,
+  repo: GitHubRepo,
+  fetchSnippets: boolean,
+  signal?: AbortSignal,
+): Promise<RepoSnapshot> {
+  const defaultBranch = "HEAD"; // GitHub trees API resolves HEAD
+
+  try {
+    // Parallel fetches for this repo
+    const [treeResult, releasesResult, contributorsResult, pullsResult] = await Promise.all([
+      // 1. File tree
+      ghFetch<GitTreeResponse>(
+        `/repos/${username}/${repo.name}/git/trees/${defaultBranch}?recursive=1`,
+        signal,
+      ).catch(() => null),
+      // 2. Releases
+      ghFetch<{ tag_name: string; published_at: string }[]>(
+        `/repos/${username}/${repo.name}/releases?per_page=5`,
+        signal,
+      ).catch(() => []),
+      // 3. Contributors (just need count from Link header)
+      ghFetchRaw(
+        `/repos/${username}/${repo.name}/contributors?per_page=1&anon=true`,
+        signal,
+      ).catch(() => null),
+      // 4. Pull requests count from Link header
+      ghFetchRaw(
+        `/repos/${username}/${repo.name}/pulls?state=all&per_page=1`,
+        signal,
+      ).catch(() => null),
+    ]);
+
+    // Process tree
+    const entries = treeResult?.tree ?? [];
+    const tree = buildTreeString(entries, 3);
+    const signals = detectSignals(entries);
+
+    // README word count
+    let readmeWordCount = 0;
+    const readmeEntry = entries.find(
+      (e) => e.type === "blob" && /^readme\.md$/i.test(e.path),
+    );
+    if (readmeEntry) {
+      try {
+        const readmeData = await ghFetch<{ content: string; encoding: string }>(
+          `/repos/${username}/${repo.name}/contents/${readmeEntry.path}`,
+          signal,
+        );
+        if (readmeData.encoding === "base64") {
+          const text = Buffer.from(readmeData.content, "base64").toString("utf-8");
+          readmeWordCount = text.split(/\s+/).filter(Boolean).length;
+        }
+      } catch {
+        // Non-critical
+      }
+    }
+
+    // Releases
+    const releases = releasesResult ?? [];
+    const releaseCount = releases.length;
+    let latestReleaseDaysAgo = Infinity;
+    if (releases.length > 0 && releases[0].published_at) {
+      latestReleaseDaysAgo = Math.floor(
+        (Date.now() - new Date(releases[0].published_at).getTime()) / (1000 * 60 * 60 * 24),
+      );
+    }
+
+    // Contributors count
+    let contributorCount = 1;
+    if (contributorsResult && contributorsResult.ok) {
+      const linkHeader = contributorsResult.headers.get("link");
+      if (linkHeader) {
+        contributorCount = parseLinkHeaderCount(linkHeader, 1) || 1;
+      }
+      // If no link header, just count the response body
+      try {
+        const contribs = await contributorsResult.json() as unknown[];
+        if (Array.isArray(contribs)) {
+          contributorCount = Math.max(contribs.length, contributorCount);
+        }
+      } catch { /* ignore */ }
+    }
+
+    // Pull requests count
+    let pullRequestsCount = 0;
+    if (pullsResult && pullsResult.ok) {
+      const linkHeader = pullsResult.headers.get("link");
+      if (linkHeader) {
+        pullRequestsCount = parseLinkHeaderCount(linkHeader, 1);
+      } else {
+        try {
+          const pulls = await pullsResult.json() as unknown[];
+          if (Array.isArray(pulls)) pullRequestsCount = pulls.length;
+        } catch { /* ignore */ }
+      }
+    }
+
+    // Computed fields
+    const latestPushDaysAgo = Math.floor(
+      (Date.now() - new Date(repo.pushedAt).getTime()) / (1000 * 60 * 60 * 24),
+    );
+    const hasReleaseDiscipline = releaseCount >= 2 && latestReleaseDaysAgo <= 365;
+
+    // Code snippets (only for top repos)
+    let codeSnippets: string[] | undefined;
+    if (fetchSnippets && entries.length > 0) {
+      codeSnippets = await fetchCodeSnippets(username, repo.name, entries, signal);
+    }
+
+    return {
+      name: repo.name,
+      fileTree: tree,
+      hasTests: signals.hasTests,
+      hasCI: signals.hasCI,
+      hasLintConfig: signals.hasLintConfig,
+      hasDockerfile: signals.hasDockerfile,
+      hasBuildSystem: signals.hasBuildSystem,
+      readmeWordCount,
+      releaseCount,
+      latestReleaseDaysAgo: latestReleaseDaysAgo === Infinity ? -1 : latestReleaseDaysAgo,
+      contributorCount,
+      latestPushDaysAgo,
+      openIssuesCount: repo.openIssues,
+      pullRequestsCount,
+      sourceFileCount: signals.sourceFileCount,
+      totalLOC: signals.totalLOC,
+      maxFileLOC: signals.maxFileLOC,
+      largestFilePath: signals.largestFilePath,
+      srcDirPresent: signals.srcDirPresent,
+      hasReleaseDiscipline,
+      codeSnippets,
+    };
+  } catch (err) {
+    logger.warn(`Failed to fetch snapshot for ${repo.name}:`, err);
+    return {
+      name: repo.name,
+      fileTree: "",
+      hasTests: false,
+      hasCI: false,
+      hasLintConfig: false,
+      hasDockerfile: false,
+      hasBuildSystem: false,
+      readmeWordCount: 0,
+      releaseCount: 0,
+      latestReleaseDaysAgo: -1,
+      contributorCount: 0,
+      latestPushDaysAgo: Math.floor(
+        (Date.now() - new Date(repo.pushedAt).getTime()) / (1000 * 60 * 60 * 24),
+      ),
+      openIssuesCount: repo.openIssues,
+      pullRequestsCount: 0,
+      sourceFileCount: 0,
+      totalLOC: 0,
+      maxFileLOC: 0,
+      largestFilePath: "",
+      srcDirPresent: false,
+      hasReleaseDiscipline: false,
+    };
+  }
+}
+
+async function fetchCodeSnippets(
+  username: string,
+  repoName: string,
+  entries: GitTreeEntry[],
+  signal?: AbortSignal,
+): Promise<string[]> {
+  const snippets: string[] = [];
+  const MAX_SNIPPET_LINES = 250;
+
+  // Find entry file
+  const entryPath = ENTRY_FILE_NAMES.find((name) =>
+    entries.some((e) => e.type === "blob" && e.path.toLowerCase() === name.toLowerCase()),
+  );
+
+  // Find test file
+  const testEntry = entries.find(
+    (e) =>
+      e.type === "blob" &&
+      (e.path.includes(".test.") || e.path.includes(".spec.") || e.path.includes("_test.")),
+  );
+
+  const filesToFetch: string[] = [];
+  if (entryPath) {
+    const actual = entries.find(
+      (e) => e.type === "blob" && e.path.toLowerCase() === entryPath.toLowerCase(),
+    );
+    if (actual) filesToFetch.push(actual.path);
+  }
+  if (testEntry) filesToFetch.push(testEntry.path);
+
+  for (const filePath of filesToFetch.slice(0, 2)) {
+    try {
+      const fileData = await ghFetch<{ content: string; encoding: string }>(
+        `/repos/${username}/${repoName}/contents/${filePath}`,
+        signal,
+      );
+      if (fileData.encoding === "base64") {
+        const text = Buffer.from(fileData.content, "base64").toString("utf-8");
+        const lines = text.split("\n").slice(0, MAX_SNIPPET_LINES);
+        snippets.push(`--- ${filePath} ---\n${lines.join("\n")}`);
+      }
+    } catch {
+      // Non-critical, skip
+    }
+  }
+
+  return snippets;
+}
+
+function computeAggregateMetrics(snapshots: RepoSnapshot[]): AggregateMetrics {
+  const pushDays = snapshots
+    .map((s) => s.latestPushDaysAgo)
+    .filter((d) => d >= 0)
+    .sort((a, b) => a - b);
+
+  const medianLatestPushDaysAgo =
+    pushDays.length > 0
+      ? pushDays[Math.floor(pushDays.length / 2)]
+      : 0;
+
+  const totalSourceFiles = snapshots.reduce((sum, s) => sum + s.sourceFileCount, 0);
+  const totalLOC = snapshots.reduce((sum, s) => sum + s.totalLOC, 0);
+  const hasCode = totalSourceFiles >= 3 || totalLOC >= 300;
+
+  return { medianLatestPushDaysAgo, hasCode };
+}
+
 // ── Public entry point ────────────────────────────────────────────────
 
 export async function searchGitHubUsers(
@@ -398,7 +916,7 @@ export async function fetchGitHubUserData(
   username: string,
   signal?: AbortSignal,
 ): Promise<GitHubUserData> {
-  const [user, rawRepos, events, contributions] = await Promise.all([
+  const [user, rawRepos, events, contributions, pinnedNames] = await Promise.all([
     ghFetch<GitHubApiUser>(`/users/${username}`, signal),
     fetchAllRepos(username, signal),
     ghFetch<GitHubApiEvent[]>(
@@ -406,11 +924,24 @@ export async function fetchGitHubUserData(
       signal,
     ),
     fetchContributionCalendar(username, signal),
+    fetchPinnedRepoNames(username, signal),
   ]);
 
   const truncated = rawRepos.length < user.public_repos;
   const repositories = rawRepos.map(mapRepo).sort((a, b) => b.stars - a.stars);
-  const topRepositories = repositories.slice(0, 6);
+  const topRepositories = selectTopRepos(repositories, pinnedNames);
+
+  // Fetch repo snapshots (top 3 by stars get code snippets)
+  const topByStars = [...topRepositories].sort((a, b) => b.stars - a.stars);
+  const top3Names = new Set(topByStars.slice(0, 3).map((r) => r.name));
+
+  const repoSnapshots = await Promise.all(
+    topRepositories.map((repo) =>
+      fetchRepoSnapshot(username, repo, top3Names.has(repo.name), signal),
+    ),
+  );
+
+  const aggregateMetrics = computeAggregateMetrics(repoSnapshots);
 
   return {
     profile: mapProfile(user),
@@ -420,5 +951,7 @@ export async function fetchGitHubUserData(
     activity: buildActivitySummary(events),
     stats: buildStats(user, rawRepos, truncated),
     contributions,
+    repoSnapshots,
+    aggregateMetrics,
   };
 }

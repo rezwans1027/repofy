@@ -10,10 +10,20 @@ vi.mock("../../../src/services/github.service", async (importOriginal) => {
   };
 });
 vi.mock("../../../src/services/openai.service", () => ({
-  generateAnalysis: vi.fn(),
+  generateScorerResponse: vi.fn(),
+  generateNarrativeReport: vi.fn(),
+}));
+vi.mock("../../../src/services/scoring.service", () => ({
+  computeScoring: vi.fn(),
 }));
 vi.mock("../../../src/services/analyze.service", () => ({
   buildReportData: vi.fn(),
+}));
+vi.mock("../../../src/services/cache.service", () => ({
+  computeSnapshotHash: vi.fn().mockReturnValue("hash123"),
+  buildCacheKey: vi.fn().mockReturnValue("cachekey123"),
+  getCachedAnalysis: vi.fn().mockResolvedValue(null),
+  setCachedAnalysis: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("../../../src/lib/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
@@ -21,6 +31,7 @@ vi.mock("../../../src/lib/logger", () => ({
 const mockEnv: Record<string, unknown> = {
   mockAi: false,
   openaiApiKey: "sk-test",
+  openaiModel: "gpt-5.1",
 };
 vi.mock("../../../src/config/env", () => ({
   env: new Proxy({} as Record<string, unknown>, {
@@ -30,11 +41,14 @@ vi.mock("../../../src/config/env", () => ({
 
 import { analyzeUser } from "../../../src/controllers/analyze.controller";
 import { fetchGitHubUserData, GitHubError } from "../../../src/services/github.service";
-import { generateAnalysis } from "../../../src/services/openai.service";
+import { generateScorerResponse, generateNarrativeReport } from "../../../src/services/openai.service";
+import { computeScoring } from "../../../src/services/scoring.service";
 import { buildReportData } from "../../../src/services/analyze.service";
 
 const mockFetchGitHubUserData = fetchGitHubUserData as ReturnType<typeof vi.fn>;
-const mockGenerateAnalysis = generateAnalysis as ReturnType<typeof vi.fn>;
+const mockGenerateScorerResponse = generateScorerResponse as ReturnType<typeof vi.fn>;
+const mockGenerateNarrativeReport = generateNarrativeReport as ReturnType<typeof vi.fn>;
+const mockComputeScoring = computeScoring as ReturnType<typeof vi.fn>;
 const mockBuildReportData = buildReportData as ReturnType<typeof vi.fn>;
 
 describe("analyzeUser controller", () => {
@@ -52,11 +66,15 @@ describe("analyzeUser controller", () => {
   });
 
   it("returns report on happy path", async () => {
-    const githubData = { profile: { name: "Octocat" } };
-    const aiResult = { overallScore: 75 };
+    const githubData = { profile: { name: "Octocat" }, repoSnapshots: [], aggregateMetrics: { medianLatestPushDaysAgo: 30, hasCode: true } };
+    const scorerResult = { radarAxes: [] };
+    const scoringResult = { overallScore: 75 };
+    const narrative = "Test narrative.";
     const report = { candidateLevel: "Senior" };
     mockFetchGitHubUserData.mockResolvedValue(githubData);
-    mockGenerateAnalysis.mockResolvedValue(aiResult);
+    mockGenerateScorerResponse.mockResolvedValue(scorerResult);
+    mockComputeScoring.mockReturnValue(scoringResult);
+    mockGenerateNarrativeReport.mockResolvedValue(narrative);
     mockBuildReportData.mockReturnValue(report);
 
     const { req, res, next } = createControllerMocks();
@@ -72,20 +90,20 @@ describe("analyzeUser controller", () => {
 
   it("uses mock AI when env.mockAi is true", async () => {
     mockEnv.mockAi = true;
-    const githubData = { profile: { name: "Octocat" } };
-    mockFetchGitHubUserData.mockResolvedValue(githubData);
-    mockBuildReportData.mockReturnValue({ mock: true });
 
     const { req, res, next } = createControllerMocks();
 
     await analyzeUser(req, res, next);
 
-    expect(mockGenerateAnalysis).not.toHaveBeenCalled();
-    expect(mockBuildReportData).toHaveBeenCalled();
-    expect(res.json).toHaveBeenCalledWith({
-      success: true,
-      data: { analyzedName: "Mock User (octocat)", report: { mock: true } },
-    });
+    expect(mockGenerateScorerResponse).not.toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: true,
+        data: expect.objectContaining({
+          analyzedName: "Mock User (octocat)",
+        }),
+      }),
+    );
     expect(next).not.toHaveBeenCalled();
   });
 

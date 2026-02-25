@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createGitHubUserData } from "../../fixtures/github";
-import { createAIAdviceResponse } from "../../fixtures/ai";
+import { createAdviceV2Response } from "../../fixtures/ai";
 import type { GitHubRepo } from "../../../src/types";
 import { LANGUAGE_COLORS, DEFAULT_COLOR } from "../../../src/services/github.service";
 import { buildAdviceData } from "../../../src/services/advice-builder.service";
@@ -27,11 +27,11 @@ describe("buildAdviceData", () => {
         pushedAt: "2024-01-01T00:00:00Z",
       },
     ];
-    const ai = createAIAdviceResponse({
+    const ai = createAdviceV2Response({
       repoImprovements: [
         {
           repoName: "cool-project",
-          improvements: [{ area: "Testing", suggestion: "Add tests.", priority: "High" }],
+          improvements: [{ area: "Testing", suggestion: "Add tests.", priority: "High", expectedOutcome: "Coverage." }],
         },
       ],
     });
@@ -46,11 +46,11 @@ describe("buildAdviceData", () => {
   });
 
   it("falls back for unmatched repos", () => {
-    const ai = createAIAdviceResponse({
+    const ai = createAdviceV2Response({
       repoImprovements: [
         {
           repoName: "nonexistent",
-          improvements: [{ area: "Testing", suggestion: "Add tests.", priority: "High" }],
+          improvements: [{ area: "Testing", suggestion: "Add tests.", priority: "High", expectedOutcome: "Coverage." }],
         },
       ],
     });
@@ -64,17 +64,21 @@ describe("buildAdviceData", () => {
     expect(result.repoImprovements[0].stars).toBe(0);
   });
 
-  it("preserves AI fields", () => {
-    const ai = createAIAdviceResponse();
+  it("preserves v2 AI fields", () => {
+    const ai = createAdviceV2Response();
     const github = createGitHubUserData();
 
     const result = buildAdviceData(ai, github);
 
+    expect(result.schemaVersion).toBe("v2");
+    expect(result.generationWarnings).toEqual([]);
     expect(result.summary).toBe(ai.summary);
-    expect(result.projectIdeas).toEqual(ai.projectIdeas);
-    expect(result.skillsToLearn).toEqual(ai.skillsToLearn);
-    expect(result.contributionAdvice).toEqual(ai.contributionAdvice);
+    expect(result.trajectory).toEqual(ai.trajectory);
+    expect(result.buildRoadmap).toEqual(ai.buildRoadmap);
+    expect(result.skillRoadmap).toEqual(ai.skillRoadmap);
+    expect(result.contributionStrategy).toEqual(ai.contributionStrategy);
     expect(result.profileOptimizations).toEqual(ai.profileOptimizations);
-    expect(result.actionPlan).toEqual(ai.actionPlan);
+    expect(result.weeklyRoadmap).toEqual(ai.weeklyRoadmap);
+    expect(result.successMetrics).toEqual(ai.successMetrics);
   });
 });

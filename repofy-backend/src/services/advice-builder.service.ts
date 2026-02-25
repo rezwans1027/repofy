@@ -1,11 +1,11 @@
-import type { GitHubUserData, AIAdviceResponse } from "../types";
+import type { GitHubUserData, AdviceV2 } from "../types";
 import { LANGUAGE_COLORS, DEFAULT_COLOR } from "./github.service";
 
 /**
  * Merge AI advice with GitHub repo data to enrich repo improvements
  * with URLs, language colors, and star counts.
  */
-export function buildAdviceData(ai: AIAdviceResponse, github: GitHubUserData) {
+export function buildAdviceData(ai: AdviceV2, github: GitHubUserData) {
   const { topRepositories } = github;
 
   // Enrich repo improvements with URLs and language colors
@@ -26,12 +26,16 @@ export function buildAdviceData(ai: AIAdviceResponse, github: GitHubUserData) {
   });
 
   return {
+    schemaVersion: ai.schemaVersion,
+    generationWarnings: ai.generationWarnings,
     summary: ai.summary,
-    projectIdeas: ai.projectIdeas,
+    trajectory: ai.trajectory,
+    buildRoadmap: ai.buildRoadmap,
+    skillRoadmap: ai.skillRoadmap,
     repoImprovements,
-    skillsToLearn: ai.skillsToLearn,
-    contributionAdvice: ai.contributionAdvice,
+    contributionStrategy: ai.contributionStrategy,
     profileOptimizations: ai.profileOptimizations,
-    actionPlan: ai.actionPlan,
+    weeklyRoadmap: ai.weeklyRoadmap,
+    successMetrics: ai.successMetrics,
   };
 }

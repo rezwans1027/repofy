@@ -25,7 +25,10 @@ export default function GeneratePage({
     const data = await api.post<{
       analyzedName: string | null;
       report: Record<string, unknown>;
-    }>(`/analyze/${encodeURIComponent(username)}`, { auth: true });
+    }>(`/analyze/${encodeURIComponent(username)}`, {
+      auth: true,
+      signal: AbortSignal.timeout(120_000),
+    });
     return data;
   }, [username]);
 

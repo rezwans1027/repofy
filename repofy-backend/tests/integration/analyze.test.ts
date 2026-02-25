@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import { getApp } from "../helpers/supertest-app";
-import { createAIAnalysisResponse } from "../fixtures/ai";
+import { createScorerResponse } from "../fixtures/ai";
 import { setupGitHubMocks, setupAuthMock, setupOpenAIMock } from "../helpers/integration-setup";
 import { sharedAuthEndpointTests } from "../helpers/authenticated-endpoint";
 
@@ -24,7 +24,7 @@ describe("POST /api/analyze/:username", () => {
   it("returns 200 with report data when authenticated", async () => {
     setupGitHubMocks(fetchMock);
     await setupAuthMock(true);
-    await setupOpenAIMock(() => createAIAnalysisResponse());
+    await setupOpenAIMock(() => createScorerResponse());
 
     const app = getApp();
     const res = await request(app)
@@ -35,11 +35,21 @@ describe("POST /api/analyze/:username", () => {
     expect(res.body.success).toBe(true);
     expect(res.body.data.analyzedName).toBe("The Octocat");
     const report = res.body.data.report;
-    expect(report.candidateLevel).toBe("Mid-Level");
-    expect(report.overallScore).toBe(62);
-    expect(report.recommendation).toBe("Hire");
-    expect(typeof report.summary).toBe("string");
-    expect(report.summary.length).toBeGreaterThan(0);
+    expect(report.candidateLevel).toBeDefined();
+    expect(report.overallScore).toBeDefined();
+    expect(report.recommendation).toBeDefined();
+    expect(typeof report.narrativeReport).toBe("string");
+    expect(report.narrativeReport.length).toBeGreaterThan(0);
+    // Narrative should not start with score/level (narrator contract)
+    expect(report.narrativeReport).not.toMatch(/^This candidate scores/);
+    expect(report.narrativeReport).not.toMatch(/^Overall Score:/);
+    // Should be 3-paragraph prose from narrator (not fallback)
+    const paragraphs = report.narrativeReport.split("\n\n");
+    expect(paragraphs).toHaveLength(3);
+    // Verify it came from the narrator mock, not fallback template
+    expect(report.narrativeReport).toContain("A capable developer");
+    // Verify LOCKED_LINE was stripped (not present in output)
+    expect(report.narrativeReport).not.toContain("LOCKED:");
 
     expect(report.radarAxes).toHaveLength(6);
     for (const axis of report.radarAxes) {
@@ -55,6 +65,12 @@ describe("POST /api/analyze/:username", () => {
     for (const w of report.weaknesses) {
       expect(w).toMatchObject({ text: expect.any(String), evidence: expect.any(String) });
     }
+
+    // Verify new metadata fields
+    expect(report.riskSignals).toBeDefined();
+    expect(report.confidenceScore).toBeDefined();
+    expect(report.rubricVersion).toBe("v1.1");
+    expect(report.dataQualityWarnings).toBeDefined();
 
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/users/octocat/repos"), expect.anything());
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/users/octocat/events"), expect.anything());

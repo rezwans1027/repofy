@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { SectionHeader } from "@/components/ui/section-header";
 import type { ReportData } from "@/components/report/analysis-report";
 import { cn } from "@/lib/utils";
-import { gradeColor, SEVERITY_STYLES } from "@/lib/styles";
+import { codeQualityColor, testingColor, cicdColor, SEVERITY_STYLES } from "@/lib/styles";
 
 // ── Generic 2-column layout ──────────────────────────────────────
 
@@ -181,13 +181,13 @@ export function TopReposList({ repos }: { repos: ReportData["topRepos"] }) {
           </div>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { label: "Code Quality", grade: repo.codeQuality },
-              { label: "Testing", grade: repo.testing },
-              { label: "CI/CD", grade: repo.cicd },
+              { label: "Code Quality", grade: repo.codeQuality, colorFn: codeQualityColor },
+              { label: "Testing", grade: repo.testing, colorFn: testingColor },
+              { label: "CI/CD", grade: repo.cicd, colorFn: cicdColor },
             ].map((g) => (
               <div key={g.label} className="rounded-md border border-border p-2 text-center">
                 <p className="font-mono text-[10px] text-muted-foreground">{g.label}</p>
-                <p className={`mt-0.5 font-mono text-sm font-bold ${gradeColor(g.grade)}`}>
+                <p className={`mt-0.5 font-mono text-sm font-bold ${g.colorFn(g.grade)}`}>
                   {g.grade}
                 </p>
               </div>

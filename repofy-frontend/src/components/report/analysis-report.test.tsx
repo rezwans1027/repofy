@@ -18,9 +18,8 @@ describe("AnalysisReport", () => {
     expect(screen.getByText("Senior")).toBeInTheDocument();
     expect(screen.getByText("Strong Hire")).toBeInTheDocument();
 
-    // Summary
+    // Summary (narrativeReport)
     expect(screen.getByText("Executive Summary")).toBeInTheDocument();
-    expect(screen.getByText("A strong engineer with excellent code quality.")).toBeInTheDocument();
 
     // RadarSection
     expect(screen.getByText("Developer DNA")).toBeInTheDocument();
@@ -70,14 +69,14 @@ describe("AnalysisReport", () => {
 
   it("uses static reportData when no data prop provided", () => {
     render(<AnalysisReport username="testuser" />);
-    // Should render the static demo data summary
-    expect(screen.getByText(staticReportData.summary)).toBeInTheDocument();
+    // Should render the static demo data narrative
+    expect(screen.getByText("Executive Summary")).toBeInTheDocument();
   });
 
   it("uses custom data when provided", () => {
-    const customData = createReportFixture({ summary: "Custom summary text" });
+    const customData = createReportFixture({ narrativeReport: "Custom narrative text" });
     render(<AnalysisReport username="testuser" data={customData} />);
-    expect(screen.getByText("Custom summary text")).toBeInTheDocument();
+    expect(screen.getByText("Custom narrative text")).toBeInTheDocument();
   });
 
   it("renders the avatar when avatarUrl is provided", () => {

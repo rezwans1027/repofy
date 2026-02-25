@@ -1,11 +1,16 @@
-import type { AIAnalysisResponse, GitHubUserData } from "../types";
+import type { ScorerResponse, ScoringResult, GitHubUserData, AxisLabel } from "../types";
 import { LANGUAGE_COLORS, DEFAULT_COLOR } from "./github.service";
 
 /**
- * Merge AI analysis with computed GitHub data to produce the full report
- * that the frontend expects (matching the ReportData shape from demo-data.ts).
+ * Merge Scorer AI response, backend-computed scoring, and narrative report
+ * with GitHub data to produce the full report the frontend expects.
  */
-export function buildReportData(ai: AIAnalysisResponse, github: GitHubUserData) {
+export function buildReportData(
+  scorer: ScorerResponse,
+  scoring: ScoringResult,
+  narrativeReport: string,
+  github: GitHubUserData,
+) {
   const { profile, topRepositories, languages, activity, stats, contributions } = github;
 
   // Activity percentages from raw event counts
@@ -31,7 +36,7 @@ export function buildReportData(ai: AIAnalysisResponse, github: GitHubUserData) 
       : 0;
 
   // Match AI topRepos with actual GitHub repo data
-  const topRepos = ai.topRepos.map((aiRepo) => {
+  const topRepos = scorer.topRepos.map((aiRepo) => {
     const ghRepo = topRepositories.find(
       (r) => r.name.toLowerCase() === aiRepo.name.toLowerCase(),
     );
@@ -61,17 +66,24 @@ export function buildReportData(ai: AIAnalysisResponse, github: GitHubUserData) 
       percentage: l.percentage,
       repos: l.repoCount,
     })),
-    interpretation: ai.languageInterpretation,
+    interpretation: scorer.languageInterpretation,
   };
 
-  return {
-    candidateLevel: ai.candidateLevel,
-    overallScore: ai.overallScore,
-    recommendation: ai.recommendation,
-    summary: ai.summary,
+  // Merge radar breakdown: Scorer notes + ScoringResult scores
+  const radarBreakdown = scorer.radarBreakdown.map((b) => ({
+    label: b.label,
+    score: scoring.radarBreakdownScores[b.label as AxisLabel] ?? 0,
+    note: b.note,
+  }));
 
-    radarAxes: ai.radarAxes,
-    radarBreakdown: ai.radarBreakdown,
+  return {
+    candidateLevel: scoring.candidateLevel,
+    overallScore: scoring.overallScore,
+    recommendation: scoring.recommendation,
+    narrativeReport,
+
+    radarAxes: scorer.radarAxes,
+    radarBreakdown,
 
     stats: {
       repos: profile.publicRepos,
@@ -80,7 +92,7 @@ export function buildReportData(ai: AIAnalysisResponse, github: GitHubUserData) 
       contributions: contributions?.totalContributions ?? 0,
       starsPerRepo,
       collaborationRatio,
-      interpretation: ai.statsInterpretation,
+      interpretation: scorer.statsInterpretation,
     },
 
     activityBreakdown: {
@@ -88,14 +100,21 @@ export function buildReportData(ai: AIAnalysisResponse, github: GitHubUserData) 
       pr: prPct,
       issue: issuePct,
       review: Math.max(reviewPct, 0),
-      interpretation: ai.activityInterpretation,
+      interpretation: scorer.activityInterpretation,
     },
 
     languageProfile,
     topRepos,
-    strengths: ai.strengths,
-    weaknesses: ai.weaknesses,
-    redFlags: ai.redFlags,
-    interviewQuestions: ai.interviewQuestions,
+    strengths: scorer.strengths,
+    weaknesses: scorer.weaknesses,
+    redFlags: scorer.redFlags,
+    interviewQuestions: scorer.interviewQuestions,
+
+    // New metadata fields
+    riskSignals: scoring.riskSignals,
+    confidenceScore: scoring.confidenceScore,
+    rubricVersion: scoring.rubricVersion,
+    modelVersion: scoring.modelVersion,
+    dataQualityWarnings: scorer.dataQualityWarnings,
   };
 }

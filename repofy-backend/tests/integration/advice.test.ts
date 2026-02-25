@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import { getApp } from "../helpers/supertest-app";
-import { createAIAdviceResponse } from "../fixtures/ai";
+import { createAdviceV2Raw } from "../fixtures/ai";
 import { setupGitHubMocks, setupAuthMock, setupOpenAIMock } from "../helpers/integration-setup";
 import { sharedAuthEndpointTests } from "../helpers/authenticated-endpoint";
 
@@ -21,10 +21,10 @@ describe("POST /api/advice/:username", () => {
     fetchMock.mockReset();
   });
 
-  it("returns 200 with advice data when authenticated", async () => {
+  it("returns 200 with v2 advice data when authenticated", async () => {
     setupGitHubMocks(fetchMock);
     await setupAuthMock(true);
-    await setupOpenAIMock(() => createAIAdviceResponse());
+    await setupOpenAIMock(() => createAdviceV2Raw());
 
     const app = getApp();
     const res = await request(app)
@@ -35,33 +35,55 @@ describe("POST /api/advice/:username", () => {
     expect(res.body.success).toBe(true);
     expect(res.body.data.analyzedName).toBe("The Octocat");
     const advice = res.body.data.advice;
-    expect(advice.summary).toBe("Focus on testing and documentation.");
 
-    expect(advice.projectIdeas.length).toBeGreaterThan(0);
-    for (const idea of advice.projectIdeas) {
-      expect(idea).toMatchObject({
+    // V2 shape validation
+    expect(advice.schemaVersion).toBe("v2");
+    expect(advice.generationWarnings).toEqual(expect.any(Array));
+    expect(advice.summary).toBeDefined();
+
+    // Trajectory
+    expect(advice.trajectory).toBeDefined();
+    expect(advice.trajectory.currentEstimate).toBeDefined();
+    expect(advice.trajectory.confidence).toBeDefined();
+    expect(advice.trajectory.calibration).toBeDefined();
+
+    // Build roadmap
+    expect(advice.buildRoadmap).toHaveLength(3);
+    for (const build of advice.buildRoadmap) {
+      expect(build).toMatchObject({
         title: expect.any(String),
         techStack: expect.any(Array),
         difficulty: expect.any(String),
+        estimatedWeeks: expect.any(Number),
+        milestones: expect.any(Array),
       });
     }
+    const weeksSum = advice.buildRoadmap.reduce((s: number, b: { estimatedWeeks: number }) => s + b.estimatedWeeks, 0);
+    expect(weeksSum).toBeLessThanOrEqual(12);
 
-    expect(advice.skillsToLearn.length).toBeGreaterThan(0);
-    for (const skill of advice.skillsToLearn) {
+    // Weekly roadmap
+    expect(advice.weeklyRoadmap).toHaveLength(12);
+    const buildTitles = advice.buildRoadmap.map((b: { title: string }) => b.title);
+    for (const week of advice.weeklyRoadmap) {
+      expect(week.week).toBeGreaterThanOrEqual(1);
+      expect(week.week).toBeLessThanOrEqual(12);
+      expect(buildTitles).toContain(week.activeBuildTitle);
+    }
+
+    // Skill roadmap
+    expect(advice.skillRoadmap.length).toBeGreaterThan(0);
+    for (const skill of advice.skillRoadmap) {
       expect(skill).toMatchObject({
         skill: expect.any(String),
         reason: expect.any(String),
+        priority: expect.any(String),
       });
     }
 
-    expect(advice.actionPlan).toHaveLength(3);
-    for (const step of advice.actionPlan) {
-      expect(step).toMatchObject({
-        timeframe: expect.any(String),
-        actions: expect.any(Array),
-      });
-    }
+    // Success metrics
+    expect(advice.successMetrics).toEqual(expect.any(Array));
 
+    // GitHub API calls
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/users/octocat/repos"), expect.anything());
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/users/octocat/events"), expect.anything());
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/graphql"), expect.anything());

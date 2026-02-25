@@ -53,8 +53,8 @@ describe("adviseUser controller", () => {
 
   it("returns advice on happy path", async () => {
     const githubData = { profile: { name: "Octocat" } };
-    const aiResult = { summary: "Good profile" };
-    const advice = { summary: "Good profile" };
+    const aiResult = { schemaVersion: "v2", summary: "Good profile" };
+    const advice = { schemaVersion: "v2", summary: "Good profile" };
     mockFetchGitHubUserData.mockResolvedValue(githubData);
     mockGenerateAdvice.mockResolvedValue(aiResult);
     mockBuildAdviceData.mockReturnValue(advice);
@@ -74,7 +74,7 @@ describe("adviseUser controller", () => {
     mockEnv.mockAi = true;
     const githubData = { profile: { name: "Octocat" } };
     mockFetchGitHubUserData.mockResolvedValue(githubData);
-    mockBuildAdviceData.mockReturnValue({ mock: true });
+    mockBuildAdviceData.mockReturnValue({ schemaVersion: "v2", mock: true });
 
     const { req, res, next } = createControllerMocks();
 
@@ -84,7 +84,7 @@ describe("adviseUser controller", () => {
     expect(mockBuildAdviceData).toHaveBeenCalled();
     expect(res.json).toHaveBeenCalledWith({
       success: true,
-      data: { analyzedName: "Mock User (octocat)", advice: { mock: true } },
+      data: { analyzedName: "Mock User (octocat)", advice: { schemaVersion: "v2", mock: true } },
     });
     expect(next).not.toHaveBeenCalled();
   });

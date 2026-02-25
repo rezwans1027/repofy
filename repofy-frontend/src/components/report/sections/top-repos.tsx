@@ -6,7 +6,7 @@ import { ChevronDown, Award, Star, GitFork } from "lucide-react";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Badge } from "@/components/ui/badge";
-import { gradeColor } from "@/lib/styles";
+import { codeQualityColor, testingColor, cicdColor, verdictColor } from "@/lib/styles";
 import type { ReportData } from "@/components/report/analysis-report";
 
 interface TopReposProps {
@@ -46,6 +46,9 @@ export function TopRepos({ topRepos, expandAll }: TopReposProps) {
                       Best Work
                     </Badge>
                   )}
+                  <Badge className={`text-[9px] shrink-0 border ${verdictBadgeStyle(repo.verdict)}`}>
+                    {repo.verdict}
+                  </Badge>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
@@ -101,9 +104,9 @@ export function TopRepos({ topRepos, expandAll }: TopReposProps) {
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       {[
-                        { label: "Code Quality", grade: repo.codeQuality },
-                        { label: "Testing", grade: repo.testing },
-                        { label: "CI/CD", grade: repo.cicd },
+                        { label: "Code Quality", grade: repo.codeQuality, colorFn: codeQualityColor },
+                        { label: "Testing", grade: repo.testing, colorFn: testingColor },
+                        { label: "CI/CD", grade: repo.cicd, colorFn: cicdColor },
                       ].map((g) => (
                         <div
                           key={g.label}
@@ -113,16 +116,13 @@ export function TopRepos({ topRepos, expandAll }: TopReposProps) {
                             {g.label}
                           </p>
                           <p
-                            className={`mt-0.5 font-mono text-sm font-bold ${gradeColor(g.grade)}`}
+                            className={`mt-0.5 font-mono text-sm font-bold ${g.colorFn(g.grade)}`}
                           >
                             {g.grade}
                           </p>
                         </div>
                       ))}
                     </div>
-                    <p className="text-xs leading-relaxed text-muted-foreground border-l-2 border-cyan/30 pl-3">
-                      {repo.verdict}
-                    </p>
                   </div>
                 </motion.div>
               )}
@@ -132,4 +132,15 @@ export function TopRepos({ topRepos, expandAll }: TopReposProps) {
       </div>
     </AnimateOnView>
   );
+}
+
+function verdictBadgeStyle(verdict: string): string {
+  switch (verdict) {
+    case "Standout": return "bg-amber-500/15 text-amber-400 border-amber-500/30";
+    case "Strong": return "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
+    case "Solid": return "bg-cyan/15 text-cyan border-cyan/30";
+    case "Needs Work": return "bg-orange-500/15 text-orange-400 border-orange-500/30";
+    case "Risky": return "bg-red-500/15 text-red-400 border-red-500/30";
+    default: return "bg-secondary text-muted-foreground border-border";
+  }
 }
