@@ -9,6 +9,15 @@ export const aiRateLimit = rateLimit({
   message: { success: false, error: "Too many requests. Please try again later." },
 });
 
+/** Tight limiter for Stripe checkout: 10 req/min per IP */
+export const stripeRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many requests. Please try again later." },
+});
+
 /** Moderate limiter for GitHub proxy routes: 30 req/min per IP */
 export const githubRateLimit = rateLimit({
   windowMs: 60_000,

@@ -3,6 +3,7 @@ import { env } from "./config/env";
 import { corsMiddleware } from "./middleware/cors";
 import { errorHandler } from "./middleware/errorHandler";
 import { notFound } from "./middleware/notFound";
+import { handleWebhook } from "./controllers/stripe.controller";
 import routes from "./routes";
 
 export function createApp() {
@@ -12,6 +13,14 @@ export function createApp() {
   if (env.trustProxy) {
     app.set("trust proxy", 1);
   }
+
+  // Stripe webhook needs raw body for signature verification — must be registered
+  // before express.json() so the body is not parsed as JSON.
+  app.post(
+    "/api/stripe/webhook",
+    express.raw({ type: "application/json" }),
+    handleWebhook,
+  );
 
   app.use(corsMiddleware);
   app.use(express.json());
