@@ -226,7 +226,7 @@ describe("handleWebhook controller", () => {
     );
   });
 
-  it("skips grant when amount_total is not 500", async () => {
+  it("returns 500 when amount_total is not 500 (invariant violation)", async () => {
     const event = buildWebhookEvent({ amount_total: 1000 });
     mockStripeWithEvent(event);
 
@@ -237,13 +237,14 @@ describe("handleWebhook controller", () => {
     await handleWebhook(req, res, next);
 
     expect(mockGrantGrowthCredits).not.toHaveBeenCalled();
-    expect(logger.warn).toHaveBeenCalledWith(
-      "Webhook: unexpected amount",
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(logger.error).toHaveBeenCalledWith(
+      "Webhook invariant: unexpected amount",
       expect.any(Object),
     );
   });
 
-  it("skips grant when currency is not usd", async () => {
+  it("returns 500 when currency is not usd (invariant violation)", async () => {
     const event = buildWebhookEvent({ currency: "eur" });
     mockStripeWithEvent(event);
 
@@ -254,13 +255,14 @@ describe("handleWebhook controller", () => {
     await handleWebhook(req, res, next);
 
     expect(mockGrantGrowthCredits).not.toHaveBeenCalled();
-    expect(logger.warn).toHaveBeenCalledWith(
-      "Webhook: unexpected currency",
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(logger.error).toHaveBeenCalledWith(
+      "Webhook invariant: unexpected currency",
       expect.any(Object),
     );
   });
 
-  it("skips grant when product metadata doesn't match", async () => {
+  it("returns 500 when product metadata doesn't match (invariant violation)", async () => {
     const event = buildWebhookEvent({ metadata: { product: "other" } });
     mockStripeWithEvent(event);
 
@@ -271,13 +273,14 @@ describe("handleWebhook controller", () => {
     await handleWebhook(req, res, next);
 
     expect(mockGrantGrowthCredits).not.toHaveBeenCalled();
-    expect(logger.warn).toHaveBeenCalledWith(
-      "Webhook: unexpected product metadata",
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(logger.error).toHaveBeenCalledWith(
+      "Webhook invariant: unexpected product metadata",
       expect.any(Object),
     );
   });
 
-  it("skips grant when payment_intent is missing or non-string", async () => {
+  it("returns 500 when payment_intent is missing (invariant violation)", async () => {
     const event = buildWebhookEvent({ payment_intent: null });
     mockStripeWithEvent(event);
 
@@ -288,14 +291,14 @@ describe("handleWebhook controller", () => {
     await handleWebhook(req, res, next);
 
     expect(mockGrantGrowthCredits).not.toHaveBeenCalled();
-    expect(logger.warn).toHaveBeenCalledWith(
-      "Webhook: missing or invalid payment_intent",
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(logger.error).toHaveBeenCalledWith(
+      "Webhook invariant: missing or invalid payment_intent",
       expect.any(Object),
     );
-    expect(res.json).toHaveBeenCalledWith({ received: true });
   });
 
-  it("skips grant when mode is not payment", async () => {
+  it("returns 500 when mode is not payment (invariant violation)", async () => {
     const event = buildWebhookEvent({ mode: "subscription" });
     mockStripeWithEvent(event);
 
@@ -306,8 +309,9 @@ describe("handleWebhook controller", () => {
     await handleWebhook(req, res, next);
 
     expect(mockGrantGrowthCredits).not.toHaveBeenCalled();
-    expect(logger.warn).toHaveBeenCalledWith(
-      "Webhook: unexpected mode",
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(logger.error).toHaveBeenCalledWith(
+      "Webhook invariant: unexpected mode",
       expect.any(Object),
     );
   });

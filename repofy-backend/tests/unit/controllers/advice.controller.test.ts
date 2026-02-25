@@ -16,8 +16,24 @@ vi.mock("../../../src/services/advice-builder.service", () => ({
   buildAdviceData: vi.fn(),
 }));
 vi.mock("../../../src/services/credit.service", () => ({
+  getCreditBalance: vi.fn(),
   deductGrowthCredit: vi.fn(),
   refundGrowthCredit: vi.fn(),
+}));
+const mockSupabaseUpsert = vi.fn();
+vi.mock("../../../src/config/supabase", () => ({
+  getSupabaseAdmin: () => ({
+    from: () => ({
+      upsert: (...args: unknown[]) => {
+        const result = mockSupabaseUpsert(...args);
+        return {
+          select: () => ({
+            single: () => result,
+          }),
+        };
+      },
+    }),
+  }),
 }));
 vi.mock("../../../src/lib/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
@@ -39,13 +55,14 @@ import { adviseUser } from "../../../src/controllers/advice.controller";
 import { fetchGitHubUserData, GitHubError } from "../../../src/services/github.service";
 import { generateAdvice } from "../../../src/services/advice.service";
 import { buildAdviceData } from "../../../src/services/advice-builder.service";
-import { deductGrowthCredit, refundGrowthCredit } from "../../../src/services/credit.service";
+import { getCreditBalance, deductGrowthCredit, refundGrowthCredit } from "../../../src/services/credit.service";
 import { isRefundableError } from "../../../src/lib/errors";
 import { logger } from "../../../src/lib/logger";
 
 const mockFetchGitHubUserData = fetchGitHubUserData as ReturnType<typeof vi.fn>;
 const mockGenerateAdvice = generateAdvice as ReturnType<typeof vi.fn>;
 const mockBuildAdviceData = buildAdviceData as ReturnType<typeof vi.fn>;
+const mockGetCreditBalance = getCreditBalance as ReturnType<typeof vi.fn>;
 const mockDeductGrowthCredit = deductGrowthCredit as ReturnType<typeof vi.fn>;
 const mockRefundGrowthCredit = refundGrowthCredit as ReturnType<typeof vi.fn>;
 const mockIsRefundableError = isRefundableError as ReturnType<typeof vi.fn>;
@@ -55,9 +72,11 @@ describe("adviseUser controller", () => {
     vi.clearAllMocks();
     mockEnv.mockAi = false;
     mockEnv.openaiApiKey = "sk-test";
+    mockGetCreditBalance.mockResolvedValue({ growth_balance: 5, eval_balance: 0 });
     mockDeductGrowthCredit.mockResolvedValue(true);
     mockRefundGrowthCredit.mockResolvedValue(true);
     mockIsRefundableError.mockReturnValue(true);
+    mockSupabaseUpsert.mockReturnValue({ data: { id: "advice-row-1" }, error: null });
   });
 
   sharedControllerBehaviorTests({
@@ -67,7 +86,7 @@ describe("adviseUser controller", () => {
     GitHubError,
   });
 
-  it("returns advice on happy path (deduct succeeds)", async () => {
+  it("returns adviceId on happy path (deduct + persist succeeds)", async () => {
     const githubData = { profile: { name: "Octocat" } };
     const aiResult = { summary: "Good profile" };
     const advice = { summary: "Good profile" };
@@ -87,13 +106,17 @@ describe("adviseUser controller", () => {
     );
     expect(res.json).toHaveBeenCalledWith({
       success: true,
-      data: { analyzedName: "Octocat", advice },
+      data: { adviceId: "advice-row-1" },
     });
     expect(next).not.toHaveBeenCalled();
   });
 
-  it("deducts AFTER GitHub fetch (verifies order)", async () => {
+  it("pre-checks balance, then GitHub, then deducts, then AI (verifies order)", async () => {
     const callOrder: string[] = [];
+    mockGetCreditBalance.mockImplementation(async () => {
+      callOrder.push("precheck");
+      return { growth_balance: 1, eval_balance: 0 };
+    });
     mockFetchGitHubUserData.mockImplementation(async () => {
       callOrder.push("github");
       return { profile: { name: "Octocat" } };
@@ -113,10 +136,24 @@ describe("adviseUser controller", () => {
 
     await adviseUser(req, res, next);
 
-    expect(callOrder).toEqual(["github", "deduct", "ai"]);
+    expect(callOrder).toEqual(["precheck", "github", "deduct", "ai"]);
   });
 
-  it("returns 402 when deduct returns false", async () => {
+  it("returns 402 early when pre-check shows zero balance (no GitHub call)", async () => {
+    mockGetCreditBalance.mockResolvedValue({ growth_balance: 0, eval_balance: 0 });
+
+    const { req, res, next } = createControllerMocks();
+    (req as any).userId = "user-123";
+
+    await adviseUser(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(402);
+    expect(mockFetchGitHubUserData).not.toHaveBeenCalled();
+    expect(mockDeductGrowthCredit).not.toHaveBeenCalled();
+    expect(mockGenerateAdvice).not.toHaveBeenCalled();
+  });
+
+  it("returns 402 when atomic deduct returns false (race condition)", async () => {
     mockFetchGitHubUserData.mockResolvedValue({ profile: { name: "Octocat" } });
     mockDeductGrowthCredit.mockResolvedValue(false);
 
@@ -223,6 +260,26 @@ describe("adviseUser controller", () => {
         error: "AI timeout",
       }),
     );
+  });
+
+  it("refunds when advice persistence fails", async () => {
+    mockFetchGitHubUserData.mockResolvedValue({ profile: { name: "Octocat" } });
+    mockGenerateAdvice.mockResolvedValue({ summary: "Good" });
+    mockBuildAdviceData.mockReturnValue({ summary: "Good" });
+    mockSupabaseUpsert.mockReturnValue({ data: null, error: new Error("DB write failed") });
+    mockIsRefundableError.mockReturnValue(true);
+
+    const { req, res, next } = createControllerMocks();
+    (req as any).userId = "user-123";
+
+    await adviseUser(req, res, next);
+
+    expect(mockRefundGrowthCredit).toHaveBeenCalledWith(
+      "user-123",
+      expect.any(String),
+      { reason: "post_deduction_failure" },
+    );
+    expect(res.status).toHaveBeenCalledWith(500);
   });
 
   it("handles generic error with 500", async () => {

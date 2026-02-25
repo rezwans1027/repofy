@@ -31,30 +31,6 @@ vi.mock("@/lib/api-client", () => {
   };
 });
 
-vi.mock("@/lib/supabase/client", () => ({
-  createClient: () => ({
-    from: () => ({
-      upsert: () => ({
-        select: () => ({
-          single: () => ({ data: { id: "adv1" }, error: null }),
-        }),
-      }),
-      insert: () => ({
-        select: () => ({
-          single: () => ({ data: { id: "adv1" }, error: null }),
-        }),
-      }),
-      delete: () => ({
-        eq: () => ({
-          eq: () => ({
-            neq: () => ({ error: null }),
-          }),
-        }),
-      }),
-    }),
-  }),
-}));
-
 // Mock AnalysisLoading to expose fetchReport for direct invocation
 vi.mock("@/components/report/analysis-loading", () => ({
   AnalysisLoading: ({ onComplete, onError, fetchReport }: any) => (
@@ -111,29 +87,8 @@ describe("GenerateAdvicePage", () => {
     expect(screen.getByTestId("analysis-loading")).toBeInTheDocument();
   });
 
-  it("shows error card when user is not logged in on complete", async () => {
-    authState.user = null;
-
-    vi.mocked(api.post).mockResolvedValue({
-      analyzedName: "Test",
-      advice: { summary: "Good" },
-    });
-
-    const user = userEvent.setup();
-    await renderPage();
-
-    await user.click(screen.getByTestId("fetch-btn"));
-
-    expect(
-      await screen.findByText("You must be logged in to generate advice."),
-    ).toBeInTheDocument();
-  });
-
-  it("navigates to advisor page on success", async () => {
-    vi.mocked(api.post).mockResolvedValue({
-      analyzedName: "Test User",
-      advice: { summary: "Good profile" },
-    });
+  it("navigates to advisor page using adviceId from backend", async () => {
+    vi.mocked(api.post).mockResolvedValue({ adviceId: "adv-42" });
 
     const user = userEvent.setup();
     await renderPage();
@@ -141,7 +96,7 @@ describe("GenerateAdvicePage", () => {
     await user.click(screen.getByTestId("fetch-btn"));
 
     await vi.waitFor(() => {
-      expect(navState.replace).toHaveBeenCalledWith("/advisor/adv1?from=profile");
+      expect(navState.replace).toHaveBeenCalledWith("/advisor/adv-42?from=profile");
     });
   });
 
@@ -185,10 +140,7 @@ describe("GenerateAdvicePage", () => {
   });
 
   it("invalidates credit balance on successful advice generation", async () => {
-    vi.mocked(api.post).mockResolvedValue({
-      analyzedName: "Test User",
-      advice: { summary: "Good" },
-    });
+    vi.mocked(api.post).mockResolvedValue({ adviceId: "adv-99" });
 
     const user = userEvent.setup();
     await renderPage();

@@ -239,9 +239,10 @@ BEGIN
   END IF;
 
   -- Credit back (only reached if transaction insert succeeded)
-  UPDATE credit_wallets
-     SET growth_balance = growth_balance + 1
-   WHERE user_id = p_user_id;
+  INSERT INTO credit_wallets (user_id, growth_balance)
+  VALUES (p_user_id, 1)
+  ON CONFLICT (user_id) DO UPDATE
+    SET growth_balance = credit_wallets.growth_balance + 1;
 
   RETURN true;
 END;

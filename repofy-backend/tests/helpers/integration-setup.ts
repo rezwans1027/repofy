@@ -45,9 +45,25 @@ export async function setupAuthMock(valid = true) {
       ? { data: { user: { id: "test-id", email: "test@test.com" } }, error: null }
       : { data: { user: null }, error: { message: "Invalid token" } },
   );
+
+  // Chainable .from() mock for credit balance queries and advice persistence
+  const chainable = () => {
+    const chain: Record<string, any> = {};
+    const wrap = (val: any) => {
+      chain.select = () => wrap(val);
+      chain.eq = () => wrap(val);
+      chain.maybeSingle = () => Promise.resolve(val);
+      chain.single = () => Promise.resolve(val);
+      chain.upsert = () => wrap(val);
+      return chain;
+    };
+    return wrap({ data: { id: "mock-id", growth_balance: 5, eval_balance: 0 }, error: null });
+  };
+
   (getSupabaseAdmin as ReturnType<typeof vi.fn>).mockReturnValue({
     auth: { getUser: mockGetUser },
     rpc: vi.fn().mockResolvedValue({ data: true, error: null }),
+    from: () => chainable(),
   });
 }
 

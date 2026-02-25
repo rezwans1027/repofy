@@ -21,7 +21,7 @@ describe("POST /api/advice/:username", () => {
     fetchMock.mockReset();
   });
 
-  it("returns 200 with advice data when authenticated", async () => {
+  it("returns 200 with adviceId when authenticated", async () => {
     setupGitHubMocks(fetchMock);
     await setupAuthMock(true);
     await setupOpenAIMock(() => createAIAdviceResponse());
@@ -33,34 +33,7 @@ describe("POST /api/advice/:username", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.data.analyzedName).toBe("The Octocat");
-    const advice = res.body.data.advice;
-    expect(advice.summary).toBe("Focus on testing and documentation.");
-
-    expect(advice.projectIdeas.length).toBeGreaterThan(0);
-    for (const idea of advice.projectIdeas) {
-      expect(idea).toMatchObject({
-        title: expect.any(String),
-        techStack: expect.any(Array),
-        difficulty: expect.any(String),
-      });
-    }
-
-    expect(advice.skillsToLearn.length).toBeGreaterThan(0);
-    for (const skill of advice.skillsToLearn) {
-      expect(skill).toMatchObject({
-        skill: expect.any(String),
-        reason: expect.any(String),
-      });
-    }
-
-    expect(advice.actionPlan).toHaveLength(3);
-    for (const step of advice.actionPlan) {
-      expect(step).toMatchObject({
-        timeframe: expect.any(String),
-        actions: expect.any(Array),
-      });
-    }
+    expect(res.body.data.adviceId).toBeDefined();
 
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/users/octocat/repos"), expect.anything());
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/users/octocat/events"), expect.anything());
