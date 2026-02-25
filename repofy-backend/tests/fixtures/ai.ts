@@ -278,6 +278,26 @@ export function createAdviceV2Raw(overrides: Partial<AdviceV2Raw> = {}): AdviceV
         successCheck: `Week ${week} checkpoint`,
       };
     }),
+    strengthsAndGaps: {
+      strengths: [
+        { area: "Clean Code", detail: "Consistent naming in cool-project." },
+        { area: "Consistency", detail: "Regular pushes in last 60 days." },
+        { area: "TypeScript", detail: "Strict mode across repos." },
+      ],
+      gaps: [
+        { area: "Testing", detail: "No test files found." },
+        { area: "CI/CD", detail: "No pipelines detected." },
+        { area: "Collaboration", detail: "Single-contributor repos only." },
+      ],
+    },
+    careerPositioning: {
+      positioning: "Position as a TypeScript-focused developer building toward production readiness.",
+      roles: ["Junior Full-Stack Developer", "Junior Backend Engineer"],
+      differentiators: [
+        "Consistent commit cadence.",
+        "Clean TypeScript fundamentals.",
+      ],
+    },
     successMetrics: [
       "Reach 3+ merged PRs to OSS repos outside personal projects within 12 weeks.",
       "Deploy all 3 portfolio builds with public URLs by week 12.",
