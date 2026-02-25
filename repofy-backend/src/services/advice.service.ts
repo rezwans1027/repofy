@@ -135,6 +135,53 @@ const WEEKLY_ROADMAP_ITEM_SCHEMA = {
   additionalProperties: false,
 } as const;
 
+const STRENGTHS_AND_GAPS_SCHEMA = {
+  type: "object",
+  properties: {
+    strengths: {
+      type: "array",
+      minItems: 3,
+      maxItems: 5,
+      items: {
+        type: "object",
+        properties: {
+          area: { type: "string" },
+          detail: { type: "string" },
+        },
+        required: ["area", "detail"],
+        additionalProperties: false,
+      },
+    },
+    gaps: {
+      type: "array",
+      minItems: 3,
+      maxItems: 5,
+      items: {
+        type: "object",
+        properties: {
+          area: { type: "string" },
+          detail: { type: "string" },
+        },
+        required: ["area", "detail"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["strengths", "gaps"],
+  additionalProperties: false,
+} as const;
+
+const CAREER_POSITIONING_SCHEMA = {
+  type: "object",
+  properties: {
+    positioning: { type: "string" },
+    roles: { type: "array", items: { type: "string" }, minItems: 2, maxItems: 4 },
+    differentiators: { type: "array", items: { type: "string" }, minItems: 2, maxItems: 4 },
+  },
+  required: ["positioning", "roles", "differentiators"],
+  additionalProperties: false,
+} as const;
+
 const SECTION_SCHEMAS: Record<AdviceSectionName, unknown> = {
   summary: { type: "string" },
   trajectory: TRAJECTORY_SCHEMA,
@@ -144,6 +191,8 @@ const SECTION_SCHEMAS: Record<AdviceSectionName, unknown> = {
   contributionStrategy: { type: "array", items: CONTRIBUTION_STRATEGY_ITEM_SCHEMA, minItems: 3, maxItems: 5 },
   profileOptimizations: { type: "array", items: PROFILE_OPTIMIZATION_ITEM_SCHEMA, minItems: 4, maxItems: 6 },
   weeklyRoadmap: { type: "array", items: WEEKLY_ROADMAP_ITEM_SCHEMA, minItems: 12, maxItems: 12 },
+  strengthsAndGaps: STRENGTHS_AND_GAPS_SCHEMA,
+  careerPositioning: CAREER_POSITIONING_SCHEMA,
   successMetrics: { type: "array", items: { type: "string" }, minItems: 5, maxItems: 8 },
 };
 
@@ -163,12 +212,14 @@ export const ADVICE_V2_JSON_SCHEMA = {
       contributionStrategy: SECTION_SCHEMAS.contributionStrategy,
       profileOptimizations: SECTION_SCHEMAS.profileOptimizations,
       weeklyRoadmap: SECTION_SCHEMAS.weeklyRoadmap,
+      strengthsAndGaps: SECTION_SCHEMAS.strengthsAndGaps,
+      careerPositioning: SECTION_SCHEMAS.careerPositioning,
       successMetrics: SECTION_SCHEMAS.successMetrics,
     },
     required: [
       "summary", "trajectory", "buildRoadmap", "skillRoadmap",
       "repoImprovements", "contributionStrategy", "profileOptimizations",
-      "weeklyRoadmap", "successMetrics",
+      "weeklyRoadmap", "strengthsAndGaps", "careerPositioning", "successMetrics",
     ],
     additionalProperties: false,
   },
@@ -493,6 +544,14 @@ const SECTION_DEGRADE_MAP: Partial<Record<AdviceSectionName, {
   contributionStrategy: {
     degrade: (advice) => (advice.contributionStrategy ?? []).slice(0, 2),
     warning: GenerationWarning.CONTRIBUTION_STRATEGY_REDUCED,
+  },
+  strengthsAndGaps: {
+    degrade: (advice) => advice.strengthsAndGaps ?? { strengths: [], gaps: [] },
+    warning: GenerationWarning.STRENGTHS_AND_GAPS_REDUCED,
+  },
+  careerPositioning: {
+    degrade: (advice) => advice.careerPositioning ?? { positioning: "", roles: [], differentiators: [] },
+    warning: GenerationWarning.CAREER_POSITIONING_REDUCED,
   },
 };
 

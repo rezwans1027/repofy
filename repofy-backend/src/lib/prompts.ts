@@ -151,6 +151,16 @@ WEEKLY ROADMAP (exactly 12 weeks):
 - Weekly entries must form a connected, progressive plan — not disconnected tips.
 - Build transitions should be clean: finish one build before starting the next (no random oscillation).
 
+STRENGTHS & GAPS:
+- strengths (3-5): What the profile already demonstrates well. Each item has an area label and a detail sentence citing specific repos or patterns.
+- gaps (3-5): What's missing to reach the target level. Each item has an area label and a detail sentence explaining what's absent and why it matters.
+- Ground every item in evidence from the profile — never give generic strengths like "writes code" or generic gaps like "needs more experience".
+
+CAREER POSITIONING:
+- positioning: A 2-3 sentence narrative on how this developer should frame themselves for job applications right now. Be specific to their stack and strengths.
+- roles (2-4): Job titles that fit their current skills and trajectory (e.g., "Junior Backend Engineer", "Full-Stack TypeScript Developer").
+- differentiators (2-4): What sets them apart from other candidates at their level, grounded in their actual repos and activity.
+
 SUCCESS METRICS (5-8):
 - Every metric MUST be measurable. Include a numeric target, threshold, or observable binary deliverable with a timeframe.
 - BAD: "Improve GitHub presence."

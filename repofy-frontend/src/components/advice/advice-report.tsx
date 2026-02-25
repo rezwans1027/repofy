@@ -13,6 +13,8 @@ import { SkillRoadmap } from "./sections/skill-roadmap";
 import { RepoImprovements } from "./sections/repo-improvements";
 import { ContributionStrategy } from "./sections/contribution-strategy";
 import { ProfileOptimizations } from "./sections/profile-optimizations";
+import { StrengthsAndGaps } from "./sections/strengths-and-gaps";
+import { CareerPositioning } from "./sections/career-positioning";
 import { AdviceExportBar } from "./sections/advice-export-bar";
 
 // ── Warning system ──────────────────────────────────────────────────
@@ -24,7 +26,9 @@ export type GenerationWarning =
   | "success_metrics_reduced"
   | "profile_optimizations_reduced"
   | "skill_roadmap_reduced"
-  | "contribution_strategy_reduced";
+  | "contribution_strategy_reduced"
+  | "strengths_and_gaps_reduced"
+  | "career_positioning_reduced";
 
 const WARNING_MESSAGES: Record<GenerationWarning, string> = {
   repo_improvements_unavailable: "Repo improvement suggestions could not be generated for this profile.",
@@ -34,6 +38,8 @@ const WARNING_MESSAGES: Record<GenerationWarning, string> = {
   profile_optimizations_reduced: "Some profile optimization suggestions were removed.",
   skill_roadmap_reduced: "Some skill suggestions were removed as they overlap with your existing stack.",
   contribution_strategy_reduced: "Some contribution strategy items were removed.",
+  strengths_and_gaps_reduced: "Strengths and gaps analysis could not be fully generated.",
+  career_positioning_reduced: "Career positioning could not be fully generated.",
 };
 
 // ── AdviceData v2 type ──────────────────────────────────────────────
@@ -117,6 +123,17 @@ export interface AdviceData {
     successCheck: string;
   }[];
 
+  strengthsAndGaps: {
+    strengths: { area: string; detail: string }[];
+    gaps: { area: string; detail: string }[];
+  };
+
+  careerPositioning: {
+    positioning: string;
+    roles: string[];
+    differentiators: string[];
+  };
+
   successMetrics: string[];
 }
 
@@ -192,6 +209,8 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
           <div className="space-y-4" data-pdf-sections>
             <AdviceSummary summary={data.summary} />
             <TrajectorySection trajectory={data.trajectory} />
+            <StrengthsAndGaps data={data.strengthsAndGaps} />
+            <CareerPositioning data={data.careerPositioning} />
             <BuildRoadmap builds={data.buildRoadmap} />
             <WeeklyRoadmap weeks={data.weeklyRoadmap} builds={data.buildRoadmap} />
             <SuccessMetrics metrics={data.successMetrics} />
@@ -207,6 +226,8 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
           <div className="space-y-4" data-tab="career">
             <AdviceSummary summary={data.summary} />
             <TrajectorySection trajectory={data.trajectory} />
+            <StrengthsAndGaps data={data.strengthsAndGaps} />
+            <CareerPositioning data={data.careerPositioning} />
           </div>
         )}
 

@@ -444,6 +444,27 @@ export const MOCK_ADVICE_RESPONSE: AdviceV2 = {
     { week: 11, activeBuildTitle: "Full-Stack Dashboard", focus: "E2E testing", deliverable: "E2E test suite", tasks: ["Write Playwright tests for critical flows", "Add E2E tests to CI pipeline"], skillTask: "Learn GraphQL basics for future API work", successCheck: "E2E tests passing in CI" },
     { week: 12, activeBuildTitle: "Full-Stack Dashboard", focus: "Production deployment and polish", deliverable: "Production deployment", tasks: ["Deploy to cloud with public URL", "Final README with architecture diagram and live link"], skillTask: "Review all 12 weeks and consolidate learnings", successCheck: "Live URL in README, all builds deployed and documented" },
   ],
+  strengthsAndGaps: {
+    strengths: [
+      { area: "Clean Code Fundamentals", detail: "cool-project shows consistent naming conventions and separation of concerns across modules." },
+      { area: "Consistent Activity", detail: "Regular push cadence with commits in the last 60 days across multiple repos." },
+      { area: "TypeScript Adoption", detail: "All recent repos use TypeScript with strict mode, showing type safety awareness." },
+    ],
+    gaps: [
+      { area: "Testing", detail: "No test files found in any repository — this is the biggest gap for moving to Mid-Level." },
+      { area: "CI/CD", detail: "No GitHub Actions or other CI pipelines detected in any repo." },
+      { area: "Collaboration Evidence", detail: "All repos are single-contributor with no PR reviews or issue discussions." },
+    ],
+  },
+  careerPositioning: {
+    positioning: "Position yourself as a TypeScript-focused developer building toward full-stack production readiness. Lead with your consistent activity and clean code patterns, and frame your upcoming builds as evidence of your commitment to professional engineering practices.",
+    roles: ["Junior Full-Stack TypeScript Developer", "Junior Backend Engineer (Node.js)", "Frontend Developer (React/TypeScript)"],
+    differentiators: [
+      "Consistent commit cadence showing sustained effort — not a hobbyist pattern.",
+      "Clean TypeScript fundamentals with strict mode across all repos.",
+      "Active recent work (last 60 days) signals engagement and growth trajectory.",
+    ],
+  },
   successMetrics: [
     "Reach 3+ merged PRs to OSS repos outside personal projects within 12 weeks.",
     "Deploy all 3 portfolio builds with public URLs by week 12.",

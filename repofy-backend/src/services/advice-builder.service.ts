@@ -36,6 +36,8 @@ export function buildAdviceData(ai: AdviceV2, github: GitHubUserData) {
     contributionStrategy: ai.contributionStrategy,
     profileOptimizations: ai.profileOptimizations,
     weeklyRoadmap: ai.weeklyRoadmap,
+    strengthsAndGaps: ai.strengthsAndGaps,
+    careerPositioning: ai.careerPositioning,
     successMetrics: ai.successMetrics,
   };
 }

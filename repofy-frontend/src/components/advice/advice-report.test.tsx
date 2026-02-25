@@ -30,10 +30,12 @@ describe("AdviceReport", () => {
     expect(screen.getByText("Improve")).toBeInTheDocument();
   });
 
-  it("shows Career Direction tab by default with trajectory", () => {
+  it("shows Career Direction tab by default with trajectory, strengths & gaps, and career positioning", () => {
     render(<AdviceReport username="testuser" data={data} />);
     expect(screen.getByText("Career Trajectory")).toBeInTheDocument();
     expect(screen.getByText("Junior")).toBeInTheDocument();
+    expect(screen.getByText("Strengths & Gaps")).toBeInTheDocument();
+    expect(screen.getByText("Career Positioning")).toBeInTheDocument();
   });
 
   it("switches to Build Plan tab showing builds and weekly roadmap", () => {

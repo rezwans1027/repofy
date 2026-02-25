@@ -264,6 +264,8 @@ export enum GenerationWarning {
   PROFILE_OPTIMIZATIONS_REDUCED = "profile_optimizations_reduced",
   SKILL_ROADMAP_REDUCED = "skill_roadmap_reduced",
   CONTRIBUTION_STRATEGY_REDUCED = "contribution_strategy_reduced",
+  STRENGTHS_AND_GAPS_REDUCED = "strengths_and_gaps_reduced",
+  CAREER_POSITIONING_REDUCED = "career_positioning_reduced",
 }
 
 export interface AdviceV2 {
@@ -340,6 +342,17 @@ export interface AdviceV2 {
     skillTask: string;
     successCheck: string;
   }[];
+
+  strengthsAndGaps: {
+    strengths: { area: string; detail: string }[];
+    gaps: { area: string; detail: string }[];
+  };
+
+  careerPositioning: {
+    positioning: string;
+    roles: string[];
+    differentiators: string[];
+  };
 
   successMetrics: string[];
 }

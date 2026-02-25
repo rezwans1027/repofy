@@ -242,6 +242,26 @@ export function createAdviceFixture(overrides: Record<string, unknown> = {}) {
         ],
       },
     ],
+    strengthsAndGaps: {
+      strengths: [
+        { area: "Clean Code", detail: "Consistent naming in test-repo." },
+        { area: "Consistency", detail: "Regular pushes in last 60 days." },
+        { area: "TypeScript", detail: "Strict mode across repos." },
+      ],
+      gaps: [
+        { area: "Testing", detail: "No test files found." },
+        { area: "CI/CD", detail: "No pipelines detected." },
+        { area: "Collaboration", detail: "Single-contributor repos only." },
+      ],
+    },
+    careerPositioning: {
+      positioning: "Position yourself as a TypeScript-focused developer building toward full-stack production readiness.",
+      roles: ["Junior Full-Stack Developer", "Junior Backend Engineer"],
+      differentiators: [
+        "Consistent commit cadence showing sustained effort.",
+        "Clean TypeScript fundamentals with strict mode.",
+      ],
+    },
     contributionStrategy: [
       {
         title: "Contribute to popular OSS",
