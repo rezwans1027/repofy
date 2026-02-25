@@ -59,6 +59,8 @@ export async function setCachedAnalysis(
   analysis: CachedAnalysis,
 ): Promise<void> {
   try {
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
     const { error } = await getSupabaseAdmin()
       .from("analysis_cache")
       .upsert(
@@ -70,6 +72,7 @@ export async function setCachedAnalysis(
           scorer_response: analysis.scorerResponse,
           scoring_result: analysis.scoringResult,
           narrative_report: analysis.narrativeReport,
+          expires_at: expiresAt,
         },
         { onConflict: "cache_key" },
       );
