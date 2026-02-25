@@ -170,7 +170,7 @@ describe("adviseUser controller", () => {
     expect(mockGenerateAdvice).not.toHaveBeenCalled();
   });
 
-  it("skips credit deduction in mockAi mode", async () => {
+  it("skips credit deduction in mockAi mode but still persists and returns adviceId", async () => {
     mockEnv.mockAi = true;
     mockBuildAdviceData.mockReturnValue({ mock: true });
 
@@ -181,7 +181,7 @@ describe("adviseUser controller", () => {
     expect(mockDeductGrowthCredit).not.toHaveBeenCalled();
     expect(res.json).toHaveBeenCalledWith({
       success: true,
-      data: { analyzedName: "Mock User (octocat)", advice: { mock: true } },
+      data: { adviceId: "advice-row-1" },
     });
   });
 

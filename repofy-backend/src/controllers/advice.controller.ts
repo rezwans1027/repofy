@@ -54,7 +54,13 @@ export const adviseUser: RequestHandler = async (req, res) => {
       const { MOCK_ADVICE_RESPONSE, buildMockGitHubData } = await import("../services/mock-ai.service");
       const githubData = buildMockGitHubData(username);
       const advice = buildAdviceData(MOCK_ADVICE_RESPONSE, githubData);
-      sendSuccess(res, { analyzedName: githubData.profile.name, advice });
+      const adviceId = await persistAdvice(
+        req.userId!,
+        username.toLowerCase(),
+        githubData.profile.name,
+        advice,
+      );
+      sendSuccess(res, { adviceId });
       return;
     }
 
