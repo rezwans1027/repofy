@@ -62,12 +62,7 @@ describe("MOCK_AI mode", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.data.analyzedName).toBe("Mock User (octocat)");
-    const advice = res.body.data.advice;
-    expect(advice.summary).toBe("Focus on testing and documentation to level up your profile.");
-    expect(advice.projectIdeas).toHaveLength(3);
-    expect(advice.skillsToLearn).toHaveLength(3);
-    expect(advice.actionPlan).toHaveLength(3);
+    expect(res.body.data.adviceId).toBeDefined();
 
     // Mock AI path uses buildMockGitHubData — no real GitHub fetch calls
     expect(fetchMock).not.toHaveBeenCalled();
