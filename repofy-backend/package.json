@@ -21,6 +21,7 @@
     "stripe": "^20.3.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.3.15",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.12.0",

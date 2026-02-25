@@ -1,26 +1,36 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
+import { useCreditBalance } from "@/hooks/use-credits";
 import { api } from "@/lib/api-client";
-import { Check, CreditCard, Loader2, Users, X } from "lucide-react";
+import { Check, CreditCard, Loader2, Users, X, Coins } from "lucide-react";
 
 const DEVELOPER_FEATURES = [
+  "2 growth credits per purchase",
+  "1 credit per AI-powered advice session",
   "Full GitHub profile analysis",
   "AI-powered skill radar",
-  "Detailed repo assessments",
   "Personalized improvement advice",
-  "Exportable developer reports",
 ];
 
 function PricingContent() {
   const searchParams = useSearchParams();
   const success = searchParams.get("success") === "true";
   const canceled = searchParams.get("canceled") === "true";
+  const queryClient = useQueryClient();
+  const { data: balance } = useCreditBalance();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (success) {
+      queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
+    }
+  }, [success, queryClient]);
 
   async function handleCheckout() {
     setLoading(true);
@@ -51,13 +61,25 @@ function PricingContent() {
         </div>
       </AnimateOnView>
 
+      {/* Credit balance */}
+      {balance && (
+        <AnimateOnView delay={0.03}>
+          <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
+            <Coins className="size-4 text-cyan" />
+            <p className="font-mono text-xs">
+              You have <span className="font-bold text-cyan">{balance.growth_balance}</span> growth credit{balance.growth_balance !== 1 ? "s" : ""}
+            </p>
+          </div>
+        </AnimateOnView>
+      )}
+
       {/* Success banner */}
       {success && (
         <AnimateOnView delay={0.05}>
           <div className="flex items-center gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
             <Check className="size-4 text-emerald-400" />
             <p className="font-mono text-xs text-emerald-400">
-              Payment successful! Thank you for your purchase.
+              2 growth credits added! Thank you for your purchase.
             </p>
           </div>
         </AnimateOnView>

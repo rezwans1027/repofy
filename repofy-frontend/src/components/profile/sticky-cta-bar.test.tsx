@@ -18,6 +18,7 @@ vi.mock("next/navigation", () => navModule);
 
 const reportState = { data: false, isLoading: false };
 const adviceState = { data: false, isLoading: false };
+const creditState = { data: { growth_balance: 2, eval_balance: 0 } as any, isLoading: false };
 
 vi.mock("@/hooks/use-reports", () => ({
   useExistingReport: () => ({
@@ -30,6 +31,13 @@ vi.mock("@/hooks/use-advice", () => ({
   useExistingAdvice: () => ({
     data: adviceState.data,
     isLoading: adviceState.isLoading,
+  }),
+}));
+
+vi.mock("@/hooks/use-credits", () => ({
+  useCreditBalance: () => ({
+    data: creditState.data,
+    isLoading: creditState.isLoading,
   }),
 }));
 
@@ -46,6 +54,8 @@ function resetMockState() {
   reportState.isLoading = false;
   adviceState.data = false;
   adviceState.isLoading = false;
+  creditState.data = { growth_balance: 2, eval_balance: 0 };
+  creditState.isLoading = false;
 }
 
 // --- Tests -----------------------------------------------------------------
@@ -200,6 +210,7 @@ describe("StickyCTABar", () => {
   it("buttons are disabled when user exists and loading is true", async () => {
     reportState.isLoading = true;
     adviceState.isLoading = true;
+    creditState.isLoading = true;
     render(<StickyCTABar username="octocat" />);
     await act(() => vi.advanceTimersByTime(50));
 
@@ -212,10 +223,33 @@ describe("StickyCTABar", () => {
     authState.user = null;
     reportState.isLoading = true;
     adviceState.isLoading = true;
+    creditState.isLoading = true;
     render(<StickyCTABar username="octocat" />);
     await act(() => vi.advanceTimersByTime(50));
 
     expect(screen.getByText("Start Analysis").closest("button")).not.toBeDisabled();
     expect(screen.getByText("Get Advice").closest("button")).not.toBeDisabled();
+  });
+
+  // 14. "Get Advice" shows no_credits dialog when balance is 0
+  it("Get Advice shows no-credits dialog when growth_balance is 0", async () => {
+    creditState.data = { growth_balance: 0, eval_balance: 0 };
+    render(<StickyCTABar username="octocat" />);
+    await act(() => vi.advanceTimersByTime(50));
+
+    fireEvent.click(screen.getByText("Get Advice"));
+
+    expect(screen.getByText("No growth credits")).toBeInTheDocument();
+    expect(screen.getByText("Buy Credits")).toBeInTheDocument();
+    expect(navState.push).not.toHaveBeenCalled();
+  });
+
+  // 15. "Get Advice" button disabled while balance is loading
+  it("Get Advice button is disabled while balance is loading", async () => {
+    creditState.isLoading = true;
+    render(<StickyCTABar username="octocat" />);
+    await act(() => vi.advanceTimersByTime(50));
+
+    expect(screen.getByText("Get Advice").closest("button")).toBeDisabled();
   });
 });

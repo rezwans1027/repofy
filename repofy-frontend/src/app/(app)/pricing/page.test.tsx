@@ -1,16 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { TestProviders } from "@/__tests__/helpers/test-providers";
 
 vi.mock("@/lib/api-client", () => ({
   api: {
     post: vi.fn(),
+    get: vi.fn(),
   },
   ApiError: class extends Error {
     constructor(message: string, public status: number) {
       super(message);
     }
   },
+}));
+
+const mockUseCreditBalance = vi.fn();
+vi.mock("@/hooks/use-credits", () => ({
+  useCreditBalance: () => mockUseCreditBalance(),
+}));
+
+vi.mock("@/components/providers/auth-provider", () => ({
+  useAuth: () => ({ user: { id: "user-123" }, isLoading: false }),
 }));
 
 import { navState, navModule, resetNavState } from "@/__tests__/helpers/mock-navigation";
@@ -21,68 +32,112 @@ vi.mock("next/navigation", () => navModule);
 import PricingPage from "./page";
 import { api } from "@/lib/api-client";
 
+function renderPricing() {
+  return render(
+    <TestProviders>
+      <PricingPage />
+    </TestProviders>
+  );
+}
+
 describe("PricingPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetNavState();
     navState.pathname = "/pricing";
     navState.searchParams = new URLSearchParams();
+    mockUseCreditBalance.mockReturnValue({ data: undefined, isLoading: true });
   });
 
   it("renders Developers and Recruiters cards", () => {
-    render(<PricingPage />);
+    renderPricing();
 
     expect(screen.getByText("Developers")).toBeInTheDocument();
     expect(screen.getByText("Recruiters")).toBeInTheDocument();
   });
 
   it("renders the $5 price", () => {
-    render(<PricingPage />);
+    renderPricing();
 
     expect(screen.getByText("$5")).toBeInTheDocument();
     expect(screen.getByText("USD")).toBeInTheDocument();
   });
 
   it("renders the checkout button", () => {
-    render(<PricingPage />);
+    renderPricing();
 
     expect(screen.getByRole("button", { name: /Get Started — \$5/i })).toBeInTheDocument();
   });
 
   it("renders Coming Soon for Recruiters", () => {
-    render(<PricingPage />);
+    renderPricing();
 
     expect(screen.getByText("Coming Soon")).toBeInTheDocument();
   });
 
-  it("renders feature list", () => {
-    render(<PricingPage />);
+  it("renders credit-based feature list", () => {
+    renderPricing();
 
+    expect(screen.getByText("2 growth credits per purchase")).toBeInTheDocument();
+    expect(screen.getByText("1 credit per AI-powered advice session")).toBeInTheDocument();
     expect(screen.getByText("Full GitHub profile analysis")).toBeInTheDocument();
-    expect(screen.getByText("AI-powered skill radar")).toBeInTheDocument();
-    expect(screen.getByText("Exportable developer reports")).toBeInTheDocument();
   });
 
-  it("shows success banner when ?success=true", () => {
+  it("shows credit balance when loaded", () => {
+    mockUseCreditBalance.mockReturnValue({
+      data: { growth_balance: 3, eval_balance: 0 },
+      isLoading: false,
+    });
+
+    renderPricing();
+
+    expect(screen.getByText("3")).toBeInTheDocument();
+    // Match the balance card text "You have N growth credits" (not feature list)
+    expect(screen.getByText(/You have/)).toBeInTheDocument();
+  });
+
+  it("does not show credit balance card when loading", () => {
+    mockUseCreditBalance.mockReturnValue({ data: undefined, isLoading: true });
+
+    renderPricing();
+
+    expect(screen.queryByText(/You have/)).not.toBeInTheDocument();
+  });
+
+  it("shows singular 'credit' for balance of 1", () => {
+    mockUseCreditBalance.mockReturnValue({
+      data: { growth_balance: 1, eval_balance: 0 },
+      isLoading: false,
+    });
+
+    renderPricing();
+
+    // The balance line renders "You have 1 growth credit" (no trailing 's')
+    const balanceLine = screen.getByText(/You have/);
+    expect(balanceLine.textContent).toContain("1");
+    expect(balanceLine.textContent).toMatch(/growth credit$/);
+  });
+
+  it("shows success banner with credit message when ?success=true", () => {
     navState.searchParams = new URLSearchParams("success=true");
 
-    render(<PricingPage />);
+    renderPricing();
 
-    expect(screen.getByText(/Payment successful/i)).toBeInTheDocument();
+    expect(screen.getByText(/2 growth credits added/i)).toBeInTheDocument();
   });
 
   it("shows canceled banner when ?canceled=true", () => {
     navState.searchParams = new URLSearchParams("canceled=true");
 
-    render(<PricingPage />);
+    renderPricing();
 
     expect(screen.getByText(/Payment canceled/i)).toBeInTheDocument();
   });
 
   it("does not show banners by default", () => {
-    render(<PricingPage />);
+    renderPricing();
 
-    expect(screen.queryByText(/Payment successful/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/growth credits added/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Payment canceled/i)).not.toBeInTheDocument();
   });
 
@@ -101,7 +156,7 @@ describe("PricingPage", () => {
     });
 
     const user = userEvent.setup();
-    render(<PricingPage />);
+    renderPricing();
 
     await user.click(screen.getByRole("button", { name: /Get Started — \$5/i }));
 
@@ -118,7 +173,7 @@ describe("PricingPage", () => {
     vi.mocked(api.post).mockRejectedValue(new Error("Network error"));
 
     const user = userEvent.setup();
-    render(<PricingPage />);
+    renderPricing();
 
     await user.click(screen.getByRole("button", { name: /Get Started — \$5/i }));
 
@@ -132,7 +187,7 @@ describe("PricingPage", () => {
     vi.mocked(api.post).mockReturnValue(new Promise(() => {}));
 
     const user = userEvent.setup();
-    render(<PricingPage />);
+    renderPricing();
 
     await user.click(screen.getByRole("button", { name: /Get Started — \$5/i }));
 

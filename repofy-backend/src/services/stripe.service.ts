@@ -13,12 +13,16 @@ export async function createCheckoutSession(
     mode: "payment",
     client_reference_id: userId,
     customer_email: userEmail,
+    metadata: {
+      product: "growth_credits_2",
+    },
     line_items: [
       {
         price_data: {
           currency: "usd",
           product_data: {
-            name: "Repofy Developer Access",
+            name: "2 Growth Credits",
+            description: "AI-powered profile improvement advice",
           },
           unit_amount: 500, // $5.00
         },

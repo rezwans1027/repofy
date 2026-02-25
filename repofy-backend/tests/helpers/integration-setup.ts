@@ -47,6 +47,7 @@ export async function setupAuthMock(valid = true) {
   );
   (getSupabaseAdmin as ReturnType<typeof vi.fn>).mockReturnValue({
     auth: { getUser: mockGetUser },
+    rpc: vi.fn().mockResolvedValue({ data: true, error: null }),
   });
 }
 

@@ -2,13 +2,17 @@
 
 import { use, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { AnalysisLoading } from "@/components/report/analysis-loading";
 import { useAuth } from "@/components/providers/auth-provider";
-import { api } from "@/lib/api-client";
+import { api, ApiError } from "@/lib/api-client";
 import { createClient } from "@/lib/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { BackLink } from "@/components/ui/back-link";
 import { ErrorCard } from "@/components/ui/error-card";
+import { Coins } from "lucide-react";
+
+const NO_CREDITS_SENTINEL = "__NO_CREDITS__";
 
 const ADVICE_PHASES = [
   "Scanning profile...",
@@ -29,11 +33,18 @@ export default function GenerateAdvicePage({
   const [error, setError] = useState<string | null>(null);
 
   const fetchAdvice = useCallback(async () => {
-    const data = await api.post<{
-      analyzedName: string | null;
-      advice: Record<string, unknown>;
-    }>(`/advice/${encodeURIComponent(username)}`, { auth: true });
-    return data;
+    try {
+      const data = await api.post<{
+        analyzedName: string | null;
+        advice: Record<string, unknown>;
+      }>(`/advice/${encodeURIComponent(username)}`, { auth: true });
+      return data;
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 402) {
+        throw new Error(NO_CREDITS_SENTINEL);
+      }
+      throw err;
+    }
   }, [username]);
 
   const handleComplete = useCallback(
@@ -93,6 +104,7 @@ export default function GenerateAdvicePage({
         }
 
         queryClient.invalidateQueries({ queryKey: ["advice"] });
+        queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
         router.replace(`/advisor/${row.id}?from=profile`);
       } catch (err) {
         console.error("Failed to save advice:", err);
@@ -107,20 +119,36 @@ export default function GenerateAdvicePage({
   }, []);
 
   if (error) {
+    const isNoCredits = error === NO_CREDITS_SENTINEL;
+
     return (
       <div>
         <BackLink href={`/profile/${username}`} label="back to profile" hoverColor="hover:text-emerald-400" />
-        <ErrorCard message={error}>
-          <button
-            onClick={() => {
-              setError(null);
-              router.refresh();
-            }}
-            className="mt-4 font-mono text-xs text-emerald-400 hover:underline"
-          >
-            Try again
-          </button>
-        </ErrorCard>
+        {isNoCredits ? (
+          <ErrorCard message="You don't have any growth credits. Purchase credits to get personalized advice.">
+            <div className="mt-4 flex items-center gap-3">
+              <Coins className="size-4 text-cyan" />
+              <Link
+                href="/pricing"
+                className="font-mono text-xs text-cyan hover:underline"
+              >
+                Buy Credits
+              </Link>
+            </div>
+          </ErrorCard>
+        ) : (
+          <ErrorCard message={error}>
+            <button
+              onClick={() => {
+                setError(null);
+                router.refresh();
+              }}
+              className="mt-4 font-mono text-xs text-emerald-400 hover:underline"
+            >
+              Try again
+            </button>
+          </ErrorCard>
+        )}
       </div>
     );
   }

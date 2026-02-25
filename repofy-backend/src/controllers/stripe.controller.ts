@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import { env } from "../config/env";
 import { getStripe } from "../config/stripe";
 import { createCheckoutSession } from "../services/stripe.service";
+import { grantGrowthCredits } from "../services/credit.service";
 import { sendError, sendSuccess } from "../lib/response";
 import { logger } from "../lib/logger";
 
@@ -31,14 +32,21 @@ export const handleWebhook: RequestHandler = async (req, res) => {
     return;
   }
 
+  let event;
   try {
     const stripe = getStripe();
-    const event = stripe.webhooks.constructEvent(
+    event = stripe.webhooks.constructEvent(
       req.body as Buffer,
       sig,
       env.stripeWebhookSecret,
     );
+  } catch (err) {
+    logger.error("Webhook signature verification failed:", err);
+    sendError(res, 400, "Webhook signature verification failed");
+    return;
+  }
 
+  try {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
@@ -48,7 +56,48 @@ export const handleWebhook: RequestHandler = async (req, res) => {
           email: session.customer_email,
           amountTotal: session.amount_total,
         });
-        // Post-payment logic (granting access, credits, etc.) will be added here
+
+        const userId = session.client_reference_id;
+        if (!userId) {
+          logger.warn("Webhook: missing client_reference_id", { sessionId: session.id });
+          break;
+        }
+        if (session.payment_status !== "paid") {
+          logger.warn("Webhook: payment_status not paid", { sessionId: session.id, status: session.payment_status });
+          break;
+        }
+        if (session.mode !== "payment") {
+          logger.warn("Webhook: unexpected mode", { sessionId: session.id, mode: session.mode });
+          break;
+        }
+        if (session.metadata?.product !== "growth_credits_2") {
+          logger.warn("Webhook: unexpected product metadata", { sessionId: session.id, metadata: session.metadata });
+          break;
+        }
+        if (session.amount_total !== 500) {
+          logger.warn("Webhook: unexpected amount", { sessionId: session.id, amount: session.amount_total });
+          break;
+        }
+        if (session.currency !== "usd") {
+          logger.warn("Webhook: unexpected currency", { sessionId: session.id, currency: session.currency });
+          break;
+        }
+
+        const paymentIntentId = session.payment_intent;
+        if (typeof paymentIntentId !== "string" || paymentIntentId.length === 0) {
+          logger.warn("Webhook: missing or invalid payment_intent", { sessionId: session.id, paymentIntent: paymentIntentId });
+          break;
+        }
+        const granted = await grantGrowthCredits(userId, 2, paymentIntentId, {
+          stripe_event_id: event.id,
+        });
+
+        if (granted) {
+          logger.info("Growth credits granted", { userId, paymentIntentId });
+        } else {
+          logger.info("Growth credits already granted (idempotent)", { userId, paymentIntentId });
+        }
+
         break;
       }
       default:
@@ -57,7 +106,7 @@ export const handleWebhook: RequestHandler = async (req, res) => {
 
     res.json({ received: true });
   } catch (err) {
-    logger.error("Webhook signature verification failed:", err);
-    sendError(res, 400, "Webhook signature verification failed");
+    logger.error("Webhook processing error:", err);
+    sendError(res, 500, "Webhook processing failed");
   }
 };
