@@ -5,6 +5,7 @@ import { logger } from "./logger";
 // Pricing per 1M tokens (USD) — update when model pricing changes
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
   "gpt-5.2": { input: 1.75, output: 14 },
+  "gpt-5.1": { input: 2, output: 12 },
   "gpt-4o": { input: 2.5, output: 10 },
   "gpt-4o-mini": { input: 0.15, output: 0.6 },
   "gpt-4-turbo": { input: 10, output: 30 },

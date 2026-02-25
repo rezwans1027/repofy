@@ -33,7 +33,7 @@ export function AnalysisReport({ username, avatarUrl, data }: AnalysisReportProp
     <div className="space-y-4 pb-20">
       <div ref={reportRef} data-pdf-target className="space-y-4">
         <TopBanner username={username} avatarUrl={avatarUrl} data={reportData} />
-        <Summary summary={reportData.summary} />
+        <Summary narrativeReport={reportData.narrativeReport} />
         <RadarSection radarAxes={reportData.radarAxes} radarBreakdown={reportData.radarBreakdown} />
         <StatsOverview stats={reportData.stats} />
         <ActivityBreakdown activityBreakdown={reportData.activityBreakdown} />

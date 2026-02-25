@@ -13,6 +13,7 @@ export const mockChain = {
   delete: vi.fn(),
   in: vi.fn(),
   limit: vi.fn(),
+  filter: vi.fn(),
 };
 
 export function setupChain() {
@@ -23,4 +24,5 @@ export function setupChain() {
   mockChain.delete.mockReturnValue(mockChain);
   mockChain.in.mockReturnValue(mockChain);
   mockChain.limit.mockReturnValue(mockChain);
+  mockChain.filter.mockReturnValue(mockChain);
 }

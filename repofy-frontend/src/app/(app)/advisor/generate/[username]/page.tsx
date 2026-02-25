@@ -12,9 +12,9 @@ import { ErrorCard } from "@/components/ui/error-card";
 
 const ADVICE_PHASES = [
   "Scanning profile...",
-  "Analyzing skill gaps...",
-  "Researching market trends...",
-  "Building your action plan...",
+  "Inferring career trajectory...",
+  "Sequencing builds across 12 weeks...",
+  "Generating weekly roadmap...",
 ];
 
 export default function GenerateAdvicePage({
@@ -32,7 +32,10 @@ export default function GenerateAdvicePage({
     const data = await api.post<{
       analyzedName: string | null;
       advice: Record<string, unknown>;
-    }>(`/advice/${encodeURIComponent(username)}`, { auth: true });
+    }>(`/advice/${encodeURIComponent(username)}`, {
+      auth: true,
+      signal: AbortSignal.timeout(180_000),
+    });
     return data;
   }, [username]);
 

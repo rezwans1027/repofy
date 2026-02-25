@@ -155,8 +155,8 @@ export const reportData = {
   overallScore: 82,
   recommendation: "Strong Hire" as const,
 
-  summary:
-    "Alex Chen is a highly consistent systems engineer with strong architectural instincts and a clear preference for type-safe, well-structured code. Their open-source portfolio demonstrates depth in Rust and TypeScript, with meaningful contributions to infrastructure tooling. While testing coverage and documentation could improve, their commit discipline and collaboration patterns indicate a reliable, senior-level engineer well-suited for platform or developer experience roles.",
+  narrativeReport:
+    "Alex Chen scores 82/100, placing them at the Senior level with a recommendation of \"Strong Hire\". This is a highly consistent systems engineer with strong architectural instincts and a clear preference for type-safe, well-structured code. Their open-source portfolio demonstrates depth in Rust and TypeScript, with meaningful contributions to infrastructure tooling.\n\nKey strengths include exceptional commit consistency (active contributions every week for 3+ years), strong architectural patterns across multiple languages, and meaningful open-source impact with 2,340 total stars. Their strongest project, rustic-kv, is rated as \"Standout\" with Excellent code quality and a well-designed LSM-tree architecture.\n\nWhile testing coverage varies significantly (45-78% across projects) and documentation tends to be minimal, their commit discipline and collaboration patterns indicate a reliable, senior-level engineer. There are 0 concerning risk signals. Confidence in this assessment is 95%. This candidate is well-suited for platform, infrastructure, or developer experience roles.",
 
   radarAxes: [
     { axis: "Code Quality", value: 0.87 },
@@ -168,12 +168,12 @@ export const reportData = {
   ],
 
   radarBreakdown: [
-    { label: "Code Quality", score: 8.7, note: "Clean abstractions, consistent patterns across repos" },
-    { label: "Project Complexity", score: 7.8, note: "Multiple non-trivial systems with real-world usage" },
-    { label: "Technical Breadth", score: 8.2, note: "Strong in 4 languages, systems to web" },
-    { label: "Engineering Practices", score: 7.4, note: "Good CI/CD usage, testing could be more consistent" },
-    { label: "Consistency", score: 9.1, note: "Regular commits over 5+ years, no long gaps" },
-    { label: "Collaboration", score: 6.8, note: "Moderate PR review activity, few issue discussions" },
+    { label: "Code Quality", score: 9, note: "Clean abstractions, consistent patterns across repos" },
+    { label: "Project Complexity", score: 8, note: "Multiple non-trivial systems with real-world usage" },
+    { label: "Technical Breadth", score: 8, note: "Strong in 4 languages, systems to web" },
+    { label: "Eng. Practices", score: 7, note: "Good CI/CD usage, testing could be more consistent" },
+    { label: "Consistency", score: 9, note: "Regular commits over 5+ years, no long gaps" },
+    { label: "Collaboration", score: 7, note: "Moderate PR review activity, few issue discussions" },
   ],
 
   stats: {
@@ -218,10 +218,10 @@ export const reportData = {
       stars: 847,
       forks: 63,
       topics: ["rust", "database", "key-value", "lsm-tree"],
-      codeQuality: "A" as const,
-      testing: "B+" as const,
-      cicd: "A-" as const,
-      verdict: "Excellent architecture with comprehensive benchmarks. Memory-safe patterns used throughout. Test coverage at 78% — solid but could reach higher for a database project.",
+      codeQuality: "Excellent" as const,
+      testing: "Strong" as const,
+      cicd: "Present" as const,
+      verdict: "Standout" as const,
       isBestWork: true,
     },
     {
@@ -232,10 +232,10 @@ export const reportData = {
       stars: 612,
       forks: 89,
       topics: ["typescript", "api", "cli", "openapi", "developer-tools"],
-      codeQuality: "A-" as const,
-      testing: "B" as const,
-      cicd: "A" as const,
-      verdict: "Well-designed plugin system with clean separation of concerns. CI pipeline is exemplary with matrix testing across Node versions. Unit test coverage at 64% — integration tests would strengthen confidence.",
+      codeQuality: "Excellent" as const,
+      testing: "Some" as const,
+      cicd: "Present" as const,
+      verdict: "Strong" as const,
       isBestWork: false,
     },
     {
@@ -246,10 +246,10 @@ export const reportData = {
       stars: 234,
       forks: 18,
       topics: ["git", "analytics", "dashboard", "visualization"],
-      codeQuality: "B+" as const,
-      testing: "C+" as const,
-      cicd: "B" as const,
-      verdict: "Creative project with clean UI code. Backend parsing logic is robust but the frontend has some tightly coupled components. Testing is the weakest area — mostly snapshot tests with limited behavioral coverage.",
+      codeQuality: "Good" as const,
+      testing: "Some" as const,
+      cicd: "Partial" as const,
+      verdict: "Solid" as const,
       isBestWork: false,
     },
   ],
@@ -281,5 +281,11 @@ export const reportData = {
     { question: "Your Go adoption is recent. What drew you to Go, and how does your approach differ from Rust?", why: "Tests language comparison ability and continuous learning mindset" },
     { question: "If you were to add comprehensive integration tests to ts-api-forge, what would your test architecture look like?", why: "Validates ability to design test strategies, not just write unit tests" },
   ],
+
+  riskSignals: { concerningCount: 0, notableCount: 1 },
+  confidenceScore: 0.95,
+  rubricVersion: "v1.1",
+  modelVersion: "gpt-5.1",
+  dataQualityWarnings: [] as string[],
 };
 
