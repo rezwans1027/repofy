@@ -17,9 +17,11 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-rate-limit": "^8.2.1",
-    "openai": "^6.18.0"
+    "openai": "^6.18.0",
+    "stripe": "^20.3.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.3.15",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.12.0",
