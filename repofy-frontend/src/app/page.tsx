@@ -2,6 +2,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { SectionNav } from "@/components/layout/section-nav";
 import { PageContainer } from "@/components/layout/page-container";
 import { Footer } from "@/components/layout/footer";
+import { QueryProvider } from "@/components/providers/query-provider";
 import { Hero } from "@/components/sections/hero";
 import { FeaturesOverview } from "@/components/sections/features-overview";
 import { AnalysisPreview } from "@/components/sections/analysis-preview";
@@ -13,7 +14,7 @@ import { FinalCta } from "@/components/sections/final-cta";
 
 export default function Home() {
   return (
-    <>
+    <QueryProvider>
       <Navbar />
       <SectionNav />
       <PageContainer>
@@ -27,6 +28,6 @@ export default function Home() {
         <FinalCta />
       </PageContainer>
       <Footer />
-    </>
+    </QueryProvider>
   );
 }
