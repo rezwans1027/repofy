@@ -90,12 +90,12 @@ describe("env config", () => {
     expect(env.port).toBe(4000);
   });
 
-  it("defaults port to 3003", async () => {
+  it("defaults port to 3001", async () => {
     delete process.env.PORT;
 
     const { env } = await import("../../../src/config/env");
 
-    expect(env.port).toBe(3003);
+    expect(env.port).toBe(3001);
   });
 
   it("throws when SUPABASE_SERVICE_ROLE_KEY is missing", async () => {
