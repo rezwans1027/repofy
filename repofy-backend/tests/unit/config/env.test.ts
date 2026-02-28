@@ -10,6 +10,8 @@ const ENV_KEYS = [
   "SUPABASE_SERVICE_ROLE_KEY",
   "GITHUB_TOKEN",
   "OPENAI_API_KEY",
+  "STRIPE_SECRET_KEY",
+  "STRIPE_WEBHOOK_SECRET",
   "MOCK_AI",
   "NODE_ENV",
   "PORT",
@@ -88,12 +90,12 @@ describe("env config", () => {
     expect(env.port).toBe(4000);
   });
 
-  it("defaults port to 3001", async () => {
+  it("defaults port to 3003", async () => {
     delete process.env.PORT;
 
     const { env } = await import("../../../src/config/env");
 
-    expect(env.port).toBe(3001);
+    expect(env.port).toBe(3003);
   });
 
   it("throws when SUPABASE_SERVICE_ROLE_KEY is missing", async () => {

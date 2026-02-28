@@ -18,6 +18,7 @@ export const PROTECTED_ROUTES = [
   "/generate",
   "/compare",
   "/advisor",
+  "/pricing",
 ] as const;
 
 export const TYPEWRITER_USERNAMES = [

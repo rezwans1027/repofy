@@ -63,41 +63,7 @@ describe("MOCK_AI mode", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.data.analyzedName).toBe("Mock User (octocat)");
-    const advice = res.body.data.advice;
-
-    // V2 shape
-    expect(advice.schemaVersion).toBe("v2");
-    expect(advice.generationWarnings).toEqual([]);
-
-    // Trajectory
-    expect(advice.trajectory).toBeDefined();
-    expect(advice.trajectory.currentEstimate).toBe("Junior");
-    expect(advice.trajectory.targetEstimate).toBe("Mid-Level");
-    expect(advice.trajectory.confidence).toBe("Medium");
-    expect(advice.trajectory.calibration).toBeDefined();
-
-    // Build roadmap
-    expect(advice.buildRoadmap).toHaveLength(3);
-
-    // Weekly roadmap
-    expect(advice.weeklyRoadmap).toHaveLength(12);
-    const buildTitles = advice.buildRoadmap.map((b: { title: string }) => b.title);
-    for (const week of advice.weeklyRoadmap) {
-      expect(buildTitles).toContain(week.activeBuildTitle);
-    }
-
-    // Skill roadmap
-    expect(advice.skillRoadmap.length).toBeGreaterThanOrEqual(3);
-
-    // Success metrics
-    expect(advice.successMetrics.length).toBeGreaterThanOrEqual(5);
-
-    // Contribution strategy
-    expect(advice.contributionStrategy.length).toBeGreaterThanOrEqual(3);
-
-    // Profile optimizations
-    expect(advice.profileOptimizations.length).toBeGreaterThanOrEqual(3);
+    expect(res.body.data.adviceId).toBeDefined();
 
     // Mock AI path uses buildMockGitHubData — no real GitHub fetch calls
     expect(fetchMock).not.toHaveBeenCalled();

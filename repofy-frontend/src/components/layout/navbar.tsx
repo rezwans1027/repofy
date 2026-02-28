@@ -4,15 +4,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/components/providers/auth-provider";
+import { useCreditBalance } from "@/hooks/use-credits";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Sun, Moon } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Sun, Moon, Zap, BarChart3 } from "lucide-react";
 
 export function Navbar() {
   const { user, isLoading } = useAuth();
+  const { data: credits } = useCreditBalance();
   const pathname = usePathname();
   const isLandingPage = pathname === "/";
   const { theme, setTheme } = useTheme();
+  const showCredits = !isLoading && user && !isLandingPage;
+  const hasData = !!credits;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-14 border-b border-border bg-background/80 backdrop-blur-md">
@@ -29,6 +38,51 @@ export function Navbar() {
       </div>
 
       <div className="absolute right-0 top-0 flex h-14 items-center gap-2 px-4 sm:px-6">
+        {showCredits && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/pricing"
+                  className="flex items-center rounded-md border border-border bg-muted/50 py-1.5 font-mono text-xs animate-in fade-in duration-300 hover:bg-muted"
+                  style={{ paddingInline: hasData ? 12 : 8, gap: hasData ? 12 : 6 }}
+                >
+                  <span className="flex items-center gap-1 text-cyan">
+                    <Zap className="h-3.5 w-3.5" />
+                    <span
+                      className="inline-block overflow-hidden transition-all duration-300 ease-out"
+                      style={{ width: hasData ? "auto" : 0, opacity: hasData ? 1 : 0 }}
+                    >
+                      {credits?.growth_balance ?? 0}
+                    </span>
+                  </span>
+                  <span className="flex items-center gap-1 text-muted-foreground">
+                    <BarChart3 className="h-3.5 w-3.5" />
+                    <span
+                      className="inline-block overflow-hidden transition-all duration-300 ease-out"
+                      style={{ width: hasData ? "auto" : 0, opacity: hasData ? 1 : 0 }}
+                    >
+                      {credits?.eval_balance ?? 0}
+                    </span>
+                  </span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" sideOffset={8}>
+                <div className="flex flex-col gap-1.5 py-0.5">
+                  <span className="flex items-center gap-1.5">
+                    <Zap className="h-3 w-3 text-cyan" />
+                    <span>Growth credits — generate advisor reports</span>
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <BarChart3 className="h-3 w-3" />
+                    <span>Eval credits — run developer evaluations</span>
+                  </span>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+
         <Button
           size="icon"
           variant="ghost"
@@ -47,9 +101,7 @@ export function Navbar() {
           <span className="sr-only">Toggle theme</span>
         </Button>
 
-        {isLoading ? (
-          <Skeleton className="h-8 w-24" />
-        ) : user && isLandingPage ? (
+        {!isLoading && user && isLandingPage ? (
           <Button
             size="sm"
             className="bg-cyan text-background hover:bg-cyan/90 font-mono text-xs"
@@ -57,7 +109,7 @@ export function Navbar() {
           >
             <Link href="/dashboard">Dashboard</Link>
           </Button>
-        ) : !user ? (
+        ) : !isLoading && !user ? (
           <Button
             size="sm"
             className="bg-cyan text-background hover:bg-cyan/90 font-mono text-xs"
