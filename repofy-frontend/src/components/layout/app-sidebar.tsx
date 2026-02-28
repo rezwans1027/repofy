@@ -3,14 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Search, FileText, GitCompareArrows, Lightbulb, Settings } from "lucide-react";
+import { Search, FileText, GitCompareArrows, Lightbulb, CreditCard, Settings } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Search", icon: Search, number: 1 },
   { href: "/reports", label: "Reports", icon: FileText, number: 2 },
   { href: "/advisor", label: "Advisor", icon: Lightbulb, number: 3 },
   { href: "/compare", label: "Compare", icon: GitCompareArrows, number: 4 },
-  { href: "/settings", label: "Settings", icon: Settings, number: 5 },
+  { href: "/pricing", label: "Pricing", icon: CreditCard, number: 5 },
+  { href: "/settings", label: "Settings", icon: Settings, number: 6 },
 ];
 
 export function AppSidebar() {

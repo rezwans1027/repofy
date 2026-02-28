@@ -22,8 +22,8 @@ function requireEnvUnlessMockAi(name: string): string | undefined {
 }
 
 export const env = {
-  port: parseInt(process.env.PORT || "3001", 10),
-  corsOrigin: process.env.CORS_ORIGIN || "http://localhost:3000",
+  port: parseInt(process.env.PORT || "3003", 10),
+  corsOrigin: process.env.CORS_ORIGIN || "http://localhost:3002",
   nodeEnv: process.env.NODE_ENV || "development",
   isProduction: process.env.NODE_ENV === "production",
   trustProxy: process.env.TRUST_PROXY === "true",
@@ -34,4 +34,7 @@ export const env = {
   openaiApiKey: requireEnvUnlessMockAi("OPENAI_API_KEY"),
   openaiModel: process.env.OPENAI_MODEL || "gpt-5.1",
   adminSecret: process.env.ADMIN_SECRET,
+  frontendUrl: process.env.FRONTEND_URL || process.env.CORS_ORIGIN || "http://localhost:3002",
+  stripeSecretKey: requireEnv("STRIPE_SECRET_KEY"),
+  stripeWebhookSecret: requireEnv("STRIPE_WEBHOOK_SECRET"),
 } as const;
