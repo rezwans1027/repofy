@@ -1,9 +1,44 @@
-/** Grade letter -> text color class */
-export function gradeColor(grade: string): string {
-  if (grade.startsWith("A")) return "text-emerald-400";
-  if (grade.startsWith("B")) return "text-cyan";
-  if (grade.startsWith("C")) return "text-yellow-400";
-  return "text-red-400";
+/** Code quality enum -> text color class */
+export function codeQualityColor(grade: string): string {
+  switch (grade) {
+    case "Excellent": return "text-emerald-400";
+    case "Good": return "text-cyan";
+    case "Mixed": return "text-yellow-400";
+    case "Weak": return "text-red-400";
+    default: return "text-muted-foreground";
+  }
+}
+
+/** Testing enum -> text color class */
+export function testingColor(grade: string): string {
+  switch (grade) {
+    case "Strong": return "text-emerald-400";
+    case "Some": return "text-yellow-400";
+    case "None": return "text-red-400";
+    default: return "text-muted-foreground";
+  }
+}
+
+/** CI/CD enum -> text color class */
+export function cicdColor(grade: string): string {
+  switch (grade) {
+    case "Present": return "text-emerald-400";
+    case "Partial": return "text-yellow-400";
+    case "None": return "text-red-400";
+    default: return "text-muted-foreground";
+  }
+}
+
+/** Verdict enum -> text color class */
+export function verdictColor(verdict: string): string {
+  switch (verdict) {
+    case "Standout": return "text-amber-400";
+    case "Strong": return "text-emerald-400";
+    case "Solid": return "text-cyan";
+    case "Needs Work": return "text-orange-400";
+    case "Risky": return "text-red-400";
+    default: return "text-muted-foreground";
+  }
 }
 
 /** Recommendation -> badge classes */

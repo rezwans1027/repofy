@@ -15,9 +15,9 @@ const NO_CREDITS_SENTINEL = "__NO_CREDITS__";
 
 const ADVICE_PHASES = [
   "Scanning profile...",
-  "Analyzing skill gaps...",
-  "Researching market trends...",
-  "Building your action plan...",
+  "Inferring career trajectory...",
+  "Sequencing builds across 12 weeks...",
+  "Generating weekly roadmap...",
 ];
 
 export default function GenerateAdvicePage({
@@ -35,7 +35,7 @@ export default function GenerateAdvicePage({
     try {
       const data = await api.post<{ adviceId: string }>(
         `/advice/${encodeURIComponent(username)}`,
-        { auth: true },
+        { auth: true, signal: AbortSignal.timeout(180_000) },
       );
       return data;
     } catch (err) {

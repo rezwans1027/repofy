@@ -3,7 +3,7 @@ import { resolve } from "path";
 import type { Page } from "@playwright/test";
 import { TIMEOUTS } from "./timeouts";
 
-const BACKEND_URL = "http://localhost:3003";
+const BACKEND_URL = "http://localhost:3001";
 
 /** Read Supabase config from process.env, falling back to .env.local. */
 function getSupabaseConfig(): { url: string; anonKey: string } {

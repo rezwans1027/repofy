@@ -8,7 +8,7 @@ import { supabaseClientMockFactory } from "@/__tests__/helpers/mock-supabase-cli
 vi.mock("@/components/providers/auth-provider", () => authMockFactory());
 vi.mock("@/lib/supabase/client", () => supabaseClientMockFactory());
 
-import { useAdviceList, useAdvice, useDeleteAdvice } from "./use-advice";
+import { useAdviceList, useAdvice, useExistingAdvice, useDeleteAdvice } from "./use-advice";
 
 describe("useAdviceList", () => {
   beforeEach(() => {
@@ -55,7 +55,7 @@ describe("useAdvice", () => {
       id: "adv-1",
       analyzed_username: "testuser",
       user_id: "user-123",
-      advice_data: {},
+      advice_data: { schemaVersion: "v2" },
     };
     mockChain.single.mockResolvedValue({ data: mockAdvice, error: null });
 
@@ -85,6 +85,41 @@ describe("useAdvice - errors", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+describe("useExistingAdvice", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupChain();
+  });
+
+  it("returns true when advice exists for username", async () => {
+    mockChain.limit.mockResolvedValue({
+      data: [{ id: "adv-1" }],
+      error: null,
+    });
+
+    const { result } = renderHook(() => useExistingAdvice("testuser"), {
+      wrapper: TestProviders,
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toBe(true);
+  });
+
+  it("returns false when no advice exists", async () => {
+    mockChain.limit.mockResolvedValue({
+      data: [],
+      error: null,
+    });
+
+    const { result } = renderHook(() => useExistingAdvice("testuser"), {
+      wrapper: TestProviders,
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toBe(false);
   });
 });
 
@@ -118,3 +153,4 @@ describe("useDeleteAdvice", () => {
     await expect(result.current.mutateAsync(["adv-1"])).rejects.toThrow("Delete failed");
   });
 });
+

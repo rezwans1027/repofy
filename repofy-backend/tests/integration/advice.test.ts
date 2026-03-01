@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import { getApp } from "../helpers/supertest-app";
-import { createAIAdviceResponse } from "../fixtures/ai";
+import { createAdviceV2Raw } from "../fixtures/ai";
 import { setupGitHubMocks, setupAuthMock, setupOpenAIMock } from "../helpers/integration-setup";
 import { sharedAuthEndpointTests } from "../helpers/authenticated-endpoint";
 
@@ -24,7 +24,7 @@ describe("POST /api/advice/:username", () => {
   it("returns 200 with adviceId when authenticated", async () => {
     setupGitHubMocks(fetchMock);
     await setupAuthMock(true);
-    await setupOpenAIMock(() => createAIAdviceResponse());
+    await setupOpenAIMock(() => createAdviceV2Raw());
 
     const app = getApp();
     const res = await request(app)
@@ -35,6 +35,7 @@ describe("POST /api/advice/:username", () => {
     expect(res.body.success).toBe(true);
     expect(res.body.data.adviceId).toBeDefined();
 
+    // GitHub API calls
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/users/octocat/repos"), expect.anything());
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/users/octocat/events"), expect.anything());
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/graphql"), expect.anything());

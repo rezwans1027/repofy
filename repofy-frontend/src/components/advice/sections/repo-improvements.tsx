@@ -17,6 +17,17 @@ interface RepoImprovementsProps {
 export function RepoImprovements({ repoImprovements, expandAll = false }: RepoImprovementsProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
 
+  if (repoImprovements.length === 0) {
+    return (
+      <AnimateOnView delay={0.18}>
+        <div className="rounded-lg border border-border bg-card p-5">
+          <SectionHeader title="Repository Improvements" />
+          <p className="text-xs text-muted-foreground">No repository improvement suggestions available for this profile.</p>
+        </div>
+      </AnimateOnView>
+    );
+  }
+
   return (
     <AnimateOnView delay={0.18}>
       <div className="rounded-lg border border-border bg-card p-5">
@@ -75,11 +86,16 @@ export function RepoImprovements({ repoImprovements, expandAll = false }: RepoIm
                             {imp.priority}
                           </Badge>
                         </div>
-                        <div>
+                        <div className="space-y-1">
                           <p className="text-xs font-medium">
                             <span className="text-muted-foreground">{imp.area}:</span>{" "}
                             {imp.suggestion}
                           </p>
+                          {imp.expectedOutcome && (
+                            <p className="text-[11px] text-muted-foreground">
+                              <span className="text-emerald-400">Outcome:</span> {imp.expectedOutcome}
+                            </p>
+                          )}
                         </div>
                       </div>
                     ))}
