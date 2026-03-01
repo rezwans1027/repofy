@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
 import { TerminalWindow } from "@/components/ui/terminal-window";
 import {
@@ -53,7 +53,7 @@ export default function DashboardPage() {
         className="w-full max-w-2xl"
       >
         <TerminalWindow title="repofy — search">
-          <div className="space-y-4">
+          <div>
             <div className="flex items-center gap-2 font-mono text-sm">
               <span className="text-cyan">$</span>
               <span className="text-muted-foreground">repofy search</span>
@@ -75,18 +75,38 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {!query.trim() && searchSettled && (
-              <p className="font-mono text-xs text-muted-foreground flex items-center gap-2">
-                <Search className="size-3" />
-                Type a GitHub username to search
-              </p>
-            )}
-            {query.trim() && !searchSettled && (
-              <p className="font-mono text-xs text-muted-foreground flex items-center gap-2">
-                <Loader2 className="size-3 animate-spin" />
-                Searching GitHub...
-              </p>
-            )}
+            <AnimatePresence mode="wait">
+              {!query.trim() && searchSettled && (
+                <motion.div
+                  key="hint"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 32, opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <p className="pt-4 font-mono text-xs text-muted-foreground flex items-center gap-2">
+                    <Search className="size-3" />
+                    Type a GitHub username to search
+                  </p>
+                </motion.div>
+              )}
+              {query.trim() && !searchSettled && (
+                <motion.div
+                  key="searching"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 32, opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <p className="pt-4 font-mono text-xs text-muted-foreground flex items-center gap-2">
+                    <Loader2 className="size-3 animate-spin" />
+                    Searching GitHub...
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </TerminalWindow>
       </motion.div>

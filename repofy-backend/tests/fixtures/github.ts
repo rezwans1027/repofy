@@ -9,6 +9,8 @@ import type {
   LanguageBreakdown,
   ActivitySummary,
   GitHubStats,
+  RepoSnapshot,
+  AggregateMetrics,
 } from "../../src/types";
 
 export function createGitHubApiUser(overrides: Partial<GitHubApiUser> = {}): GitHubApiUser {
@@ -173,6 +175,58 @@ export function createGitHubUserData(overrides: Partial<GitHubUserData> = {}): G
     reposTruncated: false,
   };
 
+  const defaultRepoSnapshots: RepoSnapshot[] = [
+    {
+      name: "cool-project",
+      fileTree: "src/\n  index.ts\npackage.json",
+      hasTests: false,
+      hasCI: false,
+      hasLintConfig: true,
+      hasDockerfile: false,
+      hasBuildSystem: false,
+      readmeWordCount: 50,
+      releaseCount: 0,
+      latestReleaseDaysAgo: -1,
+      contributorCount: 1,
+      latestPushDaysAgo: 30,
+      openIssuesCount: 2,
+      pullRequestsCount: 1,
+      sourceFileCount: 5,
+      totalLOC: 300,
+      maxFileLOC: 100,
+      largestFilePath: "src/index.ts",
+      srcDirPresent: true,
+      hasReleaseDiscipline: false,
+    },
+    {
+      name: "another-repo",
+      fileTree: "index.js\npackage.json",
+      hasTests: false,
+      hasCI: false,
+      hasLintConfig: false,
+      hasDockerfile: false,
+      hasBuildSystem: false,
+      readmeWordCount: 20,
+      releaseCount: 0,
+      latestReleaseDaysAgo: -1,
+      contributorCount: 1,
+      latestPushDaysAgo: 60,
+      openIssuesCount: 0,
+      pullRequestsCount: 0,
+      sourceFileCount: 2,
+      totalLOC: 120,
+      maxFileLOC: 80,
+      largestFilePath: "index.js",
+      srcDirPresent: false,
+      hasReleaseDiscipline: false,
+    },
+  ];
+
+  const defaultAggregateMetrics: AggregateMetrics = {
+    medianLatestPushDaysAgo: 45,
+    hasCode: true,
+  };
+
   return {
     profile: createGitHubProfile(),
     repositories: defaultRepos,
@@ -181,6 +235,8 @@ export function createGitHubUserData(overrides: Partial<GitHubUserData> = {}): G
     activity: defaultActivity,
     stats: defaultStats,
     contributions: { totalContributions: 365, heatmap: [] },
+    repoSnapshots: defaultRepoSnapshots,
+    aggregateMetrics: defaultAggregateMetrics,
     ...overrides,
   };
 }

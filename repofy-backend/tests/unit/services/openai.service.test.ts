@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createGitHubUserData } from "../../fixtures/github";
-import { createAIAnalysisResponse, createShuffledRadarResponse } from "../../fixtures/ai";
+import { createScorerResponse, createShuffledRadarResponse } from "../../fixtures/ai";
 import { getMockCreate } from "../../helpers/mock-openai";
 
 vi.mock("openai");
 
-import { generateAnalysis } from "../../../src/services/openai.service";
+import { generateScorerResponse } from "../../../src/services/openai.service";
 
 describe("openai.service", () => {
   let mockCreate: ReturnType<typeof vi.fn>;
@@ -15,18 +15,17 @@ describe("openai.service", () => {
     mockCreate.mockReset();
   });
 
-  describe("generateAnalysis", () => {
+  describe("generateScorerResponse", () => {
     it("returns parsed response", async () => {
-      const analysisResponse = createAIAnalysisResponse();
+      const scorerResponse = createScorerResponse();
       mockCreate.mockResolvedValueOnce({
-        choices: [{ message: { content: JSON.stringify(analysisResponse) } }],
+        choices: [{ message: { content: JSON.stringify(scorerResponse) } }],
       });
 
-      const result = await generateAnalysis(createGitHubUserData());
+      const result = await generateScorerResponse(createGitHubUserData());
 
-      expect(result.candidateLevel).toBe("Mid-Level");
-      expect(result.overallScore).toBe(62);
       expect(result.radarAxes).toHaveLength(6);
+      expect(result.dataQualityWarnings).toEqual([]);
     });
 
     it("normalizes shuffled radar axes to canonical order", async () => {
@@ -35,7 +34,7 @@ describe("openai.service", () => {
         choices: [{ message: { content: JSON.stringify(shuffledResponse) } }],
       });
 
-      const result = await generateAnalysis(createGitHubUserData());
+      const result = await generateScorerResponse(createGitHubUserData());
 
       const axisOrder = result.radarAxes.map((a) => a.axis);
       expect(axisOrder).toEqual([
@@ -59,41 +58,39 @@ describe("openai.service", () => {
     });
 
     it("fills missing axes with defaults", async () => {
-      const partial = createAIAnalysisResponse({
+      const partial = createScorerResponse({
         radarAxes: [
           { axis: "Code Quality", value: 0.7 },
           { axis: "Collaboration", value: 0.4 },
         ],
         radarBreakdown: [
-          { label: "Code Quality", score: 7, note: "Good." },
-          { label: "Collaboration", score: 4, note: "Limited." },
+          { label: "Code Quality", note: "Good." },
+          { label: "Collaboration", note: "Limited." },
         ],
       });
       mockCreate.mockResolvedValueOnce({
         choices: [{ message: { content: JSON.stringify(partial) } }],
       });
 
-      const result = await generateAnalysis(createGitHubUserData());
+      const result = await generateScorerResponse(createGitHubUserData());
 
       expect(result.radarAxes).toHaveLength(6);
-      // Missing axes should have value 0
       const complexity = result.radarAxes.find((a) => a.axis === "Project Complexity");
       expect(complexity!.value).toBe(0);
 
       expect(result.radarBreakdown).toHaveLength(6);
       const complexityBreakdown = result.radarBreakdown.find((b) => b.label === "Project Complexity");
-      expect(complexityBreakdown!.score).toBe(0);
       expect(complexityBreakdown!.note).toBe("");
     });
 
     it("passes signal to OpenAI client", async () => {
-      const analysisResponse = createAIAnalysisResponse();
+      const scorerResponse = createScorerResponse();
       mockCreate.mockResolvedValueOnce({
-        choices: [{ message: { content: JSON.stringify(analysisResponse) } }],
+        choices: [{ message: { content: JSON.stringify(scorerResponse) } }],
       });
 
       const controller = new AbortController();
-      await generateAnalysis(createGitHubUserData(), controller.signal);
+      await generateScorerResponse(createGitHubUserData(), controller.signal);
 
       expect(mockCreate).toHaveBeenCalledWith(
         expect.any(Object),
@@ -106,7 +103,7 @@ describe("openai.service", () => {
         choices: [{ message: { content: null } }],
       });
 
-      await expect(generateAnalysis(createGitHubUserData())).rejects.toThrow(
+      await expect(generateScorerResponse(createGitHubUserData())).rejects.toThrow(
         "OpenAI returned empty response",
       );
     });
@@ -116,15 +113,74 @@ describe("openai.service", () => {
         choices: [{ message: { content: "not valid json {{{" } }],
       });
 
-      await expect(generateAnalysis(createGitHubUserData())).rejects.toThrow(SyntaxError);
+      await expect(generateScorerResponse(createGitHubUserData())).rejects.toThrow(SyntaxError);
     });
 
     it("propagates OpenAI API errors", async () => {
       mockCreate.mockRejectedValueOnce(new Error("429 Rate limit exceeded"));
 
-      await expect(generateAnalysis(createGitHubUserData())).rejects.toThrow(
+      await expect(generateScorerResponse(createGitHubUserData())).rejects.toThrow(
         "429 Rate limit exceeded",
       );
+    });
+
+    it("deduplicates repeated repo names in topRepos", async () => {
+      const dupe = {
+        name: "cool-project",
+        codeQuality: "Good" as const,
+        testing: "Some" as const,
+        cicd: "None" as const,
+        verdict: "Solid" as const,
+        isBestWork: false,
+      };
+      const response = createScorerResponse({
+        topRepos: [
+          { ...dupe, isBestWork: true },
+          { ...dupe, codeQuality: "Excellent" as const },
+          { ...dupe, verdict: "Strong" as const },
+        ],
+      });
+      mockCreate.mockResolvedValueOnce({
+        choices: [{ message: { content: JSON.stringify(response) } }],
+      });
+
+      const result = await generateScorerResponse(createGitHubUserData());
+
+      expect(result.topRepos).toHaveLength(1);
+      expect(result.topRepos[0].isBestWork).toBe(true);
+    });
+
+    it("filters all-invalid repo names to empty topRepos", async () => {
+      const response = createScorerResponse({
+        topRepos: [
+          { name: "hallucinated-repo", codeQuality: "Good", testing: "Some", cicd: "None", verdict: "Solid", isBestWork: true },
+          { name: "fake-project", codeQuality: "Excellent", testing: "Strong", cicd: "Present", verdict: "Standout", isBestWork: false },
+        ],
+      });
+      mockCreate.mockResolvedValueOnce({
+        choices: [{ message: { content: JSON.stringify(response) } }],
+      });
+
+      const result = await generateScorerResponse(createGitHubUserData());
+
+      expect(result.topRepos).toHaveLength(0);
+    });
+
+    it("normalizes multiple isBestWork=true to exactly one", async () => {
+      const response = createScorerResponse({
+        topRepos: [
+          { name: "cool-project", codeQuality: "Good", testing: "Some", cicd: "None", verdict: "Solid", isBestWork: true },
+          { name: "another-repo", codeQuality: "Excellent", testing: "Strong", cicd: "Present", verdict: "Standout", isBestWork: true },
+        ],
+      });
+      mockCreate.mockResolvedValueOnce({
+        choices: [{ message: { content: JSON.stringify(response) } }],
+      });
+
+      const result = await generateScorerResponse(createGitHubUserData());
+
+      const bestWork = result.topRepos.filter((r) => r.isBestWork);
+      expect(bestWork).toHaveLength(1);
     });
   });
 });

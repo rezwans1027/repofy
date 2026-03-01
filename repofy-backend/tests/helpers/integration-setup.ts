@@ -38,6 +38,32 @@ export function setupGitHubMocks(fetchMock: ReturnType<typeof vi.fn>, username =
   });
 }
 
+/** Build a chainable Supabase mock for .from().select().eq().single() / .upsert() / .delete().lt() */
+function createSupabaseChainMock() {
+  const creditData = { data: { id: "mock-id", growth_balance: 5, eval_balance: 0 }, error: null };
+  const upsertData = { data: { id: "advice-row-1" }, error: null };
+  const empty = { data: null, error: null };
+  const chain: Record<string, ReturnType<typeof vi.fn>> = {};
+  // Terminal for select→eq→single (cache lookups): return empty (cache miss)
+  chain.single = vi.fn().mockResolvedValue(empty);
+  // Terminal for select→eq→maybeSingle (credit balance): return credit data
+  chain.maybeSingle = vi.fn().mockResolvedValue(creditData);
+  chain.eq = vi.fn().mockReturnValue({ single: chain.single, maybeSingle: chain.maybeSingle });
+  chain.lt = vi.fn().mockResolvedValue(empty);
+  chain.select = vi.fn().mockReturnValue({ eq: chain.eq, single: chain.single });
+  // upsert chain returns advice row id via its own single terminal
+  const upsertSingle = vi.fn().mockResolvedValue(upsertData);
+  const upsertSelect = vi.fn().mockReturnValue({ single: upsertSingle });
+  chain.upsert = vi.fn().mockReturnValue({ select: upsertSelect });
+  chain.delete = vi.fn().mockReturnValue({ lt: chain.lt });
+  chain.from = vi.fn().mockReturnValue({
+    select: chain.select,
+    upsert: chain.upsert,
+    delete: chain.delete,
+  });
+  return chain;
+}
+
 export async function setupAuthMock(valid = true) {
   const { getSupabaseAdmin } = await import("../../src/config/supabase");
   const mockGetUser = vi.fn().mockResolvedValue(
@@ -45,32 +71,41 @@ export async function setupAuthMock(valid = true) {
       ? { data: { user: { id: "test-id", email: "test@test.com" } }, error: null }
       : { data: { user: null }, error: { message: "Invalid token" } },
   );
-
-  // Chainable .from() mock for credit balance queries and advice persistence
-  const chainable = () => {
-    const chain: Record<string, any> = {};
-    const wrap = (val: any) => {
-      chain.select = () => wrap(val);
-      chain.eq = () => wrap(val);
-      chain.maybeSingle = () => Promise.resolve(val);
-      chain.single = () => Promise.resolve(val);
-      chain.upsert = () => wrap(val);
-      return chain;
-    };
-    return wrap({ data: { id: "mock-id", growth_balance: 5, eval_balance: 0 }, error: null });
-  };
-
+  const dbChain = createSupabaseChainMock();
   (getSupabaseAdmin as ReturnType<typeof vi.fn>).mockReturnValue({
     auth: { getUser: mockGetUser },
     rpc: vi.fn().mockResolvedValue({ data: true, error: null }),
-    from: () => chainable(),
+    from: dbChain.from,
   });
 }
 
 export async function setupOpenAIMock(responseFactory: () => unknown) {
   const mockCreate = await getMockCreate();
-  mockCreate.mockResolvedValue({
-    choices: [{ message: { content: JSON.stringify(responseFactory()) } }],
+  mockCreate.mockImplementation((params: Record<string, unknown>) => {
+    const messages = params.messages as { role: string; content: string }[] | undefined;
+    const systemContent = messages?.[0]?.content ?? "";
+
+    // Narrator call: return 3-paragraph prose ending with LOCKED_LINE extracted from user message
+    if (systemContent.includes("professional hiring evaluation")) {
+      const userContent = messages?.[1]?.content ?? "";
+      const lockedMatch = userContent.match(/^(LOCKED: .+)$/m);
+      const lockedLine = lockedMatch?.[1] ?? "";
+
+      const prose = [
+        "A capable developer with a solid foundation in software engineering. Their profile demonstrates consistent effort across multiple projects.",
+        "Their work shows clean code practices and thoughtful architecture. The repository structure reflects someone who takes pride in organized, maintainable code. Testing coverage varies across projects but shows awareness of quality practices.",
+        "Some areas could benefit from more attention, particularly around CI/CD and documentation. Confidence in this assessment is moderate given the available data. Based on the evidence reviewed, the overall recommendation is reasonable for this candidate's level.",
+      ].join("\n\n");
+
+      return Promise.resolve({
+        choices: [{ message: { content: `${prose}\n${lockedLine}` } }],
+      });
+    }
+
+    // Scorer / advice call: return JSON from the factory
+    return Promise.resolve({
+      choices: [{ message: { content: JSON.stringify(responseFactory()) } }],
+    });
   });
   return mockCreate;
 }

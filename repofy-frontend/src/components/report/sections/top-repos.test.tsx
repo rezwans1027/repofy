@@ -33,7 +33,7 @@ describe("TopRepos", () => {
     fireEvent.click(button);
     expect(screen.getByText("A test repository")).toBeInTheDocument();
     expect(screen.getByText("typescript")).toBeInTheDocument();
-    expect(screen.getByText("Good project.")).toBeInTheDocument();
+    expect(screen.getByText("Standout")).toBeInTheDocument();
   });
 
   it("shows grade labels when expanded", () => {
@@ -47,7 +47,7 @@ describe("TopRepos", () => {
   it("shows all repos expanded when expandAll is true", () => {
     render(<TopRepos topRepos={data.topRepos} expandAll />);
     expect(screen.getByText("A test repository")).toBeInTheDocument();
-    expect(screen.getByText("Good project.")).toBeInTheDocument();
+    expect(screen.getByText("Standout")).toBeInTheDocument();
   });
 
   it("expandAll shows content without chevron icons", () => {
@@ -71,7 +71,7 @@ describe("TopRepos", () => {
     fireEvent.click(button);
     // Content should still be visible because expandAll prevents setExpanded
     expect(screen.getByText("A test repository")).toBeInTheDocument();
-    expect(screen.getByText("Good project.")).toBeInTheDocument();
+    expect(screen.getByText("Standout")).toBeInTheDocument();
   });
 
   it("toggle close hides details on second click", async () => {

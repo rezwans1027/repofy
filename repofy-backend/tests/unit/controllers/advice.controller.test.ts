@@ -88,8 +88,8 @@ describe("adviseUser controller", () => {
 
   it("returns adviceId on happy path (deduct + persist succeeds)", async () => {
     const githubData = { profile: { name: "Octocat" } };
-    const aiResult = { summary: "Good profile" };
-    const advice = { summary: "Good profile" };
+    const aiResult = { schemaVersion: "v2", summary: "Good profile" };
+    const advice = { schemaVersion: "v2", summary: "Good profile" };
     mockFetchGitHubUserData.mockResolvedValue(githubData);
     mockGenerateAdvice.mockResolvedValue(aiResult);
     mockBuildAdviceData.mockReturnValue(advice);

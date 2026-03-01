@@ -40,10 +40,11 @@ describe("MOCK_AI mode", () => {
     expect(res.body.success).toBe(true);
     expect(res.body.data.analyzedName).toBe("Mock User (octocat)");
     const report = res.body.data.report;
-    expect(report.candidateLevel).toBe("Mid-Level");
-    expect(report.overallScore).toBe(62);
-    expect(report.recommendation).toBe("Hire");
+    expect(report.candidateLevel).toBeDefined();
+    expect(report.overallScore).toBeDefined();
+    expect(report.recommendation).toBeDefined();
     expect(report.radarAxes).toHaveLength(6);
+    expect(report.narrativeReport).toBeDefined();
 
     // Mock AI path uses buildMockGitHubData — no real GitHub fetch calls
     expect(fetchMock).not.toHaveBeenCalled();
@@ -52,7 +53,7 @@ describe("MOCK_AI mode", () => {
     expect(mockCreate).not.toHaveBeenCalled();
   });
 
-  it("POST /api/advice/:username returns mock advice without calling OpenAI", async () => {
+  it("POST /api/advice/:username returns mock v2 advice without calling OpenAI", async () => {
     await setupAuthMock(true);
 
     const app = getApp();

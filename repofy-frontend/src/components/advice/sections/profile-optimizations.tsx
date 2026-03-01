@@ -8,9 +8,20 @@ interface ProfileOptimizationsProps {
 }
 
 export function ProfileOptimizations({ optimizations }: ProfileOptimizationsProps) {
+  if (optimizations.length === 0) {
+    return (
+      <AnimateOnView delay={0.3}>
+        <div className="rounded-lg border border-border bg-card p-5">
+          <SectionHeader title="Profile Optimizations" />
+          <p className="text-xs text-muted-foreground">No profile optimization suggestions available.</p>
+        </div>
+      </AnimateOnView>
+    );
+  }
+
   return (
-    <AnimateOnView delay={0.3} className="h-full">
-      <div className="rounded-lg border border-border bg-card p-5 h-full">
+    <AnimateOnView delay={0.3}>
+      <div className="rounded-lg border border-border bg-card p-5">
         <SectionHeader title="Profile Optimizations" />
         <div className="space-y-3">
           {optimizations.map((opt) => (
@@ -34,6 +45,20 @@ export function ProfileOptimizations({ optimizations }: ProfileOptimizationsProp
                     Suggestion
                   </span>
                   <p className="mt-0.5">{opt.suggestion}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Example
+                  </span>
+                  <p className="mt-0.5 text-muted-foreground">{opt.example}</p>
+                </div>
+                <div>
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Impact
+                  </span>
+                  <p className="mt-0.5 text-muted-foreground">{opt.impact}</p>
                 </div>
               </div>
             </div>
