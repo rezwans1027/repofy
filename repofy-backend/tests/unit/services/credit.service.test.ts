@@ -8,7 +8,6 @@ import {
   getCreditBalance,
   grantGrowthCredits,
   deductGrowthCredit,
-  refundGrowthCredit,
 } from "../../../src/services/credit.service";
 import { getSupabaseAdmin } from "../../../src/config/supabase";
 
@@ -150,33 +149,4 @@ describe("credit.service", () => {
     });
   });
 
-  describe("refundGrowthCredit", () => {
-    it("calls RPC with required requestId and returns boolean", async () => {
-      const client = mockSupabase();
-
-      const result = await refundGrowthCredit("user-1", "req-abc", { reason: "ai_failure" });
-
-      expect(client.rpc).toHaveBeenCalledWith("refund_growth_credit", {
-        p_user_id: "user-1",
-        p_request_id: "req-abc",
-        p_metadata: { reason: "ai_failure" },
-      });
-      expect(result).toBe(true);
-    });
-
-    it("returns false on real failure", async () => {
-      const client = mockSupabase();
-      client.rpc.mockResolvedValue({ data: false, error: null });
-
-      const result = await refundGrowthCredit("user-1", "req-abc");
-      expect(result).toBe(false);
-    });
-
-    it("throws on RPC error", async () => {
-      const client = mockSupabase();
-      client.rpc.mockResolvedValue({ data: null, error: new Error("RPC fail") });
-
-      await expect(refundGrowthCredit("user-1", "req-abc")).rejects.toThrow("RPC fail");
-    });
-  });
 });

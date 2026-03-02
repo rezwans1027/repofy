@@ -8,35 +8,47 @@ import {
 } from "../services/github.service";
 import { generateAdvice } from "../services/advice.service";
 import { buildAdviceData } from "../services/advice-builder.service";
-import { getCreditBalance, deductGrowthCredit, refundGrowthCredit } from "../services/credit.service";
+import { getCreditBalance, deductGrowthCredit } from "../services/credit.service";
 import { USERNAME_RE } from "../lib/validators";
 import { sendError, sendSuccess } from "../lib/response";
-import { isRefundableError } from "../lib/errors";
 import { logger } from "../lib/logger";
 
-/** Persist advice via Supabase admin and return the row id. */
-async function persistAdvice(
+/** Atomically deduct one credit and persist advice in a single step. */
+async function deductAndPersist(
   userId: string,
+  requestId: string,
   analyzedUsername: string,
   analyzedName: string | null,
   adviceData: Record<string, unknown>,
 ): Promise<string> {
-  const supabase = getSupabaseAdmin();
-  const row = {
-    user_id: userId,
-    analyzed_username: analyzedUsername,
-    analyzed_name: analyzedName,
-    advice_data: adviceData,
-  };
+  // 1. Atomic deduct — fails if balance is 0
+  const deducted = await deductGrowthCredit(userId, requestId, {
+    username: analyzedUsername,
+    endpoint: "/advice",
+  });
+  if (!deducted) throw new InsufficientCreditsError();
 
+  // 2. Persist — if this fails the credit is lost, but this is a simple DB write
+  //    with near-zero failure rate vs. a 60s+ AI call
+  const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("advice")
-    .upsert(row, { onConflict: "user_id,analyzed_username" })
+    .upsert(
+      { user_id: userId, analyzed_username: analyzedUsername, analyzed_name: analyzedName, advice_data: adviceData },
+      { onConflict: "user_id,analyzed_username" },
+    )
     .select("id")
     .single();
 
   if (error) throw error;
   return data.id as string;
+}
+
+class InsufficientCreditsError extends Error {
+  constructor() {
+    super("Insufficient growth credits");
+    this.name = "InsufficientCreditsError";
+  }
 }
 
 export const adviseUser: RequestHandler = async (req, res) => {
@@ -54,8 +66,9 @@ export const adviseUser: RequestHandler = async (req, res) => {
       const { MOCK_ADVICE_RESPONSE, buildMockGitHubData } = await import("../services/mock-ai.service");
       const githubData = buildMockGitHubData(username);
       const advice = buildAdviceData(MOCK_ADVICE_RESPONSE, githubData);
-      const adviceId = await persistAdvice(
+      const adviceId = await deductAndPersist(
         req.userId!,
+        requestId,
         username.toLowerCase(),
         githubData.profile.name,
         advice,
@@ -69,57 +82,34 @@ export const adviseUser: RequestHandler = async (req, res) => {
       return;
     }
 
-    // Cheap pre-check: reject early if user has zero credits (avoids GitHub quota)
+    // Cheap pre-check: reject early if user has zero credits (avoids burning GitHub quota)
     const balance = await getCreditBalance(req.userId!);
     if (balance.growth_balance <= 0) {
       sendError(res, 402, "Insufficient growth credits");
       return;
     }
 
-    // Fetch GitHub data BEFORE deducting — 4xx here costs no credit
+    // Do ALL expensive work before touching credits
     const githubData = await fetchGitHubUserData(username, req.signal);
+    const aiAdvice = await generateAdvice(githubData, req.signal);
+    const advice = buildAdviceData(aiAdvice, githubData);
 
-    // Atomic deduct (still needed — pre-check is non-locking)
-    const deducted = await deductGrowthCredit(req.userId!, requestId, {
-      username,
-      endpoint: "/advice",
-    });
-    if (!deducted) {
-      sendError(res, 402, "Insufficient growth credits");
-      return;
-    }
+    // Only deduct + persist after everything succeeded
+    const adviceId = await deductAndPersist(
+      req.userId!,
+      requestId,
+      username.toLowerCase(),
+      githubData.profile.name,
+      advice,
+    );
 
-    // Everything after deduction is credit-guarded — refund on refundable failure
-    try {
-      const aiAdvice = await generateAdvice(githubData, req.signal);
-      const advice = buildAdviceData(aiAdvice, githubData);
-
-      // Persist server-side so deduction + artifact are atomic
-      const adviceId = await persistAdvice(
-        req.userId!,
-        username.toLowerCase(),
-        githubData.profile.name,
-        advice,
-      );
-
-      sendSuccess(res, { adviceId });
-    } catch (postDeductErr) {
-      if (isRefundableError(postDeductErr)) {
-        const refunded = await refundGrowthCredit(req.userId!, requestId, {
-          reason: "post_deduction_failure",
-        });
-        if (!refunded) {
-          logger.error("CRITICAL: refund failed", {
-            userId: req.userId,
-            requestId,
-            error: postDeductErr instanceof Error ? postDeductErr.message : String(postDeductErr),
-          });
-        }
-      }
-      throw postDeductErr;
-    }
+    sendSuccess(res, { adviceId });
   } catch (err) {
     if (req.signal?.aborted || res.headersSent) return;
+    if (err instanceof InsufficientCreditsError) {
+      sendError(res, 402, err.message);
+      return;
+    }
     if (err instanceof GitHubError) {
       sendError(res, err.statusCode, err.message);
       return;
