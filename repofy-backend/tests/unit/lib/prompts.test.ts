@@ -22,25 +22,25 @@ describe("SCORER_PROMPT", () => {
     }
   });
 
-  it("includes scoring caps with hasBuildSystem and cap precedence rule", () => {
+  it("includes scoring caps with build system and cap precedence rule", () => {
     expect(SCORER_PROMPT).toContain("SCORING CAPS");
     expect(SCORER_PROMPT).toContain("capped at");
-    expect(SCORER_PROMPT).toContain("hasBuildSystem");
+    expect(SCORER_PROMPT).toContain('"Has build system"');
     expect(SCORER_PROMPT).toContain("use the LOWEST value");
   });
 
   it("specifies exact scoring cap values", () => {
-    expect(SCORER_PROMPT).toContain("hasTests=false AND hasBuildSystem=false");
+    expect(SCORER_PROMPT).toContain('"Has tests" is no AND "Has build system" is no');
     expect(SCORER_PROMPT).toContain("capped at 0.4");
-    expect(SCORER_PROMPT).toContain("hasTests=false AND hasBuildSystem=true");
+    expect(SCORER_PROMPT).toContain('"Has tests" is no AND "Has build system" is yes');
     expect(SCORER_PROMPT).toContain("capped at 0.6");
   });
 
   it("includes contributor count collaboration floors with override semantics", () => {
-    expect(SCORER_PROMPT).toContain("contributorCount >= 50");
+    expect(SCORER_PROMPT).toContain("Contributors >= 50");
     expect(SCORER_PROMPT).toContain("floor of 0.5");
     expect(SCORER_PROMPT).toContain("overrides the 0.3 cap");
-    expect(SCORER_PROMPT).toContain("contributorCount >= 500");
+    expect(SCORER_PROMPT).toContain("Contributors >= 500");
     expect(SCORER_PROMPT).toContain("floor of 0.7");
     expect(SCORER_PROMPT).toContain("overrides the 0.5 floor");
   });
