@@ -1,10 +1,10 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { useCreditBalance } from "@/hooks/use-credits";
+import { useCreditBalance, useAwaitCreditUpdate } from "@/hooks/use-credits";
 import { api } from "@/lib/api-client";
 import { Check, CreditCard, Loader2, Users, X, Coins } from "lucide-react";
 
@@ -26,11 +26,33 @@ function PricingContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Capture balance at time of success redirect so we can detect when it increases
+  const balanceAtCheckout = useRef<number | undefined>(undefined);
+  const [creditsReceived, setCreditsReceived] = useState(false);
+
   useEffect(() => {
-    if (success) {
-      queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
+    if (success && balance && balanceAtCheckout.current === undefined) {
+      balanceAtCheckout.current = balance.growth_balance;
     }
-  }, [success, queryClient]);
+  }, [success, balance]);
+
+  // Poll for balance update after successful checkout
+  const { data: polledBalance } = useAwaitCreditUpdate(
+    success && !creditsReceived,
+    balanceAtCheckout.current,
+  );
+
+  // When polled balance shows increase, sync it to the main query cache
+  useEffect(() => {
+    if (
+      polledBalance &&
+      balanceAtCheckout.current !== undefined &&
+      polledBalance.growth_balance > balanceAtCheckout.current
+    ) {
+      setCreditsReceived(true);
+      queryClient.setQueryData(["credits", "balance"], polledBalance);
+    }
+  }, [polledBalance, queryClient]);
 
   async function handleCheckout() {
     setLoading(true);
@@ -76,12 +98,21 @@ function PricingContent() {
       {/* Success banner */}
       {success && (
         <AnimateOnView delay={0.05}>
-          <div className="flex items-center gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
-            <Check className="size-4 text-emerald-400" />
-            <p className="font-mono text-xs text-emerald-400">
-              2 growth credits added! Thank you for your purchase.
-            </p>
-          </div>
+          {creditsReceived ? (
+            <div className="flex items-center gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
+              <Check className="size-4 text-emerald-400" />
+              <p className="font-mono text-xs text-emerald-400">
+                2 growth credits added! Thank you for your purchase.
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 rounded-lg border border-cyan/30 bg-cyan/10 px-4 py-3">
+              <Loader2 className="size-4 animate-spin text-cyan" />
+              <p className="font-mono text-xs text-cyan">
+                Payment received! Processing your credits&hellip;
+              </p>
+            </div>
+          )}
         </AnimateOnView>
       )}
 

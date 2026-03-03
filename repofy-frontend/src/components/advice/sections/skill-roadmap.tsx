@@ -39,9 +39,9 @@ export function SkillRoadmap({ skills }: SkillRoadmapProps) {
               key={skill.skill}
               className="rounded-md border border-border bg-background p-4 space-y-2"
             >
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="font-mono text-sm font-bold">{skill.skill}</h3>
-                <div className="flex items-center gap-1.5 shrink-0">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="font-mono text-sm font-bold min-w-0">{skill.skill}</h3>
+                <div className="flex items-center gap-1.5">
                   <Badge className={`border text-[9px] ${PRIORITY_STYLES[skill.priority] ?? ""}`}>
                     {skill.priority}
                   </Badge>
