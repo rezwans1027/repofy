@@ -45,6 +45,14 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
+  // Redirect disabled feature sub-routes to their parent Coming Soon page
+  const DISABLED_ROUTES = ["/report/", "/generate/"];
+  if (DISABLED_ROUTES.some((r) => pathname.startsWith(r))) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/reports";
+    return NextResponse.redirect(url);
+  }
+
   // Redirect authenticated users away from auth pages → /dashboard
   const isAuthPage = pathname === "/login" || pathname === "/signup";
   if (user && isAuthPage) {

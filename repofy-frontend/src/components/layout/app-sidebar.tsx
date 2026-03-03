@@ -7,9 +7,9 @@ import { Search, FileText, GitCompareArrows, Lightbulb, CreditCard, Settings } f
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Search", icon: Search, number: 1 },
-  { href: "/reports", label: "Reports", icon: FileText, number: 2 },
+  { href: "/reports", label: "Reports", icon: FileText, number: 2, comingSoon: true },
   { href: "/advisor", label: "Advisor", icon: Lightbulb, number: 3 },
-  { href: "/compare", label: "Compare", icon: GitCompareArrows, number: 4 },
+  { href: "/compare", label: "Compare", icon: GitCompareArrows, number: 4, comingSoon: true },
   { href: "/pricing", label: "Pricing", icon: CreditCard, number: 5 },
   { href: "/settings", label: "Settings", icon: Settings, number: 6 },
 ];
@@ -22,7 +22,7 @@ export function AppSidebar() {
       {/* Desktop: left rail */}
       <nav className="fixed left-0 top-14 hidden h-[calc(100vh-3.5rem)] w-48 flex-col justify-center border-r border-border px-4 lg:flex">
         <ul className="space-y-1">
-          {NAV_ITEMS.map(({ href, label, icon: Icon, number }) => {
+          {NAV_ITEMS.map(({ href, label, icon: Icon, number, comingSoon }) => {
             const isActive =
               pathname === href || pathname.startsWith(href + "/") ||
               (href === "/dashboard" && pathname.startsWith("/profile")) ||
@@ -59,7 +59,7 @@ export function AppSidebar() {
       {/* Mobile: horizontal sticky bar */}
       <nav className="fixed top-14 left-0 right-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm lg:hidden">
         <div className="flex px-4 py-2 gap-1">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+          {NAV_ITEMS.map(({ href, label, icon: Icon, comingSoon }) => {
             const isActive =
               pathname === href || pathname.startsWith(href + "/") ||
               (href === "/dashboard" && pathname.startsWith("/profile")) ||

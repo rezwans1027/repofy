@@ -124,26 +124,22 @@ describe("StickyCTABar", () => {
     expect(bar.className).toContain("translate-y-0");
   });
 
-  // 6. "Start Analysis" navigates when no report exists
-  it("Start Analysis navigates to /generate/{username} when no report exists", async () => {
-    reportState.data = false;
+  // 6. "Start Analysis" button is disabled (Coming Soon)
+  it("Start Analysis button is disabled", async () => {
     render(<StickyCTABar username="octocat" />);
     await act(() => vi.advanceTimersByTime(50));
 
-    fireEvent.click(screen.getByText("Start Analysis"));
-
-    expect(navState.push).toHaveBeenCalledWith("/generate/octocat");
+    const btn = screen.getByText("Start Analysis").closest("button");
+    expect(btn).toBeDisabled();
   });
 
-  // 7. "Start Analysis" opens dialog when report exists
-  it("Start Analysis opens dialog when report exists", async () => {
-    reportState.data = true as any;
+  // 7. "Start Analysis" does not navigate when clicked
+  it("Start Analysis does not navigate when clicked", async () => {
     render(<StickyCTABar username="octocat" />);
     await act(() => vi.advanceTimersByTime(50));
 
     fireEvent.click(screen.getByText("Start Analysis"));
 
-    expect(screen.getByText("Report already exists")).toBeInTheDocument();
     expect(navState.push).not.toHaveBeenCalled();
   });
 
@@ -172,24 +168,7 @@ describe("StickyCTABar", () => {
     expect(navState.push).not.toHaveBeenCalled();
   });
 
-  // 10. Dialog confirm navigates and closes
-  it("dialog confirm navigates and closes dialog", async () => {
-    reportState.data = true as any;
-    render(<StickyCTABar username="octocat" />);
-    await act(() => vi.advanceTimersByTime(50));
-
-    // Open dialog
-    fireEvent.click(screen.getByText("Start Analysis"));
-    expect(screen.getByText("Report already exists")).toBeInTheDocument();
-
-    // Click confirm
-    fireEvent.click(screen.getByText("Replace report"));
-
-    expect(navState.push).toHaveBeenCalledWith("/generate/octocat");
-    expect(screen.queryByText("Report already exists")).not.toBeInTheDocument();
-  });
-
-  // 11. Dialog cancel closes without navigation
+  // 10. Dialog cancel closes without navigation
   it("dialog cancel closes without navigation", async () => {
     adviceState.data = true as any;
     render(<StickyCTABar username="octocat" />);
@@ -206,32 +185,7 @@ describe("StickyCTABar", () => {
     expect(screen.queryByText("Advice already exists")).not.toBeInTheDocument();
   });
 
-  // 12. Buttons disabled when user exists and loading is true
-  it("buttons are disabled when user exists and loading is true", async () => {
-    reportState.isLoading = true;
-    adviceState.isLoading = true;
-    creditState.isLoading = true;
-    render(<StickyCTABar username="octocat" />);
-    await act(() => vi.advanceTimersByTime(50));
-
-    expect(screen.getByText("Start Analysis").closest("button")).toBeDisabled();
-    expect(screen.getByText("Get Advice").closest("button")).toBeDisabled();
-  });
-
-  // 13. Buttons NOT disabled when user is null even if loading is true
-  it("buttons are NOT disabled when user is null even if loading is true", async () => {
-    authState.user = null;
-    reportState.isLoading = true;
-    adviceState.isLoading = true;
-    creditState.isLoading = true;
-    render(<StickyCTABar username="octocat" />);
-    await act(() => vi.advanceTimersByTime(50));
-
-    expect(screen.getByText("Start Analysis").closest("button")).not.toBeDisabled();
-    expect(screen.getByText("Get Advice").closest("button")).not.toBeDisabled();
-  });
-
-  // 14. "Get Advice" shows no_credits dialog when balance is 0
+  // 11. "Get Advice" shows no_credits dialog when balance is 0
   it("Get Advice shows no-credits dialog when growth_balance is 0", async () => {
     creditState.data = { growth_balance: 0, eval_balance: 0 };
     render(<StickyCTABar username="octocat" />);
@@ -244,7 +198,7 @@ describe("StickyCTABar", () => {
     expect(navState.push).not.toHaveBeenCalled();
   });
 
-  // 15. "Get Advice" button disabled while balance is loading
+  // 12. "Get Advice" button disabled while balance is loading
   it("Get Advice button is disabled while balance is loading", async () => {
     creditState.isLoading = true;
     render(<StickyCTABar username="octocat" />);
