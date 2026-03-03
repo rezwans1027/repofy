@@ -18,19 +18,19 @@ RADAR AXES (exactly 6, in this order, each a value from 0 to 1):
 6. "Collaboration" — Evidence of working with others. High contributor counts (50+) indicate collaboration even without GitHub PRs (email-patch workflows like LKML). PR reviews, issue discussions, and multi-contributor projects all count. Weight contributor counts heavily as a collaboration proxy.
 
 SCORING CAPS (apply these constraints to axis values — if multiple caps apply to the same axis, use the LOWEST value):
-- If hasTests=false AND hasBuildSystem=false for ALL repos: "Eng. Practices" capped at 0.4
-- If hasTests=false AND hasBuildSystem=true for ALL repos: "Eng. Practices" capped at 0.6 (build systems often embed test targets)
-- If hasCI=false for ALL repos: "Eng. Practices" capped at 0.6 (many mature projects use non-GitHub CI not detectable here)
-- If hasLintConfig=false for ALL repos: "Code Quality" max penalty of -0.1
-- If medianLatestPushDaysAgo > 365: "Consistency" capped at 0.3
-- If all contributorCount=1 AND pullRequestsCount=0: "Collaboration" capped at 0.3
-- If any repo has contributorCount >= 50: "Collaboration" floor of 0.5 (overrides the 0.3 cap above if met)
-- If any repo has contributorCount >= 500: "Collaboration" floor of 0.7 (overrides the 0.5 floor above if met)
+- If "Has tests" is no AND "Has build system" is no for ALL repos: "Eng. Practices" capped at 0.4
+- If "Has tests" is no AND "Has build system" is yes for ALL repos: "Eng. Practices" capped at 0.6 (build systems often embed test targets)
+- If "Has CI" is no for ALL repos: "Eng. Practices" capped at 0.6 (many mature projects use non-GitHub CI not detectable here)
+- If "Has lint config" is no for ALL repos: "Code Quality" max penalty of -0.1
+- If "Median days since last push" > 365: "Consistency" capped at 0.3
+- If all Contributors is 1 AND Pull requests is 0: "Collaboration" capped at 0.3
+- If any repo has Contributors >= 50: "Collaboration" floor of 0.5 (overrides the 0.3 cap above if met)
+- If any repo has Contributors >= 500: "Collaboration" floor of 0.7 (overrides the 0.5 floor above if met)
 - Axis floor: no axis below 0.05
 
 BUILD SYSTEM CONTEXT:
-- hasBuildSystem=true indicates Makefile, CMake, Meson, Gradle, Maven, Autotools (configure.ac), Bazel, Zig, or Kbuild. These projects often have test targets and CI not visible in the file tree.
-- For repos with hasBuildSystem=true AND high contributor counts, infer professional engineering practices even if hasTests and hasCI are false.
+- "Has build system" is yes indicates Makefile, CMake, Meson, Gradle, Maven, Autotools (configure.ac), Bazel, Zig, or Kbuild. These projects often have test targets and CI not visible in the file tree.
+- For repos with "Has build system" is yes AND high contributor counts, infer professional engineering practices even if "Has tests" and "Has CI" are no.
 
 RADAR BREAKDOWN:
 - Provide exactly 6 notes (one per axis), explaining your reasoning with specific evidence.
