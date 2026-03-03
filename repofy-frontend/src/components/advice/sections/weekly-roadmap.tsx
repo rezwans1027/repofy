@@ -52,7 +52,7 @@ export function WeeklyRoadmap({ weeks, builds }: WeeklyRoadmapProps) {
                     <span className={`font-mono text-xs font-bold ${color.text}`}>
                       W{week.week}
                     </span>
-                    <Badge variant="secondary" className="text-[9px] truncate max-w-48">
+                    <Badge variant="secondary" className="text-[9px]">
                       {week.activeBuildTitle}
                     </Badge>
                   </div>
