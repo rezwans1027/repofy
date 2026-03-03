@@ -26,7 +26,7 @@ export function TrajectorySection({ trajectory }: TrajectoryProps) {
     { label: "Complexity", value: trajectory.calibration.complexity },
     { label: "Breadth", value: trajectory.calibration.breadth },
     { label: "Collaboration", value: trajectory.calibration.collaboration },
-    { label: "Eng. Practices", value: trajectory.calibration.engineeringPractices },
+    { label: "Engineering Practices", value: trajectory.calibration.engineeringPractices },
     { label: "Consistency", value: trajectory.calibration.consistency },
   ];
 
