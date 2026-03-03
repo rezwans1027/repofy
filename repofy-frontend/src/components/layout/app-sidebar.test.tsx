@@ -51,4 +51,10 @@ describe("AppSidebar", () => {
     });
     expect(hasActive).toBe(true);
   });
+
+  it("does not show 'Soon' badges", () => {
+    navState.pathname = "/dashboard";
+    render(<AppSidebar />);
+    expect(screen.queryByText("Soon")).not.toBeInTheDocument();
+  });
 });

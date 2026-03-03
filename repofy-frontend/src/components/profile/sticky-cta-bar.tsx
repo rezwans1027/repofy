@@ -7,6 +7,12 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Lightbulb, Coins } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useExistingReport } from "@/hooks/use-reports";
 import { useExistingAdvice } from "@/hooks/use-advice";
@@ -77,16 +83,26 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
             </p>
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
-            <Button
-              size="lg"
-              data-testid="generate-report-btn"
-              className="bg-cyan text-background hover:bg-cyan/90 font-mono text-sm px-6 flex-1 sm:flex-initial"
-              disabled={!!user && reportLoading}
-              onClick={handleAnalysisClick}
-            >
-              <Sparkles className="size-4" />
-              Start Analysis
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="flex-1 sm:flex-initial">
+                    <Button
+                      size="lg"
+                      data-testid="generate-report-btn"
+                      className="bg-cyan text-background font-mono text-sm px-6 w-full opacity-50 cursor-not-allowed"
+                      disabled
+                    >
+                      <Sparkles className="size-4" />
+                      Start Analysis
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" sideOffset={8}>
+                  Coming soon
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <Button
               size="lg"
               variant="outline"

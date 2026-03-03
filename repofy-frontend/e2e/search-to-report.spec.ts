@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { TIMEOUTS } from "./helpers/timeouts";
 import { deleteSeededReports } from "./helpers/seed";
 
-test.describe("Search to report flow", () => {
+test.describe.skip("Search to report flow", () => {
   test.beforeEach(async ({ page }) => {
     // Mock GitHub search API to avoid rate limiting
     await page.route("**/api/github/search**", (route) => {
