@@ -6,6 +6,7 @@ import Link from "next/link";
 import { AnalysisLoading } from "@/components/report/analysis-loading";
 import { useAuth } from "@/components/providers/auth-provider";
 import { api, ApiError } from "@/lib/api-client";
+import { useCreditBalance } from "@/hooks/use-credits";
 import { useQueryClient } from "@tanstack/react-query";
 import { BackLink } from "@/components/ui/back-link";
 import { ErrorCard } from "@/components/ui/error-card";
@@ -29,7 +30,10 @@ export default function GenerateAdvicePage({
   const router = useRouter();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { data: balance, isLoading: balanceLoading } = useCreditBalance();
   const [error, setError] = useState<string | null>(null);
+
+  const hasNoCredits = !balanceLoading && balance && balance.growth_balance <= 0;
 
   const fetchAdvice = useCallback(async () => {
     try {
@@ -60,37 +64,40 @@ export default function GenerateAdvicePage({
     setError(message);
   }, []);
 
-  if (error) {
-    const isNoCredits = error === NO_CREDITS_SENTINEL;
-
+  if (hasNoCredits || (error && error === NO_CREDITS_SENTINEL)) {
     return (
       <div>
         <BackLink href={`/profile/${username}`} label="back to profile" hoverColor="hover:text-emerald-400" />
-        {isNoCredits ? (
-          <ErrorCard message="You don't have any growth credits. Purchase credits to get personalized advice.">
-            <div className="mt-4 flex items-center gap-3">
-              <Coins className="size-4 text-cyan" />
-              <Link
-                href="/pricing"
-                className="font-mono text-xs text-cyan hover:underline"
-              >
-                Buy Credits
-              </Link>
-            </div>
-          </ErrorCard>
-        ) : (
-          <ErrorCard message={error}>
-            <button
-              onClick={() => {
-                setError(null);
-                router.refresh();
-              }}
-              className="mt-4 font-mono text-xs text-emerald-400 hover:underline"
+        <ErrorCard message="You don't have any growth credits. Purchase credits to get personalized advice.">
+          <div className="mt-4 flex items-center gap-3">
+            <Coins className="size-4 text-cyan" />
+            <Link
+              href="/pricing"
+              className="font-mono text-xs text-cyan hover:underline"
             >
-              Try again
-            </button>
-          </ErrorCard>
-        )}
+              Buy Credits
+            </Link>
+          </div>
+        </ErrorCard>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <BackLink href={`/profile/${username}`} label="back to profile" hoverColor="hover:text-emerald-400" />
+        <ErrorCard message={error}>
+          <button
+            onClick={() => {
+              setError(null);
+              router.refresh();
+            }}
+            className="mt-4 font-mono text-xs text-emerald-400 hover:underline"
+          >
+            Try again
+          </button>
+        </ErrorCard>
       </div>
     );
   }
