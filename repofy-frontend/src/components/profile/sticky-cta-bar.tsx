@@ -23,7 +23,7 @@ interface StickyCTABarProps {
   delay?: number;
 }
 
-type DialogType = "report" | "advice" | "no_credits" | null;
+type DialogType = "report" | "advice" | "no_credits" | "confirm_credit" | null;
 
 export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
   const router = useRouter();
@@ -64,7 +64,7 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
     if (adviceExists) {
       setDialogOpen("advice");
     } else {
-      router.push(`/advisor/generate/${username}`);
+      setDialogOpen("confirm_credit");
     }
   }, [adviceExists, balance, router, username]);
 
@@ -136,7 +136,35 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
                 transition={{ duration: 0.15 }}
                 className="relative w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-lg"
               >
-                {dialogOpen === "no_credits" ? (
+                {dialogOpen === "confirm_credit" ? (
+                  <>
+                    <h2 className="font-mono text-lg font-semibold">Use 1 growth credit</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Generating advice for <span className="font-mono font-medium text-foreground">@{username}</span> will use <span className="font-mono font-medium text-emerald-400">1 growth credit</span>. You currently have <span className="font-mono font-medium text-foreground">{balance?.growth_balance ?? 0}</span> credit{balance?.growth_balance !== 1 ? "s" : ""}.
+                    </p>
+                    <div className="mt-6 flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="font-mono text-xs"
+                        onClick={() => setDialogOpen(null)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="bg-emerald-500 text-background hover:bg-emerald-500/90 font-mono text-xs"
+                        onClick={() => {
+                          setDialogOpen(null);
+                          router.push(`/advisor/generate/${username}`);
+                        }}
+                      >
+                        <Lightbulb className="size-3.5" />
+                        Continue
+                      </Button>
+                    </div>
+                  </>
+                ) : dialogOpen === "no_credits" ? (
                   <>
                     <h2 className="font-mono text-lg font-semibold">No growth credits</h2>
                     <p className="mt-2 text-sm text-muted-foreground">
@@ -171,7 +199,7 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
                     <p className="mt-2 text-sm text-muted-foreground">
                       {dialogOpen === "report"
                         ? <>A report for <span className="font-mono font-medium text-foreground">@{username}</span> already exists. Generate a new report and replace the old one?</>
-                        : <>Advice for <span className="font-mono font-medium text-foreground">@{username}</span> already exists. Generate new advice and replace the old one?</>
+                        : <>Advice for <span className="font-mono font-medium text-foreground">@{username}</span> already exists. Generate new advice and replace the old one? This will use <span className="font-mono font-medium text-emerald-400">1 growth credit</span>.</>
                       }
                     </p>
                     <div className="mt-6 flex justify-end gap-2">
