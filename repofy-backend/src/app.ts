@@ -4,6 +4,7 @@ import { corsMiddleware } from "./middleware/cors";
 import { errorHandler } from "./middleware/errorHandler";
 import { notFound } from "./middleware/notFound";
 import { handleWebhook } from "./controllers/stripe.controller";
+import { webhookRateLimit } from "./middleware/rateLimit";
 import routes from "./routes";
 
 export function createApp() {
@@ -18,6 +19,7 @@ export function createApp() {
   // before express.json() so the body is not parsed as JSON.
   app.post(
     "/api/stripe/webhook",
+    webhookRateLimit,
     express.raw({ type: "application/json" }),
     handleWebhook,
   );

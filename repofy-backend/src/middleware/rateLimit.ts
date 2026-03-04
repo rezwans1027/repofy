@@ -18,6 +18,15 @@ export const stripeRateLimit = rateLimit({
   message: { success: false, error: "Too many requests. Please try again later." },
 });
 
+/** Generous limiter for Stripe webhook: 100 req/min per IP */
+export const webhookRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many requests." },
+});
+
 /** Moderate limiter for GitHub proxy routes: 30 req/min per IP */
 export const githubRateLimit = rateLimit({
   windowMs: 60_000,

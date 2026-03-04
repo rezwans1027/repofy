@@ -5,8 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 
 html {
-  overflow-y: scroll;
   overscroll-behavior: none;
+  scrollbar-width: none; /* Firefox */
+}
+::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 @theme inline {
@@ -147,20 +150,13 @@ html {
   animation-timing-function: ease;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
+/* Prevent Radix scroll-lock from causing layout shift */
+body[data-scroll-locked] {
+  overflow: unset !important;
+  padding-right: 0px !important;
+  margin-right: 0px !important;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
-}
+
 
 /* Typewriter cursor blink */
 @keyframes blink {

@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { AnalysisProvider } from "@/components/providers/analysis-provider";
+import { OverlayScrollbar } from "@/components/ui/overlay-scrollbar";
 import "./globals.css";
 
 const inter = localFont({
@@ -36,7 +37,10 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <AuthProvider>
-            <AnalysisProvider>{children}</AnalysisProvider>
+            <AnalysisProvider>
+              <OverlayScrollbar />
+              {children}
+            </AnalysisProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
