@@ -17,13 +17,15 @@ export function ExportBar({ username, reportRef, onBeforeExport, onAfterExport }
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExportPDF = async () => {
-    if (!reportRef.current || isExporting) return;
+    if (isExporting) return;
 
     setIsExporting(true);
     onBeforeExport();
 
     try {
+      // Wait for the off-screen PDF layout to mount
       await new Promise((r) => setTimeout(r, 300));
+      if (!reportRef.current) return;
       const date = new Date().toISOString().split("T")[0];
       await exportToPdf(reportRef.current, `repofy-report-${username}-${date}.pdf`);
     } catch (err) {

@@ -17,6 +17,7 @@ import { ProfileOptimizations } from "./sections/profile-optimizations";
 import { StrengthsAndGaps } from "./sections/strengths-and-gaps";
 import { CareerPositioning } from "./sections/career-positioning";
 import { AdviceExportBar } from "./sections/advice-export-bar";
+import { AdviceReportPdfLayout } from "./advice-pdf-layout";
 
 // ── Warning system ──────────────────────────────────────────────────
 
@@ -157,19 +158,19 @@ interface AdviceReportProps {
 }
 
 export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
-  const adviceRef = useRef<HTMLDivElement>(null);
-  const [pdfMode, setPdfMode] = useState(false);
+  const pdfRef = useRef<HTMLDivElement>(null);
+  const [exporting, setExporting] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>("career");
 
   const warnings = data.generationWarnings ?? [];
 
   return (
     <div className="space-y-4 pb-20">
-      <div ref={adviceRef} data-pdf-target className="space-y-4">
+      <div className="space-y-4">
         <AdviceTopBanner username={username} avatarUrl={avatarUrl} />
 
         {/* Warning banner */}
-        {warnings.length > 0 && !pdfMode && (
+        {warnings.length > 0 && (
           <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="size-4 shrink-0 text-yellow-400 mt-0.5" />
@@ -185,110 +186,103 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
         )}
 
         {/* Tab navigation */}
-        {!pdfMode && (
-          <div className="sticky top-0 z-10 -mx-1 px-1 pt-1 pb-2 bg-background/95 backdrop-blur-sm border-b border-border">
-            <div className="flex gap-1">
-              {TABS.map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`relative shrink-0 rounded-md px-4 py-2 font-mono text-xs font-medium transition-colors ${
-                    activeTab === tab.key
-                      ? "text-emerald-400"
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                  }`}
-                >
-                  {activeTab === tab.key && (
-                    <motion.span
-                      layoutId="advice-tab-indicator"
-                      className="absolute inset-0 rounded-md bg-emerald-500/15 border border-emerald-500/30"
-                      transition={{ type: "spring", bounce: 0.15, duration: 0.3 }}
-                    />
-                  )}
-                  <span className="relative z-[1]">{tab.label}</span>
-                </button>
-              ))}
-            </div>
+        <div className="sticky top-0 z-10 -mx-1 px-1 pt-1 pb-2 bg-background/95 backdrop-blur-sm border-b border-border">
+          <div className="flex gap-1">
+            {TABS.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`relative shrink-0 rounded-md px-4 py-2 font-mono text-xs font-medium transition-colors ${
+                  activeTab === tab.key
+                    ? "text-emerald-400"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                }`}
+              >
+                {activeTab === tab.key && (
+                  <motion.span
+                    layoutId="advice-tab-indicator"
+                    className="absolute inset-0 rounded-md bg-emerald-500/15 border border-emerald-500/30"
+                    transition={{ type: "spring", bounce: 0.15, duration: 0.3 }}
+                  />
+                )}
+                <span className="relative z-[1]">{tab.label}</span>
+              </button>
+            ))}
           </div>
-        )}
-
-        {/* PDF: canonical order (all sections in one flat stack) */}
-        {pdfMode && (
-          <div className="space-y-4" data-pdf-sections>
-            <AdviceSummary summary={data.summary} />
-            <TrajectorySection trajectory={data.trajectory} />
-            <StrengthsAndGaps data={data.strengthsAndGaps} />
-            <CareerPositioning data={data.careerPositioning} />
-            <BuildRoadmap builds={data.buildRoadmap} />
-            <WeeklyRoadmap weeks={data.weeklyRoadmap} builds={data.buildRoadmap} />
-            <SuccessMetrics metrics={data.successMetrics} />
-            <SkillRoadmap skills={data.skillRoadmap} />
-            <RepoImprovements repoImprovements={data.repoImprovements} expandAll />
-            <ContributionStrategy items={data.contributionStrategy} />
-            <ProfileOptimizations optimizations={data.profileOptimizations} />
-          </div>
-        )}
+        </div>
 
         {/* Tab content with crossfade */}
-        {!pdfMode && (
-          <AnimatePresence mode="wait">
-            {activeTab === "career" && (
-              <motion.div
-                key="career"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="space-y-4"
-                data-tab="career"
-              >
-                <AdviceSummary summary={data.summary} />
-                <TrajectorySection trajectory={data.trajectory} />
-                <StrengthsAndGaps data={data.strengthsAndGaps} />
-                <CareerPositioning data={data.careerPositioning} />
-              </motion.div>
-            )}
+        <AnimatePresence mode="wait">
+          {activeTab === "career" && (
+            <motion.div
+              key="career"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="space-y-4"
+              data-tab="career"
+            >
+              <AdviceSummary summary={data.summary} />
+              <TrajectorySection trajectory={data.trajectory} />
+              <StrengthsAndGaps data={data.strengthsAndGaps} />
+              <CareerPositioning data={data.careerPositioning} />
+            </motion.div>
+          )}
 
-            {activeTab === "build" && (
-              <motion.div
-                key="build"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="space-y-4"
-                data-tab="build"
-              >
-                <BuildRoadmap builds={data.buildRoadmap} />
-                <WeeklyRoadmap weeks={data.weeklyRoadmap} builds={data.buildRoadmap} />
-                <SuccessMetrics metrics={data.successMetrics} />
-              </motion.div>
-            )}
+          {activeTab === "build" && (
+            <motion.div
+              key="build"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="space-y-4"
+              data-tab="build"
+            >
+              <BuildRoadmap builds={data.buildRoadmap} />
+              <WeeklyRoadmap weeks={data.weeklyRoadmap} builds={data.buildRoadmap} />
+              <SuccessMetrics metrics={data.successMetrics} />
+            </motion.div>
+          )}
 
-            {activeTab === "improve" && (
-              <motion.div
-                key="improve"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="space-y-4"
-                data-tab="improve"
-              >
-                <RepoImprovements repoImprovements={data.repoImprovements} expandAll={false} />
-                <SkillRoadmap skills={data.skillRoadmap} />
-                <ContributionStrategy items={data.contributionStrategy} />
-                <ProfileOptimizations optimizations={data.profileOptimizations} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        )}
+          {activeTab === "improve" && (
+            <motion.div
+              key="improve"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="space-y-4"
+              data-tab="improve"
+            >
+              <RepoImprovements repoImprovements={data.repoImprovements} expandAll={false} />
+              <SkillRoadmap skills={data.skillRoadmap} />
+              <ContributionStrategy items={data.contributionStrategy} />
+              <ProfileOptimizations optimizations={data.profileOptimizations} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* Off-screen PDF layout — only mounted during export */}
+      {exporting && (
+        <div
+          aria-hidden="true"
+          className="fixed pointer-events-none"
+          style={{ left: "-200vw", top: 0 }}
+        >
+          <div ref={pdfRef} data-pdf-target className="w-[900px]">
+            <AdviceReportPdfLayout username={username} data={data} />
+          </div>
+        </div>
+      )}
+
       <AdviceExportBar
         username={username}
-        adviceRef={adviceRef}
-        onBeforeExport={() => setPdfMode(true)}
-        onAfterExport={() => setPdfMode(false)}
+        adviceRef={pdfRef}
+        onBeforeExport={() => setExporting(true)}
+        onAfterExport={() => setExporting(false)}
       />
     </div>
   );
