@@ -32,13 +32,15 @@ export function AdviceExportBar({ username, adviceRef, onBeforeExport, onAfterEx
   };
 
   const handleExportPDF = async () => {
-    if (!adviceRef.current || isExporting) return;
+    if (isExporting) return;
 
     setIsExporting(true);
     onBeforeExport();
 
     try {
+      // Wait for the off-screen PDF layout to mount
       await new Promise((r) => setTimeout(r, 300));
+      if (!adviceRef.current) return;
       const date = new Date().toISOString().split("T")[0];
       await exportToPdf(adviceRef.current, `repofy-advice-${username}-${date}.pdf`);
     } catch (err) {
