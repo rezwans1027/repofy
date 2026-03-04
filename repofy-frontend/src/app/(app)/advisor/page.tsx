@@ -226,11 +226,22 @@ export default function AdvisorPage() {
         <Button
           variant="outline"
           size="sm"
-          className="h-9 gap-1.5 font-mono text-xs ml-auto"
+          className={`relative h-9 font-mono text-xs ml-auto overflow-hidden ${selectMode ? "border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive" : ""}`}
           onClick={selectMode ? exitSelectMode : () => setSelectMode(true)}
         >
-          {selectMode ? <X className="size-3.5" /> : <CheckCircle2 className="size-3.5" />}
-          {selectMode ? "Cancel" : "Select"}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={selectMode ? "cancel" : "select"}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.08 }}
+              className="flex items-center gap-1.5"
+            >
+              {selectMode ? <X className="size-3.5" /> : <CheckCircle2 className="size-3.5" />}
+              {selectMode ? "Cancel" : "Select"}
+            </motion.span>
+          </AnimatePresence>
         </Button>
       </motion.div>
 
