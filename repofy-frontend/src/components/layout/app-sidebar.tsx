@@ -58,7 +58,7 @@ export function AppSidebar() {
 
       {/* Mobile: horizontal sticky bar */}
       <nav className="fixed top-14 left-0 right-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm lg:hidden">
-        <div className="flex px-4 py-2 gap-1">
+        <div className="flex justify-center px-4 py-1.5 gap-6 sm:gap-2">
           {NAV_ITEMS.map(({ href, label, icon: Icon, comingSoon }) => {
             const isActive =
               pathname === href || pathname.startsWith(href + "/") ||
@@ -72,12 +72,12 @@ export function AppSidebar() {
                 href={href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-1.5 whitespace-nowrap px-3 py-1 font-mono text-xs transition-colors",
+                  "flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 font-mono text-xs transition-colors",
                   isActive ? "text-cyan" : "text-muted-foreground"
                 )}
               >
-                <Icon className="size-3" />
-                {label}
+                <Icon className="size-4.5 sm:size-3.5" />
+                <span className="hidden sm:inline">{label}</span>
               </Link>
             );
           })}
