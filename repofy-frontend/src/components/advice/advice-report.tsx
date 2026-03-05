@@ -18,6 +18,7 @@ import { StrengthsAndGaps } from "./sections/strengths-and-gaps";
 import { CareerPositioning } from "./sections/career-positioning";
 import { AdviceExportBar } from "./sections/advice-export-bar";
 import { AdviceReportPdfLayout } from "./advice-pdf-layout";
+import { tabContentVariants, EASE_OUT_EXPO } from "@/lib/animation-variants";
 
 // ── Warning system ──────────────────────────────────────────────────
 
@@ -149,6 +150,8 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]["key"];
 
+const TAB_INDEX: Record<TabKey, number> = { career: 0, build: 1, improve: 2 };
+
 // ── Component ───────────────────────────────────────────────────────
 
 interface AdviceReportProps {
@@ -161,8 +164,15 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
   const pdfRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>("career");
+  const [direction, setDirection] = useState(0);
 
   const warnings = data.generationWarnings ?? [];
+
+  const handleTabChange = (tab: TabKey) => {
+    const d = TAB_INDEX[tab] - TAB_INDEX[activeTab];
+    setDirection(d > 0 ? 1 : -1);
+    setActiveTab(tab);
+  };
 
   return (
     <div className="space-y-4 pb-20">
@@ -171,7 +181,12 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
 
         {/* Warning banner */}
         {warnings.length > 0 && (
-          <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
+          <motion.div
+            initial={{ opacity: 0, y: -8, filter: "blur(4px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.5, delay: 0.3, ease: EASE_OUT_EXPO }}
+            className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4"
+          >
             <div className="flex items-start gap-3">
               <AlertTriangle className="size-4 shrink-0 text-yellow-400 mt-0.5" />
               <div className="space-y-1">
@@ -182,16 +197,21 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
                 ))}
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Tab navigation */}
-        <div className="sticky top-0 z-10 -mx-1 px-1 pt-1 pb-2 bg-background/95 backdrop-blur-sm border-b border-border">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15, ease: EASE_OUT_EXPO }}
+          className="sticky top-0 z-10 -mx-1 px-1 pt-1 pb-2 bg-background/80 backdrop-blur-lg border-b border-border"
+        >
           <div className="flex gap-1">
             {TABS.map((tab) => (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => handleTabChange(tab.key)}
                 className={`relative shrink-0 rounded-md px-4 py-2 font-mono text-xs font-medium transition-colors ${
                   activeTab === tab.key
                     ? "text-emerald-400"
@@ -201,25 +221,26 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
                 {activeTab === tab.key && (
                   <motion.span
                     layoutId="advice-tab-indicator"
-                    className="absolute inset-0 rounded-md bg-emerald-500/15 border border-emerald-500/30"
-                    transition={{ type: "spring", bounce: 0.15, duration: 0.3 }}
+                    className="absolute inset-0 rounded-md bg-emerald-500/15 border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.12)]"
+                    transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
                   />
                 )}
                 <span className="relative z-[1]">{tab.label}</span>
               </button>
             ))}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Tab content with crossfade */}
-        <AnimatePresence mode="wait">
+        {/* Tab content with directional slide + crossfade */}
+        <AnimatePresence mode="wait" custom={direction}>
           {activeTab === "career" && (
             <motion.div
               key="career"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              custom={direction}
+              variants={tabContentVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
               className="space-y-4"
               data-tab="career"
             >
@@ -233,10 +254,11 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
           {activeTab === "build" && (
             <motion.div
               key="build"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              custom={direction}
+              variants={tabContentVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
               className="space-y-4"
               data-tab="build"
             >
@@ -249,10 +271,11 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
           {activeTab === "improve" && (
             <motion.div
               key="improve"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              custom={direction}
+              variants={tabContentVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
               className="space-y-4"
               data-tab="improve"
             >

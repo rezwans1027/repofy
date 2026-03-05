@@ -1,12 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Wrench, Star } from "lucide-react";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Badge } from "@/components/ui/badge";
 import { PRIORITY_STYLES } from "@/lib/styles";
+import {
+  staggerContainer,
+  staggerItem,
+  EASE_OUT_EXPO,
+} from "@/lib/animation-variants";
 import type { AdviceData } from "@/components/advice/advice-report";
 
 interface RepoImprovementsProps {
@@ -19,7 +24,7 @@ export function RepoImprovements({ repoImprovements, expandAll = false }: RepoIm
 
   if (repoImprovements.length === 0) {
     return (
-      <AnimateOnView delay={0.18}>
+      <AnimateOnView delay={0.06}>
         <div className="rounded-lg border border-border bg-card p-5">
           <SectionHeader title="Repository Improvements" />
           <p className="text-xs text-muted-foreground">No repository improvement suggestions available for this profile.</p>
@@ -29,17 +34,27 @@ export function RepoImprovements({ repoImprovements, expandAll = false }: RepoIm
   }
 
   return (
-    <AnimateOnView delay={0.18}>
+    <AnimateOnView delay={0.06}>
       <div className="rounded-lg border border-border bg-card p-5">
         <SectionHeader
           title="Repository Improvements"
           subtitle="Specific upgrades for your existing repos"
         />
-        <div className="space-y-3">
+
+        <motion.div
+          className="space-y-3"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
           {repoImprovements.map((repo) => (
-            <div
+            <motion.div
               key={repo.repoName}
-              className="rounded-md border border-border bg-background overflow-hidden"
+              variants={staggerItem}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              whileHover={{ scale: 1.01, y: -1 }}
+              className="rounded-md border border-border bg-background overflow-hidden transition-colors hover:border-emerald-500/20 cursor-default"
             >
               <button
                 onClick={() =>
@@ -63,48 +78,61 @@ export function RepoImprovements({ repoImprovements, expandAll = false }: RepoIm
                       {repo.stars}
                     </span>
                   )}
-                  <ChevronDown
-                    className={`size-4 text-muted-foreground transition-transform ${
-                      expanded === repo.repoName ? "rotate-180" : ""
-                    }`}
-                  />
+                  <motion.div
+                    animate={{ rotate: expanded === repo.repoName ? 180 : 0 }}
+                    transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
+                  >
+                    <ChevronDown className="size-4 text-muted-foreground" />
+                  </motion.div>
                 </div>
               </button>
 
-              {(expandAll || expanded === repo.repoName) && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  transition={{ duration: 0.25 }}
-                  className="border-t border-border"
-                >
-                  <div className="p-4 space-y-3">
-                    {repo.improvements.map((imp, i) => (
-                      <div key={`${imp.area}-${imp.priority}-${i}`} className="flex gap-3">
-                        <div className="mt-0.5 shrink-0">
-                          <Badge className={`border text-[9px] w-14 justify-center ${PRIORITY_STYLES[imp.priority] ?? ""}`}>
-                            {imp.priority}
-                          </Badge>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs font-medium">
-                            <span className="text-muted-foreground">{imp.area}:</span>{" "}
-                            {imp.suggestion}
-                          </p>
-                          {imp.expectedOutcome && (
-                            <p className="text-[11px] text-muted-foreground">
-                              <span className="text-emerald-400">Outcome:</span> {imp.expectedOutcome}
+              <AnimatePresence>
+                {(expandAll || expanded === repo.repoName) && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.35, ease: EASE_OUT_EXPO }}
+                    className="border-t border-border overflow-hidden"
+                  >
+                    <motion.div
+                      className="p-4 space-y-3"
+                      variants={staggerContainer}
+                      initial="hidden"
+                      animate="visible"
+                    >
+                      {repo.improvements.map((imp, i) => (
+                        <motion.div
+                          key={`${imp.area}-${imp.priority}-${i}`}
+                          variants={staggerItem}
+                          className="flex gap-3"
+                        >
+                          <div className="mt-0.5 shrink-0">
+                            <Badge className={`border text-[9px] w-14 justify-center ${PRIORITY_STYLES[imp.priority] ?? ""}`}>
+                              {imp.priority}
+                            </Badge>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-xs font-medium">
+                              <span className="text-muted-foreground">{imp.area}:</span>{" "}
+                              {imp.suggestion}
                             </p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </div>
+                            {imp.expectedOutcome && (
+                              <p className="text-[11px] text-muted-foreground">
+                                <span className="text-emerald-400">Outcome:</span> {imp.expectedOutcome}
+                              </p>
+                            )}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </AnimateOnView>
   );
