@@ -166,7 +166,7 @@ export async function resendOtp(email: string): Promise<{ message: string }> {
 
   await supabase
     .from("pending_signups")
-    .update({ otp_code: hashOtp(otp), otp_expires_at: expiresAt })
+    .update({ otp_code: hashOtp(otp), otp_expires_at: expiresAt, attempts: 0 })
     .eq("email", email);
 
   await sendOtpEmail(email, otp, pending.display_name);

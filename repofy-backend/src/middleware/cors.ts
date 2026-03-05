@@ -5,8 +5,12 @@ const allowedOrigins = env.corsOrigin.split(",").map((o) => o.trim());
 
 export const corsMiddleware = cors({
   origin(origin, callback) {
-    // Allow server-to-server requests (no origin)
-    if (!origin) return callback(null, true);
+    // In production, reject requests without an Origin header (e.g. direct curl).
+    // Health checks still work — they just won't get CORS headers.
+    if (!origin) {
+      if (env.isProduction) return callback(null, false);
+      return callback(null, true);
+    }
 
     // Exact match against CORS_ORIGIN list
     if (allowedOrigins.includes(origin)) return callback(null, true);

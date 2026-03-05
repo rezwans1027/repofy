@@ -54,6 +54,7 @@ export function useAdvice(id: string) {
         .from("advice")
         .select("id, analyzed_username, user_id, advice_data")
         .eq("id", id)
+        .eq("user_id", user!.id)
         .single();
       if (error) throw error;
       return data as AdviceRow;
@@ -83,12 +84,18 @@ export function useExistingAdvice(username: string) {
 }
 
 export function useDeleteAdvice() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (ids: string[]) => {
+      if (!user) throw new Error("Not authenticated");
       const supabase = createClient();
-      const { error } = await supabase.from("advice").delete().in("id", ids);
+      const { error } = await supabase
+        .from("advice")
+        .delete()
+        .in("id", ids)
+        .eq("user_id", user.id);
       if (error) throw error;
     },
     onSuccess: () => {

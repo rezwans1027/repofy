@@ -14,7 +14,7 @@ describe("github routes wiring", () => {
   it("GET /github/search has correct middleware chain in order", () => {
     const layer = stack.find((l: any) => l.route?.path === "/github/search");
     const names = layer.route.stack.map((s: any) => s.handle.name);
-    expect(names).toEqual(["", "timeoutMiddleware", "asyncHandlerWrapper"]);
+    expect(names).toEqual(["", "requireAuth", "timeoutMiddleware", "asyncHandlerWrapper"]);
   });
 
   it("has a GET /github/:username route", () => {
@@ -27,6 +27,6 @@ describe("github routes wiring", () => {
   it("GET /github/:username has correct middleware chain in order", () => {
     const layer = stack.find((l: any) => l.route?.path === "/github/:username");
     const names = layer.route.stack.map((s: any) => s.handle.name);
-    expect(names).toEqual(["", "timeoutMiddleware", "asyncHandlerWrapper"]);
+    expect(names).toEqual(["", "requireAuth", "timeoutMiddleware", "asyncHandlerWrapper"]);
   });
 });

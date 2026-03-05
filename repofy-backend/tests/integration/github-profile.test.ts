@@ -1,22 +1,37 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import { getApp } from "../helpers/supertest-app";
-import { setupGitHubMocks } from "../helpers/integration-setup";
+import { setupGitHubMocks, setupAuthMock } from "../helpers/integration-setup";
 
 const fetchMock = vi.fn();
 vi.stubGlobal("fetch", fetchMock);
 
+vi.mock("../../src/config/supabase", () => ({
+  getSupabaseAdmin: vi.fn(),
+}));
+
 describe("GET /api/github/:username", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     // Explicit reset — vi.stubGlobal mocks need manual reset despite config-level mockReset
     fetchMock.mockReset();
+    await setupAuthMock(true);
+  });
+
+  it("returns 401 without auth", async () => {
+    const app = getApp();
+    const res = await request(app).get("/api/github/octocat");
+
+    expect(res.status).toBe(401);
+    expect(res.body.success).toBe(false);
   });
 
   it("returns full user data for valid username", async () => {
     setupGitHubMocks(fetchMock);
 
     const app = getApp();
-    const res = await request(app).get("/api/github/octocat");
+    const res = await request(app)
+      .get("/api/github/octocat")
+      .set("Authorization", "Bearer valid-token");
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
@@ -31,7 +46,9 @@ describe("GET /api/github/:username", () => {
 
   it("returns 400 for invalid username", async () => {
     const app = getApp();
-    const res = await request(app).get("/api/github/-invalid");
+    const res = await request(app)
+      .get("/api/github/-invalid")
+      .set("Authorization", "Bearer valid-token");
 
     expect(res.status).toBe(400);
     expect(res.body.success).toBe(false);
@@ -44,7 +61,9 @@ describe("GET /api/github/:username", () => {
     );
 
     const app = getApp();
-    const res = await request(app).get("/api/github/nonexistent");
+    const res = await request(app)
+      .get("/api/github/nonexistent")
+      .set("Authorization", "Bearer valid-token");
 
     expect(res.status).toBe(404);
     expect(res.body.success).toBe(false);
