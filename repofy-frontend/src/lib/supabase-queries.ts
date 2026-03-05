@@ -54,6 +54,7 @@ export function createSupabaseQueries<TList, TRow>(
           .from(table)
           .select(detailSelect)
           .eq("id", id)
+          .eq("user_id", user!.id)
           .single();
         if (error) throw error;
         return data as TRow;
@@ -83,12 +84,18 @@ export function createSupabaseQueries<TList, TRow>(
   }
 
   function useDelete() {
+    const { user } = useAuth();
     const queryClient = useQueryClient();
 
     return useMutation({
       mutationFn: async (ids: string[]) => {
+        if (!user) throw new Error("Not authenticated");
         const supabase = createClient();
-        const { error } = await supabase.from(table).delete().in("id", ids);
+        const { error } = await supabase
+          .from(table)
+          .delete()
+          .in("id", ids)
+          .eq("user_id", user.id);
         if (error) throw error;
       },
       onSuccess: () => {

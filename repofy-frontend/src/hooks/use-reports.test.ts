@@ -95,8 +95,8 @@ describe("useDeleteReports", () => {
     setupChain();
   });
 
-  it("calls delete on supabase with ids", async () => {
-    mockChain.in.mockResolvedValue({ error: null });
+  it("calls delete on supabase with ids and user_id filter", async () => {
+    mockChain.eq.mockResolvedValue({ error: null });
 
     const { result } = renderHook(() => useDeleteReports(), {
       wrapper: TestProviders,
@@ -105,10 +105,11 @@ describe("useDeleteReports", () => {
     await result.current.mutateAsync(["report-1", "report-2"]);
     expect(mockChain.delete).toHaveBeenCalled();
     expect(mockChain.in).toHaveBeenCalledWith("id", ["report-1", "report-2"]);
+    expect(mockChain.eq).toHaveBeenCalledWith("user_id", "user-123");
   });
 
   it("rejects when delete fails", async () => {
-    mockChain.in.mockResolvedValue({
+    mockChain.eq.mockResolvedValue({
       error: { message: "Delete failed" },
     });
 

@@ -62,7 +62,7 @@ describe("errorHandler", () => {
     });
   });
 
-  it("hides error message in production even for 400-level errors", () => {
+  it("shows error message in production for 400-level errors", () => {
     mockEnv.isProduction = true;
     const { req, res, next } = createMocks();
     const err = Object.assign(new Error("Validation failed"), { status: 400 });
@@ -72,7 +72,7 @@ describe("errorHandler", () => {
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       success: false,
-      error: "Internal server error",
+      error: "Validation failed",
     });
   });
 

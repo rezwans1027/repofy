@@ -150,8 +150,8 @@ describe("createSupabaseQueries", () => {
   });
 
   describe("useDelete", () => {
-    it("deletes records by ids", async () => {
-      mockChain.in.mockResolvedValue({ error: null });
+    it("deletes records by ids with user_id filter", async () => {
+      mockChain.eq.mockResolvedValue({ error: null });
 
       const { result } = renderHook(() => useDelete(), {
         wrapper: TestProviders,
@@ -161,10 +161,11 @@ describe("createSupabaseQueries", () => {
       expect(mockFrom).toHaveBeenCalledWith("test_table");
       expect(mockChain.delete).toHaveBeenCalled();
       expect(mockChain.in).toHaveBeenCalledWith("id", ["1", "2"]);
+      expect(mockChain.eq).toHaveBeenCalledWith("user_id", "user-1");
     });
 
     it("rejects when delete returns an error", async () => {
-      mockChain.in.mockResolvedValue({
+      mockChain.eq.mockResolvedValue({
         error: { message: "Delete failed" },
       });
 
