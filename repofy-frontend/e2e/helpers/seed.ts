@@ -232,6 +232,41 @@ export async function deleteSeededReports(
 }
 
 /**
+ * Delete only the specified seeded advice for the current user.
+ * Pass the exact analyzed_usernames that were seeded in the test.
+ * Fails hard in CI to surface contamination issues.
+ */
+export async function deleteSeededAdvice(
+  page: Page,
+  analyzedUsernames: string[],
+): Promise<void> {
+  const { accessToken, userId } = await getSupabaseSession(page);
+  const { url: supabaseUrl, anonKey } = getSupabaseConfig();
+
+  const filter = analyzedUsernames
+    .map((u) => u.toLowerCase())
+    .join(",");
+
+  const resp = await page.request.delete(
+    `${supabaseUrl}/rest/v1/advice?user_id=eq.${userId}&analyzed_username=in.(${filter})`,
+    {
+      headers: {
+        apikey: anonKey,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  if (!resp.ok()) {
+    const msg = `cleanup: delete advice returned ${resp.status()}`;
+    if (process.env.CI) {
+      throw new Error(msg);
+    }
+    console.warn(msg);
+  }
+}
+
+/**
  * Generate a report through the UI flow: search for user, click profile,
  * click Start Analysis, wait for completion.
  *
