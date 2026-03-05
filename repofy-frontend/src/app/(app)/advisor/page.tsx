@@ -251,82 +251,89 @@ export default function AdvisorPage() {
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="space-y-2"
       >
-        {filteredItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-16">
-            <Search className="size-5 text-muted-foreground/30" />
-            <p className="mt-3 font-mono text-sm text-muted-foreground">No advice matches your search</p>
-            <button
-              type="button"
-              onClick={() => setSearchQuery("")}
-              className="mt-2 font-mono text-xs text-emerald-400 hover:underline"
+        <AnimatePresence mode="popLayout">
+          {filteredItems.length === 0 ? (
+            <motion.div
+              key="no-results"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
+              className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-16"
             >
-              Clear search
-            </button>
-          </div>
-        ) : (
-          filteredItems.map((item: AdviceListItem, index: number) => {
-            const isSelected = selected.has(item.id);
-
-            const card = (
-              <motion.div
-                key={item.id}
-                variants={itemVariants}
-                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                layout={false}
-                className={`group relative flex items-center gap-4 rounded-xl border p-4 transition-colors duration-200 ${
-                  isSelected
-                    ? "border-primary/30 bg-primary/[0.04]"
-                    : "border-border bg-card hover:border-border hover:bg-secondary/30"
-                } cursor-pointer`}
-                onClick={selectMode ? () => toggleSelect(item.id) : () => router.push(`/advisor/${item.id}`)}
+              <Search className="size-5 text-muted-foreground/30" />
+              <p className="mt-3 font-mono text-sm text-muted-foreground">No advice matches your search</p>
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="mt-2 font-mono text-xs text-emerald-400 hover:underline"
               >
-                {/* Checkbox */}
-                <div className={`overflow-hidden transition-all duration-200 ease-out ${selectMode ? "w-5 opacity-100" : "w-0 -mr-4 opacity-0"}`}>
-                  <div className="flex w-5 shrink-0 items-center justify-center" onClick={(e) => e.stopPropagation()}>
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={() => toggleSelect(item.id)}
-                      className="size-5 rounded-full"
-                    />
-                  </div>
-                </div>
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <span className="font-mono text-xs font-bold uppercase">
-                    {item.analyzed_username.slice(0, 2)}
-                  </span>
-                </div>
+                Clear search
+              </button>
+            </motion.div>
+          ) : (
+            filteredItems.map((item: AdviceListItem) => {
+              const isSelected = selected.has(item.id);
 
-                {/* Content */}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className={`truncate font-mono text-sm font-semibold text-foreground transition-colors ${!selectMode ? "group-hover:text-primary" : ""}`}>
-                      @{item.analyzed_username}
+              return (
+                <motion.div
+                  key={item.id}
+                  variants={itemVariants}
+                  exit={{ opacity: 0, y: -8, filter: "blur(4px)", transition: { duration: 0.2 } }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  layout
+                  className={`group relative flex items-center gap-4 rounded-xl border p-4 transition-colors duration-200 ${
+                    isSelected
+                      ? "border-primary/30 bg-primary/[0.04]"
+                      : "border-border bg-card hover:border-border hover:bg-secondary/30"
+                  } cursor-pointer`}
+                  onClick={selectMode ? () => toggleSelect(item.id) : () => router.push(`/advisor/${item.id}`)}
+                >
+                  {/* Checkbox */}
+                  <div className={`overflow-hidden transition-all duration-200 ease-out ${selectMode ? "w-5 opacity-100" : "w-0 -mr-4 opacity-0"}`}>
+                    <div className="flex w-5 shrink-0 items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => toggleSelect(item.id)}
+                        className="size-5 rounded-full"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <span className="font-mono text-xs font-bold uppercase">
+                      {item.analyzed_username.slice(0, 2)}
                     </span>
                   </div>
-                  {item.analyzed_name && (
-                    <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-                      <User className="size-3 shrink-0" />
-                      {item.analyzed_name}
-                    </p>
-                  )}
-                </div>
 
-                {/* Date + Arrow */}
-                <div className="flex shrink-0 items-center">
-                  <span className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
-                    <Calendar className="size-3" />
-                    {relativeDate(item.generated_at)}
-                  </span>
-                  <div className={`overflow-hidden transition-all duration-200 ease-out ${selectMode ? "w-0 opacity-0" : "w-7 opacity-100"}`}>
-                    <ChevronRight className="ml-3 size-4 text-muted-foreground/30 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
+                  {/* Content */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className={`truncate font-mono text-sm font-semibold text-foreground transition-colors ${!selectMode ? "group-hover:text-primary" : ""}`}>
+                        @{item.analyzed_username}
+                      </span>
+                    </div>
+                    {item.analyzed_name && (
+                      <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+                        <User className="size-3 shrink-0" />
+                        {item.analyzed_name}
+                      </p>
+                    )}
                   </div>
-                </div>
-              </motion.div>
-            );
 
-            return card;
-          })
-        )}
+                  {/* Date + Arrow */}
+                  <div className="flex shrink-0 items-center">
+                    <span className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
+                      <Calendar className="size-3" />
+                      {relativeDate(item.generated_at)}
+                    </span>
+                    <div className={`overflow-hidden transition-all duration-200 ease-out ${selectMode ? "w-0 opacity-0" : "w-7 opacity-100"}`}>
+                      <ChevronRight className="ml-3 size-4 text-muted-foreground/30 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* Select-all row when in select mode */}
