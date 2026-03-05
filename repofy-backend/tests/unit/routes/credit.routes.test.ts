@@ -16,6 +16,6 @@ describe("credit routes wiring", () => {
       (l: any) => l.route?.path === "/credits/balance",
     );
     const names = layer.route.stack.map((s: any) => s.handle.name);
-    expect(names).toEqual(["requireAuth", "asyncHandlerWrapper"]);
+    expect(names).toEqual(["", "requireAuth", "asyncHandlerWrapper"]);
   });
 });

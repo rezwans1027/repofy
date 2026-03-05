@@ -13,7 +13,7 @@ describe("AppSidebar", () => {
     navState.pathname = "/dashboard";
     render(<AppSidebar />);
     expect(screen.getAllByText("Search")).toHaveLength(2);
-    expect(screen.getAllByText("Reports")).toHaveLength(2);
+    expect(screen.getAllByText("Evals")).toHaveLength(2);
     expect(screen.getAllByText("Advisor")).toHaveLength(2);
     expect(screen.getAllByText("Compare")).toHaveLength(2);
     expect(screen.getAllByText("Settings")).toHaveLength(2);
@@ -33,7 +33,7 @@ describe("AppSidebar", () => {
   it("highlights active link based on pathname", () => {
     navState.pathname = "/reports";
     render(<AppSidebar />);
-    const reportsLinks = screen.getAllByText("Reports");
+    const reportsLinks = screen.getAllByText("Evals");
     const hasActive = reportsLinks.some((el) => {
       const link = el.closest("a");
       return link?.getAttribute("aria-current") === "page";

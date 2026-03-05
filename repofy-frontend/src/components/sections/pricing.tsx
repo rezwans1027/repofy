@@ -22,7 +22,7 @@ const plans = [
       "Per-repo code quality grades",
       "Strengths, red flags & interview questions",
       "PDF export for reports, advice & comparisons",
-      "Reports dashboard with search & filters",
+      "Evals dashboard with search & filters",
     ],
     cta: "Get Started Free",
     highlighted: true,

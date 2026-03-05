@@ -7,8 +7,8 @@ import { Search, FileText, GitCompareArrows, Lightbulb, CreditCard, Settings } f
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Search", icon: Search, number: 1 },
-  { href: "/reports", label: "Reports", icon: FileText, number: 2, comingSoon: true },
-  { href: "/advisor", label: "Advisor", icon: Lightbulb, number: 3 },
+  { href: "/advisor", label: "Advisor", icon: Lightbulb, number: 2 },
+  { href: "/reports", label: "Evals", icon: FileText, number: 3, comingSoon: true },
   { href: "/compare", label: "Compare", icon: GitCompareArrows, number: 4, comingSoon: true },
   { href: "/pricing", label: "Pricing", icon: CreditCard, number: 5 },
   { href: "/settings", label: "Settings", icon: Settings, number: 6 },

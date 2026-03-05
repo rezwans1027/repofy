@@ -20,10 +20,13 @@ vi.mock("../../../src/services/analyze.service", () => ({
   buildReportData: vi.fn(),
 }));
 vi.mock("../../../src/services/cache.service", () => ({
-  computeSnapshotHash: vi.fn().mockReturnValue("hash123"),
-  buildCacheKey: vi.fn().mockReturnValue("cachekey123"),
-  getCachedAnalysis: vi.fn().mockResolvedValue(null),
-  setCachedAnalysis: vi.fn().mockResolvedValue(undefined),
+  computeSnapshotHash: vi.fn(),
+  buildCacheKey: vi.fn(),
+  getCachedAnalysis: vi.fn(),
+  setCachedAnalysis: vi.fn(),
+}));
+vi.mock("../../../src/config/supabase", () => ({
+  getSupabaseAdmin: vi.fn(),
 }));
 vi.mock("../../../src/lib/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
@@ -44,6 +47,8 @@ import { fetchGitHubUserData, GitHubError } from "../../../src/services/github.s
 import { generateScorerResponse, generateNarrativeReport } from "../../../src/services/openai.service";
 import { computeScoring } from "../../../src/services/scoring.service";
 import { buildReportData } from "../../../src/services/analyze.service";
+import { computeSnapshotHash, buildCacheKey, getCachedAnalysis, setCachedAnalysis } from "../../../src/services/cache.service";
+import { getSupabaseAdmin } from "../../../src/config/supabase";
 
 const mockFetchGitHubUserData = fetchGitHubUserData as ReturnType<typeof vi.fn>;
 const mockGenerateScorerResponse = generateScorerResponse as ReturnType<typeof vi.fn>;
@@ -51,11 +56,28 @@ const mockGenerateNarrativeReport = generateNarrativeReport as ReturnType<typeof
 const mockComputeScoring = computeScoring as ReturnType<typeof vi.fn>;
 const mockBuildReportData = buildReportData as ReturnType<typeof vi.fn>;
 
+const mockSupabaseChain = {
+  from: () => ({
+    upsert: () => ({
+      select: () => ({
+        single: () => ({ data: { id: "report-1" }, error: null }),
+      }),
+    }),
+  }),
+};
+
 describe("analyzeUser controller", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockEnv.mockAi = false;
     mockEnv.openaiApiKey = "sk-test";
+
+    // Re-set mocks that mockReset: true clears between tests
+    vi.mocked(computeSnapshotHash).mockReturnValue("hash123");
+    vi.mocked(buildCacheKey).mockReturnValue("cachekey123");
+    vi.mocked(getCachedAnalysis).mockResolvedValue(null);
+    vi.mocked(setCachedAnalysis).mockResolvedValue(undefined);
+    vi.mocked(getSupabaseAdmin).mockReturnValue(mockSupabaseChain as any);
   });
 
   sharedControllerBehaviorTests({
@@ -78,12 +100,13 @@ describe("analyzeUser controller", () => {
     mockBuildReportData.mockReturnValue(report);
 
     const { req, res, next } = createControllerMocks();
+    (req as any).userId = "user-123";
 
     await analyzeUser(req, res, next);
 
     expect(res.json).toHaveBeenCalledWith({
       success: true,
-      data: { analyzedName: "Octocat", report },
+      data: { analyzedName: "Octocat", report, reportId: "report-1" },
     });
     expect(next).not.toHaveBeenCalled();
   });
@@ -91,7 +114,12 @@ describe("analyzeUser controller", () => {
   it("uses mock AI when env.mockAi is true", async () => {
     mockEnv.mockAi = true;
 
+    // mock-ai.service calls computeScoring & buildReportData internally
+    mockComputeScoring.mockReturnValue({ overallScore: 70 });
+    mockBuildReportData.mockReturnValue({ candidateLevel: "Mid" });
+
     const { req, res, next } = createControllerMocks();
+    (req as any).userId = "user-123";
 
     await analyzeUser(req, res, next);
 

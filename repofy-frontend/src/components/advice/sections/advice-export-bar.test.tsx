@@ -6,6 +6,12 @@ import { createRef } from "react";
 vi.mock("@/lib/export-pdf", () => ({
   exportToPdf: vi.fn().mockResolvedValue(undefined),
 }));
+vi.mock("@/components/providers/auth-provider", () => ({
+  useAuth: () => ({ user: { id: "user-123" }, isLoading: false }),
+}));
+vi.mock("@/hooks/use-credits", () => ({
+  useCreditBalance: () => ({ data: { growth_balance: 2, eval_balance: 0 }, isLoading: false }),
+}));
 
 describe("AdviceExportBar", () => {
   const ref = createRef<HTMLDivElement>();

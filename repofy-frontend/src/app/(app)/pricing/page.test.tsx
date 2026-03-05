@@ -16,8 +16,10 @@ vi.mock("@/lib/api-client", () => ({
 }));
 
 const mockUseCreditBalance = vi.fn();
+const mockUseAwaitCreditUpdate = vi.fn();
 vi.mock("@/hooks/use-credits", () => ({
   useCreditBalance: () => mockUseCreditBalance(),
+  useAwaitCreditUpdate: () => mockUseAwaitCreditUpdate(),
 }));
 
 vi.mock("@/components/providers/auth-provider", () => ({
@@ -47,6 +49,7 @@ describe("PricingPage", () => {
     navState.pathname = "/pricing";
     navState.searchParams = new URLSearchParams();
     mockUseCreditBalance.mockReturnValue({ data: undefined, isLoading: true });
+    mockUseAwaitCreditUpdate.mockReturnValue({ data: undefined, isLoading: false });
   });
 
   it("renders Developers and Recruiters cards", () => {
@@ -118,12 +121,29 @@ describe("PricingPage", () => {
     expect(balanceLine.textContent).toMatch(/growth credit$/);
   });
 
-  it("shows success banner with credit message when ?success=true", () => {
+  it("shows success banner with credit message when ?success=true", async () => {
     navState.searchParams = new URLSearchParams("success=true");
+
+    // Simulate pre-checkout balance stored before redirect
+    sessionStorage.setItem("pre_checkout_balance", "0");
+
+    // useCreditBalance returns current balance (after webhook)
+    mockUseCreditBalance.mockReturnValue({
+      data: { growth_balance: 2, eval_balance: 0 },
+      isLoading: false,
+    });
+
+    // Polling returns increased balance
+    mockUseAwaitCreditUpdate.mockReturnValue({
+      data: { growth_balance: 2, eval_balance: 0 },
+      isLoading: false,
+    });
 
     renderPricing();
 
-    expect(screen.getByText(/2 growth credits added/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/2 growth credits added/i)).toBeInTheDocument();
+    });
   });
 
   it("shows canceled banner when ?canceled=true", () => {
