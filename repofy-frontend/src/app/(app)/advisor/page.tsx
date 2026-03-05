@@ -60,8 +60,8 @@ function relativeDate(dateStr: string) {
 }
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 8 },
-  visible: { opacity: 1, y: 0 },
+  hidden: { opacity: 0, y: 8, filter: "blur(6px)" },
+  visible: { opacity: 1, y: 0, filter: "blur(0px)" },
 };
 
 export default function AdvisorPage() {
@@ -135,8 +135,8 @@ export default function AdvisorPage() {
   if (items.length === 0) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
+        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 0.4, ease: "easeOut" }}
         className="space-y-4"
       >
@@ -173,7 +173,7 @@ export default function AdvisorPage() {
       className="space-y-5"
     >
       <motion.div
-        variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
+        variants={{ hidden: { opacity: 0, y: 12, filter: "blur(6px)" }, visible: { opacity: 1, y: 0, filter: "blur(0px)" } }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="flex items-baseline justify-between"
       >
@@ -185,7 +185,7 @@ export default function AdvisorPage() {
 
       {/* Filter bar */}
       <motion.div
-        variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
+        variants={{ hidden: { opacity: 0, y: 12, filter: "blur(6px)" }, visible: { opacity: 1, y: 0, filter: "blur(0px)" } }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="flex flex-wrap items-center gap-2"
       >
@@ -247,7 +247,7 @@ export default function AdvisorPage() {
 
       {/* Card list */}
       <motion.div
-        variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
+        variants={{ hidden: { opacity: 0, y: 12, filter: "blur(6px)" }, visible: { opacity: 1, y: 0, filter: "blur(0px)" } }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="space-y-2"
       >
