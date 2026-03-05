@@ -11,11 +11,6 @@ export const corsMiddleware = cors({
     // Exact match against CORS_ORIGIN list
     if (allowedOrigins.includes(origin)) return callback(null, true);
 
-    // Allow any Vercel preview URL for this project
-    if (/^https:\/\/repofy-frontend[a-z0-9-]*\.vercel\.app$/.test(origin)) {
-      return callback(null, true);
-    }
-
     callback(new Error("Not allowed by CORS"));
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],

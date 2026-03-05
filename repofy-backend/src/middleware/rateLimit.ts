@@ -27,6 +27,33 @@ export const webhookRateLimit = rateLimit({
   message: { success: false, error: "Too many requests." },
 });
 
+/** Auth signup/verify limiter: 10 req/min per IP */
+export const authRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many requests. Please try again later." },
+});
+
+/** Admin endpoint limiter: 20 req/min per IP */
+export const adminRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many requests. Please try again later." },
+});
+
+/** Credit balance endpoint limiter: 30 req/min per IP */
+export const creditRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many requests. Please try again later." },
+});
+
 /** Moderate limiter for GitHub proxy routes: 30 req/min per IP */
 export const githubRateLimit = rateLimit({
   windowMs: 60_000,

@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import { env } from "../config/env";
+import { getSupabaseAdmin } from "../config/supabase";
 import { fetchGitHubUserData, GitHubError } from "../services/github.service";
 import { generateScorerResponse, generateNarrativeReport } from "../services/openai.service";
 import { computeScoring } from "../services/scoring.service";
@@ -16,6 +17,33 @@ import { logger } from "../lib/logger";
 
 const RUBRIC_VERSION = "v1.1";
 
+async function saveReport(
+  userId: string,
+  analyzedUsername: string,
+  analyzedName: string | null,
+  report: Record<string, unknown>,
+): Promise<string> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("reports")
+    .upsert(
+      {
+        user_id: userId,
+        analyzed_username: analyzedUsername.toLowerCase(),
+        analyzed_name: analyzedName,
+        overall_score: (report as { overallScore: number }).overallScore,
+        recommendation: (report as { recommendation: string }).recommendation,
+        report_data: report,
+      },
+      { onConflict: "user_id,analyzed_username" },
+    )
+    .select("id")
+    .single();
+
+  if (error) throw error;
+  return data.id as string;
+}
+
 export const analyzeUser: RequestHandler = async (req, res) => {
   const username = req.params.username as string;
 
@@ -29,7 +57,8 @@ export const analyzeUser: RequestHandler = async (req, res) => {
       const { buildMockReport, buildMockGitHubData } = await import("../services/mock-ai.service");
       const githubData = buildMockGitHubData(username);
       const report = buildMockReport(githubData);
-      sendSuccess(res, { analyzedName: githubData.profile.name, report });
+      const reportId = await saveReport(req.userId!, username, githubData.profile.name, report);
+      sendSuccess(res, { analyzedName: githubData.profile.name, report, reportId });
       return;
     }
 
@@ -54,7 +83,8 @@ export const analyzeUser: RequestHandler = async (req, res) => {
         cached.narrativeReport,
         githubData,
       );
-      sendSuccess(res, { analyzedName: githubData.profile.name, report });
+      const reportId = await saveReport(req.userId!, username, githubData.profile.name, report);
+      sendSuccess(res, { analyzedName: githubData.profile.name, report, reportId });
       return;
     }
 
@@ -82,12 +112,14 @@ export const analyzeUser: RequestHandler = async (req, res) => {
       narrativeReport,
     });
 
-    // 7. Build report
+    // 7. Build report & persist
     const report = buildReportData(scorerResponse, scoringResult, narrativeReport, githubData);
+    const reportId = await saveReport(req.userId!, username, githubData.profile.name, report);
 
     sendSuccess(res, {
       analyzedName: githubData.profile.name,
       report,
+      reportId,
     });
   } catch (err) {
     if (req.signal?.aborted || res.headersSent) return;
