@@ -8,6 +8,7 @@ import { Coins, FileDown, Lightbulb, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCreditBalance } from "@/hooks/use-credits";
 import { exportToPdf } from "@/lib/export-pdf";
+import { EASE_OUT_EXPO } from "@/lib/animation-variants";
 import Link from "next/link";
 
 interface AdviceExportBarProps {
@@ -53,7 +54,13 @@ export function AdviceExportBar({ username, adviceRef, onBeforeExport, onAfterEx
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 lg:left-48 z-50 border-t border-border bg-background/80 backdrop-blur-md">
+      {/* Fixed bottom bar — slides up on mount */}
+      <motion.div
+        initial={{ y: "100%", opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.6, ease: EASE_OUT_EXPO }}
+        className="fixed bottom-0 left-0 right-0 lg:left-48 z-50 border-t border-border bg-background/80 backdrop-blur-md"
+      >
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <p className="hidden font-mono text-xs text-muted-foreground sm:block">
             Advice for{" "}
@@ -84,26 +91,29 @@ export function AdviceExportBar({ username, adviceRef, onBeforeExport, onAfterEx
             </Button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {createPortal(
         <AnimatePresence>
           {dialogOpen && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center">
+              {/* Backdrop */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="absolute inset-0 bg-black/50"
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                 onClick={() => setDialogOpen(null)}
               />
+
+              {/* Dialog */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.15 }}
-                className="relative w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-lg"
+                initial={{ opacity: 0, scale: 0.92, y: 10, filter: "blur(4px)" }}
+                animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 0.95, y: 5, filter: "blur(2px)" }}
+                transition={{ duration: 0.25, ease: EASE_OUT_EXPO }}
+                className="relative w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-2xl"
               >
                 {dialogOpen === "no_credits" ? (
                   <>
