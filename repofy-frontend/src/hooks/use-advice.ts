@@ -33,6 +33,7 @@ export function useAdviceList() {
       const { data, error } = await supabase
         .from("advice")
         .select("id, analyzed_username, analyzed_name, generated_at")
+        .eq("user_id", user!.id)
         .order("generated_at", { ascending: false });
       if (error) throw error;
       return (data as AdviceListItem[]) ?? [];

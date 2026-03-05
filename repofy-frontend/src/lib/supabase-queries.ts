@@ -33,6 +33,7 @@ export function createSupabaseQueries<TList, TRow>(
         const { data, error } = await supabase
           .from(table)
           .select(listSelect)
+          .eq("user_id", user!.id)
           .order("generated_at", { ascending: false });
         if (error) throw error;
         return (data as TList[]) ?? [];

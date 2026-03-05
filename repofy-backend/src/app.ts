@@ -1,4 +1,5 @@
 import express from "express";
+import helmet from "helmet";
 import { env } from "./config/env";
 import { corsMiddleware } from "./middleware/cors";
 import { errorHandler } from "./middleware/errorHandler";
@@ -24,6 +25,7 @@ export function createApp() {
     handleWebhook,
   );
 
+  app.use(helmet());
   app.use(corsMiddleware);
   app.use(express.json());
 

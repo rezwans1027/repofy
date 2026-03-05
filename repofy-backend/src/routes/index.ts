@@ -6,10 +6,12 @@ import adviceRoutes from "./advice.routes";
 import adminRoutes from "./admin.routes";
 import stripeRoutes from "./stripe.routes";
 import creditRoutes from "./credit.routes";
+import authRoutes from "./auth.routes";
 
 const router = Router();
 
 router.use(healthRoutes);
+router.use(authRoutes);
 router.use(githubRoutes);
 router.use(analyzeRoutes);
 router.use(adviceRoutes);
