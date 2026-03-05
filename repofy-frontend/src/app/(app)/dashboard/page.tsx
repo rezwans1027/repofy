@@ -112,67 +112,77 @@ export default function DashboardPage() {
       </motion.div>
 
       <div className="mt-6 w-full max-w-2xl space-y-3">
-        {query.trim() && results.length > 0
-          ? results.map((user, i) => (
-              <motion.div
-                key={user.username}
-                data-testid={`search-result-${user.username}`}
-                onClick={() => router.push(`/profile/${user.username}`)}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="cursor-pointer rounded-lg border border-border bg-card p-4 transition-colors hover:border-cyan/50"
-              >
-                <div className="flex items-center gap-4">
-                  <img
-                    src={user.avatarUrl}
-                    alt={user.username}
-                    className="h-12 w-12 shrink-0 rounded-full"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-mono text-sm font-bold text-foreground">
-                        {user.name || user.username}
-                      </span>
-                      <span className="font-mono text-xs text-muted-foreground">
-                        @{user.username}
-                      </span>
+        <AnimatePresence mode="popLayout">
+          {query.trim() && results.length > 0
+            ? results.map((user, i) => (
+                <motion.div
+                  key={user.username}
+                  data-testid={`search-result-${user.username}`}
+                  onClick={() => router.push(`/profile/${user.username}`)}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8, filter: "blur(4px)", transition: { duration: 0.2 } }}
+                  transition={{ delay: i * 0.05 }}
+                  layout
+                  className="cursor-pointer rounded-lg border border-border bg-card p-4 transition-colors hover:border-cyan/50"
+                >
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.username}
+                      className="h-12 w-12 shrink-0 rounded-full"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-mono text-sm font-bold text-foreground">
+                          {user.name || user.username}
+                        </span>
+                        <span className="font-mono text-xs text-muted-foreground">
+                          @{user.username}
+                        </span>
+                      </div>
+                      {user.bio && (
+                        <p className="mt-0.5 text-xs text-muted-foreground truncate">
+                          {user.bio}
+                        </p>
+                      )}
+                      <div className="mt-1.5 flex items-center gap-3 text-xs text-muted-foreground">
+                        {user.location && (
+                          <span className="flex items-center gap-1">
+                            <MapPin className="size-3" />
+                            {user.location}
+                          </span>
+                        )}
+                        {user.company && (
+                          <span className="flex items-center gap-1">
+                            <Building2 className="size-3" />
+                            {user.company}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    {user.bio && (
-                      <p className="mt-0.5 text-xs text-muted-foreground truncate">
-                        {user.bio}
-                      </p>
-                    )}
-                    <div className="mt-1.5 flex items-center gap-3 text-xs text-muted-foreground">
-                      {user.location && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="size-3" />
-                          {user.location}
-                        </span>
-                      )}
-                      {user.company && (
-                        <span className="flex items-center gap-1">
-                          <Building2 className="size-3" />
-                          {user.company}
-                        </span>
-                      )}
+                    <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground font-mono">
+                      <span>{user.repos} repos</span>
+                      <span>{user.followers.toLocaleString()} followers</span>
                     </div>
                   </div>
-                  <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground font-mono">
-                    <span>{user.repos} repos</span>
-                    <span>{user.followers.toLocaleString()} followers</span>
-                  </div>
-                </div>
-              </motion.div>
-            ))
-          : query.trim() && searchSettled && (
-              <div className="rounded-lg border border-border bg-card p-6 text-center">
-                <p className="font-mono text-sm text-muted-foreground">
-                  <span className="text-yellow-500">warn:</span> No users
-                  found matching &quot;{query}&quot;
-                </p>
-              </div>
-            )}
+                </motion.div>
+              ))
+            : query.trim() && searchSettled && (
+                <motion.div
+                  key="no-results"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
+                  className="rounded-lg border border-border bg-card p-6 text-center"
+                >
+                  <p className="font-mono text-sm text-muted-foreground">
+                    <span className="text-yellow-500">warn:</span> No users
+                    found matching &quot;{query}&quot;
+                  </p>
+                </motion.div>
+              )}
+        </AnimatePresence>
       </div>
     </div>
   );
