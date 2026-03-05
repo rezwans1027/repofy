@@ -143,13 +143,18 @@ describe("StickyCTABar", () => {
     expect(navState.push).not.toHaveBeenCalled();
   });
 
-  // 8. "Get Advice" navigates when no advice exists
-  it("Get Advice navigates to /advisor/generate/{username} when no advice exists", async () => {
+  // 8. "Get Advice" opens credit confirmation when no advice exists
+  it("Get Advice opens credit confirmation dialog when no advice exists", async () => {
     adviceState.data = false;
     render(<StickyCTABar username="octocat" />);
     await act(() => vi.advanceTimersByTime(50));
 
     fireEvent.click(screen.getByText("Get Advice"));
+
+    expect(screen.getByText("Use 1 growth credit")).toBeInTheDocument();
+
+    // Clicking Continue navigates
+    fireEvent.click(screen.getByText("Continue"));
 
     expect(navState.push).toHaveBeenCalledWith(
       "/advisor/generate/octocat",
