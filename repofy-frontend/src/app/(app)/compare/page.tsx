@@ -1,3 +1,5 @@
+"use client";
+
 import { GitCompareArrows } from "lucide-react";
 import { ComingSoonCard } from "@/components/ui/coming-soon-card";
 
