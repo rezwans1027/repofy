@@ -7,7 +7,7 @@ function userKeyGenerator(req: Request): string {
   const auth = req.headers.authorization;
   if (auth?.startsWith("Bearer ")) {
     const token = auth.slice(7);
-    return crypto.createHash("sha256").update(token).digest("hex").slice(0, 16);
+    return crypto.createHash("sha256").update(token).digest("hex");
   }
   return req.ip ?? "unknown";
 }
