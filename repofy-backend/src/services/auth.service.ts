@@ -50,7 +50,11 @@ export async function initiateSignup(
   await cleanupExpiredSignups();
 
   // Check if email already exists in auth.users (O(1) indexed lookup)
-  const { data: emailTaken } = await supabase.rpc("email_exists_in_auth", { p_email: email });
+  const { data: emailTaken, error: rpcError } = await supabase.rpc("email_exists_in_auth", { p_email: email });
+  if (rpcError) {
+    logger.error("email_exists_in_auth RPC failed", { email, error: rpcError });
+    throw new AuthError("Failed to initiate signup", 500);
+  }
   if (emailTaken) {
     return { message: "If this email is available, a verification code has been sent." };
   }
@@ -160,10 +164,15 @@ export async function resendOtp(email: string): Promise<{ message: string }> {
   const otp = generateOtp();
   const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000).toISOString();
 
-  await supabase
+  const { error: updateError } = await supabase
     .from("pending_signups")
     .update({ otp_code: hashOtp(otp), otp_expires_at: expiresAt, attempts: 0 })
     .eq("email", email);
+
+  if (updateError) {
+    logger.error("Failed to update OTP for resend", { email, error: updateError });
+    throw new AuthError("Failed to resend code. Please try again.", 500);
+  }
 
   await sendOtpEmail(email, otp, pending.display_name);
 

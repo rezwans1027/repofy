@@ -7,7 +7,7 @@ import { timeout } from "../middleware/timeout";
 
 const router = Router();
 
-router.get("/github/search", githubRateLimit, requireAuth, timeout(30_000), asyncHandler(searchGitHub));
-router.get("/github/:username", githubRateLimit, requireAuth, timeout(30_000), asyncHandler(getGitHubUser));
+router.get("/github/search", requireAuth, githubRateLimit, timeout(30_000), asyncHandler(searchGitHub));
+router.get("/github/:username", requireAuth, githubRateLimit, timeout(30_000), asyncHandler(getGitHubUser));
 
 export default router;
