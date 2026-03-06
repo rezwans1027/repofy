@@ -4,9 +4,11 @@ import { Suspense, useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useCreditBalance, useAwaitCreditUpdate } from "@/hooks/use-credits";
 import { api } from "@/lib/api-client";
 import { Check, CreditCard, Loader2, Users, X, Coins } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const DEVELOPER_FEATURES = [
   "2 growth credits per purchase",
@@ -21,7 +23,9 @@ function PricingContent() {
   const success = searchParams.get("success") === "true";
   const canceled = searchParams.get("canceled") === "true";
   const queryClient = useQueryClient();
-  const { data: balance } = useCreditBalance();
+  const { isLoading: authLoading } = useAuth();
+  const { data: balance, isLoading: balanceLoading } = useCreditBalance();
+  const pageLoading = authLoading || balanceLoading;
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,6 +102,22 @@ function PricingContent() {
     }
   }
 
+  if (pageLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="mb-2 space-y-2">
+          <Skeleton className="h-5 w-24" />
+          <Skeleton className="h-3 w-56" />
+        </div>
+        <Skeleton className="h-11 w-full rounded-lg" />
+        <div className="grid gap-6 sm:grid-cols-2">
+          <Skeleton className="h-72 rounded-lg" />
+          <Skeleton className="h-72 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -113,16 +133,14 @@ function PricingContent() {
       </AnimateOnView>
 
       {/* Credit balance */}
-      {balance && (
-        <AnimateOnView delay={0.03}>
-          <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
-            <Coins className="size-4 text-cyan" />
-            <p className="font-mono text-xs">
-              You have <span className="font-bold text-cyan">{balance.growth_balance}</span> growth credit{balance.growth_balance !== 1 ? "s" : ""}
-            </p>
-          </div>
-        </AnimateOnView>
-      )}
+      <AnimateOnView delay={0.03}>
+        <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
+          <Coins className="size-4 text-cyan" />
+          <p className="font-mono text-xs">
+            You have <span className="font-bold text-cyan">{balance?.growth_balance ?? 0}</span> growth credit{balance?.growth_balance !== 1 ? "s" : ""}
+          </p>
+        </div>
+      </AnimateOnView>
 
       {/* Success banner */}
       {success && (

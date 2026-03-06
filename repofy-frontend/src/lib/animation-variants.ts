@@ -90,8 +90,8 @@ export const borderGrow: Variants = {
 // ── Tab content (direction-aware) ──────────────────────────────────
 
 export const tabContentVariants: Variants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? 30 : -30,
+  enter: (direction: number | null) => ({
+    x: direction == null ? 0 : direction > 0 ? 30 : -30,
     opacity: 0,
     filter: "blur(4px)",
   }),
@@ -101,8 +101,8 @@ export const tabContentVariants: Variants = {
     filter: "blur(0px)",
     transition: { duration: 0.35, ease: EASE_OUT_EXPO },
   },
-  exit: (direction: number) => ({
-    x: direction > 0 ? -30 : 30,
+  exit: (direction: number | null) => ({
+    x: direction != null && direction > 0 ? -30 : 30,
     opacity: 0,
     filter: "blur(4px)",
     transition: { duration: 0.2 },

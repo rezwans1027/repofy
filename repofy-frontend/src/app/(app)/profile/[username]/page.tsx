@@ -18,6 +18,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useGitHubProfile } from "@/hooks/use-github";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function timeAgo(dateStr: string): string {
   const seconds = Math.floor(
@@ -179,14 +180,14 @@ export default function ProfilePage({
                 key={i}
                 className="rounded-lg border border-border bg-card p-3 space-y-2"
               >
-                <div className="h-3 w-20 animate-pulse rounded bg-secondary" />
-                <div className="h-6 w-14 animate-pulse rounded bg-secondary" />
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-6 w-14" />
               </div>
             ))}
           </div>
           <div className="space-y-2">
-            <div className="h-4 w-32 animate-pulse rounded bg-secondary" />
-            <div className="h-3 w-full animate-pulse rounded-full bg-secondary" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-3 w-full rounded-full" />
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -194,9 +195,9 @@ export default function ProfilePage({
                 key={i}
                 className="rounded-lg border border-border bg-card p-3 space-y-2"
               >
-                <div className="h-4 w-28 animate-pulse rounded bg-secondary" />
-                <div className="h-3 w-full animate-pulse rounded bg-secondary" />
-                <div className="h-3 w-24 animate-pulse rounded bg-secondary" />
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-24" />
               </div>
             ))}
           </div>
