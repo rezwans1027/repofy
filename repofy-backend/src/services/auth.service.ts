@@ -17,7 +17,7 @@ export class AuthError extends Error {
 }
 
 function generateOtp(): string {
-  return crypto.randomInt(100_000, 999_999).toString();
+  return crypto.randomInt(100_000, 1_000_000).toString();
 }
 
 function hashOtp(otp: string): string {
@@ -92,37 +92,32 @@ export async function verifySignup(
   otp: string,
   password: string,
 ): Promise<{ user: { id: string; email: string } }> {
+  const UNIFIED_ERROR = "Invalid or expired verification code. Please try again.";
   const supabase = getSupabaseAdmin();
 
-  const { data: pending, error: fetchError } = await supabase
-    .from("pending_signups")
-    .select("*")
-    .eq("email", email)
-    .maybeSingle();
+  // Atomic: increment attempts and return the row in one step.
+  // Returns nothing if row is missing, expired, or attempts exhausted.
+  const { data: rows, error: rpcError } = await supabase.rpc("increment_otp_attempt", {
+    p_email: email,
+    p_max_attempts: OTP_MAX_ATTEMPTS,
+  });
 
-  if (fetchError || !pending) {
-    throw new AuthError("No pending signup found for this email. Please start over.", 400);
+  if (rpcError) {
+    logger.error("increment_otp_attempt RPC failed", { email, error: rpcError });
+    throw new AuthError("Failed to verify signup", 500);
   }
 
-  // Check expiry
-  if (new Date(pending.otp_expires_at) < new Date()) {
-    throw new AuthError("Verification code has expired. Please request a new one.", 400);
-  }
+  const pending = Array.isArray(rows) ? rows[0] : null;
 
-  // Check attempts
-  if (pending.attempts >= OTP_MAX_ATTEMPTS) {
-    throw new AuthError("Too many failed attempts. Please request a new code.", 400);
+  if (!pending) {
+    // No row returned → doesn't exist, expired, or locked out
+    throw new AuthError(UNIFIED_ERROR, 400);
   }
 
   // Validate OTP (timing-safe comparison of SHA-256 hashes)
   if (!safeEqual(pending.otp_code, hashOtp(otp))) {
-    const newAttempts = pending.attempts + 1;
-    await supabase
-      .from("pending_signups")
-      .update({ attempts: newAttempts })
-      .eq("email", email);
-
-    throw new AuthError("Invalid verification code. Please try again.", 400);
+    // Attempt was already incremented by the RPC — just reject
+    throw new AuthError(UNIFIED_ERROR, 400);
   }
 
   // Create the Supabase user with email already confirmed
@@ -135,7 +130,6 @@ export async function verifySignup(
 
   if (createError) {
     logger.error("Failed to create user", { email, error: createError });
-    // Handle duplicate email race condition
     if (createError.message?.includes("already been registered")) {
       throw new AuthError("An account with this email already exists.", 409);
     }
