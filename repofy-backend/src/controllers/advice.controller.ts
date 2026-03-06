@@ -51,6 +51,9 @@ class InsufficientCreditsError extends Error {
   }
 }
 
+/** Track in-flight advice requests per user to prevent concurrent expensive calls. */
+const activeAdviceRequests = new Map<string, true>();
+
 export const adviseUser: RequestHandler = async (req, res) => {
   const username = req.params.username as string;
 
@@ -59,7 +62,13 @@ export const adviseUser: RequestHandler = async (req, res) => {
     return;
   }
 
+  if (activeAdviceRequests.has(req.userId!)) {
+    sendError(res, 429, "An advice request is already in progress. Please wait.");
+    return;
+  }
+
   const requestId = crypto.randomUUID();
+  activeAdviceRequests.set(req.userId!, true);
 
   try {
     if (env.mockAi) {
@@ -116,5 +125,7 @@ export const adviseUser: RequestHandler = async (req, res) => {
     }
     logger.error("Advice error:", err);
     sendError(res, 500, "Advice generation failed. Please try again.");
+  } finally {
+    activeAdviceRequests.delete(req.userId!);
   }
 };
