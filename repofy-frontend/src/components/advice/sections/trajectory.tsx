@@ -94,10 +94,10 @@ export function TrajectorySection({ trajectory }: TrajectoryProps) {
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.6 }}
+              initial={{ opacity: 0, scale: 0.92 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.55 }}
+              transition={{ duration: 0.3, ease: EASE_OUT_EXPO, delay: 0.55 }}
             >
               <Badge className={`border text-[9px] ${CONFIDENCE_STYLES[trajectory.confidence] ?? ""}`}>
                 {trajectory.confidence} confidence
