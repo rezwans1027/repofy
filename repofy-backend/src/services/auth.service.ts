@@ -115,11 +115,7 @@ export async function verifySignup(
       .update({ attempts: newAttempts })
       .eq("email", email);
 
-    const remaining = OTP_MAX_ATTEMPTS - newAttempts;
-    throw new AuthError(
-      `Invalid verification code. ${remaining} attempt${remaining !== 1 ? "s" : ""} remaining.`,
-      400,
-    );
+    throw new AuthError("Invalid verification code. Please try again.", 400);
   }
 
   // Create the Supabase user with email already confirmed
