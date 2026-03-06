@@ -167,6 +167,16 @@ body[data-scroll-locked] {
   animation: blink 1s step-end infinite;
 }
 
+
+/* Smooth caret blink (VS Code style) */
+@keyframes smooth-caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.animate-smooth-caret-blink {
+  animation: smooth-caret-blink 1s ease-in-out infinite;
+}
+
 /* Slide up from bottom */
 @keyframes slide-up {
   from {
