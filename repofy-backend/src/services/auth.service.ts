@@ -77,10 +77,11 @@ export async function initiateSignup(
       throw new AuthError("Failed to initiate signup", 500);
     }
 
-    await sendOtpEmail(email, otp, displayName);
-  } else {
-    // Burn roughly the same time as the happy path to prevent timing enumeration
-    await new Promise((resolve) => setTimeout(resolve, 100 + Math.random() * 50));
+    // Fire-and-forget: send email async so response time is identical
+    // regardless of whether the email exists, preventing timing enumeration.
+    sendOtpEmail(email, otp, displayName).catch((err) => {
+      logger.error("Failed to send OTP email during signup", { email, error: err });
+    });
   }
 
   return { message: "If this email is available, a verification code has been sent." };
