@@ -1,14 +1,9 @@
-import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 import type { Request } from "express";
 
-/** Derive a per-user key from the Bearer token (hashed), falling back to IP. */
+/** Derive a per-user key from the authenticated user ID, falling back to IP. */
 function userKeyGenerator(req: Request): string {
-  const auth = req.headers.authorization;
-  if (auth?.startsWith("Bearer ")) {
-    const token = auth.slice(7);
-    return crypto.createHash("sha256").update(token).digest("hex");
-  }
+  if (req.userId) return req.userId;
   return req.ip ?? "unknown";
 }
 

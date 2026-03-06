@@ -6,6 +6,6 @@ import { creditRateLimit } from "../middleware/rateLimit";
 
 const router = Router();
 
-router.get("/credits/balance", creditRateLimit, requireAuth, asyncHandler(getBalance));
+router.get("/credits/balance", requireAuth, creditRateLimit, asyncHandler(getBalance));
 
 export default router;
