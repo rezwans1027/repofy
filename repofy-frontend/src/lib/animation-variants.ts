@@ -59,11 +59,11 @@ export const staggerItemRight: Variants = {
 // ── Badge / pop variants ───────────────────────────────────────────
 
 export const badgePop: Variants = {
-  hidden: { opacity: 0, scale: 0.6 },
+  hidden: { opacity: 0, scale: 0.92 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { type: "spring", stiffness: 400, damping: 20 },
+    transition: { duration: 0.3, ease: EASE_OUT_EXPO },
   },
 };
 

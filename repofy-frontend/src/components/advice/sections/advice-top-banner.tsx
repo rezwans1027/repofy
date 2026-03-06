@@ -65,15 +65,10 @@ export function AdviceTopBanner({ username, avatarUrl }: AdviceTopBannerProps) {
             </motion.p>
             <motion.div
               className="mt-1.5"
-              initial={{ opacity: 0, scale: 0.7 }}
+              initial={{ opacity: 0, scale: 0.92 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{
-                type: "spring",
-                stiffness: 400,
-                damping: 22,
-                delay: 0.45,
-              }}
+              transition={{ duration: 0.3, ease: EASE_OUT_EXPO, delay: 0.45 }}
             >
               <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px]">
                 Actionable Advice
