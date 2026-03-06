@@ -48,7 +48,7 @@ describe("PricingPage", () => {
     resetNavState();
     navState.pathname = "/pricing";
     navState.searchParams = new URLSearchParams();
-    mockUseCreditBalance.mockReturnValue({ data: undefined, isLoading: true });
+    mockUseCreditBalance.mockReturnValue({ data: { growth_balance: 0, eval_balance: 0 }, isLoading: false });
     mockUseAwaitCreditUpdate.mockReturnValue({ data: undefined, isLoading: false });
   });
 

@@ -55,31 +55,33 @@ export async function initiateSignup(
     logger.error("email_exists_in_auth RPC failed", { email, error: rpcError });
     throw new AuthError("Failed to initiate signup", 500);
   }
-  if (emailTaken) {
-    return { message: "If this email is available, a verification code has been sent." };
+
+  if (!emailTaken) {
+    const otp = generateOtp();
+    const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000).toISOString();
+
+    // Upsert — replaces any prior pending signup for the same email
+    const { error: upsertError } = await supabase.from("pending_signups").upsert(
+      {
+        email,
+        display_name: displayName,
+        otp_code: hashOtp(otp),
+        otp_expires_at: expiresAt,
+        attempts: 0,
+      },
+      { onConflict: "email" },
+    );
+
+    if (upsertError) {
+      logger.error("Failed to upsert pending signup", { email, error: upsertError });
+      throw new AuthError("Failed to initiate signup", 500);
+    }
+
+    await sendOtpEmail(email, otp, displayName);
+  } else {
+    // Burn roughly the same time as the happy path to prevent timing enumeration
+    await new Promise((resolve) => setTimeout(resolve, 100 + Math.random() * 50));
   }
-
-  const otp = generateOtp();
-  const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000).toISOString();
-
-  // Upsert — replaces any prior pending signup for the same email
-  const { error: upsertError } = await supabase.from("pending_signups").upsert(
-    {
-      email,
-      display_name: displayName,
-      otp_code: hashOtp(otp),
-      otp_expires_at: expiresAt,
-      attempts: 0,
-    },
-    { onConflict: "email" },
-  );
-
-  if (upsertError) {
-    logger.error("Failed to upsert pending signup", { email, error: upsertError });
-    throw new AuthError("Failed to initiate signup", 500);
-  }
-
-  await sendOtpEmail(email, otp, displayName);
 
   return { message: "If this email is available, a verification code has been sent." };
 }
@@ -164,12 +166,14 @@ export async function resendOtp(email: string): Promise<{ message: string }> {
   const otp = generateOtp();
   const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000).toISOString();
 
-  const { error: updateError } = await supabase
+  const { data: updated, error: updateError } = await supabase
     .from("pending_signups")
     .update({ otp_code: hashOtp(otp), otp_expires_at: expiresAt, attempts: 0 })
-    .eq("email", email);
+    .eq("email", email)
+    .select("email")
+    .maybeSingle();
 
-  if (updateError) {
+  if (updateError || !updated) {
     logger.error("Failed to update OTP for resend", { email, error: updateError });
     throw new AuthError("Failed to resend code. Please try again.", 500);
   }
