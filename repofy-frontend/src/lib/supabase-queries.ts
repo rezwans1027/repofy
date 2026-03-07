@@ -5,8 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/providers/auth-provider";
-
-const STALE_TIME = 5 * 60 * 1000; // 5 minutes
+import { STALE_LONG } from "@/lib/query-client";
 
 interface SupabaseQueryConfig<TList, TRow> {
   table: string;
@@ -39,7 +38,7 @@ export function createSupabaseQueries<TList, TRow>(
         return (data as TList[]) ?? [];
       },
       enabled: !!user,
-      staleTime: STALE_TIME,
+      staleTime: STALE_LONG,
     });
   }
 
@@ -98,7 +97,24 @@ export function createSupabaseQueries<TList, TRow>(
           .eq("user_id", user.id);
         if (error) throw error;
       },
-      onSuccess: () => {
+      onMutate: async (ids) => {
+        await queryClient.cancelQueries({ queryKey: [queryKeyPrefix, "list", user?.id] });
+        const previous = queryClient.getQueryData<(TList & { id: string })[]>([queryKeyPrefix, "list", user?.id]);
+        if (previous) {
+          const idSet = new Set(ids);
+          queryClient.setQueryData(
+            [queryKeyPrefix, "list", user?.id],
+            previous.filter((item) => !idSet.has(item.id)),
+          );
+        }
+        return { previous };
+      },
+      onError: (_err, _ids, context) => {
+        if (context?.previous) {
+          queryClient.setQueryData([queryKeyPrefix, "list", user?.id], context.previous);
+        }
+      },
+      onSettled: () => {
         queryClient.invalidateQueries({ queryKey: [queryKeyPrefix] });
       },
     });

@@ -31,3 +31,8 @@ export function getQueryClient() {
 export function resetQueryClient() {
   browserQueryClient?.clear();
 }
+
+// ── Shared stale-time constants ──────────────────────────────────────
+export const STALE_SHORT  = 30_000;      // 30s - volatile data (search)
+export const STALE_MEDIUM = 120_000;     // 2m  - GitHub profiles
+export const STALE_LONG   = 300_000;     // 5m  - saved reports/advice

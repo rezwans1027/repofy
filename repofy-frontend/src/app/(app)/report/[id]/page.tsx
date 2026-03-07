@@ -18,8 +18,8 @@ export default function ReportPage({
   const searchParams = useSearchParams();
   const fromProfile = searchParams.get("from") === "profile";
   const { isLoading: authLoading } = useAuth();
-  const { data: report, isLoading: queryLoading, error } = useReport(id);
-  const loading = authLoading || queryLoading;
+  const { data: report, isPending: queryPending, error } = useReport(id);
+  const loading = authLoading || queryPending;
 
   const backHref = fromProfile && report
     ? `/profile/${report.analyzed_username}`

@@ -34,17 +34,33 @@ function dropRecommendation(current: Recommendation): Recommendation {
   return RECOMMENDATION_ORDER[Math.max(0, idx - 1)];
 }
 
+const LEVEL_THRESHOLDS = { staff: 85, senior: 75, midLevel: 60 } as const;
+const RECOMMENDATION_THRESHOLDS = { strongHire: 80, hire: 65, weakHire: 50 } as const;
+const RUBRIC = {
+  engPractices: { noTestsNoBuildCap: 0.4, noTestsWithBuildCap: 0.6, noCICap: 0.6 },
+  codeQuality: { noLintPenalty: 0.1 },
+  consistency: { inactiveDaysThreshold: 365, inactiveCap: 0.3 },
+  collaboration: {
+    soloCap: 0.3,
+    largeProjectFloor: 0.7,
+    mediumProjectFloor: 0.5,
+    largeProjectMinContributors: 500,
+    mediumProjectMinContributors: 50,
+  },
+  globalFloor: 0.05,
+} as const;
+
 function levelFromScore(score: number): CandidateLevel {
-  if (score >= 85) return "Staff";
-  if (score >= 75) return "Senior";
-  if (score >= 60) return "Mid-Level";
+  if (score >= LEVEL_THRESHOLDS.staff) return "Staff";
+  if (score >= LEVEL_THRESHOLDS.senior) return "Senior";
+  if (score >= LEVEL_THRESHOLDS.midLevel) return "Mid-Level";
   return "Junior";
 }
 
 function recommendationFromScore(score: number): Recommendation {
-  if (score >= 80) return "Strong Hire";
-  if (score >= 65) return "Hire";
-  if (score >= 50) return "Weak Hire";
+  if (score >= RECOMMENDATION_THRESHOLDS.strongHire) return "Strong Hire";
+  if (score >= RECOMMENDATION_THRESHOLDS.hire) return "Hire";
+  if (score >= RECOMMENDATION_THRESHOLDS.weakHire) return "Weak Hire";
   return "No Hire";
 }
 
@@ -65,41 +81,41 @@ function applyRubricCaps(
 
   // Eng. Practices caps
   if (allNoTests && allNoBuild) {
-    capAxis(axisValues, "Eng. Practices", 0.4);
+    capAxis(axisValues, "Eng. Practices", RUBRIC.engPractices.noTestsNoBuildCap);
   } else if (allNoTests && !allNoBuild) {
-    capAxis(axisValues, "Eng. Practices", 0.6);
+    capAxis(axisValues, "Eng. Practices", RUBRIC.engPractices.noTestsWithBuildCap);
   }
   if (allNoCI) {
-    capAxis(axisValues, "Eng. Practices", 0.6);
+    capAxis(axisValues, "Eng. Practices", RUBRIC.engPractices.noCICap);
   }
 
   // Code Quality: lint penalty
   if (allNoLint) {
     const current = axisValues.get("Code Quality") ?? 0;
-    axisValues.set("Code Quality", Math.round(clamp(current - 0.1, 0, 1) * 100) / 100);
+    axisValues.set("Code Quality", Math.round(clamp(current - RUBRIC.codeQuality.noLintPenalty, 0, 1) * 100) / 100);
   }
 
   // Consistency cap
-  if (aggregateMetrics.medianLatestPushDaysAgo > 365) {
-    capAxis(axisValues, "Consistency", 0.3);
+  if (aggregateMetrics.medianLatestPushDaysAgo > RUBRIC.consistency.inactiveDaysThreshold) {
+    capAxis(axisValues, "Consistency", RUBRIC.consistency.inactiveCap);
   }
 
   // Collaboration caps and floors
   if (allSoloNoPR) {
-    capAxis(axisValues, "Collaboration", 0.3);
+    capAxis(axisValues, "Collaboration", RUBRIC.collaboration.soloCap);
   }
   // Floors override caps when met
-  if (maxContributors >= 500) {
-    floorAxis(axisValues, "Collaboration", 0.7);
-  } else if (maxContributors >= 50) {
-    floorAxis(axisValues, "Collaboration", 0.5);
+  if (maxContributors >= RUBRIC.collaboration.largeProjectMinContributors) {
+    floorAxis(axisValues, "Collaboration", RUBRIC.collaboration.largeProjectFloor);
+  } else if (maxContributors >= RUBRIC.collaboration.mediumProjectMinContributors) {
+    floorAxis(axisValues, "Collaboration", RUBRIC.collaboration.mediumProjectFloor);
   }
 
-  // Global floor: no axis below 0.05
+  // Global floor: no axis below minimum
   for (const axis of axisValues.keys()) {
     const v = axisValues.get(axis)!;
-    if (v < 0.05) {
-      axisValues.set(axis, 0.05);
+    if (v < RUBRIC.globalFloor) {
+      axisValues.set(axis, RUBRIC.globalFloor);
     }
   }
 }
