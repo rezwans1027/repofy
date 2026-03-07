@@ -1,12 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+// Shared mock functions so the singleton inside api-client uses the same refs
+const mockGetUser = vi.fn().mockResolvedValue({
+  data: { user: { id: "user-123" } },
+  error: null,
+});
+const mockGetSession = vi.fn().mockResolvedValue({
+  data: { session: { access_token: "test-token" } },
+});
+
 // Mock the supabase client module before api-client imports it
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({
     auth: {
-      refreshSession: vi.fn().mockResolvedValue({
-        data: { session: { access_token: "test-token" } },
-      }),
+      getUser: mockGetUser,
+      getSession: mockGetSession,
     },
   }),
 }));
@@ -86,6 +94,30 @@ describe("api.get", () => {
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: "Bearer test-token",
+        }),
+      }),
+    );
+  });
+
+  it("does not include auth header when getUser returns error", async () => {
+    mockGetUser.mockResolvedValueOnce({
+      data: { user: null },
+      error: new Error("Invalid token"),
+    });
+
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ success: true, data: {} }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    await api.get("/secure", { auth: true });
+    expect(fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.not.objectContaining({
+          Authorization: expect.any(String),
         }),
       }),
     );

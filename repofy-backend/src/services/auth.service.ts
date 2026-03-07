@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { getSupabaseAdmin } from "../config/supabase";
 import { sendOtpEmail } from "./email.service";
+import { env } from "../config/env";
 import { logger } from "../lib/logger";
 import { expiresInMinutes } from "../lib/date-utils";
 
@@ -22,7 +23,7 @@ function generateOtp(): string {
 }
 
 function hashOtp(otp: string): string {
-  return crypto.createHash("sha256").update(otp).digest("hex");
+  return crypto.createHmac("sha256", env.otpHmacSecret).update(otp).digest("hex");
 }
 
 function safeEqual(a: string, b: string): boolean {

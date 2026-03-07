@@ -33,9 +33,10 @@ export const env = {
   githubToken: requireEnvUnlessMockAi("GITHUB_TOKEN"),
   openaiApiKey: requireEnvUnlessMockAi("OPENAI_API_KEY"),
   openaiModel: process.env.OPENAI_MODEL || "gpt-5.1",
-  adminSecret: process.env.ADMIN_SECRET,
+  adminSecret: requireEnv("ADMIN_SECRET"),
   frontendUrl: process.env.FRONTEND_URL || process.env.CORS_ORIGIN || "http://localhost:3000",
   stripeSecretKey: requireEnv("STRIPE_SECRET_KEY"),
   stripeWebhookSecret: requireEnv("STRIPE_WEBHOOK_SECRET"),
   resendApiKey: requireEnv("RESEND_API_KEY"),
+  otpHmacSecret: requireEnv("OTP_HMAC_SECRET"),
 } as const;
