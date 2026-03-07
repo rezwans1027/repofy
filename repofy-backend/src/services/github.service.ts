@@ -1,5 +1,6 @@
 import { env } from "../config/env";
 import { logger } from "../lib/logger";
+import { daysAgo } from "../lib/date-utils";
 import type {
   GitHubApiUser,
   GitHubApiRepo,
@@ -323,9 +324,7 @@ function buildStats(
     if (!repo.fork) originalRepos++;
   }
 
-  const accountAgeDays = Math.floor(
-    (Date.now() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24),
-  );
+  const accountAgeDays = daysAgo(user.created_at);
 
   return { totalStars, totalForks, originalRepos, accountAgeDays, reposTruncated };
 }
@@ -516,6 +515,66 @@ function hasExtension(path: string, extensions: string[]): boolean {
   return extensions.some((ext) => path.toLowerCase().endsWith(ext));
 }
 
+function isTestPath(p: string, filename: string, hasGitStyleTests: boolean): boolean {
+  return (
+    p === "test" || p.startsWith("test/") || p.includes("/test/") ||
+    p === "tests" || p.startsWith("tests/") || p.includes("/tests/") ||
+    p === "__tests__" || p.startsWith("__tests__/") || p.includes("/__tests__/") ||
+    filename.includes(".test.") || filename.includes(".spec.") || filename.includes("_test.") ||
+    p.startsWith("selftests/") || p.includes("/selftests/") ||
+    p.startsWith("selftest/") || p.includes("/selftest/") ||
+    p.includes("tools/testing/") ||
+    ((p === "t" || p.startsWith("t/")) && hasGitStyleTests) ||
+    filename === "tox.ini" || filename === "pytest.ini" || filename === "conftest.py"
+  );
+}
+
+function isCIPath(p: string): boolean {
+  return (
+    p.includes(".github/workflows/") || p.includes(".circleci/") ||
+    p === "jenkinsfile" || p === ".travis.yml" || p === ".gitlab-ci.yml" ||
+    p.includes(".buildkite/") || p === "azure-pipelines.yml" ||
+    p === "appveyor.yml" || p === ".appveyor.yml" ||
+    p === "cloudbuild.yaml" || p === "cloudbuild.json" ||
+    p === ".drone.yml" || p === "bitbucket-pipelines.yml" ||
+    p === "taskcluster.yml" || p.includes(".taskcluster/")
+  );
+}
+
+function isLintConfigFile(p: string, filename: string): boolean {
+  return (
+    filename.startsWith(".eslintrc") ||
+    filename.startsWith(".prettierrc") || filename === "prettier.config.js" || filename === "prettier.config.cjs" ||
+    filename === "biome.json" || filename === "biome.jsonc" ||
+    filename === ".flake8" || filename === "setup.cfg" || filename === "ruff.toml" ||
+    filename === "eslint.config.js" || filename === "eslint.config.mjs" || filename === "eslint.config.ts" ||
+    filename === ".clang-format" || filename === ".clang-tidy" || filename === ".editorconfig" ||
+    filename === "checkpatch.pl" || p.includes("scripts/checkpatch") ||
+    filename === ".pylintrc" || filename === "pyproject.toml" || filename === "mypy.ini" || filename === ".mypy.ini" ||
+    filename === ".rubocop.yml" ||
+    filename === ".golangci.yml" || filename === ".golangci.yaml" ||
+    filename === "rustfmt.toml" || filename === ".rustfmt.toml" || filename === "clippy.toml"
+  );
+}
+
+function isDockerPath(p: string): boolean {
+  return (
+    p === "dockerfile" || p.startsWith("dockerfile.") ||
+    p === "docker-compose.yml" || p === "docker-compose.yaml" ||
+    p.startsWith("docker-compose.")
+  );
+}
+
+function isBuildSystemFile(filename: string, hasBazelCoIndicator: boolean): boolean {
+  return (
+    filename === "makefile" || filename === "gnumakefile" || filename === "cmakelists.txt" || filename === "meson.build" ||
+    filename === "build.gradle" || filename === "build.gradle.kts" || filename === "pom.xml" || filename === "build.zig" ||
+    filename === ".bazelrc" || filename === "build.bazel" || (filename === "workspace" && hasBazelCoIndicator) ||
+    filename === "configure.ac" ||
+    filename === "kbuild" || filename === "kconfig"
+  );
+}
+
 export function detectSignals(entries: GitTreeEntry[]) {
   let hasTests = false;
   let hasCI = false;
@@ -539,92 +598,18 @@ export function detectSignals(entries: GitTreeEntry[]) {
     const p = entry.path.toLowerCase();
     const filename = p.split("/").pop() || p;
 
-    // Tests (segment-boundary matching to avoid false positives like "contest/")
-    if (!hasTests) {
-      if (
-        p === "test" || p.startsWith("test/") || p.includes("/test/") ||
-        p === "tests" || p.startsWith("tests/") || p.includes("/tests/") ||
-        p === "__tests__" || p.startsWith("__tests__/") || p.includes("/__tests__/") ||
-        filename.includes(".test.") || filename.includes(".spec.") || filename.includes("_test.") ||
-        p.startsWith("selftests/") || p.includes("/selftests/") ||
-        p.startsWith("selftest/") || p.includes("/selftest/") ||
-        p.includes("tools/testing/") ||
-        ((p === "t" || p.startsWith("t/")) && hasGitStyleTests) ||
-        filename === "tox.ini" || filename === "pytest.ini" || filename === "conftest.py"
-      ) {
-        hasTests = true;
-      }
-    }
-
-    // CI
-    if (!hasCI) {
-      if (
-        p.includes(".github/workflows/") || p.includes(".circleci/") ||
-        p === "jenkinsfile" || p === ".travis.yml" || p === ".gitlab-ci.yml" ||
-        p.includes(".buildkite/") || p === "azure-pipelines.yml" ||
-        p === "appveyor.yml" || p === ".appveyor.yml" ||
-        p === "cloudbuild.yaml" || p === "cloudbuild.json" ||
-        p === ".drone.yml" || p === "bitbucket-pipelines.yml" ||
-        p === "taskcluster.yml" || p.includes(".taskcluster/")
-      ) {
-        hasCI = true;
-      }
-    }
-
-    // Lint config (match at any depth via filename extraction)
-    if (!hasLintConfig) {
-      if (
-        filename.startsWith(".eslintrc") ||
-        filename.startsWith(".prettierrc") || filename === "prettier.config.js" || filename === "prettier.config.cjs" ||
-        filename === "biome.json" || filename === "biome.jsonc" ||
-        filename === ".flake8" || filename === "setup.cfg" || filename === "ruff.toml" ||
-        filename === "eslint.config.js" || filename === "eslint.config.mjs" || filename === "eslint.config.ts" ||
-        filename === ".clang-format" || filename === ".clang-tidy" || filename === ".editorconfig" ||
-        filename === "checkpatch.pl" || p.includes("scripts/checkpatch") ||
-        filename === ".pylintrc" || filename === "pyproject.toml" || filename === "mypy.ini" || filename === ".mypy.ini" ||
-        filename === ".rubocop.yml" ||
-        filename === ".golangci.yml" || filename === ".golangci.yaml" ||
-        filename === "rustfmt.toml" || filename === ".rustfmt.toml" || filename === "clippy.toml"
-      ) {
-        hasLintConfig = true;
-      }
-    }
-
-    // Dockerfile
-    if (!hasDockerfile) {
-      if (
-        p === "dockerfile" || p.startsWith("dockerfile.") ||
-        p === "docker-compose.yml" || p === "docker-compose.yaml" ||
-        p.startsWith("docker-compose.")
-      ) {
-        hasDockerfile = true;
-      }
-    }
-
-    // Build system (match at any depth)
-    if (!hasBuildSystem) {
-      if (
-        filename === "makefile" || filename === "gnumakefile" || filename === "cmakelists.txt" || filename === "meson.build" ||
-        filename === "build.gradle" || filename === "build.gradle.kts" || filename === "pom.xml" || filename === "build.zig" ||
-        filename === ".bazelrc" || filename === "build.bazel" || (filename === "workspace" && hasBazelCoIndicator) ||
-        filename === "configure.ac" ||
-        filename === "kbuild" || filename === "kconfig"
-      ) {
-        hasBuildSystem = true;
-      }
-    }
-
-    // Src directory
-    if (!srcDirPresent && (p === "src" || p.startsWith("src/"))) {
-      srcDirPresent = true;
-    }
+    if (!hasTests && isTestPath(p, filename, hasGitStyleTests)) hasTests = true;
+    if (!hasCI && isCIPath(p)) hasCI = true;
+    if (!hasLintConfig && isLintConfigFile(p, filename)) hasLintConfig = true;
+    if (!hasDockerfile && isDockerPath(p)) hasDockerfile = true;
+    if (!hasBuildSystem && isBuildSystemFile(filename, hasBazelCoIndicator)) hasBuildSystem = true;
+    if (!srcDirPresent && (p === "src" || p.startsWith("src/"))) srcDirPresent = true;
 
     // Source file count and LOC estimation
     if (entry.type === "blob") {
       const ext = "." + (p.split(".").pop() || "");
       if (SOURCE_EXTENSIONS.has(ext)) {
         sourceFileCount++;
-        // Estimate LOC from file size (~40 bytes per line avg)
         const estimatedLOC = entry.size ? Math.round(entry.size / 40) : 0;
         totalLOC += estimatedLOC;
         if (estimatedLOC > maxFileLOC) {
@@ -639,6 +624,50 @@ export function detectSignals(entries: GitTreeEntry[]) {
     hasTests, hasCI, hasLintConfig, hasDockerfile, hasBuildSystem, srcDirPresent,
     sourceFileCount, totalLOC, maxFileLOC, largestFilePath,
   };
+}
+
+function computeReleaseMetrics(
+  releases: { tag_name: string; published_at: string }[],
+): { releaseCount: number; latestReleaseDaysAgo: number } {
+  const releaseCount = releases.length;
+  let latestReleaseDaysAgo = Infinity;
+  if (releases.length > 0 && releases[0].published_at) {
+    latestReleaseDaysAgo = daysAgo(releases[0].published_at);
+  }
+  return { releaseCount, latestReleaseDaysAgo };
+}
+
+async function extractContributorCount(response: Response | null): Promise<number> {
+  let contributorCount = 1;
+  if (response && response.ok) {
+    const linkHeader = response.headers.get("link");
+    if (linkHeader) {
+      contributorCount = parseLinkHeaderCount(linkHeader, 1) || 1;
+    }
+    try {
+      const contribs = await response.json() as unknown[];
+      if (Array.isArray(contribs)) {
+        contributorCount = Math.max(contribs.length, contributorCount);
+      }
+    } catch { /* ignore */ }
+  }
+  return contributorCount;
+}
+
+async function extractPullRequestCount(response: Response | null): Promise<number> {
+  let pullRequestsCount = 0;
+  if (response && response.ok) {
+    const linkHeader = response.headers.get("link");
+    if (linkHeader) {
+      pullRequestsCount = parseLinkHeaderCount(linkHeader, 1);
+    } else {
+      try {
+        const pulls = await response.json() as unknown[];
+        if (Array.isArray(pulls)) pullRequestsCount = pulls.length;
+      } catch { /* ignore */ }
+    }
+  }
+  return pullRequestsCount;
 }
 
 /** Extract total count from GitHub Link header (last page). */
@@ -708,49 +737,16 @@ async function fetchRepoSnapshot(
     }
 
     // Releases
-    const releases = releasesResult ?? [];
-    const releaseCount = releases.length;
-    let latestReleaseDaysAgo = Infinity;
-    if (releases.length > 0 && releases[0].published_at) {
-      latestReleaseDaysAgo = Math.floor(
-        (Date.now() - new Date(releases[0].published_at).getTime()) / (1000 * 60 * 60 * 24),
-      );
-    }
+    const { releaseCount, latestReleaseDaysAgo } = computeReleaseMetrics(releasesResult ?? []);
 
     // Contributors count
-    let contributorCount = 1;
-    if (contributorsResult && contributorsResult.ok) {
-      const linkHeader = contributorsResult.headers.get("link");
-      if (linkHeader) {
-        contributorCount = parseLinkHeaderCount(linkHeader, 1) || 1;
-      }
-      // If no link header, just count the response body
-      try {
-        const contribs = await contributorsResult.json() as unknown[];
-        if (Array.isArray(contribs)) {
-          contributorCount = Math.max(contribs.length, contributorCount);
-        }
-      } catch { /* ignore */ }
-    }
+    const contributorCount = await extractContributorCount(contributorsResult);
 
     // Pull requests count
-    let pullRequestsCount = 0;
-    if (pullsResult && pullsResult.ok) {
-      const linkHeader = pullsResult.headers.get("link");
-      if (linkHeader) {
-        pullRequestsCount = parseLinkHeaderCount(linkHeader, 1);
-      } else {
-        try {
-          const pulls = await pullsResult.json() as unknown[];
-          if (Array.isArray(pulls)) pullRequestsCount = pulls.length;
-        } catch { /* ignore */ }
-      }
-    }
+    const pullRequestsCount = await extractPullRequestCount(pullsResult);
 
     // Computed fields
-    const latestPushDaysAgo = Math.floor(
-      (Date.now() - new Date(repo.pushedAt).getTime()) / (1000 * 60 * 60 * 24),
-    );
+    const latestPushDaysAgo = daysAgo(repo.pushedAt);
     const hasReleaseDiscipline = releaseCount >= 2 && latestReleaseDaysAgo <= 365;
 
     // Code snippets (only for top repos)
@@ -796,9 +792,7 @@ async function fetchRepoSnapshot(
       releaseCount: 0,
       latestReleaseDaysAgo: -1,
       contributorCount: 0,
-      latestPushDaysAgo: Math.floor(
-        (Date.now() - new Date(repo.pushedAt).getTime()) / (1000 * 60 * 60 * 24),
-      ),
+      latestPushDaysAgo: daysAgo(repo.pushedAt),
       openIssuesCount: repo.openIssues,
       pullRequestsCount: 0,
       sourceFileCount: 0,

@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import { getSupabaseAdmin } from "../config/supabase";
 import { logger } from "../lib/logger";
+import { expiresInDays } from "../lib/date-utils";
 import type { GitHubUserData, ScorerResponse, ScoringResult } from "../types";
 
 export interface CachedAnalysis {
@@ -59,7 +60,7 @@ export async function setCachedAnalysis(
   analysis: CachedAnalysis,
 ): Promise<void> {
   try {
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const expiresAt = expiresInDays(1);
 
     const { error } = await getSupabaseAdmin()
       .from("analysis_cache")

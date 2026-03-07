@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { getSupabaseAdmin } from "../config/supabase";
 import { sendOtpEmail } from "./email.service";
 import { logger } from "../lib/logger";
+import { expiresInMinutes } from "../lib/date-utils";
 
 const OTP_EXPIRY_MINUTES = 10;
 const OTP_MAX_ATTEMPTS = 5;
@@ -58,7 +59,7 @@ export async function initiateSignup(
 
   if (!emailTaken) {
     const otp = generateOtp();
-    const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000).toISOString();
+    const expiresAt = expiresInMinutes(OTP_EXPIRY_MINUTES);
 
     // Upsert — replaces any prior pending signup for the same email
     const { error: upsertError } = await supabase.from("pending_signups").upsert(

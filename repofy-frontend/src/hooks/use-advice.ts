@@ -5,9 +5,8 @@ import {
 } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/providers/auth-provider";
+import { STALE_LONG } from "@/lib/query-client";
 import type { AdviceData } from "@/components/advice/advice-report";
-
-const STALE_TIME = 5 * 60 * 1000; // 5 minutes
 
 export interface AdviceListItem {
   id: string;
@@ -39,7 +38,7 @@ export function useAdviceList() {
       return (data as AdviceListItem[]) ?? [];
     },
     enabled: !!user,
-    staleTime: STALE_TIME,
+    staleTime: STALE_LONG,
   });
 }
 
@@ -98,7 +97,24 @@ export function useDeleteAdvice() {
         .eq("user_id", user.id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: async (ids) => {
+      await queryClient.cancelQueries({ queryKey: ["advice", "list", user?.id] });
+      const previous = queryClient.getQueryData<AdviceListItem[]>(["advice", "list", user?.id]);
+      if (previous) {
+        const idSet = new Set(ids);
+        queryClient.setQueryData<AdviceListItem[]>(
+          ["advice", "list", user?.id],
+          previous.filter((item) => !idSet.has(item.id)),
+        );
+      }
+      return { previous };
+    },
+    onError: (_err, _ids, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["advice", "list", user?.id], context.previous);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["advice"] });
     },
   });

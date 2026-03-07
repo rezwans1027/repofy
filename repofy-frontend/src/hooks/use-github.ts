@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
+import { STALE_SHORT, STALE_MEDIUM } from "@/lib/query-client";
 
 interface SearchResult {
   username: string;
@@ -62,7 +63,7 @@ export function useGitHubSearch(debouncedQuery: string) {
         { signal, auth: true },
       ),
     enabled: debouncedQuery.trim().length > 0,
-    staleTime: 30 * 1000,
+    staleTime: STALE_SHORT,
   });
 }
 
@@ -75,6 +76,6 @@ export function useGitHubProfile(username: string) {
         { signal, auth: true },
       ),
     enabled: !!username,
-    staleTime: 2 * 60 * 1000,
+    staleTime: STALE_MEDIUM,
   });
 }
