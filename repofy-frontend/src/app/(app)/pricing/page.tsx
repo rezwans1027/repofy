@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect, useRef } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
@@ -34,26 +34,26 @@ function PricingContent() {
   // We store it in sessionStorage before redirecting to Stripe, then read it back
   // on the success return. This avoids the race where the webhook fires before we
   // capture the old balance.
-  const balanceAtCheckout = useRef<number | undefined>(undefined);
+  const [balanceAtCheckout, setBalanceAtCheckout] = useState<number | undefined>(undefined);
   const [creditsReceived, setCreditsReceived] = useState(false);
 
   // On success redirect, read the pre-checkout balance from sessionStorage
   useEffect(() => {
-    if (success && balanceAtCheckout.current === undefined) {
+    if (success && balanceAtCheckout === undefined) {
       const stored = sessionStorage.getItem("pre_checkout_balance");
       if (stored !== null) {
-        balanceAtCheckout.current = Number(stored);
+        setBalanceAtCheckout(Number(stored));
         sessionStorage.removeItem("pre_checkout_balance");
       } else {
         // Fallback: no stored balance (e.g. user navigated directly).
         // Use current balance if available; if credits already arrived this
         // will be the new balance and the comparison below handles it.
         if (balance) {
-          balanceAtCheckout.current = balance.growth_balance;
+          setBalanceAtCheckout(balance.growth_balance);
         }
       }
     }
-  }, [success, balance]);
+  }, [success, balance, balanceAtCheckout]);
 
   // Timeout: if credits haven't arrived after 30s, stop spinning and show success
   useEffect(() => {
@@ -65,17 +65,17 @@ function PricingContent() {
   // Poll for balance update after successful checkout
   const { data: polledBalance } = useAwaitCreditUpdate(
     success && !creditsReceived,
-    balanceAtCheckout.current,
+    balanceAtCheckout,
   );
 
   // When polled balance shows increase, sync it to the main query cache.
   // Also handle the case where credits arrived before we even started polling
   // (balance already higher than pre-checkout snapshot).
   useEffect(() => {
-    if (success && !creditsReceived && balanceAtCheckout.current !== undefined) {
+    if (success && !creditsReceived && balanceAtCheckout !== undefined) {
       // Check polled balance first
       const current = polledBalance ?? balance;
-      if (current && current.growth_balance > balanceAtCheckout.current) {
+      if (current && current.growth_balance > balanceAtCheckout) {
         setCreditsReceived(true);
         queryClient.setQueryData(["credits", "balance"], current);
       }

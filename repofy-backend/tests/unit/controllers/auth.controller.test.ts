@@ -122,7 +122,7 @@ describe("handleVerifySignup", () => {
     await handleVerifySignup(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ success: false, error: "Email is required." });
+    expect(res.json).toHaveBeenCalledWith({ success: false, error: "A valid email is required." });
   });
 
   it("returns 400 for invalid OTP format", async () => {
