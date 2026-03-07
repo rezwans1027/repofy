@@ -99,7 +99,7 @@ export function OverlayScrollbar() {
   return (
     <div
       ref={trackRef}
-      className="fixed top-0 right-0 bottom-0 z-[9999] w-3 cursor-pointer"
+      className={`fixed top-0 right-0 bottom-0 z-[9999] w-3 ${visible || dragging ? "cursor-pointer" : "pointer-events-none"}`}
       onClick={onTrackClick}
       onMouseEnter={() => {
         setHovering(true);
