@@ -173,7 +173,9 @@ export async function resendOtp(email: string): Promise<{ message: string }> {
     throw new AuthError("Failed to resend code. Please try again.", 500);
   }
 
-  await sendOtpEmail(email, otp, pending.display_name);
+  sendOtpEmail(email, otp, pending.display_name).catch((err) => {
+    logger.error("Failed to send OTP email during resend", { email, error: err });
+  });
 
   return { message: "If a pending signup exists, a new code has been sent." };
 }

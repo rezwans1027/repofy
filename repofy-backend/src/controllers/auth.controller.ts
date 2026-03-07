@@ -29,8 +29,8 @@ export const handleInitiateSignup: RequestHandler = async (req, res) => {
 export const handleVerifySignup: RequestHandler = async (req, res) => {
   const { email, otp, password } = req.body;
 
-  if (!email || typeof email !== "string") {
-    return sendError(res, 400, "Email is required.");
+  if (!email || typeof email !== "string" || email.length > MAX_EMAIL_LEN || !EMAIL_RE.test(email)) {
+    return sendError(res, 400, "A valid email is required.");
   }
   if (!otp || typeof otp !== "string" || !/^\d{6}$/.test(otp)) {
     return sendError(res, 400, "A valid 6-digit verification code is required.");
