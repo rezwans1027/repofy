@@ -39,12 +39,12 @@ export function buildUserMessage(data: GitHubUserData, closingPrompt: string): s
 REPO SNAPSHOT: ${s.name}
 File Tree:
 ${truncatedTree}
-Signals: hasTests=${s.hasTests} | hasCI=${s.hasCI} | hasLintConfig=${s.hasLintConfig} | hasDockerfile=${s.hasDockerfile} | hasBuildSystem=${s.hasBuildSystem}
-readmeWordCount: ${s.readmeWordCount} | releaseCount: ${s.releaseCount} | latestReleaseDaysAgo: ${s.latestReleaseDaysAgo}
-contributorCount: ${s.contributorCount} | latestPushDaysAgo: ${s.latestPushDaysAgo}
-openIssuesCount: ${s.openIssuesCount} | pullRequestsCount: ${s.pullRequestsCount}
-sourceFileCount: ${s.sourceFileCount} | totalLOC: ${s.totalLOC} | maxFileLOC: ${s.maxFileLOC} | largestFilePath: ${s.largestFilePath || "N/A"}
-srcDirPresent: ${s.srcDirPresent} | hasReleaseDiscipline: ${s.hasReleaseDiscipline}`;
+Has tests: ${s.hasTests ? "yes" : "no"} | Has CI: ${s.hasCI ? "yes" : "no"} | Has lint config: ${s.hasLintConfig ? "yes" : "no"} | Has Dockerfile: ${s.hasDockerfile ? "yes" : "no"} | Has build system: ${s.hasBuildSystem ? "yes" : "no"}
+README word count: ${s.readmeWordCount} | Releases: ${s.releaseCount} | Latest release: ${s.latestReleaseDaysAgo} days ago
+Contributors: ${s.contributorCount} | Last pushed: ${s.latestPushDaysAgo} days ago
+Open issues: ${s.openIssuesCount} | Pull requests: ${s.pullRequestsCount}
+Source files: ${s.sourceFileCount} | Total lines of code: ${s.totalLOC} | Largest file: ${s.maxFileLOC} lines (${s.largestFilePath || "N/A"})
+Has src/ directory: ${s.srcDirPresent ? "yes" : "no"} | Has release discipline: ${s.hasReleaseDiscipline ? "yes" : "no"}`;
 
     if (s.codeSnippets && s.codeSnippets.length > 0) {
       const truncatedSnippets = s.codeSnippets.map((snip) =>
@@ -101,8 +101,8 @@ RECENT ACTIVITY (last 100 events):
 ${snapshotBlocks}
 
 AGGREGATE METRICS:
-medianLatestPushDaysAgo: ${aggregateMetrics.medianLatestPushDaysAgo}
-hasCode: ${aggregateMetrics.hasCode}
+Median days since last push: ${aggregateMetrics.medianLatestPushDaysAgo}
+Has code: ${aggregateMetrics.hasCode ? "yes" : "no"}
 
 ${closingPrompt}
 `;

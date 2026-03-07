@@ -124,6 +124,7 @@ describe("GeneratePage", () => {
     vi.mocked(api.post).mockResolvedValue({
       analyzedName: "Test User",
       report: { overallScore: 82, recommendation: "Strong Hire" },
+      reportId: "r1",
     });
 
     const user = userEvent.setup();

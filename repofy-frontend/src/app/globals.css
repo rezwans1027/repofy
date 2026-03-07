@@ -5,8 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 
 html {
-  overflow-y: scroll;
   overscroll-behavior: none;
+  scrollbar-width: none; /* Firefox */
+}
+::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 @theme inline {
@@ -147,20 +150,13 @@ html {
   animation-timing-function: ease;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
+/* Prevent Radix scroll-lock from causing layout shift */
+body[data-scroll-locked] {
+  overflow: unset !important;
+  padding-right: 0px !important;
+  margin-right: 0px !important;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
-}
+
 
 /* Typewriter cursor blink */
 @keyframes blink {
@@ -169,6 +165,16 @@ html {
 }
 .animate-blink {
   animation: blink 1s step-end infinite;
+}
+
+
+/* Smooth caret blink (VS Code style) */
+@keyframes smooth-caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.animate-smooth-caret-blink {
+  animation: smooth-caret-blink 1s ease-in-out infinite;
 }
 
 /* Slide up from bottom */
@@ -184,4 +190,39 @@ html {
 }
 .animate-slide-up {
   animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Advisor report ambient animations ─────────────────────────── */
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.25), 0 0 24px rgba(16, 185, 129, 0.08);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.45), 0 0 48px rgba(16, 185, 129, 0.15);
+  }
+}
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-3px); }
+}
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
 }

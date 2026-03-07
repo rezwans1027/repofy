@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { AnalysisLoading } from "@/components/report/analysis-loading";
 import { useAuth } from "@/components/providers/auth-provider";
 import { api } from "@/lib/api-client";
-import { createClient } from "@/lib/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { BackLink } from "@/components/ui/back-link";
 import { ErrorCard } from "@/components/ui/error-card";
@@ -25,6 +24,7 @@ export default function GeneratePage({
     const data = await api.post<{
       analyzedName: string | null;
       report: Record<string, unknown>;
+      reportId: string;
     }>(`/analyze/${encodeURIComponent(username)}`, {
       auth: true,
       signal: AbortSignal.timeout(120_000),
@@ -39,66 +39,12 @@ export default function GeneratePage({
         return;
       }
 
-      try {
-        const { analyzedName, report } = data as {
-          analyzedName: string | null;
-          report: Record<string, unknown>;
-        };
+      const { reportId } = data as { reportId: string };
 
-        const supabase = createClient();
-
-        const reportRow = {
-          user_id: user.id,
-          analyzed_username: username.toLowerCase(),
-          analyzed_name: analyzedName,
-          overall_score: (report as { overallScore: number }).overallScore,
-          recommendation: (report as { recommendation: string })
-            .recommendation,
-          report_data: report,
-        };
-
-        // Try atomic upsert (works after migration 003 adds unique constraint)
-        const { data: upserted, error: upsertError } = await supabase
-          .from("reports")
-          .upsert(reportRow, { onConflict: "user_id,analyzed_username" })
-          .select("id")
-          .single();
-
-        let row: { id: string };
-
-        if (upsertError) {
-          // 42P10 = constraint not found — migration not yet applied
-          if (upsertError.code !== "42P10") throw upsertError;
-
-          // Fallback: insert + best-effort cleanup of old rows
-          const { data: inserted, error: insertError } = await supabase
-            .from("reports")
-            .insert(reportRow)
-            .select("id")
-            .single();
-          if (insertError) throw insertError;
-          row = inserted;
-
-          const { error: cleanupError } = await supabase
-            .from("reports")
-            .delete()
-            .eq("user_id", user.id)
-            .eq("analyzed_username", username.toLowerCase())
-            .neq("id", row.id);
-          if (cleanupError)
-            console.error("Cleanup of old reports failed:", cleanupError);
-        } else {
-          row = upserted;
-        }
-
-        queryClient.invalidateQueries({ queryKey: ["reports"] });
-        router.replace(`/report/${row.id}?from=profile`);
-      } catch (err) {
-        console.error("Failed to save report:", err);
-        setError("Failed to save report. Please try again.");
-      }
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+      router.replace(`/report/${reportId}?from=profile`);
     },
-    [user, username, router, queryClient],
+    [user, router, queryClient],
   );
 
   const handleError = useCallback((message: string) => {

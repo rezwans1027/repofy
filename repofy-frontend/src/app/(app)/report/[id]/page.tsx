@@ -7,6 +7,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { useReport } from "@/hooks/use-reports";
 import { BackLink } from "@/components/ui/back-link";
 import { ErrorCard } from "@/components/ui/error-card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ReportPage({
   params,
@@ -28,10 +29,10 @@ export default function ReportPage({
   if (loading) {
     return (
       <div className="space-y-4" data-testid="loading-skeleton">
-        <div className="h-6 w-32 animate-pulse rounded bg-secondary" />
-        <div className="h-32 animate-pulse rounded-lg bg-secondary" />
-        <div className="h-48 animate-pulse rounded-lg bg-secondary" />
-        <div className="h-48 animate-pulse rounded-lg bg-secondary" />
+        <Skeleton className="h-6 w-32" />
+        <Skeleton className="h-32 rounded-lg" />
+        <Skeleton className="h-48 rounded-lg" />
+        <Skeleton className="h-48 rounded-lg" />
       </div>
     );
   }

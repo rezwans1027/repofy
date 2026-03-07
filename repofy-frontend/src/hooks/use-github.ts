@@ -59,7 +59,7 @@ export function useGitHubSearch(debouncedQuery: string) {
     queryFn: ({ signal }) =>
       api.get<SearchResult[]>(
         `/github/search?q=${encodeURIComponent(debouncedQuery)}`,
-        { signal },
+        { signal, auth: true },
       ),
     enabled: debouncedQuery.trim().length > 0,
     staleTime: 30 * 1000,
@@ -72,7 +72,7 @@ export function useGitHubProfile(username: string) {
     queryFn: ({ signal }) =>
       api.get<GitHubProfileRaw>(
         `/github/${encodeURIComponent(username)}`,
-        { signal },
+        { signal, auth: true },
       ),
     enabled: !!username,
     staleTime: 2 * 60 * 1000,

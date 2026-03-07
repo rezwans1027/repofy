@@ -129,8 +129,8 @@ describe("useDeleteAdvice", () => {
     setupChain();
   });
 
-  it("calls delete and invalidates queries", async () => {
-    mockChain.in.mockResolvedValue({ error: null });
+  it("calls delete with user_id filter and invalidates queries", async () => {
+    mockChain.eq.mockResolvedValue({ error: null });
 
     const { result } = renderHook(() => useDeleteAdvice(), {
       wrapper: TestProviders,
@@ -139,10 +139,11 @@ describe("useDeleteAdvice", () => {
     await result.current.mutateAsync(["adv-1"]);
     expect(mockChain.delete).toHaveBeenCalled();
     expect(mockChain.in).toHaveBeenCalledWith("id", ["adv-1"]);
+    expect(mockChain.eq).toHaveBeenCalledWith("user_id", "user-123");
   });
 
   it("rejects when delete fails", async () => {
-    mockChain.in.mockResolvedValue({
+    mockChain.eq.mockResolvedValue({
       error: { message: "Delete failed" },
     });
 
