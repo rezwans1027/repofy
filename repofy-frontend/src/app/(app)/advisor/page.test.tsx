@@ -88,7 +88,7 @@ describe("AdvisorPage", () => {
     const user = userEvent.setup();
     render(<AdvisorPage />);
 
-    await user.type(screen.getByPlaceholderText("Search…"), "alice");
+    await user.type(screen.getByPlaceholderText("Search by username or name…"), "alice");
 
     expect(screen.getByText("@alice")).toBeInTheDocument();
     expect(screen.queryByText("@bob")).not.toBeInTheDocument();
@@ -166,7 +166,7 @@ describe("AdvisorPage", () => {
 
     render(<AdvisorPage />);
 
-    await user.type(screen.getByPlaceholderText("Search…"), "Bob Coder");
+    await user.type(screen.getByPlaceholderText("Search by username or name…"), "Bob Coder");
 
     expect(screen.getByText("@bob")).toBeInTheDocument();
     expect(screen.queryByText("@alice")).not.toBeInTheDocument();
@@ -179,7 +179,7 @@ describe("AdvisorPage", () => {
 
     render(<AdvisorPage />);
 
-    await user.type(screen.getByPlaceholderText("Search…"), "zzz");
+    await user.type(screen.getByPlaceholderText("Search by username or name…"), "zzz");
 
     expect(screen.getByText("No advice matches your search")).toBeInTheDocument();
   });
@@ -190,7 +190,7 @@ describe("AdvisorPage", () => {
 
     render(<AdvisorPage />);
 
-    await user.type(screen.getByPlaceholderText("Search…"), "zzz");
+    await user.type(screen.getByPlaceholderText("Search by username or name…"), "zzz");
 
     expect(screen.getByText("No advice matches your search")).toBeInTheDocument();
 
@@ -213,11 +213,18 @@ describe("AdvisorPage", () => {
     const rows = screen.getAllByText(/@\w+/);
     await user.click(rows[0]); // alice (first in Newest first order)
 
-    // Selection bar should show "1 selected"
-    expect(screen.getByText("1 selected")).toBeInTheDocument();
+    // Selection bar should show count and "selected" label
+    expect(screen.getByText("1")).toBeInTheDocument();
+    expect(screen.getByText("selected")).toBeInTheDocument();
 
-    // Click Delete
-    await user.click(screen.getByText("Delete"));
+    // Click Delete trigger to open AlertDialog
+    const deleteButtons = screen.getAllByText("Delete");
+    await user.click(deleteButtons[0]);
+
+    // Click the confirmation Delete button inside the AlertDialog
+    const confirmButtons = screen.getAllByText("Delete");
+    // The last "Delete" is the AlertDialogAction confirmation button
+    await user.click(confirmButtons[confirmButtons.length - 1]);
 
     expect(mockDeleteMutateAsync).toHaveBeenCalledTimes(1);
     expect(mockDeleteMutateAsync).toHaveBeenCalledWith(["a1"]);

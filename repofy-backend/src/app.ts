@@ -1,9 +1,11 @@
 import express from "express";
+import helmet from "helmet";
 import { env } from "./config/env";
 import { corsMiddleware } from "./middleware/cors";
 import { errorHandler } from "./middleware/errorHandler";
 import { notFound } from "./middleware/notFound";
 import { handleWebhook } from "./controllers/stripe.controller";
+import { webhookRateLimit } from "./middleware/rateLimit";
 import routes from "./routes";
 
 export function createApp() {
@@ -18,12 +20,14 @@ export function createApp() {
   // before express.json() so the body is not parsed as JSON.
   app.post(
     "/api/stripe/webhook",
+    webhookRateLimit,
     express.raw({ type: "application/json" }),
     handleWebhook,
   );
 
+  app.use(helmet());
   app.use(corsMiddleware);
-  app.use(express.json());
+  app.use(express.json({ limit: "100kb" }));
 
   app.use("/api", routes);
 

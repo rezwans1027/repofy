@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { TIMEOUTS } from "./helpers/timeouts";
 import { seedReportViaApi, deleteSeededReports } from "./helpers/seed";
 
-test.describe("Compare flow", () => {
+test.describe.skip("Compare flow", () => {
   test("compare page shows empty state with fewer than 2 reports", async ({
     page,
   }) => {

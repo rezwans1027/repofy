@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
@@ -13,6 +13,84 @@ import {
 } from "lucide-react";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useGitHubSearch } from "@/hooks/use-github";
+
+function SmoothCaretInput({
+  value,
+  onChange,
+  placeholder,
+  className,
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement>) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const measureRef = useRef<HTMLSpanElement>(null);
+  const [caretLeft, setCaretLeft] = useState(0);
+  const [focused, setFocused] = useState(false);
+
+  const updateCaretPosition = useCallback(() => {
+    const input = inputRef.current;
+    const measure = measureRef.current;
+    if (!input || !measure) return;
+
+    const pos = input.selectionStart ?? 0;
+    const textBeforeCaret = (input.value || "").slice(0, pos);
+    measure.textContent = textBeforeCaret || "\u200b";
+    setCaretLeft(textBeforeCaret ? measure.offsetWidth : 0);
+  }, []);
+
+  useEffect(() => {
+    updateCaretPosition();
+  }, [value, updateCaretPosition]);
+
+  useEffect(() => {
+    const input = inputRef.current;
+    if (!input) return;
+
+    const handler = () => updateCaretPosition();
+    input.addEventListener("select", handler);
+    input.addEventListener("click", handler);
+    input.addEventListener("keyup", handler);
+    return () => {
+      input.removeEventListener("select", handler);
+      input.removeEventListener("click", handler);
+      input.removeEventListener("keyup", handler);
+    };
+  }, [updateCaretPosition]);
+
+  return (
+    <div className="relative">
+      <span
+        ref={measureRef}
+        aria-hidden
+        className="pointer-events-none invisible absolute left-0 top-0 whitespace-pre font-mono text-sm"
+      />
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={(e) => {
+          onChange?.(e);
+          requestAnimationFrame(updateCaretPosition);
+        }}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        onKeyDown={() => requestAnimationFrame(updateCaretPosition)}
+        onClick={updateCaretPosition}
+        placeholder={placeholder}
+        className={`${className} caret-transparent`}
+        {...props}
+      />
+      {focused && (
+        <span
+          className="pointer-events-none absolute top-1/2 h-[1.1em] w-[1.5px] -translate-y-1/2 bg-white animate-smooth-caret-blink"
+          style={{
+            left: caretLeft,
+            transition: "left 80ms cubic-bezier(0.16, 1, 0.3, 1)",
+          }}
+        />
+      )}
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -58,8 +136,7 @@ export default function DashboardPage() {
               <span className="text-cyan">$</span>
               <span className="text-muted-foreground">repofy search</span>
               <div className="relative flex-1">
-                <input
-                  type="text"
+                <SmoothCaretInput
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="username..."
@@ -112,67 +189,77 @@ export default function DashboardPage() {
       </motion.div>
 
       <div className="mt-6 w-full max-w-2xl space-y-3">
-        {query.trim() && results.length > 0
-          ? results.map((user, i) => (
-              <motion.div
-                key={user.username}
-                data-testid={`search-result-${user.username}`}
-                onClick={() => router.push(`/profile/${user.username}`)}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="cursor-pointer rounded-lg border border-border bg-card p-4 transition-colors hover:border-cyan/50"
-              >
-                <div className="flex items-center gap-4">
-                  <img
-                    src={user.avatarUrl}
-                    alt={user.username}
-                    className="h-12 w-12 shrink-0 rounded-full"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-mono text-sm font-bold text-foreground">
-                        {user.name || user.username}
-                      </span>
-                      <span className="font-mono text-xs text-muted-foreground">
-                        @{user.username}
-                      </span>
+        <AnimatePresence mode="popLayout">
+          {query.trim() && results.length > 0
+            ? results.map((user, i) => (
+                <motion.div
+                  key={user.username}
+                  data-testid={`search-result-${user.username}`}
+                  onClick={() => router.push(`/profile/${user.username}`)}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8, filter: "blur(4px)", transition: { duration: 0.2 } }}
+                  transition={{ delay: i * 0.05 }}
+                  layout
+                  className="cursor-pointer rounded-lg border border-border bg-card p-4 transition-colors hover:border-cyan/50"
+                >
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.username}
+                      className="h-12 w-12 shrink-0 rounded-full"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-mono text-sm font-bold text-foreground">
+                          {user.name || user.username}
+                        </span>
+                        <span className="font-mono text-xs text-muted-foreground">
+                          @{user.username}
+                        </span>
+                      </div>
+                      {user.bio && (
+                        <p className="mt-0.5 text-xs text-muted-foreground truncate">
+                          {user.bio}
+                        </p>
+                      )}
+                      <div className="mt-1.5 flex items-center gap-3 text-xs text-muted-foreground">
+                        {user.location && (
+                          <span className="flex items-center gap-1">
+                            <MapPin className="size-3" />
+                            {user.location}
+                          </span>
+                        )}
+                        {user.company && (
+                          <span className="flex items-center gap-1">
+                            <Building2 className="size-3" />
+                            {user.company}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    {user.bio && (
-                      <p className="mt-0.5 text-xs text-muted-foreground truncate">
-                        {user.bio}
-                      </p>
-                    )}
-                    <div className="mt-1.5 flex items-center gap-3 text-xs text-muted-foreground">
-                      {user.location && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="size-3" />
-                          {user.location}
-                        </span>
-                      )}
-                      {user.company && (
-                        <span className="flex items-center gap-1">
-                          <Building2 className="size-3" />
-                          {user.company}
-                        </span>
-                      )}
+                    <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground font-mono">
+                      <span>{user.repos} repos</span>
+                      <span>{user.followers.toLocaleString()} followers</span>
                     </div>
                   </div>
-                  <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground font-mono">
-                    <span>{user.repos} repos</span>
-                    <span>{user.followers.toLocaleString()} followers</span>
-                  </div>
-                </div>
-              </motion.div>
-            ))
-          : query.trim() && searchSettled && (
-              <div className="rounded-lg border border-border bg-card p-6 text-center">
-                <p className="font-mono text-sm text-muted-foreground">
-                  <span className="text-yellow-500">warn:</span> No users
-                  found matching &quot;{query}&quot;
-                </p>
-              </div>
-            )}
+                </motion.div>
+              ))
+            : query.trim() && searchSettled && (
+                <motion.div
+                  key="no-results"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
+                  className="rounded-lg border border-border bg-card p-6 text-center"
+                >
+                  <p className="font-mono text-sm text-muted-foreground">
+                    <span className="text-yellow-500">warn:</span> No users
+                    found matching &quot;{query}&quot;
+                  </p>
+                </motion.div>
+              )}
+        </AnimatePresence>
       </div>
     </div>
   );

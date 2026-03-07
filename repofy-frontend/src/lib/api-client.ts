@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 
 const BASE_URL =
@@ -16,6 +17,7 @@ export class ApiError extends Error {
 interface RequestOptions extends Omit<RequestInit, "body"> {
   auth?: boolean;
   body?: unknown;
+  schema?: z.ZodType;
 }
 
 // Lazy singleton — defers client creation until first use,
@@ -69,7 +71,9 @@ async function request<T>(
     );
   }
 
-  // Note: for production, validate with Zod before casting
+  if (opts.schema) {
+    return opts.schema.parse(json.data) as T;
+  }
   return json.data as T;
 }
 

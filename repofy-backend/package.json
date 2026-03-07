@@ -17,7 +17,9 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
     "openai": "^6.18.0",
+    "resend": "^6.9.3",
     "stripe": "^20.3.1"
   },
   "devDependencies": {

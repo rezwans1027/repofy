@@ -4,9 +4,11 @@ import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { useCreditBalance } from "@/hooks/use-credits";
+import { useAuth } from "@/components/providers/auth-provider";
+import { useCreditBalance, useAwaitCreditUpdate } from "@/hooks/use-credits";
 import { api } from "@/lib/api-client";
 import { Check, CreditCard, Loader2, Users, X, Coins } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const DEVELOPER_FEATURES = [
   "2 growth credits per purchase",
@@ -21,21 +23,74 @@ function PricingContent() {
   const success = searchParams.get("success") === "true";
   const canceled = searchParams.get("canceled") === "true";
   const queryClient = useQueryClient();
-  const { data: balance } = useCreditBalance();
+  const { isLoading: authLoading } = useAuth();
+  const { data: balance, isLoading: balanceLoading } = useCreditBalance();
+  const pageLoading = authLoading || balanceLoading;
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Capture balance BEFORE the checkout redirect so we can detect when it increases.
+  // We store it in sessionStorage before redirecting to Stripe, then read it back
+  // on the success return. This avoids the race where the webhook fires before we
+  // capture the old balance.
+  const [balanceAtCheckout, setBalanceAtCheckout] = useState<number | undefined>(undefined);
+  const [creditsReceived, setCreditsReceived] = useState(false);
+
+  // On success redirect, read the pre-checkout balance from sessionStorage
   useEffect(() => {
-    if (success) {
-      queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
+    if (success && balanceAtCheckout === undefined) {
+      const stored = sessionStorage.getItem("pre_checkout_balance");
+      if (stored !== null) {
+        setBalanceAtCheckout(Number(stored));
+        sessionStorage.removeItem("pre_checkout_balance");
+      } else {
+        // Fallback: no stored balance (e.g. user navigated directly).
+        // Use current balance if available; if credits already arrived this
+        // will be the new balance and the comparison below handles it.
+        if (balance) {
+          setBalanceAtCheckout(balance.growth_balance);
+        }
+      }
     }
-  }, [success, queryClient]);
+  }, [success, balance, balanceAtCheckout]);
+
+  // Timeout: if credits haven't arrived after 30s, stop spinning and show success
+  useEffect(() => {
+    if (!success || creditsReceived) return;
+    const timer = setTimeout(() => setCreditsReceived(true), 30_000);
+    return () => clearTimeout(timer);
+  }, [success, creditsReceived]);
+
+  // Poll for balance update after successful checkout
+  const { data: polledBalance } = useAwaitCreditUpdate(
+    success && !creditsReceived,
+    balanceAtCheckout,
+  );
+
+  // When polled balance shows increase, sync it to the main query cache.
+  // Also handle the case where credits arrived before we even started polling
+  // (balance already higher than pre-checkout snapshot).
+  useEffect(() => {
+    if (success && !creditsReceived && balanceAtCheckout !== undefined) {
+      // Check polled balance first
+      const current = polledBalance ?? balance;
+      if (current && current.growth_balance > balanceAtCheckout) {
+        setCreditsReceived(true);
+        queryClient.setQueryData(["credits", "balance"], current);
+      }
+    }
+  }, [success, creditsReceived, polledBalance, balance, queryClient]);
 
   async function handleCheckout() {
     setLoading(true);
     setError(null);
     try {
+      // Store current balance before redirect so we can detect the increase on return
+      sessionStorage.setItem(
+        "pre_checkout_balance",
+        String(balance?.growth_balance ?? 0),
+      );
       const { url } = await api.post<{ url: string }>(
         "/stripe/create-checkout-session",
         { auth: true },
@@ -45,6 +100,22 @@ function PricingContent() {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);
     }
+  }
+
+  if (pageLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="mb-2 space-y-2">
+          <Skeleton className="h-5 w-24" />
+          <Skeleton className="h-3 w-56" />
+        </div>
+        <Skeleton className="h-11 w-full rounded-lg" />
+        <div className="grid gap-6 sm:grid-cols-2">
+          <Skeleton className="h-72 rounded-lg" />
+          <Skeleton className="h-72 rounded-lg" />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -62,26 +133,33 @@ function PricingContent() {
       </AnimateOnView>
 
       {/* Credit balance */}
-      {balance && (
-        <AnimateOnView delay={0.03}>
-          <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
-            <Coins className="size-4 text-cyan" />
-            <p className="font-mono text-xs">
-              You have <span className="font-bold text-cyan">{balance.growth_balance}</span> growth credit{balance.growth_balance !== 1 ? "s" : ""}
-            </p>
-          </div>
-        </AnimateOnView>
-      )}
+      <AnimateOnView delay={0.03}>
+        <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
+          <Coins className="size-4 text-cyan" />
+          <p className="font-mono text-xs">
+            You have <span className="font-bold text-cyan">{balance?.growth_balance ?? 0}</span> growth credit{balance?.growth_balance !== 1 ? "s" : ""}
+          </p>
+        </div>
+      </AnimateOnView>
 
       {/* Success banner */}
       {success && (
         <AnimateOnView delay={0.05}>
-          <div className="flex items-center gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
-            <Check className="size-4 text-emerald-400" />
-            <p className="font-mono text-xs text-emerald-400">
-              2 growth credits added! Thank you for your purchase.
-            </p>
-          </div>
+          {creditsReceived ? (
+            <div className="flex items-center gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
+              <Check className="size-4 text-emerald-400" />
+              <p className="font-mono text-xs text-emerald-400">
+                2 growth credits added! Thank you for your purchase.
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 rounded-lg border border-cyan/30 bg-cyan/10 px-4 py-3">
+              <Loader2 className="size-4 animate-spin text-cyan" />
+              <p className="font-mono text-xs text-cyan">
+                Payment received! Processing your credits&hellip;
+              </p>
+            </div>
+          )}
         </AnimateOnView>
       )}
 

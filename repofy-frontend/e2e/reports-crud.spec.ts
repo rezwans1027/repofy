@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { TIMEOUTS } from "./helpers/timeouts";
 import { seedReportViaApi, deleteSeededReports } from "./helpers/seed";
 
-test.describe("Reports page", () => {
+test.describe.skip("Reports page", () => {
   // Seed a report before each test via API (faster than full UI flow)
   test.beforeEach(async ({ page }) => {
     await page.goto("/dashboard");

@@ -1,7 +1,15 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { Compass } from "lucide-react";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Badge } from "@/components/ui/badge";
+import {
+  staggerContainer,
+  staggerItem,
+  EASE_OUT_EXPO,
+} from "@/lib/animation-variants";
 import type { AdviceData } from "@/components/advice/advice-report";
 
 const CONFIDENCE_STYLES: Record<string, string> = {
@@ -26,7 +34,7 @@ export function TrajectorySection({ trajectory }: TrajectoryProps) {
     { label: "Complexity", value: trajectory.calibration.complexity },
     { label: "Breadth", value: trajectory.calibration.breadth },
     { label: "Collaboration", value: trajectory.calibration.collaboration },
-    { label: "Eng. Practices", value: trajectory.calibration.engineeringPractices },
+    { label: "Engineering Practices", value: trajectory.calibration.engineeringPractices },
     { label: "Consistency", value: trajectory.calibration.consistency },
   ];
 
@@ -38,40 +46,102 @@ export function TrajectorySection({ trajectory }: TrajectoryProps) {
           subtitle="Estimated level and growth path"
         />
         <div className="space-y-4">
-          {/* Level badges */}
-          <div className="flex items-center gap-3 flex-wrap">
+          {/* Level badges with animated arrow */}
+          <motion.div
+            className="flex items-center gap-3 flex-wrap"
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.1, ease: EASE_OUT_EXPO }}
+          >
             <div className="flex items-center gap-2">
-              <Compass className="size-4 text-emerald-400" />
+              <motion.div
+                initial={{ rotate: -90, opacity: 0 }}
+                whileInView={{ rotate: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
+              >
+                <Compass className="size-4 text-emerald-400" />
+              </motion.div>
               <span className="font-mono text-xs text-muted-foreground">Current:</span>
               <span className={`font-mono text-sm font-bold ${LEVEL_STYLES[trajectory.currentEstimate] ?? "text-foreground"}`}>
                 {trajectory.currentEstimate}
               </span>
             </div>
-            <span className="text-muted-foreground">→</span>
-            <div className="flex items-center gap-2">
+
+            {/* Animated arrow */}
+            <motion.span
+              className="text-emerald-400 font-bold"
+              initial={{ opacity: 0, x: -8 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.35, ease: EASE_OUT_EXPO }}
+            >
+              →
+            </motion.span>
+
+            <motion.div
+              className="flex items-center gap-2"
+              initial={{ opacity: 0, x: -8 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.45, ease: EASE_OUT_EXPO }}
+            >
               <span className="font-mono text-xs text-muted-foreground">Target:</span>
               <span className={`font-mono text-sm font-bold ${LEVEL_STYLES[trajectory.targetEstimate] ?? "text-foreground"}`}>
                 {trajectory.targetEstimate}
               </span>
-            </div>
-            <Badge className={`border text-[9px] ${CONFIDENCE_STYLES[trajectory.confidence] ?? ""}`}>
-              {trajectory.confidence} confidence
-            </Badge>
-          </div>
+            </motion.div>
 
-          {/* Rationale */}
-          <div className="border-l-2 border-emerald-400/30 pl-3">
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3, ease: EASE_OUT_EXPO, delay: 0.55 }}
+            >
+              <Badge className={`border text-[9px] ${CONFIDENCE_STYLES[trajectory.confidence] ?? ""}`}>
+                {trajectory.confidence} confidence
+              </Badge>
+            </motion.div>
+          </motion.div>
+
+          {/* Rationale with animated border */}
+          <div className="relative pl-3">
+            <motion.div
+              className="absolute left-0 top-0 w-0.5 rounded-full bg-emerald-400/30"
+              initial={{ height: 0 }}
+              whileInView={{ height: "100%" }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.15, ease: EASE_OUT_EXPO }}
+            />
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+              className="text-xs text-muted-foreground leading-relaxed"
+            >
               {trajectory.rationale}
-            </p>
+            </motion.p>
           </div>
 
-          {/* Calibration grid */}
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Staggered calibration grid */}
+          <motion.div
+            className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
             {calibrationEntries.map((entry) => (
-              <div
+              <motion.div
                 key={entry.label}
-                className="rounded-md border border-border bg-background p-3"
+                variants={staggerItem}
+                whileHover={{
+                  scale: 1.02,
+                  transition: { type: "spring", stiffness: 400, damping: 30 },
+                }}
+                className="rounded-md border border-border bg-background p-3 transition-colors hover:border-emerald-500/30"
               >
                 <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
                   {entry.label}
@@ -79,9 +149,9 @@ export function TrajectorySection({ trajectory }: TrajectoryProps) {
                 <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
                   {entry.value}
                 </p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
     </AnimateOnView>

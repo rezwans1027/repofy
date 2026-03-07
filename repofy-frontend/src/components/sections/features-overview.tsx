@@ -55,7 +55,7 @@ const features = [
   },
   {
     icon: ShieldCheck,
-    title: "Reports Dashboard",
+    title: "Evals Dashboard",
     description:
       "All your analyses saved in one place. Search, filter by recommendation or score range, sort by date — never lose a candidate evaluation.",
     color: "text-sky-400",

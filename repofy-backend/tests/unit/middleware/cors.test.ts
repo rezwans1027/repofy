@@ -27,15 +27,15 @@ describe("corsMiddleware", () => {
     expect(res.headers["access-control-allow-origin"]).toBe("https://repofy.app");
   });
 
-  it("always sets allow-origin to configured value (static origin mode)", async () => {
+  it("rejects disallowed origins", async () => {
     const app = createApp();
     const res = await request(app)
       .get("/test")
       .set("Origin", "https://evil.com");
 
-    // With a string origin, cors always emits the configured value —
-    // the browser enforces the actual same-origin check client-side
-    expect(res.headers["access-control-allow-origin"]).toBe("https://repofy.app");
+    // Callback-based origin rejects non-matching origins
+    expect(res.headers["access-control-allow-origin"]).toBeUndefined();
+    expect(res.status).toBe(500);
   });
 
   it("responds to preflight with allowed methods and headers", async () => {
