@@ -1,0 +1,120 @@
+// ── ReportData – explicit interface for analysis reports ─────────────
+
+export interface RadarAxis {
+  axis: string;
+  value: number;
+}
+
+export interface RadarBreakdownItem {
+  label: string;
+  score: number;
+  note: string;
+}
+
+export interface Stats {
+  repos: number;
+  stars: number;
+  followers: number;
+  contributions: number;
+  starsPerRepo: number;
+  collaborationRatio: number;
+  interpretation: string;
+}
+
+export interface ActivityBreakdown {
+  push: number;
+  pr: number;
+  issue: number;
+  review: number;
+  interpretation: string;
+}
+
+export interface LanguageEntry {
+  name: string;
+  color: string;
+  percentage: number;
+  repos: number;
+}
+
+export interface LanguageProfile {
+  languages: LanguageEntry[];
+  interpretation: string;
+}
+
+export type CodeQuality = "Excellent" | "Good" | "Fair" | "Poor";
+export type TestingLevel = "Strong" | "Some" | "Minimal" | "None";
+export type CiCdStatus = "Present" | "Partial" | "None";
+export type RepoVerdict = "Standout" | "Strong" | "Solid" | "Needs Work";
+
+export interface TopRepo {
+  name: string;
+  description: string;
+  language: string;
+  languageColor: string;
+  stars: number;
+  forks: number;
+  topics: string[];
+  codeQuality: CodeQuality;
+  testing: TestingLevel;
+  cicd: CiCdStatus;
+  verdict: RepoVerdict;
+  isBestWork: boolean;
+}
+
+export interface StrengthItem {
+  text: string;
+  evidence: string;
+}
+
+export interface WeaknessItem {
+  text: string;
+  evidence: string;
+}
+
+export type RedFlagSeverity = "Minor" | "Notable" | "Serious";
+
+export interface RedFlag {
+  text: string;
+  severity: RedFlagSeverity;
+  explanation: string;
+}
+
+export interface InterviewQuestion {
+  question: string;
+  why: string;
+}
+
+export interface RiskSignals {
+  concerningCount: number;
+  notableCount: number;
+}
+
+export type CandidateLevel = "Junior" | "Mid" | "Senior" | "Staff" | "Principal";
+export type Recommendation = "Strong Hire" | "Hire" | "Lean Hire" | "No Hire";
+
+export interface ReportData {
+  candidateLevel: CandidateLevel;
+  overallScore: number;
+  recommendation: Recommendation;
+
+  narrativeReport: string;
+
+  radarAxes: RadarAxis[];
+  radarBreakdown: RadarBreakdownItem[];
+
+  stats: Stats;
+  activityBreakdown: ActivityBreakdown;
+  languageProfile: LanguageProfile;
+  topRepos: TopRepo[];
+
+  strengths: StrengthItem[];
+  weaknesses: WeaknessItem[];
+  redFlags: RedFlag[];
+  interviewQuestions: InterviewQuestion[];
+
+  riskSignals: RiskSignals;
+  confidenceScore: number;
+  rubricVersion: string;
+  modelVersion: string;
+  dataQualityWarnings: string[];
+}

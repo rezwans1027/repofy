@@ -1,55 +1,17 @@
 import crypto from "crypto";
 import { RequestHandler } from "express";
 import { env } from "../config/env";
-import { getSupabaseAdmin } from "../config/supabase";
 import {
   fetchGitHubUserData,
   GitHubError,
 } from "../services/github.service";
 import { generateAdvice } from "../services/advice.service";
 import { buildAdviceData } from "../services/advice-builder.service";
-import { getCreditBalance, deductGrowthCredit } from "../services/credit.service";
+import { getCreditBalance } from "../services/credit.service";
+import { deductAndPersist, InsufficientCreditsError } from "../services/advice-persistence.service";
 import { USERNAME_RE } from "../lib/validators";
 import { sendError, sendSuccess } from "../lib/response";
 import { logger } from "../lib/logger";
-
-/** Atomically deduct one credit and persist advice in a single step. */
-async function deductAndPersist(
-  userId: string,
-  requestId: string,
-  analyzedUsername: string,
-  analyzedName: string | null,
-  adviceData: Record<string, unknown>,
-): Promise<string> {
-  // 1. Atomic deduct — fails if balance is 0
-  const deducted = await deductGrowthCredit(userId, requestId, {
-    username: analyzedUsername,
-    endpoint: "/advice",
-  });
-  if (!deducted) throw new InsufficientCreditsError();
-
-  // 2. Persist — if this fails the credit is lost, but this is a simple DB write
-  //    with near-zero failure rate vs. a 60s+ AI call
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("advice")
-    .upsert(
-      { user_id: userId, analyzed_username: analyzedUsername, analyzed_name: analyzedName, advice_data: adviceData },
-      { onConflict: "user_id,analyzed_username" },
-    )
-    .select("id")
-    .single();
-
-  if (error) throw error;
-  return data.id as string;
-}
-
-class InsufficientCreditsError extends Error {
-  constructor() {
-    super("Insufficient growth credits");
-    this.name = "InsufficientCreditsError";
-  }
-}
 
 /** Track in-flight advice requests per user to prevent concurrent expensive calls. */
 const activeAdviceRequests = new Map<string, true>();

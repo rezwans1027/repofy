@@ -1,4 +1,5 @@
 import type { GitHubUserData } from "../types";
+import { sanitizeForPrompt, stripControlChars } from "./sanitize-prompt";
 
 /** Max lines per file tree to prevent context bloat. */
 const MAX_TREE_LINES = 60;
@@ -7,6 +8,9 @@ const MAX_SNIPPET_CHARS = 3000;
 /** Max total characters for all snapshot blocks combined. */
 const MAX_SNAPSHOTS_CHARS = 15000;
 
+const USER_DATA_BEGIN = "===BEGIN USER-PROVIDED DATA===";
+const USER_DATA_END = "===END USER-PROVIDED DATA===";
+
 /**
  * Build a formatted user-message string from GitHub profile data.
  * Used by both the analysis and advice AI services.
@@ -14,9 +18,16 @@ const MAX_SNAPSHOTS_CHARS = 15000;
 export function buildUserMessage(data: GitHubUserData, closingPrompt: string): string {
   const { profile, topRepositories, languages, activity, stats, contributions, repoSnapshots, aggregateMetrics } = data;
 
+  // Sanitise user-controlled profile fields
+  const safeName = sanitizeForPrompt(profile.name, 100);
+  const safeBio = sanitizeForPrompt(profile.bio, 300);
+  const safeCompany = sanitizeForPrompt(profile.company, 100);
+  const safeLocation = sanitizeForPrompt(profile.location, 100);
+  const safeBlog = sanitizeForPrompt(profile.blog, 200);
+
   const repoSummaries = topRepositories.map(
     (r) =>
-      `- ${r.name}: ${r.description || "No description"} | ` +
+      `- ${r.name}: ${sanitizeForPrompt(r.description, 200) || "No description"} | ` +
       `Language: ${r.language || "N/A"} | Stars: ${r.stars} | Forks: ${r.forks} | ` +
       `Topics: [${r.topics.join(", ")}] | Fork: ${r.isFork} | Archived: ${r.isArchived} | ` +
       `Last pushed: ${r.pushedAt}`,
@@ -47,11 +58,12 @@ Source files: ${s.sourceFileCount} | Total lines of code: ${s.totalLOC} | Larges
 Has src/ directory: ${s.srcDirPresent ? "yes" : "no"} | Has release discipline: ${s.hasReleaseDiscipline ? "yes" : "no"}`;
 
     if (s.codeSnippets && s.codeSnippets.length > 0) {
-      const truncatedSnippets = s.codeSnippets.map((snip) =>
-        snip.length > MAX_SNIPPET_CHARS
-          ? snip.slice(0, MAX_SNIPPET_CHARS) + "\n... (truncated)"
-          : snip,
-      );
+      const truncatedSnippets = s.codeSnippets.map((snip) => {
+        const cleaned = stripControlChars(snip);
+        return cleaned.length > MAX_SNIPPET_CHARS
+          ? cleaned.slice(0, MAX_SNIPPET_CHARS) + "\n... (truncated)"
+          : cleaned;
+      });
       block += `\n\nCODE SNIPPETS (${s.name}):\n${truncatedSnippets.join("\n\n")}`;
     }
 
@@ -67,13 +79,14 @@ Has src/ directory: ${s.srcDirPresent ? "yes" : "no"} | Has release discipline: 
   return `
 REPO SELECTION: These repositories were selected as: (1) Pinned repos first, (2) Then highest-star non-fork repos, (3) Archived repos excluded unless pinned.
 
+${USER_DATA_BEGIN}
 GITHUB PROFILE:
 - Username: ${profile.username}
-- Name: ${profile.name || "N/A"}
-- Bio: ${profile.bio || "N/A"}
-- Company: ${profile.company || "N/A"}
-- Location: ${profile.location || "N/A"}
-- Blog/Website: ${profile.blog || "N/A"}
+- Name: ${safeName}
+- Bio: ${safeBio}
+- Company: ${safeCompany}
+- Location: ${safeLocation}
+- Blog/Website: ${safeBlog}
 - Public repos: ${profile.publicRepos}
 - Followers: ${profile.followers} | Following: ${profile.following}
 - Account created: ${profile.createdAt}
@@ -103,6 +116,7 @@ ${snapshotBlocks}
 AGGREGATE METRICS:
 Median days since last push: ${aggregateMetrics.medianLatestPushDaysAgo}
 Has code: ${aggregateMetrics.hasCode ? "yes" : "no"}
+${USER_DATA_END}
 
 ${closingPrompt}
 `;

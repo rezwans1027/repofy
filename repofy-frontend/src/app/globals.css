@@ -226,3 +226,12 @@ body[data-scroll-locked] {
 @keyframes shimmer {
   100% { transform: translateX(100%); }
 }
+
+/* Heatmap cell fade-in */
+@keyframes heatmapFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.heatmap-cell-animate {
+  animation: heatmapFadeIn 0.15s ease both;
+}

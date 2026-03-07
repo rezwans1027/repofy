@@ -8,8 +8,10 @@ export const requireAdminKey: RequestHandler = (req, res, next) => {
   if (
     !env.adminSecret ||
     typeof key !== "string" ||
-    key.length !== env.adminSecret.length ||
-    !crypto.timingSafeEqual(Buffer.from(key), Buffer.from(env.adminSecret))
+    !crypto.timingSafeEqual(
+      crypto.createHash("sha256").update(key).digest(),
+      crypto.createHash("sha256").update(env.adminSecret).digest(),
+    )
   ) {
     sendError(res, 401, "Unauthorized");
     return;

@@ -18,6 +18,11 @@ import type {
   AggregateMetrics,
 } from "../types";
 
+// ── File size caps ────────────────────────────────────────────────────
+
+const MAX_README_SIZE_BYTES = 524_288;    // 512 KB
+const MAX_SNIPPET_SIZE_BYTES = 262_144;   // 256 KB
+
 // ── Error class ───────────────────────────────────────────────────────
 
 export class GitHubError extends Error {
@@ -722,17 +727,24 @@ async function fetchRepoSnapshot(
       (e) => e.type === "blob" && /^readme\.md$/i.test(e.path),
     );
     if (readmeEntry) {
-      try {
-        const readmeData = await ghFetch<{ content: string; encoding: string }>(
-          `/repos/${username}/${repo.name}/contents/${readmeEntry.path}`,
-          signal,
-        );
-        if (readmeData.encoding === "base64") {
-          const text = Buffer.from(readmeData.content, "base64").toString("utf-8");
-          readmeWordCount = text.split(/\s+/).filter(Boolean).length;
+      // Skip fetch entirely if the tree reports the file is too large
+      if (readmeEntry.size !== undefined && readmeEntry.size > MAX_README_SIZE_BYTES) {
+        readmeWordCount = 0; // README too large, skip
+      } else {
+        try {
+          const readmeData = await ghFetch<{ content: string; encoding: string }>(
+            `/repos/${username}/${repo.name}/contents/${readmeEntry.path}`,
+            signal,
+          );
+          if (readmeData.encoding === "base64") {
+            const text = Buffer.from(readmeData.content, "base64")
+              .toString("utf-8")
+              .slice(0, MAX_README_SIZE_BYTES);
+            readmeWordCount = text.split(/\s+/).filter(Boolean).length;
+          }
+        } catch {
+          // Non-critical
         }
-      } catch {
-        // Non-critical
       }
     }
 
@@ -814,22 +826,31 @@ async function fetchCodeSnippets(
   const snippets: string[] = [];
   const MAX_SNIPPET_LINES = 250;
 
-  // Find entry file
+  // Find entry file (skip files that are too large)
   const entryPath = ENTRY_FILE_NAMES.find((name) =>
-    entries.some((e) => e.type === "blob" && e.path.toLowerCase() === name.toLowerCase()),
+    entries.some(
+      (e) =>
+        e.type === "blob" &&
+        e.path.toLowerCase() === name.toLowerCase() &&
+        !(e.size !== undefined && e.size > MAX_SNIPPET_SIZE_BYTES),
+    ),
   );
 
-  // Find test file
+  // Find test file (skip files that are too large)
   const testEntry = entries.find(
     (e) =>
       e.type === "blob" &&
-      (e.path.includes(".test.") || e.path.includes(".spec.") || e.path.includes("_test.")),
+      (e.path.includes(".test.") || e.path.includes(".spec.") || e.path.includes("_test.")) &&
+      !(e.size !== undefined && e.size > MAX_SNIPPET_SIZE_BYTES),
   );
 
   const filesToFetch: string[] = [];
   if (entryPath) {
     const actual = entries.find(
-      (e) => e.type === "blob" && e.path.toLowerCase() === entryPath.toLowerCase(),
+      (e) =>
+        e.type === "blob" &&
+        e.path.toLowerCase() === entryPath.toLowerCase() &&
+        !(e.size !== undefined && e.size > MAX_SNIPPET_SIZE_BYTES),
     );
     if (actual) filesToFetch.push(actual.path);
   }
@@ -842,7 +863,9 @@ async function fetchCodeSnippets(
         signal,
       );
       if (fileData.encoding === "base64") {
-        const text = Buffer.from(fileData.content, "base64").toString("utf-8");
+        const text = Buffer.from(fileData.content, "base64")
+          .toString("utf-8")
+          .slice(0, MAX_SNIPPET_SIZE_BYTES);
         const lines = text.split("\n").slice(0, MAX_SNIPPET_LINES);
         snippets.push(`--- ${filePath} ---\n${lines.join("\n")}`);
       }

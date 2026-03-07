@@ -9,6 +9,9 @@ vi.mock("../../../src/services/email.service", () => ({
 vi.mock("../../../src/lib/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
+vi.mock("../../../src/config/env", () => ({
+  env: { otpHmacSecret: "test-secret" },
+}));
 
 import { initiateSignup, verifySignup, resendOtp, AuthError } from "../../../src/services/auth.service";
 import { getSupabaseAdmin } from "../../../src/config/supabase";
@@ -113,7 +116,7 @@ describe("verifySignup", () => {
     const client = createMockSupabase();
     // The RPC returns the row with the hashed OTP
     const crypto = await import("crypto");
-    const hashedOtp = crypto.createHash("sha256").update("123456").digest("hex");
+    const hashedOtp = crypto.createHmac("sha256", "test-secret").update("123456").digest("hex");
 
     client.rpc.mockResolvedValue({
       data: [
@@ -143,7 +146,7 @@ describe("verifySignup", () => {
   it("throws unified error on wrong OTP", async () => {
     const client = createMockSupabase();
     const crypto = await import("crypto");
-    const hashedOtp = crypto.createHash("sha256").update("999999").digest("hex");
+    const hashedOtp = crypto.createHmac("sha256", "test-secret").update("999999").digest("hex");
 
     client.rpc.mockResolvedValue({
       data: [
@@ -185,7 +188,7 @@ describe("verifySignup", () => {
   it("throws 409 when user already registered", async () => {
     const client = createMockSupabase();
     const crypto = await import("crypto");
-    const hashedOtp = crypto.createHash("sha256").update("123456").digest("hex");
+    const hashedOtp = crypto.createHmac("sha256", "test-secret").update("123456").digest("hex");
 
     client.rpc.mockResolvedValue({
       data: [

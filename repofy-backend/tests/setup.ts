@@ -5,6 +5,8 @@ process.env.OPENAI_API_KEY = "fake-openai-key";
 process.env.STRIPE_SECRET_KEY = "sk_test_fake_key";
 process.env.STRIPE_WEBHOOK_SECRET = "whsec_fake_secret";
 process.env.RESEND_API_KEY = "re_fake_resend_key";
+process.env.OTP_HMAC_SECRET = "fake-otp-hmac-secret";
+process.env.ADMIN_SECRET = "fake-admin-secret";
 process.env.NODE_ENV = "test";
 
 import { afterEach, vi } from "vitest";

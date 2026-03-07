@@ -37,11 +37,14 @@ async function request<T>(
   const headers: Record<string, string> = {};
 
   if (auth) {
-    const {
-      data: { session },
-    } = await getSupabase().auth.refreshSession();
-    if (session?.access_token) {
-      headers["Authorization"] = `Bearer ${session.access_token}`;
+    const { error } = await getSupabase().auth.getUser();
+    if (!error) {
+      const {
+        data: { session },
+      } = await getSupabase().auth.getSession();
+      if (session?.access_token) {
+        headers["Authorization"] = `Bearer ${session.access_token}`;
+      }
     }
   }
 

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { reportData as staticReportData } from "@/lib/demo-data";
+import type { ReportData } from "@/types/report";
 
 import { TopBanner } from "./sections/top-banner";
 import { Summary } from "./sections/summary";
@@ -17,7 +18,7 @@ import { InterviewQuestions } from "./sections/interview-questions";
 import { ExportBar } from "./sections/export-bar";
 import { AnalysisReportPdfLayout } from "./pdf-layout";
 
-export type ReportData = typeof staticReportData;
+export type { ReportData };
 
 interface AnalysisReportProps {
   username: string;

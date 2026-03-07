@@ -38,10 +38,32 @@ export const webhookRateLimit = rateLimit({
   message: { success: false, error: "Too many requests." },
 });
 
-/** Auth signup/verify limiter: 10 req/min per IP */
+/** Derive a compound key from IP + email (from POST body) for auth routes. */
+function authKeyGenerator(req: Request): string {
+  const email =
+    typeof req.body?.email === "string"
+      ? req.body.email.toLowerCase().trim()
+      : "";
+  return email ? `${req.ip ?? "unknown"}:${email}` : req.ip ?? "unknown";
+}
+
+/** Auth signup/verify limiter: 10 req/min per IP+email */
 export const authRateLimit = rateLimit({
   windowMs: 60_000,
   max: 10,
+  keyGenerator: authKeyGenerator,
+  validate: { keyGeneratorIpFallback: false },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many requests. Please try again later." },
+});
+
+/** Tight limiter for OTP resend: 3 req/min per IP+email */
+export const resendRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 3,
+  keyGenerator: authKeyGenerator,
+  validate: { keyGeneratorIpFallback: false },
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: "Too many requests. Please try again later." },

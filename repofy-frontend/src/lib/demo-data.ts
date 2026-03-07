@@ -150,6 +150,8 @@ export const contributionDensity = [
 
 // ── Analysis Report Data ──────────────────────────────────────────
 
+import type { ReportData } from "@/types/report";
+
 export const reportData = {
   candidateLevel: "Senior" as const,
   overallScore: 82,
@@ -287,5 +289,5 @@ export const reportData = {
   rubricVersion: "v1.1",
   modelVersion: "gpt-5.1",
   dataQualityWarnings: [] as string[],
-};
+} satisfies ReportData;
 
