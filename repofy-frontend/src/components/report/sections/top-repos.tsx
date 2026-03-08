@@ -7,7 +7,7 @@ import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Badge } from "@/components/ui/badge";
 import { codeQualityColor, testingColor, cicdColor, verdictColor } from "@/lib/styles";
-import type { ReportData } from "@/components/report/analysis-report";
+import type { ReportData } from "@/types/report";
 
 interface TopReposProps {
   topRepos: ReportData["topRepos"];

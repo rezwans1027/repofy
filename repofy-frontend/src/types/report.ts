@@ -1,3 +1,4 @@
+// CANONICAL SOURCE: repofy-backend/src/types/index.ts (CandidateLevel, Recommendation)
 // ── ReportData – explicit interface for analysis reports ─────────────
 
 export interface RadarAxis {
@@ -41,10 +42,10 @@ export interface LanguageProfile {
   interpretation: string;
 }
 
-export type CodeQuality = "Excellent" | "Good" | "Fair" | "Poor";
-export type TestingLevel = "Strong" | "Some" | "Minimal" | "None";
-export type CiCdStatus = "Present" | "Partial" | "None";
-export type RepoVerdict = "Standout" | "Strong" | "Solid" | "Needs Work";
+export type CodeQuality = "Excellent" | "Good" | "Mixed" | "Weak" | "Unknown";
+export type TestingLevel = "Strong" | "Some" | "None" | "Unknown";
+export type CiCdStatus = "Present" | "Partial" | "None" | "Unknown";
+export type RepoVerdict = "Standout" | "Strong" | "Solid" | "Needs Work" | "Risky";
 
 export interface TopRepo {
   name: string;
@@ -71,7 +72,7 @@ export interface WeaknessItem {
   evidence: string;
 }
 
-export type RedFlagSeverity = "Minor" | "Notable" | "Serious";
+export type RedFlagSeverity = "Minor" | "Notable" | "Concerning";
 
 export interface RedFlag {
   text: string;
@@ -89,8 +90,8 @@ export interface RiskSignals {
   notableCount: number;
 }
 
-export type CandidateLevel = "Junior" | "Mid" | "Senior" | "Staff" | "Principal";
-export type Recommendation = "Strong Hire" | "Hire" | "Lean Hire" | "No Hire";
+export type CandidateLevel = "Junior" | "Mid-Level" | "Senior" | "Staff";
+export type Recommendation = "No Hire" | "Weak Hire" | "Hire" | "Strong Hire";
 
 export interface ReportData {
   candidateLevel: CandidateLevel;

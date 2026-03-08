@@ -1,4 +1,5 @@
 import { getSupabaseAdmin } from "../config/supabase";
+import { throwIfDbError } from "../lib/errors";
 
 export interface CreditBalance {
   growth_balance: number;
@@ -13,7 +14,7 @@ export async function getCreditBalance(userId: string): Promise<CreditBalance> {
     .eq("user_id", userId)
     .maybeSingle();
 
-  if (error) throw error;
+  throwIfDbError(error, "fetch credit balance");
 
   return data ?? { growth_balance: 0, eval_balance: 0 };
 }
@@ -32,9 +33,9 @@ export async function grantGrowthCredits(
     p_metadata: metadata ?? null,
   });
 
-  if (error) throw error;
+  throwIfDbError(error, "grant growth credits");
 
-  return data as boolean;
+  return data === true;
 }
 
 export async function deductGrowthCredit(
@@ -49,8 +50,8 @@ export async function deductGrowthCredit(
     p_metadata: metadata ?? null,
   });
 
-  if (error) throw error;
+  throwIfDbError(error, "deduct growth credit");
 
-  return data as boolean;
+  return data === true;
 }
 

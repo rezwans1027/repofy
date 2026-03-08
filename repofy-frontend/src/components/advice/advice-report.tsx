@@ -19,19 +19,11 @@ import { CareerPositioning } from "./sections/career-positioning";
 import { AdviceExportBar } from "./sections/advice-export-bar";
 import { AdviceReportPdfLayout } from "./advice-pdf-layout";
 import { tabContentVariants, EASE_OUT_EXPO } from "@/lib/animation-variants";
+import type { AdviceData, GenerationWarning } from "@/types/advice";
+
+export type { AdviceData, GenerationWarning };
 
 // ── Warning system ──────────────────────────────────────────────────
-
-export type GenerationWarning =
-  | "repo_improvements_unavailable"
-  | "repo_improvements_reduced"
-  | "weekly_roadmap_synthesized"
-  | "success_metrics_reduced"
-  | "profile_optimizations_reduced"
-  | "skill_roadmap_reduced"
-  | "contribution_strategy_reduced"
-  | "strengths_and_gaps_reduced"
-  | "career_positioning_reduced";
 
 const WARNING_MESSAGES: Record<GenerationWarning, string> = {
   repo_improvements_unavailable: "Repo improvement suggestions could not be generated for this profile.",
@@ -44,101 +36,6 @@ const WARNING_MESSAGES: Record<GenerationWarning, string> = {
   strengths_and_gaps_reduced: "Strengths and gaps analysis could not be fully generated.",
   career_positioning_reduced: "Career positioning could not be fully generated.",
 };
-
-// ── AdviceData v2 type ──────────────────────────────────────────────
-
-export interface AdviceData {
-  schemaVersion: "v2";
-  generationWarnings: GenerationWarning[];
-
-  summary: string;
-
-  trajectory: {
-    currentEstimate: string;
-    targetEstimate: string;
-    confidence: string;
-    rationale: string;
-    calibration: {
-      complexity: string;
-      breadth: string;
-      collaboration: string;
-      engineeringPractices: string;
-      consistency: string;
-    };
-  };
-
-  buildRoadmap: {
-    title: string;
-    projectOutcome: string;
-    difficulty: "Beginner" | "Intermediate" | "Advanced";
-    estimatedWeeks: number;
-    techStack: string[];
-    milestones: string[];
-    hiringSignals: string[];
-    evidence: string;
-  }[];
-
-  skillRoadmap: {
-    skill: string;
-    priority: "Now" | "Next" | "Later";
-    demandLevel: "High" | "Medium" | "Growing";
-    relatedTo: string;
-    reason: string;
-    proofOfLearning: string;
-    evidence: string;
-  }[];
-
-  repoImprovements: {
-    repoName: string;
-    repoUrl?: string | null;
-    language?: string | null;
-    languageColor?: string;
-    stars?: number;
-    improvements: {
-      area: "Testing" | "Documentation" | "CI/CD" | "Code Quality" | "Architecture";
-      suggestion: string;
-      priority: "High" | "Medium" | "Low";
-      expectedOutcome: string;
-    }[];
-  }[];
-
-  contributionStrategy: {
-    title: string;
-    detail: string;
-    evidence: string;
-  }[];
-
-  profileOptimizations: {
-    area: string;
-    current: string;
-    suggestion: string;
-    example: string;
-    impact: string;
-  }[];
-
-  weeklyRoadmap: {
-    week: number;
-    activeBuildTitle: string;
-    focus: string;
-    deliverable: string;
-    tasks: string[];
-    skillTask: string;
-    successCheck: string;
-  }[];
-
-  strengthsAndGaps: {
-    strengths: { area: string; detail: string }[];
-    gaps: { area: string; detail: string }[];
-  };
-
-  careerPositioning: {
-    positioning: string;
-    roles: string[];
-    differentiators: string[];
-  };
-
-  successMetrics: string[];
-}
 
 // ── Tabs ────────────────────────────────────────────────────────────
 

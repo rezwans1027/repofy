@@ -4,12 +4,13 @@ import { motion } from "framer-motion";
 import { Target } from "lucide-react";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
+import { AdviceEmptyState } from "./advice-empty-state";
 import {
   staggerContainer,
   staggerItemScale,
   contentFade,
 } from "@/lib/animation-variants";
-import type { AdviceData } from "@/components/advice/advice-report";
+import type { AdviceData } from "@/types/advice";
 
 interface ProfileOptimizationsProps {
   optimizations: AdviceData["profileOptimizations"];
@@ -18,12 +19,11 @@ interface ProfileOptimizationsProps {
 export function ProfileOptimizations({ optimizations }: ProfileOptimizationsProps) {
   if (optimizations.length === 0) {
     return (
-      <AnimateOnView delay={0.16}>
-        <div className="rounded-lg border border-border bg-card p-5">
-          <SectionHeader title="Profile Optimizations" />
-          <p className="text-xs text-muted-foreground">No profile optimization suggestions available.</p>
-        </div>
-      </AnimateOnView>
+      <AdviceEmptyState
+        title="Profile Optimizations"
+        message="No profile optimization suggestions available."
+        delay={0.16}
+      />
     );
   }
 

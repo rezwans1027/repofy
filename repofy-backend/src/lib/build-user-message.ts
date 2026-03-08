@@ -1,5 +1,5 @@
 import type { GitHubUserData } from "../types";
-import { sanitizeForPrompt, stripControlChars } from "./sanitize-prompt";
+import { sanitizeForPrompt } from "./sanitize-prompt";
 
 /** Max lines per file tree to prevent context bloat. */
 const MAX_TREE_LINES = 60;
@@ -29,7 +29,7 @@ export function buildUserMessage(data: GitHubUserData, closingPrompt: string): s
     (r) =>
       `- ${r.name}: ${sanitizeForPrompt(r.description, 200) || "No description"} | ` +
       `Language: ${r.language || "N/A"} | Stars: ${r.stars} | Forks: ${r.forks} | ` +
-      `Topics: [${r.topics.join(", ")}] | Fork: ${r.isFork} | Archived: ${r.isArchived} | ` +
+      `Topics: [${r.topics.map((t) => sanitizeForPrompt(t, 50)).join(", ")}] | Fork: ${r.isFork} | Archived: ${r.isArchived} | ` +
       `Last pushed: ${r.pushedAt}`,
   );
 
@@ -59,10 +59,8 @@ Has src/ directory: ${s.srcDirPresent ? "yes" : "no"} | Has release discipline: 
 
     if (s.codeSnippets && s.codeSnippets.length > 0) {
       const truncatedSnippets = s.codeSnippets.map((snip) => {
-        const cleaned = stripControlChars(snip);
-        return cleaned.length > MAX_SNIPPET_CHARS
-          ? cleaned.slice(0, MAX_SNIPPET_CHARS) + "\n... (truncated)"
-          : cleaned;
+        const cleaned = sanitizeForPrompt(snip, MAX_SNIPPET_CHARS);
+        return cleaned;
       });
       block += `\n\nCODE SNIPPETS (${s.name}):\n${truncatedSnippets.join("\n\n")}`;
     }

@@ -1,5 +1,5 @@
 import { createSupabaseQueries } from "@/lib/supabase-queries";
-import type { AdviceData } from "@/components/advice/advice-report";
+import type { AdviceData } from "@/types/advice";
 
 export interface AdviceListItem {
   id: string;

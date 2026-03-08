@@ -9,6 +9,8 @@ import type {
   Recommendation,
 } from "../types";
 
+export const RUBRIC_VERSION = "v1.1";
+
 const AXIS_WEIGHTS: Record<AxisLabel, number> = {
   "Code Quality": 0.25,
   "Eng. Practices": 0.20,
@@ -148,10 +150,11 @@ export function computeScoring(
   // 1b. Deterministic rubric caps/floors from repo snapshot evidence
   applyRubricCaps(axisValues, aggregateMetrics, repoSnapshots);
 
-  // 1c. Write capped values back to scorer.radarAxes so downstream consumers see corrected values
-  for (const a of scorer.radarAxes) {
-    a.value = axisValues.get(a.axis) ?? a.value;
-  }
+  // 1c. Write capped values back to a cloned radarAxes so we don't mutate the input
+  scorer.radarAxes = scorer.radarAxes.map((a) => ({
+    ...a,
+    value: axisValues.get(a.axis) ?? a.value,
+  }));
 
   // 2. Weighted raw score
   let raw = 0;
@@ -199,7 +202,8 @@ export function computeScoring(
 
   // 8. Confidence score
   const snapshotRatio = repoSnapshots.length > 0 ? validSnapshots / repoSnapshots.length : 0;
-  const warningPenalty = scorer.dataQualityWarnings.length * 0.05;
+  const CONFIDENCE_PENALTY_PER_WARNING = 0.05;
+  const warningPenalty = scorer.dataQualityWarnings.length * CONFIDENCE_PENALTY_PER_WARNING;
   const confidenceScore = Math.round(clamp(snapshotRatio - warningPenalty, 0, 1) * 100) / 100;
 
   return {
@@ -209,7 +213,7 @@ export function computeScoring(
     radarBreakdownScores,
     riskSignals: { concerningCount, notableCount },
     confidenceScore,
-    rubricVersion: "v1.1",
+    rubricVersion: RUBRIC_VERSION,
     modelVersion: env.openaiModel,
   };
 }

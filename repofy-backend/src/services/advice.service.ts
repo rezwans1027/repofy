@@ -1,9 +1,23 @@
-import OpenAI from "openai";
+/**
+ * advice.service.ts — AI advice generation pipeline.
+ *
+ * This file is large (~800 LOC) but internally well-organized into clear
+ * sections. Natural split points for future refactoring:
+ *  1. Section schemas (TRAJECTORY_SCHEMA … CAREER_POSITIONING_SCHEMA) → advice-schemas.ts
+ *  2. Normalization & validation (normalizeAdvice, isMetricMeasurable) → advice-validation.ts
+ *  3. Degrade / merge logic (SECTION_DEGRADE_MAP, mergeAdvice) → advice-merge.ts
+ *  4. Retry schema builder (buildRetrySchema, buildRetryPrompt) → advice-retry.ts
+ *
+ * Splitting is deferred because the sections reference shared types/constants
+ * and the file is not growing — refactoring would add import overhead without
+ * reducing cognitive load for contributors already familiar with the structure.
+ */
 import { env } from "../config/env";
 import { ADVICE_SYSTEM_PROMPT } from "../lib/prompts";
 import { buildUserMessage } from "../lib/build-user-message";
 import { logTokenUsage } from "../lib/usage-logger";
 import { logger } from "../lib/logger";
+import { getClient } from "./openai.service";
 import type {
   GitHubUserData,
   AdviceV2,
@@ -11,8 +25,6 @@ import type {
   AdviceSectionName,
 } from "../types";
 import { GenerationWarning } from "../types";
-
-const client = new OpenAI({ apiKey: env.openaiApiKey });
 
 // ── Section schemas (building blocks) ────────────────────────────────
 
@@ -654,7 +666,7 @@ async function callOpenAI(
   maxTokens: number,
   signal?: AbortSignal,
 ): Promise<string | null> {
-  const completion = await client.chat.completions.create({
+  const completion = await getClient().chat.completions.create({
     model: env.openaiModel,
     messages,
     response_format: {

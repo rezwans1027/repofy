@@ -1,4 +1,5 @@
 import { getSupabaseAdmin } from "../config/supabase";
+import { throwIfDbError, DatabaseError } from "../lib/errors";
 import { deductGrowthCredit } from "./credit.service";
 
 export class InsufficientCreditsError extends Error {
@@ -35,6 +36,7 @@ export async function deductAndPersist(
     .select("id")
     .single();
 
-  if (error) throw error;
+  throwIfDbError(error, "persist advice");
+  if (!data?.id) throw new DatabaseError("persist advice returned no id", null);
   return data.id as string;
 }

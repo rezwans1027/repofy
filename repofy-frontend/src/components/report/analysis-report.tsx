@@ -18,8 +18,6 @@ import { InterviewQuestions } from "./sections/interview-questions";
 import { ExportBar } from "./sections/export-bar";
 import { AnalysisReportPdfLayout } from "./pdf-layout";
 
-export type { ReportData };
-
 interface AnalysisReportProps {
   username: string;
   avatarUrl?: string;

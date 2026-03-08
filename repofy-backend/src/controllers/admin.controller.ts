@@ -8,12 +8,12 @@ export const getUsageStats: RequestHandler = async (_req, res) => {
   const [{ data, error }, { count, error: countError }] = await Promise.all([
     supabase
       .from("api_usage")
-      .select("*")
+      .select("endpoint, model, prompt_tokens, completion_tokens, total_tokens, estimated_cost, created_at")
       .order("created_at", { ascending: false })
       .limit(200),
     supabase
       .from("api_usage")
-      .select("*", { count: "exact", head: true }),
+      .select("id", { count: "exact", head: true }),
   ]);
 
   if (error || countError) {

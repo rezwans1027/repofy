@@ -45,17 +45,21 @@ export function logTokenUsage(
   );
 
   // Persist to Supabase (fire-and-forget, never block the response)
-  getSupabaseAdmin()
-    .from("api_usage")
-    .insert({
-      endpoint,
-      model,
-      prompt_tokens: usage.prompt_tokens,
-      completion_tokens: usage.completion_tokens,
-      total_tokens: usage.total_tokens,
-      estimated_cost: cost,
-    })
-    .then(({ error }) => {
-      if (error) logger.error("Failed to persist usage data", error.message);
-    });
+  Promise.resolve(
+    getSupabaseAdmin()
+      .from("api_usage")
+      .insert({
+        endpoint,
+        model,
+        prompt_tokens: usage.prompt_tokens,
+        completion_tokens: usage.completion_tokens,
+        total_tokens: usage.total_tokens,
+        estimated_cost: cost,
+      })
+      .then(({ error }) => {
+        if (error) logger.error("Failed to persist usage data", error.message);
+      }),
+  ).catch((err: unknown) => {
+    logger.error("Unhandled error persisting usage data", err);
+  });
 }

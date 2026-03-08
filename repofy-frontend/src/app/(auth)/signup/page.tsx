@@ -41,7 +41,7 @@ export default function SignupPage() {
 
   // UI state
   const [phase, setPhase] = useState<Phase>("form");
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
 
@@ -221,7 +221,7 @@ export default function SignupPage() {
                     onChange={(e) => {
                       setDisplayName(e.target.value);
                       if (errors.displayName)
-                        setErrors((p) => ({ ...p, displayName: undefined! }));
+                        setErrors((p) => ({ ...p, displayName: undefined }));
                     }}
                     aria-invalid={!!errors.displayName}
                     className="pl-10 font-mono text-sm"
@@ -252,7 +252,7 @@ export default function SignupPage() {
                     onChange={(e) => {
                       setEmail(e.target.value);
                       if (errors.email)
-                        setErrors((p) => ({ ...p, email: undefined! }));
+                        setErrors((p) => ({ ...p, email: undefined }));
                     }}
                     aria-invalid={!!errors.email}
                     className="pl-10 font-mono text-sm"
@@ -323,7 +323,7 @@ export default function SignupPage() {
                       onChange={(value) => {
                         setOtp(value);
                         if (errors.otp)
-                          setErrors((p) => ({ ...p, otp: undefined! }));
+                          setErrors((p) => ({ ...p, otp: undefined }));
                       }}
                     >
                       <InputOTPGroup>
@@ -363,7 +363,7 @@ export default function SignupPage() {
                       onChange={(e) => {
                         setPassword(e.target.value);
                         if (errors.password)
-                          setErrors((p) => ({ ...p, password: undefined! }));
+                          setErrors((p) => ({ ...p, password: undefined }));
                       }}
                       aria-invalid={!!errors.password}
                       className="pl-10 pr-10 font-mono text-sm"
@@ -407,7 +407,7 @@ export default function SignupPage() {
                         if (errors.confirmPassword)
                           setErrors((p) => ({
                             ...p,
-                            confirmPassword: undefined!,
+                            confirmPassword: undefined,
                           }));
                       }}
                       aria-invalid={!!errors.confirmPassword}

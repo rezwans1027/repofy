@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SectionHeader } from "@/components/ui/section-header";
-import type { ReportData } from "@/components/report/analysis-report";
+import { EvidenceList } from "@/components/ui/evidence-list";
+import type { ReportData } from "@/types/report";
 import { cn } from "@/lib/utils";
 import { codeQualityColor, testingColor, cicdColor, SEVERITY_STYLES } from "@/lib/styles";
 
@@ -63,35 +64,11 @@ export function ComparisonSideBySide({
 // ── Pre-built renderers ──────────────────────────────────────────
 
 export function StrengthsList({ strengths }: { strengths: ReportData["strengths"] }) {
-  return (
-    <div className="space-y-3">
-      {strengths.map((s, i) => (
-        <div key={i} className="flex gap-3">
-          <Check className="size-4 shrink-0 text-emerald-400 mt-0.5" />
-          <div>
-            <p className="text-sm">{s.text}</p>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">{s.evidence}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  return <EvidenceList items={strengths} icon={Check} iconColor="text-emerald-400" />;
 }
 
 export function WeaknessesList({ weaknesses }: { weaknesses: ReportData["weaknesses"] }) {
-  return (
-    <div className="space-y-3">
-      {weaknesses.map((w, i) => (
-        <div key={i} className="flex gap-3">
-          <AlertTriangle className="size-4 shrink-0 text-yellow-400 mt-0.5" />
-          <div>
-            <p className="text-sm">{w.text}</p>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">{w.evidence}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  return <EvidenceList items={weaknesses} icon={AlertTriangle} iconColor="text-yellow-400" />;
 }
 
 export function RedFlagsList({ redFlags }: { redFlags: ReportData["redFlags"] }) {

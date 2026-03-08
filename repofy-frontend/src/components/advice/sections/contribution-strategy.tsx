@@ -4,13 +4,14 @@ import { motion } from "framer-motion";
 import { TrendingUp } from "lucide-react";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
+import { AdviceEmptyState } from "./advice-empty-state";
 import {
   staggerContainer,
   staggerItem,
   contentFade,
   borderGrow,
 } from "@/lib/animation-variants";
-import type { AdviceData } from "@/components/advice/advice-report";
+import type { AdviceData } from "@/types/advice";
 
 interface ContributionStrategyProps {
   items: AdviceData["contributionStrategy"];
@@ -19,12 +20,11 @@ interface ContributionStrategyProps {
 export function ContributionStrategy({ items }: ContributionStrategyProps) {
   if (items.length === 0) {
     return (
-      <AnimateOnView delay={0.12}>
-        <div className="rounded-lg border border-border bg-card p-5">
-          <SectionHeader title="Contribution Strategy" />
-          <p className="text-xs text-muted-foreground">No contribution strategy available.</p>
-        </div>
-      </AnimateOnView>
+      <AdviceEmptyState
+        title="Contribution Strategy"
+        message="No contribution strategy available."
+        delay={0.12}
+      />
     );
   }
 

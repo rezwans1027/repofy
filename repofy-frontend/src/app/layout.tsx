@@ -3,7 +3,6 @@ import { headers } from "next/headers";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
-import { AnalysisProvider } from "@/components/providers/analysis-provider";
 import { OverlayScrollbar } from "@/components/ui/overlay-scrollbar";
 import "./globals.css";
 
@@ -40,10 +39,8 @@ export default async function RootLayout({
       >
         <ThemeProvider nonce={nonce}>
           <AuthProvider>
-            <AnalysisProvider>
               <OverlayScrollbar />
               {children}
-            </AnalysisProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

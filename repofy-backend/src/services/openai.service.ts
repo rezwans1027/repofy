@@ -6,7 +6,11 @@ import { logTokenUsage } from "../lib/usage-logger";
 import { logger } from "../lib/logger";
 import type { GitHubUserData, ScorerResponse, ScoringResult } from "../types";
 
-const client = new OpenAI({ apiKey: env.openaiApiKey });
+let _client: OpenAI | null = null;
+export function getClient(): OpenAI {
+  if (!_client) _client = new OpenAI({ apiKey: env.openaiApiKey });
+  return _client;
+}
 
 const SCORER_SCHEMA = {
   name: "scorer_response",
@@ -249,7 +253,7 @@ export async function generateScorerResponse(
     "Analyze this profile and return the structured JSON assessment.",
   );
 
-  const completion = await client.chat.completions.create({
+  const completion = await getClient().chat.completions.create({
     model: env.openaiModel,
     messages: [
       { role: "system", content: SCORER_PROMPT },
@@ -374,7 +378,7 @@ export async function generateNarrativeReport(
 
   async function attempt(temperature: number): Promise<string | null> {
     try {
-      const completion = await client.chat.completions.create({
+      const completion = await getClient().chat.completions.create({
         model: env.openaiModel,
         messages: [
           { role: "system", content: NARRATOR_PROMPT },
