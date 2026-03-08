@@ -43,21 +43,7 @@ import {
 import { useAuth } from "@/components/providers/auth-provider";
 import { useAdviceList, useDeleteAdvice, type AdviceListItem } from "@/hooks/use-advice";
 import { useSelectableList } from "@/hooks/use-selectable-list";
-
-function relativeDate(dateStr: string) {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: now.getFullYear() !== date.getFullYear() ? "numeric" : undefined,
-  });
-}
+import { relativeDate } from "@/lib/format";
 
 const itemVariants = {
   hidden: { opacity: 0, y: 8, filter: "blur(6px)" },

@@ -3,7 +3,7 @@
 import { ArrowUp } from "lucide-react";
 import { CountUp } from "@/components/ui/count-up";
 import { SectionHeader } from "@/components/ui/section-header";
-import type { ReportData } from "@/components/report/analysis-report";
+import type { ReportData } from "@/types/report";
 
 interface ComparisonStatsProps {
   reportA: ReportData;

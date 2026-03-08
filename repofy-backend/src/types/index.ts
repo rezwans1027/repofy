@@ -1,3 +1,13 @@
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: string;
+      userEmail?: string;
+      signal?: AbortSignal;
+    }
+  }
+}
+
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;

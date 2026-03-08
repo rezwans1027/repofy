@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
@@ -98,7 +98,35 @@ export default function DashboardPage() {
   const debouncedQuery = useDebouncedValue(query.trim(), 300);
   const { data: results = [], isFetching: isSearching } =
     useGitHubSearch(debouncedQuery);
-  const searchSettled = !isSearching && debouncedQuery === query.trim();
+
+  // Preload all avatars so cards render with images ready
+  const [avatarsReady, setAvatarsReady] = useState(false);
+  const avatarUrls = useMemo(
+    () => results.map((u) => u.avatarUrl).join(","),
+    [results],
+  );
+  useEffect(() => {
+    if (results.length === 0) {
+      setAvatarsReady(false);
+      return;
+    }
+    let cancelled = false;
+    const promises = results.map(
+      (u) =>
+        new Promise<void>((resolve) => {
+          const img = new window.Image();
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+          img.src = u.avatarUrl;
+        }),
+    );
+    Promise.all(promises).then(() => {
+      if (!cancelled) setAvatarsReady(true);
+    });
+    return () => { cancelled = true; };
+  }, [avatarUrls, results]);
+
+  const searchSettled = !isSearching && debouncedQuery === query.trim() && (results.length === 0 || avatarsReady);
 
   return (
     <div className="flex flex-col items-center pt-[25vh]">
@@ -204,9 +232,12 @@ export default function DashboardPage() {
                   className="cursor-pointer rounded-lg border border-border bg-card p-4 transition-colors hover:border-cyan/50"
                 >
                   <div className="flex items-center gap-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={user.avatarUrl}
                       alt={user.username}
+                      width={48}
+                      height={48}
                       className="h-12 w-12 shrink-0 rounded-full"
                     />
                     <div className="min-w-0 flex-1">

@@ -1,4 +1,5 @@
 import { getSupabaseAdmin } from "../config/supabase";
+import { throwIfDbError, DatabaseError } from "../lib/errors";
 
 export async function saveReport(
   userId: string,
@@ -14,8 +15,8 @@ export async function saveReport(
         user_id: userId,
         analyzed_username: analyzedUsername.toLowerCase(),
         analyzed_name: analyzedName,
-        overall_score: (report as { overallScore: number }).overallScore,
-        recommendation: (report as { recommendation: string }).recommendation,
+        overall_score: typeof report.overallScore === "number" ? report.overallScore : 0,
+        recommendation: typeof report.recommendation === "string" ? report.recommendation : "",
         report_data: report,
       },
       { onConflict: "user_id,analyzed_username" },
@@ -23,6 +24,7 @@ export async function saveReport(
     .select("id")
     .single();
 
-  if (error) throw error;
+  throwIfDbError(error, "save report");
+  if (!data?.id) throw new DatabaseError("save report returned no id", null);
   return data.id as string;
 }

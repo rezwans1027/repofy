@@ -1,3 +1,17 @@
+/**
+ * github.service.ts — GitHub API data fetching and transformation.
+ *
+ * This file is large but organized into clear functional sections.
+ * Natural split points for future refactoring:
+ *  1. GitHub API client (fetchJson, graphql, rate-limit handling) → github-client.ts
+ *  2. Data transformation (mapUser, mapRepo, buildLanguages) → github-transform.ts
+ *  3. Repo snapshot logic (fetchSnapshot, computeAggregateMetrics) → github-snapshots.ts
+ *  4. Search endpoint (searchGitHubUsers) → github-search.ts
+ *
+ * Splitting is deferred because the functions share auth headers, error
+ * handling, and type imports — the refactoring overhead outweighs the
+ * benefit while the file remains internally well-structured.
+ */
 import { env } from "../config/env";
 import { logger } from "../lib/logger";
 import { daysAgo } from "../lib/date-utils";
@@ -693,25 +707,26 @@ async function fetchRepoSnapshot(
 
   try {
     // Parallel fetches for this repo
+    const encodedRepoName = encodeURIComponent(repo.name);
     const [treeResult, releasesResult, contributorsResult, pullsResult] = await Promise.all([
       // 1. File tree
       ghFetch<GitTreeResponse>(
-        `/repos/${username}/${repo.name}/git/trees/${defaultBranch}?recursive=1`,
+        `/repos/${username}/${encodedRepoName}/git/trees/${defaultBranch}?recursive=1`,
         signal,
       ).catch(() => null),
       // 2. Releases
       ghFetch<{ tag_name: string; published_at: string }[]>(
-        `/repos/${username}/${repo.name}/releases?per_page=5`,
+        `/repos/${username}/${encodedRepoName}/releases?per_page=5`,
         signal,
       ).catch(() => []),
       // 3. Contributors (just need count from Link header)
       ghFetchRaw(
-        `/repos/${username}/${repo.name}/contributors?per_page=1&anon=true`,
+        `/repos/${username}/${encodedRepoName}/contributors?per_page=1&anon=true`,
         signal,
       ).catch(() => null),
       // 4. Pull requests count from Link header
       ghFetchRaw(
-        `/repos/${username}/${repo.name}/pulls?state=all&per_page=1`,
+        `/repos/${username}/${encodedRepoName}/pulls?state=all&per_page=1`,
         signal,
       ).catch(() => null),
     ]);
@@ -733,7 +748,7 @@ async function fetchRepoSnapshot(
       } else {
         try {
           const readmeData = await ghFetch<{ content: string; encoding: string }>(
-            `/repos/${username}/${repo.name}/contents/${readmeEntry.path}`,
+            `/repos/${username}/${encodedRepoName}/contents/${readmeEntry.path}`,
             signal,
           );
           if (readmeData.encoding === "base64") {

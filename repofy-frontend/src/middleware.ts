@@ -14,9 +14,10 @@ export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
+    console.error(
       "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY env vars",
     );
+    return NextResponse.next();
   }
 
   const supabase = createServerClient(
@@ -49,14 +50,6 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // Redirect disabled feature sub-routes to their parent Coming Soon page
-  const DISABLED_ROUTES = ["/report/", "/generate/"];
-  if (DISABLED_ROUTES.some((r) => pathname.startsWith(r))) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/reports";
-    return NextResponse.redirect(url);
-  }
-
   // Redirect authenticated users away from auth pages → /dashboard
   const isAuthPage = pathname === "/login" || pathname === "/signup";
   if (user && isAuthPage) {
@@ -75,12 +68,25 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Redirect disabled feature sub-routes to their parent Coming Soon page
+  const DISABLED_ROUTES = ["/report/", "/generate/"];
+  if (DISABLED_ROUTES.some((r) => pathname.startsWith(r))) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/reports";
+    return NextResponse.redirect(url);
+  }
+
   // Build nonce-based Content-Security-Policy
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   const csp = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}'`,
-    "style-src 'self' 'unsafe-inline'", // next-themes + framer-motion inject <style> at runtime
+    // 'unsafe-inline' is required because framer-motion applies inline style=""
+    // attributes directly on DOM elements (e.g. transform, opacity). Nonces only
+    // work on <style> tags, not on element-level style attributes, so there is no
+    // nonce-based workaround. next-themes also injects an inline <script> that
+    // sets the theme class before hydration.
+    "style-src 'self' 'unsafe-inline'",
     "img-src 'self' avatars.githubusercontent.com data: blob:", // data:/blob: needed for html2canvas-pro + jspdf
     "font-src 'self'",
     `connect-src 'self' ${supabaseUrl} ${apiUrl}`,

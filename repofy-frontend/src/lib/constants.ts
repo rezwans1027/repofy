@@ -15,6 +15,7 @@ export const PROTECTED_ROUTES = [
   "/profile",
   "/settings",
   "/report",
+  "/reports",
   "/generate",
   "/compare",
   "/advisor",

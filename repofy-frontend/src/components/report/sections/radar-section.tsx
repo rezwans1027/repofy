@@ -1,7 +1,7 @@
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
 import { RadarChart } from "@/components/ui/radar-chart";
-import type { ReportData } from "@/components/report/analysis-report";
+import type { ReportData } from "@/types/report";
 
 interface RadarSectionProps {
   radarAxes: ReportData["radarAxes"];

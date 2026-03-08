@@ -1,8 +1,14 @@
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+const BASE_URL = (() => {
+  const url = process.env.NEXT_PUBLIC_API_URL;
+  if (url) return url;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("NEXT_PUBLIC_API_URL must be set in production");
+  }
+  return "http://localhost:3001/api";
+})();
 
 export class ApiError extends Error {
   constructor(
@@ -37,14 +43,17 @@ async function request<T>(
   const headers: Record<string, string> = {};
 
   if (auth) {
-    const { error } = await getSupabase().auth.getUser();
-    if (!error) {
-      const {
-        data: { session },
-      } = await getSupabase().auth.getSession();
-      if (session?.access_token) {
-        headers["Authorization"] = `Bearer ${session.access_token}`;
-      }
+    const supabase = getSupabase();
+    let { data: { session } } = await supabase.auth.getSession();
+
+    // If the cached token is expired (or about to expire in 60s), refresh it
+    if (session?.expires_at && session.expires_at * 1000 - Date.now() < 60_000) {
+      const { data } = await supabase.auth.refreshSession();
+      session = data.session;
+    }
+
+    if (session?.access_token) {
+      headers["Authorization"] = `Bearer ${session.access_token}`;
     }
   }
 

@@ -2,6 +2,8 @@
 
 import { use, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import {
   ProfileSections,
@@ -19,25 +21,7 @@ import {
 } from "lucide-react";
 import { useGitHubProfile } from "@/hooks/use-github";
 import { Skeleton } from "@/components/ui/skeleton";
-
-function timeAgo(dateStr: string): string {
-  const seconds = Math.floor(
-    (Date.now() - new Date(dateStr).getTime()) / 1000,
-  );
-  if (seconds < 60) return "just now";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
-  const weeks = Math.floor(days / 7);
-  if (weeks < 5) return `${weeks} week${weeks > 1 ? "s" : ""} ago`;
-  const months = Math.floor(days / 30);
-  if (months < 12) return `${months} month${months > 1 ? "s" : ""} ago`;
-  const years = Math.floor(days / 365);
-  return `${years} year${years > 1 ? "s" : ""} ago`;
-}
+import { timeAgo } from "@/lib/format";
 
 export default function ProfilePage({
   params,
@@ -45,6 +29,7 @@ export default function ProfilePage({
   params: Promise<{ username: string }>;
 }) {
   const { username } = use(params);
+  const router = useRouter();
   const { data: raw, isLoading, error } = useGitHubProfile(username);
 
   const apiProfile = useMemo(() => {
@@ -128,9 +113,11 @@ export default function ProfilePage({
         <AnimateOnView>
           <div className="rounded-lg border border-border bg-card p-4">
             <div className="flex flex-col sm:flex-row items-start gap-4">
-              <img
+              <Image
                 src={apiProfile.avatarUrl}
                 alt={username}
+                width={56}
+                height={56}
                 className="h-14 w-14 shrink-0 rounded-full border-2 border-cyan/20"
               />
               <div className="space-y-1.5">
@@ -215,7 +202,7 @@ export default function ProfilePage({
             {error.message || "Failed to load profile data"}
           </p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => router.refresh()}
             className="font-mono text-xs text-muted-foreground hover:text-cyan transition-colors underline underline-offset-2"
           >
             retry

@@ -1,5 +1,3 @@
-"use client";
-
 import { Navbar } from "@/components/layout/navbar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { QueryProvider } from "@/components/providers/query-provider";

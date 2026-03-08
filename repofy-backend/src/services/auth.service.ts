@@ -48,8 +48,10 @@ export async function initiateSignup(
 ): Promise<{ message: string }> {
   const supabase = getSupabaseAdmin();
 
-  // Best-effort cleanup of expired rows
-  await cleanupExpiredSignups();
+  // Best-effort cleanup of expired rows (fire-and-forget to avoid blocking signup)
+  cleanupExpiredSignups().catch((err) => {
+    logger.warn("cleanupExpiredSignups failed", { error: err });
+  });
 
   // Check if email already exists in auth.users (O(1) indexed lookup)
   const { data: emailTaken, error: rpcError } = await supabase.rpc("email_exists_in_auth", { p_email: email });
@@ -165,7 +167,7 @@ export async function resendOtp(email: string): Promise<{ message: string }> {
 
   const { data: updated, error: updateError } = await supabase
     .from("pending_signups")
-    .update({ otp_code: hashOtp(otp), otp_expires_at: expiresAt, attempts: 0 })
+    .update({ otp_code: hashOtp(otp), otp_expires_at: expiresAt })
     .eq("email", email)
     .select("email")
     .maybeSingle();

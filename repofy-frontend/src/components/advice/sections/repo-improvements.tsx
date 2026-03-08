@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Wrench, Star } from "lucide-react";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
+import { AdviceEmptyState } from "./advice-empty-state";
 import { Badge } from "@/components/ui/badge";
 import { PRIORITY_STYLES } from "@/lib/styles";
 import {
@@ -12,7 +13,7 @@ import {
   staggerItem,
   EASE_OUT_EXPO,
 } from "@/lib/animation-variants";
-import type { AdviceData } from "@/components/advice/advice-report";
+import type { AdviceData } from "@/types/advice";
 
 interface RepoImprovementsProps {
   repoImprovements: AdviceData["repoImprovements"];
@@ -24,12 +25,11 @@ export function RepoImprovements({ repoImprovements, expandAll = false }: RepoIm
 
   if (repoImprovements.length === 0) {
     return (
-      <AnimateOnView delay={0.06}>
-        <div className="rounded-lg border border-border bg-card p-5">
-          <SectionHeader title="Repository Improvements" />
-          <p className="text-xs text-muted-foreground">No repository improvement suggestions available for this profile.</p>
-        </div>
-      </AnimateOnView>
+      <AdviceEmptyState
+        title="Repository Improvements"
+        message="No repository improvement suggestions available for this profile."
+        delay={0.06}
+      />
     );
   }
 
