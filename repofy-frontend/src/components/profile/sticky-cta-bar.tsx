@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Lightbulb, Coins } from "lucide-react";
+import { StickyBottomBar } from "@/components/ui/sticky-bottom-bar";
 import {
   Tooltip,
   TooltipContent,
@@ -28,15 +29,13 @@ import { useCreditBalance } from "@/hooks/use-credits";
 
 interface StickyCTABarProps {
   username: string;
-  delay?: number;
 }
 
 type DialogType = "report" | "advice" | "no_credits" | "confirm_credit" | null;
 
-export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
+export function StickyCTABar({ username }: StickyCTABarProps) {
   const router = useRouter();
   const { user } = useAuth();
-  const [show, setShow] = useState(false);
   const [dialogOpen, setDialogOpen] = useState<DialogType>(null);
 
   const { data: reportExists, isLoading: reportLoading } =
@@ -44,11 +43,6 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
   const { data: adviceExists, isLoading: adviceLoading } =
     useExistingAdvice(username);
   const { data: balance, isLoading: balanceLoading } = useCreditBalance();
-
-  useEffect(() => {
-    const t = setTimeout(() => setShow(true), delay);
-    return () => clearTimeout(t);
-  }, [delay]);
 
 
   const handleAnalysisClick = useCallback(() => {
@@ -77,52 +71,48 @@ export function StickyCTABar({ username, delay = 50 }: StickyCTABarProps) {
 
   return (
     <>
-      <div
-        className={`fixed bottom-0 left-0 right-0 lg:left-48 z-50 border-t border-border bg-background/80 backdrop-blur-md transition-[transform,opacity] duration-500 ease-out ${show ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"}`}
-      >
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-          <div className="hidden sm:block">
-            <p className="font-mono text-sm font-bold">
-              Analyze <span className="text-cyan">@{username}</span>
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Generate a report or get actionable advice
-            </p>
-          </div>
-          <div className="flex gap-2 w-full sm:w-auto">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="flex-1 sm:flex-initial">
-                    <Button
-                      size="lg"
-                      data-testid="generate-report-btn"
-                      className="bg-cyan text-background font-mono text-sm px-6 w-full opacity-50 cursor-not-allowed"
-                      disabled
-                    >
-                      <Sparkles className="size-4" />
-                      Start Analysis
-                    </Button>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent side="top" sideOffset={8}>
-                  Coming soon
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <Button
-              size="lg"
-              variant="outline"
-              className="font-mono text-sm px-6 flex-1 sm:flex-initial border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-400"
-              disabled={!!user && (adviceLoading || balanceLoading)}
-              onClick={handleAdviceClick}
-            >
-              <Lightbulb className="size-4" />
-              Get Advice
-            </Button>
-          </div>
+      <StickyBottomBar delay="0.4s">
+        <div className="hidden sm:block">
+          <p className="font-mono text-sm font-bold">
+            Analyze <span className="text-cyan">@{username}</span>
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Generate a report or get actionable advice
+          </p>
         </div>
-      </div>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="flex-1 sm:flex-initial">
+                  <Button
+                    size="lg"
+                    data-testid="generate-report-btn"
+                    className="bg-cyan text-background font-mono text-sm px-6 w-full opacity-50 cursor-not-allowed"
+                    disabled
+                  >
+                    <Sparkles className="size-4" />
+                    Start Analysis
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top" sideOffset={8}>
+                Coming soon
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <Button
+            size="lg"
+            variant="outline"
+            className="font-mono text-sm px-6 flex-1 sm:flex-initial border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-400"
+            disabled={!!user && (adviceLoading || balanceLoading)}
+            onClick={handleAdviceClick}
+          >
+            <Lightbulb className="size-4" />
+            Get Advice
+          </Button>
+        </div>
+      </StickyBottomBar>
 
       {/* Confirm credit dialog */}
       <AlertDialog open={dialogOpen === "confirm_credit"} onOpenChange={closeDialog}>
