@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import { ComparisonExportBar } from "./comparison-export-bar";
 import { createRef } from "react";
 
@@ -30,12 +30,14 @@ describe("ComparisonExportBar", () => {
   });
 
   it("does not call exportToPdf when ref is null", async () => {
+    vi.useFakeTimers();
     const { exportToPdf } = await import("@/lib/export-pdf");
     const nullRef = { current: null };
     render(<ComparisonExportBar usernameA="alice" usernameB="bob" comparisonRef={nullRef} />);
-    await fireEvent.click(screen.getByText("Export Comparison PDF"));
-    // Button text should remain unchanged (not switch to "Exporting...")
-    expect(screen.getByText("Export Comparison PDF")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Export Comparison PDF"));
+    // Advance past the 300ms delay inside useExportPdf
+    await act(() => vi.advanceTimersByTime(300));
     expect(exportToPdf).not.toHaveBeenCalled();
+    vi.useRealTimers();
   });
 });

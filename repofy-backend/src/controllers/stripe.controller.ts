@@ -5,22 +5,17 @@ import { createCheckoutSession } from "../services/stripe.service";
 import { grantGrowthCredits } from "../services/credit.service";
 import { sendError, sendSuccess } from "../lib/response";
 import { logger } from "../lib/logger";
+import { handleControllerError } from "../lib/controller-utils";
+import type { AuthenticatedRequest } from "../types";
 
 export const createCheckout: RequestHandler = async (req, res) => {
   try {
-    const userId = req.userId;
-    const userEmail = req.userEmail;
-
-    if (!userId || !userEmail) {
-      sendError(res, 401, "Authentication required");
-      return;
-    }
+    const { userId, userEmail } = req as AuthenticatedRequest;
 
     const url = await createCheckoutSession(userId, userEmail);
     sendSuccess(res, { url });
   } catch (err) {
-    logger.error("Stripe checkout error:", err);
-    sendError(res, 500, "Failed to create checkout session");
+    handleControllerError(err, req, res, "Stripe Checkout", "Failed to create checkout session");
   }
 };
 
@@ -72,29 +67,29 @@ export const handleWebhook: RequestHandler = async (req, res) => {
         // From here the event IS ours — invariant violations must fail so Stripe retries
         if (session.mode !== "payment") {
           logger.error("Webhook invariant: unexpected mode", { sessionId: session.id, mode: session.mode });
-          sendError(res, 500, "Webhook invariant failure: unexpected mode");
+          res.status(500).json({ received: false, error: "Webhook invariant failure: unexpected mode" });
           return;
         }
         if (session.metadata?.product !== "growth_credits_2") {
           logger.error("Webhook invariant: unexpected product metadata", { sessionId: session.id, metadata: session.metadata });
-          sendError(res, 500, "Webhook invariant failure: unexpected product");
+          res.status(500).json({ received: false, error: "Webhook invariant failure: unexpected product" });
           return;
         }
         if (session.amount_total !== 500) {
           logger.error("Webhook invariant: unexpected amount", { sessionId: session.id, amount: session.amount_total });
-          sendError(res, 500, "Webhook invariant failure: unexpected amount");
+          res.status(500).json({ received: false, error: "Webhook invariant failure: unexpected amount" });
           return;
         }
         if (session.currency !== "usd") {
           logger.error("Webhook invariant: unexpected currency", { sessionId: session.id, currency: session.currency });
-          sendError(res, 500, "Webhook invariant failure: unexpected currency");
+          res.status(500).json({ received: false, error: "Webhook invariant failure: unexpected currency" });
           return;
         }
 
         const paymentIntentId = session.payment_intent;
         if (typeof paymentIntentId !== "string" || paymentIntentId.length === 0) {
           logger.error("Webhook invariant: missing or invalid payment_intent", { sessionId: session.id, paymentIntent: paymentIntentId });
-          sendError(res, 500, "Webhook invariant failure: missing payment_intent");
+          res.status(500).json({ received: false, error: "Webhook invariant failure: missing payment_intent" });
           return;
         }
         const granted = await grantGrowthCredits(userId, 2, paymentIntentId, {
@@ -116,6 +111,6 @@ export const handleWebhook: RequestHandler = async (req, res) => {
     res.json({ received: true });
   } catch (err) {
     logger.error("Webhook processing error:", err);
-    sendError(res, 500, "Webhook processing failed");
+    res.status(500).json({ received: false, error: "Webhook processing failed" });
   }
 };

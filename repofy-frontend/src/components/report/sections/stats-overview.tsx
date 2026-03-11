@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
 import { CountUp } from "@/components/ui/count-up";
-import type { ReportData } from "@/components/report/analysis-report";
+import type { ReportData } from "@shared/types/report";
 
 interface StatsOverviewProps {
   stats: ReportData["stats"];

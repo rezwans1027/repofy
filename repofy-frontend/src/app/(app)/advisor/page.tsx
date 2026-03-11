@@ -43,25 +43,11 @@ import {
 import { useAuth } from "@/components/providers/auth-provider";
 import { useAdviceList, useDeleteAdvice, type AdviceListItem } from "@/hooks/use-advice";
 import { useSelectableList } from "@/hooks/use-selectable-list";
-
-function relativeDate(dateStr: string) {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: now.getFullYear() !== date.getFullYear() ? "numeric" : undefined,
-  });
-}
+import { relativeDate } from "@/lib/format";
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 8, filter: "blur(6px)" },
-  visible: { opacity: 1, y: 0, filter: "blur(0px)" },
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const } },
 };
 
 export default function AdvisorPage() {
@@ -247,8 +233,9 @@ export default function AdvisorPage() {
 
       {/* Card list */}
       <motion.div
-        variants={{ hidden: { opacity: 0, y: 12, filter: "blur(6px)" }, visible: { opacity: 1, y: 0, filter: "blur(0px)" } }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        initial="hidden"
+        animate="visible"
+        variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.04, delayChildren: 0.1 } } }}
         className="space-y-2"
       >
         <AnimatePresence mode="popLayout">

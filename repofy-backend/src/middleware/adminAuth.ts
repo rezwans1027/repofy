@@ -3,13 +3,19 @@ import { RequestHandler } from "express";
 import { env } from "../config/env";
 import { sendError } from "../lib/response";
 
+const adminSecretHash = env.adminSecret
+  ? crypto.createHash("sha256").update(env.adminSecret).digest()
+  : null;
+
 export const requireAdminKey: RequestHandler = (req, res, next) => {
   const key = req.headers["x-admin-key"];
   if (
-    !env.adminSecret ||
+    !adminSecretHash ||
     typeof key !== "string" ||
-    key.length !== env.adminSecret.length ||
-    !crypto.timingSafeEqual(Buffer.from(key), Buffer.from(env.adminSecret))
+    !crypto.timingSafeEqual(
+      crypto.createHash("sha256").update(key).digest(),
+      adminSecretHash,
+    )
   ) {
     sendError(res, 401, "Unauthorized");
     return;

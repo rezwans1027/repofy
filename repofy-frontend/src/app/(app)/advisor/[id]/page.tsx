@@ -1,43 +1,29 @@
-"use client";
-
-import { use } from "react";
-import { useSearchParams } from "next/navigation";
 import { AdviceReport } from "@/components/advice/advice-report";
-import { useAuth } from "@/components/providers/auth-provider";
-import { useAdvice } from "@/hooks/use-advice";
+import { serverFetch } from "@/lib/server-api";
 import { BackLink } from "@/components/ui/back-link";
 import { ErrorCard } from "@/components/ui/error-card";
-import { Skeleton } from "@/components/ui/skeleton";
+import type { AdviceData } from "@shared/types/advice";
 
-export default function AdvicePage({
+interface AdviceRow {
+  id: string;
+  analyzed_username: string;
+  advice_data: AdviceData;
+}
+
+export default async function AdvicePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
-  const { id } = use(params);
-  const searchParams = useSearchParams();
-  const fromProfile = searchParams.get("from") === "profile";
-  const { isLoading: authLoading } = useAuth();
-  const { data: advice, isLoading: queryLoading, error } = useAdvice(id);
-  const loading = authLoading || queryLoading;
+  const { id } = await params;
+  const { from } = await searchParams;
+  const fromProfile = from === "profile";
 
-  const backHref = fromProfile && advice
-    ? `/profile/${advice.analyzed_username}`
-    : "/advisor";
-  const backLabel = fromProfile && advice ? "back to profile" : "back to advisor";
+  const advice = await serverFetch<AdviceRow>(`/advice/${id}`);
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-6 w-32" />
-        <Skeleton className="h-32 rounded-lg" />
-        <Skeleton className="h-48 rounded-lg" />
-        <Skeleton className="h-48 rounded-lg" />
-      </div>
-    );
-  }
-
-  if (error || !advice) {
+  if (!advice) {
     return (
       <div>
         <BackLink href="/advisor" label="back to advisor" hoverColor="hover:text-emerald-400" />
@@ -49,6 +35,11 @@ export default function AdvicePage({
       </div>
     );
   }
+
+  const backHref = fromProfile
+    ? `/profile/${advice.analyzed_username}`
+    : "/advisor";
+  const backLabel = fromProfile ? "back to profile" : "back to advisor";
 
   return (
     <div>

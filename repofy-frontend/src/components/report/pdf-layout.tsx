@@ -2,33 +2,12 @@
  * Clean, document-style PDF layout for the analysis report.
  * Designed for paper — no cards, badges, or web UI chrome.
  */
-import type { ReportData } from "./analysis-report";
+import type { ReportData } from "@shared/types/report";
+import { stripMarkdown, Divider, Heading } from "@/components/ui/pdf-primitives";
 
 interface PdfLayoutProps {
   username: string;
   data: ReportData;
-}
-
-function stripMarkdown(text: string): string {
-  return text
-    .replace(/^#{1,6}\s+/gm, "")
-    .replace(/\*\*(.+?)\*\*/g, "$1")
-    .replace(/\*(.+?)\*/g, "$1")
-    .replace(/^[-*]\s+/gm, "")
-    .replace(/^\d+\.\s+/gm, "")
-    .trim();
-}
-
-function Divider() {
-  return <div className="border-b border-foreground/10" />;
-}
-
-function Heading({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-3">
-      {children}
-    </h2>
-  );
 }
 
 export function AnalysisReportPdfLayout({ username, data }: PdfLayoutProps) {

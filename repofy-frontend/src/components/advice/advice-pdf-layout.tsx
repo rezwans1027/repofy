@@ -2,23 +2,12 @@
  * Clean, document-style PDF layout for the advice report.
  * Designed for paper — no cards, badges, or web UI chrome.
  */
-import type { AdviceData } from "./advice-report";
+import type { AdviceData } from "@shared/types/advice";
+import { Divider, Heading } from "@/components/ui/pdf-primitives";
 
 interface PdfLayoutProps {
   username: string;
   data: AdviceData;
-}
-
-function Divider() {
-  return <div className="border-b border-foreground/10" />;
-}
-
-function Heading({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-3">
-      {children}
-    </h2>
-  );
 }
 
 export function AdviceReportPdfLayout({ username, data }: PdfLayoutProps) {

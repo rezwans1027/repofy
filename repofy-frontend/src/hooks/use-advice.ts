@@ -1,105 +1,33 @@
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { createClient } from "@/lib/supabase/client";
-import { useAuth } from "@/components/providers/auth-provider";
-import type { AdviceData } from "@/components/advice/advice-report";
+import { z } from "zod";
+import { createCrudHooks } from "./use-crud";
+import type { AdviceData } from "@shared/types/advice";
 
-const STALE_TIME = 5 * 60 * 1000; // 5 minutes
+const adviceListItemSchema = z.object({
+  id: z.string(),
+  analyzed_username: z.string(),
+  generated_at: z.string(),
+  analyzed_name: z.string().nullable(),
+});
 
-export interface AdviceListItem {
-  id: string;
-  analyzed_username: string;
-  generated_at: string;
-  analyzed_name: string | null;
-}
+const adviceRowSchema = z.object({
+  id: z.string(),
+  analyzed_username: z.string(),
+  user_id: z.string(),
+  advice_data: z.record(z.string(), z.unknown()),
+});
 
-interface AdviceRow {
-  id: string;
-  analyzed_username: string;
-  user_id: string;
-  advice_data: AdviceData;
-}
+export type AdviceListItem = z.infer<typeof adviceListItemSchema>;
 
-export function useAdviceList() {
-  const { user } = useAuth();
+type AdviceRow = z.infer<typeof adviceRowSchema> & { advice_data: AdviceData };
 
-  return useQuery({
-    queryKey: ["advice", "list", user?.id],
-    queryFn: async () => {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("advice")
-        .select("id, analyzed_username, analyzed_name, generated_at")
-        .eq("user_id", user!.id)
-        .order("generated_at", { ascending: false });
-      if (error) throw error;
-      return (data as AdviceListItem[]) ?? [];
-    },
-    enabled: !!user,
-    staleTime: STALE_TIME,
-  });
-}
+const crud = createCrudHooks<AdviceListItem>({
+  queryKey: "advice",
+  endpoint: "/advice",
+  listSchema: z.array(adviceListItemSchema),
+  detailSchema: adviceRowSchema,
+});
 
-export function useAdvice(id: string) {
-  const { user } = useAuth();
-
-  return useQuery({
-    queryKey: ["advice", "detail", user?.id, id],
-    queryFn: async () => {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("advice")
-        .select("id, analyzed_username, user_id, advice_data")
-        .eq("id", id)
-        .eq("user_id", user!.id)
-        .single();
-      if (error) throw error;
-      return data as AdviceRow;
-    },
-    enabled: !!user && !!id,
-  });
-}
-
-export function useExistingAdvice(username: string) {
-  const { user } = useAuth();
-
-  return useQuery({
-    queryKey: ["advice", "exists", user?.id, username.toLowerCase()],
-    queryFn: async () => {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("advice")
-        .select("id")
-        .eq("user_id", user!.id)
-        .eq("analyzed_username", username.toLowerCase())
-        .limit(1);
-      if (error) throw error;
-      return data && data.length > 0;
-    },
-    enabled: !!user,
-  });
-}
-
-export function useDeleteAdvice() {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (ids: string[]) => {
-      if (!user) throw new Error("Not authenticated");
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("advice")
-        .delete()
-        .in("id", ids)
-        .eq("user_id", user.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["advice"] });
-    },
-  });
-}
+export const useAdviceList = crud.useList;
+export const useAdvice = crud.useDetail;
+export const useExistingAdvice = crud.useExists;
+export const useDeleteAdvice = crud.useDelete;

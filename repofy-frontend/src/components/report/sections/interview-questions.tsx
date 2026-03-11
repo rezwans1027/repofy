@@ -1,6 +1,6 @@
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
-import type { ReportData } from "@/components/report/analysis-report";
+import type { ReportData } from "@shared/types/report";
 
 interface InterviewQuestionsProps {
   questions: ReportData["interviewQuestions"];

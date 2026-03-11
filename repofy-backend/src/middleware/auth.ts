@@ -2,16 +2,6 @@ import { RequestHandler } from "express";
 import { getSupabaseAdmin } from "../config/supabase";
 import { sendError } from "../lib/response";
 
-declare global {
-  namespace Express {
-    interface Request {
-      userId?: string;
-      userEmail?: string;
-      signal?: AbortSignal;
-    }
-  }
-}
-
 export const requireAuth: RequestHandler = async (req, res, next) => {
   try {
     if (res.headersSent) return;

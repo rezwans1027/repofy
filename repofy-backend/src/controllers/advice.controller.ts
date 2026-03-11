@@ -1,57 +1,31 @@
 import crypto from "crypto";
 import { RequestHandler } from "express";
 import { env } from "../config/env";
-import { getSupabaseAdmin } from "../config/supabase";
-import {
-  fetchGitHubUserData,
-  GitHubError,
-} from "../services/github.service";
+import { fetchGitHubUserData } from "../services/github.service";
 import { generateAdvice } from "../services/advice.service";
 import { buildAdviceData } from "../services/advice-builder.service";
-import { getCreditBalance, deductGrowthCredit } from "../services/credit.service";
+import { getCreditBalance } from "../services/credit.service";
+import { deductAndPersist } from "../services/advice-persistence.service";
 import { USERNAME_RE } from "../lib/validators";
 import { sendError, sendSuccess } from "../lib/response";
-import { logger } from "../lib/logger";
+import { handleControllerError } from "../lib/controller-utils";
+import type { AuthenticatedRequest } from "../types";
 
-/** Atomically deduct one credit and persist advice in a single step. */
-async function deductAndPersist(
-  userId: string,
-  requestId: string,
-  analyzedUsername: string,
-  analyzedName: string | null,
-  adviceData: Record<string, unknown>,
-): Promise<string> {
-  // 1. Atomic deduct — fails if balance is 0
-  const deducted = await deductGrowthCredit(userId, requestId, {
-    username: analyzedUsername,
-    endpoint: "/advice",
-  });
-  if (!deducted) throw new InsufficientCreditsError();
-
-  // 2. Persist — if this fails the credit is lost, but this is a simple DB write
-  //    with near-zero failure rate vs. a 60s+ AI call
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("advice")
-    .upsert(
-      { user_id: userId, analyzed_username: analyzedUsername, analyzed_name: analyzedName, advice_data: adviceData },
-      { onConflict: "user_id,analyzed_username" },
-    )
-    .select("id")
-    .single();
-
-  if (error) throw error;
-  return data.id as string;
-}
-
-class InsufficientCreditsError extends Error {
-  constructor() {
-    super("Insufficient growth credits");
-    this.name = "InsufficientCreditsError";
-  }
-}
-
-/** Track in-flight advice requests per user to prevent concurrent expensive calls. */
+/**
+ * Track in-flight advice requests per user to prevent concurrent expensive calls.
+ *
+ * This is an in-memory, per-process guard — it will NOT prevent duplicate
+ * requests across multiple server instances. However, the downstream
+ * `advice` table upsert on `(user_id, analyzed_username)` ensures at most
+ * one advice row per user/target pair, so the worst-case race is a single
+ * extra credit deduction rather than duplicate data.
+ *
+ * Migration options for multi-instance deployments:
+ *  - Postgres advisory lock: `SELECT pg_try_advisory_lock(hashtext(userId))` — zero deps
+ *  - Redis SETNX: `SET advice:lock:{userId} 1 NX EX 120` — if Redis is already in the stack
+ *  - Idempotency key on credit deduction: pass `requestId` to a UNIQUE constraint so
+ *    the second deduction attempt is silently rejected at the DB level
+ */
 const activeAdviceRequests = new Map<string, true>();
 
 export const adviseUser: RequestHandler = async (req, res) => {
@@ -62,13 +36,15 @@ export const adviseUser: RequestHandler = async (req, res) => {
     return;
   }
 
-  if (activeAdviceRequests.has(req.userId!)) {
+  const { userId } = req as AuthenticatedRequest;
+
+  if (activeAdviceRequests.has(userId)) {
     sendError(res, 429, "An advice request is already in progress. Please wait.");
     return;
   }
 
   const requestId = crypto.randomUUID();
-  activeAdviceRequests.set(req.userId!, true);
+  activeAdviceRequests.set(userId, true);
 
   try {
     if (env.mockAi) {
@@ -76,7 +52,7 @@ export const adviseUser: RequestHandler = async (req, res) => {
       const githubData = buildMockGitHubData(username);
       const advice = buildAdviceData(MOCK_ADVICE_RESPONSE, githubData);
       const adviceId = await deductAndPersist(
-        req.userId!,
+        userId,
         requestId,
         username.toLowerCase(),
         githubData.profile.name,
@@ -92,7 +68,7 @@ export const adviseUser: RequestHandler = async (req, res) => {
     }
 
     // Cheap pre-check: reject early if user has zero credits (avoids burning GitHub quota)
-    const balance = await getCreditBalance(req.userId!);
+    const balance = await getCreditBalance(userId);
     if (balance.growth_balance <= 0) {
       sendError(res, 402, "Insufficient growth credits");
       return;
@@ -105,7 +81,7 @@ export const adviseUser: RequestHandler = async (req, res) => {
 
     // Only deduct + persist after everything succeeded
     const adviceId = await deductAndPersist(
-      req.userId!,
+      userId,
       requestId,
       username.toLowerCase(),
       githubData.profile.name,
@@ -114,18 +90,8 @@ export const adviseUser: RequestHandler = async (req, res) => {
 
     sendSuccess(res, { adviceId });
   } catch (err) {
-    if (req.signal?.aborted || res.headersSent) return;
-    if (err instanceof InsufficientCreditsError) {
-      sendError(res, 402, err.message);
-      return;
-    }
-    if (err instanceof GitHubError) {
-      sendError(res, err.statusCode, err.message);
-      return;
-    }
-    logger.error("Advice error:", err);
-    sendError(res, 500, "Advice generation failed. Please try again.");
+    handleControllerError(err, req, res, "Advice", "Advice generation failed. Please try again.");
   } finally {
-    activeAdviceRequests.delete(req.userId!);
+    activeAdviceRequests.delete(userId);
   }
 };

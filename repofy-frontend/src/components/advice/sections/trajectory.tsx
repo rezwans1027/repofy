@@ -10,7 +10,7 @@ import {
   staggerItem,
   EASE_OUT_EXPO,
 } from "@/lib/animation-variants";
-import type { AdviceData } from "@/components/advice/advice-report";
+import type { AdviceData } from "@shared/types/advice";
 
 const CONFIDENCE_STYLES: Record<string, string> = {
   High: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",

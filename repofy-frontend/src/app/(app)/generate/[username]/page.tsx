@@ -9,6 +9,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { BackLink } from "@/components/ui/back-link";
 import { ErrorCard } from "@/components/ui/error-card";
 
+const ANALYSIS_TIMEOUT_MS = 120_000;
+
 export default function GeneratePage({
   params,
 }: {
@@ -27,7 +29,7 @@ export default function GeneratePage({
       reportId: string;
     }>(`/analyze/${encodeURIComponent(username)}`, {
       auth: true,
-      signal: AbortSignal.timeout(120_000),
+      signal: AbortSignal.timeout(ANALYSIS_TIMEOUT_MS),
     });
     return data;
   }, [username]);
@@ -39,7 +41,15 @@ export default function GeneratePage({
         return;
       }
 
-      const { reportId } = data as { reportId: string };
+      const result =
+        typeof data === "object" && data !== null && "reportId" in data
+          ? (data as { reportId: string })
+          : null;
+      if (!result) {
+        setError("Unexpected response from server.");
+        return;
+      }
+      const { reportId } = result;
 
       queryClient.invalidateQueries({ queryKey: ["reports"] });
       router.replace(`/report/${reportId}?from=profile`);

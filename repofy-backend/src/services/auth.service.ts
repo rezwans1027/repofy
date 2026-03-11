@@ -1,7 +1,9 @@
 import crypto from "crypto";
 import { getSupabaseAdmin } from "../config/supabase";
 import { sendOtpEmail } from "./email.service";
+import { env } from "../config/env";
 import { logger } from "../lib/logger";
+import { expiresInMinutes } from "../lib/date-utils";
 
 const OTP_EXPIRY_MINUTES = 10;
 const OTP_MAX_ATTEMPTS = 5;
@@ -21,7 +23,7 @@ function generateOtp(): string {
 }
 
 function hashOtp(otp: string): string {
-  return crypto.createHash("sha256").update(otp).digest("hex");
+  return crypto.createHmac("sha256", env.otpHmacSecret).update(otp).digest("hex");
 }
 
 function safeEqual(a: string, b: string): boolean {
@@ -46,8 +48,10 @@ export async function initiateSignup(
 ): Promise<{ message: string }> {
   const supabase = getSupabaseAdmin();
 
-  // Best-effort cleanup of expired rows
-  await cleanupExpiredSignups();
+  // Best-effort cleanup of expired rows (fire-and-forget to avoid blocking signup)
+  cleanupExpiredSignups().catch((err) => {
+    logger.warn("cleanupExpiredSignups failed", { error: err });
+  });
 
   // Check if email already exists in auth.users (O(1) indexed lookup)
   const { data: emailTaken, error: rpcError } = await supabase.rpc("email_exists_in_auth", { p_email: email });
@@ -58,7 +62,7 @@ export async function initiateSignup(
 
   if (!emailTaken) {
     const otp = generateOtp();
-    const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000).toISOString();
+    const expiresAt = expiresInMinutes(OTP_EXPIRY_MINUTES);
 
     // Upsert — replaces any prior pending signup for the same email
     const { error: upsertError } = await supabase.from("pending_signups").upsert(
@@ -159,11 +163,11 @@ export async function resendOtp(email: string): Promise<{ message: string }> {
   }
 
   const otp = generateOtp();
-  const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000).toISOString();
+  const expiresAt = expiresInMinutes(OTP_EXPIRY_MINUTES);
 
   const { data: updated, error: updateError } = await supabase
     .from("pending_signups")
-    .update({ otp_code: hashOtp(otp), otp_expires_at: expiresAt, attempts: 0 })
+    .update({ otp_code: hashOtp(otp), otp_expires_at: expiresAt })
     .eq("email", email)
     .select("email")
     .maybeSingle();

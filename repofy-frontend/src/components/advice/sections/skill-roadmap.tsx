@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
+import { AdviceEmptyState } from "./advice-empty-state";
 import { Badge } from "@/components/ui/badge";
 import { DEMAND_STYLES } from "@/lib/styles";
 import {
@@ -13,7 +14,7 @@ import {
   contentFade,
   borderGrow,
 } from "@/lib/animation-variants";
-import type { AdviceData } from "@/components/advice/advice-report";
+import type { AdviceData } from "@shared/types/advice";
 
 const PRIORITY_STYLES: Record<string, string> = {
   Now: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
@@ -28,12 +29,11 @@ interface SkillRoadmapProps {
 export function SkillRoadmap({ skills }: SkillRoadmapProps) {
   if (skills.length === 0) {
     return (
-      <AnimateOnView delay={0.08}>
-        <div className="rounded-lg border border-border bg-card p-5">
-          <SectionHeader title="Skill Roadmap" />
-          <p className="text-xs text-muted-foreground">No skill suggestions available — your stack already covers the key areas.</p>
-        </div>
-      </AnimateOnView>
+      <AdviceEmptyState
+        title="Skill Roadmap"
+        message="No skill suggestions available — your stack already covers the key areas."
+        delay={0.08}
+      />
     );
   }
 

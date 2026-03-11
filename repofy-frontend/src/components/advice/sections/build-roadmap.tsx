@@ -14,7 +14,7 @@ import {
   contentFade,
   borderGrow,
 } from "@/lib/animation-variants";
-import type { AdviceData } from "@/components/advice/advice-report";
+import type { AdviceData } from "@shared/types/advice";
 
 interface BuildRoadmapProps {
   builds: AdviceData["buildRoadmap"];

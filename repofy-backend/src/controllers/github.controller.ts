@@ -3,15 +3,14 @@ import { env } from "../config/env";
 import {
   fetchGitHubUserData,
   searchGitHubUsers,
-  GitHubError,
 } from "../services/github.service";
 import { USERNAME_RE } from "../lib/validators";
 import { sendError, sendSuccess } from "../lib/response";
-import { logger } from "../lib/logger";
+import { handleControllerError } from "../lib/controller-utils";
 
 export const searchGitHub: RequestHandler = async (req, res) => {
   const rawQ = req.query.q;
-  const q = (Array.isArray(rawQ) ? rawQ[0] : rawQ || "").toString().trim();
+  const q = (Array.isArray(rawQ) ? rawQ[0] : rawQ || "").toString().trim().slice(0, 256);
 
   if (!q) {
     sendSuccess(res, []);
@@ -28,13 +27,7 @@ export const searchGitHub: RequestHandler = async (req, res) => {
     const data = await searchGitHubUsers(q, req.signal);
     sendSuccess(res, data);
   } catch (err) {
-    if (req.signal?.aborted || res.headersSent) return;
-    if (err instanceof GitHubError) {
-      sendError(res, err.statusCode, err.message);
-      return;
-    }
-    logger.error("searchGitHub unexpected error:", err);
-    sendError(res, 500, "Internal server error");
+    handleControllerError(err, req, res, "GitHub Search", "Internal server error");
   }
 };
 
@@ -56,12 +49,6 @@ export const getGitHubUser: RequestHandler = async (req, res) => {
     const data = await fetchGitHubUserData(username, req.signal);
     sendSuccess(res, data);
   } catch (err) {
-    if (req.signal?.aborted || res.headersSent) return;
-    if (err instanceof GitHubError) {
-      sendError(res, err.statusCode, err.message);
-      return;
-    }
-    logger.error("getGitHubUser unexpected error:", err);
-    sendError(res, 500, "Internal server error");
+    handleControllerError(err, req, res, "GitHub User", "Internal server error");
   }
 };

@@ -152,7 +152,7 @@ export function createProfileFixture(overrides: Record<string, unknown> = {}) {
 export function createAdviceFixture(overrides: Record<string, unknown> = {}) {
   return {
     schemaVersion: "v2" as const,
-    generationWarnings: [] as string[],
+    generationWarnings: [] as import("@/types/advice").GenerationWarning[],
     summary: "Focus on testing and open-source contributions to strengthen your profile.",
     trajectory: {
       currentEstimate: "Junior",
