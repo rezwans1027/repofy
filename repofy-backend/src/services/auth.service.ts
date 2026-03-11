@@ -163,7 +163,7 @@ export async function resendOtp(email: string): Promise<{ message: string }> {
   }
 
   const otp = generateOtp();
-  const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000).toISOString();
+  const expiresAt = expiresInMinutes(OTP_EXPIRY_MINUTES);
 
   const { data: updated, error: updateError } = await supabase
     .from("pending_signups")
