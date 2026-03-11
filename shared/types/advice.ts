@@ -1,5 +1,4 @@
-// CANONICAL SOURCE: repofy-backend/src/types/index.ts (AdviceV2)
-// ── AdviceData – explicit interface for advice reports ────────────────
+// ── AdviceData – shared interface for advice reports ────────────────
 
 export type GenerationWarning =
   | "repo_improvements_unavailable"

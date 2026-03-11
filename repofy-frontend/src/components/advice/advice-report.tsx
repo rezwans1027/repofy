@@ -19,7 +19,7 @@ import { CareerPositioning } from "./sections/career-positioning";
 import { AdviceExportBar } from "./sections/advice-export-bar";
 import { AdviceReportPdfLayout } from "./advice-pdf-layout";
 import { tabContentVariants, EASE_OUT_EXPO } from "@/lib/animation-variants";
-import type { AdviceData, GenerationWarning } from "@/types/advice";
+import type { AdviceData, GenerationWarning } from "@shared/types/advice";
 
 export type { AdviceData, GenerationWarning };
 

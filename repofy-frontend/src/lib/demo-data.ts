@@ -150,7 +150,7 @@ export const contributionDensity = [
 
 // ── Analysis Report Data ──────────────────────────────────────────
 
-import type { ReportData } from "@/types/report";
+import type { ReportData } from "@shared/types/report";
 
 export const reportData = {
   candidateLevel: "Senior" as const,

@@ -1,5 +1,19 @@
 import { getSupabaseAdmin } from "../config/supabase";
 import { throwIfDbError, DatabaseError } from "../lib/errors";
+import { createCrudService } from "./crud.service";
+
+const crud = createCrudService({
+  table: "reports",
+  entityName: "report",
+  listSelect: "id, analyzed_username, analyzed_name, overall_score, recommendation, generated_at",
+  detailSelect: "id, analyzed_username, report_data",
+  existsColumn: "analyzed_username",
+});
+
+export const listReports = crud.list;
+export const getReportById = crud.getById;
+export const reportExists = crud.exists;
+export const deleteReports = crud.deleteBatch;
 
 export async function saveReport(
   userId: string,
@@ -27,49 +41,4 @@ export async function saveReport(
   throwIfDbError(error, "save report");
   if (!data?.id) throw new DatabaseError("save report returned no id", null);
   return data.id as string;
-}
-
-export async function listReports(userId: string) {
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("reports")
-    .select("id, analyzed_username, analyzed_name, overall_score, recommendation, generated_at")
-    .eq("user_id", userId)
-    .order("generated_at", { ascending: false });
-  throwIfDbError(error, "list reports");
-  return data ?? [];
-}
-
-export async function getReportById(userId: string, id: string) {
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("reports")
-    .select("id, analyzed_username, report_data")
-    .eq("id", id)
-    .eq("user_id", userId)
-    .single();
-  throwIfDbError(error, "get report");
-  return data;
-}
-
-export async function reportExists(userId: string, username: string): Promise<boolean> {
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("reports")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("analyzed_username", username.toLowerCase())
-    .limit(1);
-  throwIfDbError(error, "check report exists");
-  return !!data && data.length > 0;
-}
-
-export async function deleteReports(userId: string, ids: string[]) {
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase
-    .from("reports")
-    .delete()
-    .in("id", ids)
-    .eq("user_id", userId);
-  throwIfDbError(error, "delete reports");
 }

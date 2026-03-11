@@ -46,8 +46,8 @@ import { useSelectableList } from "@/hooks/use-selectable-list";
 import { relativeDate } from "@/lib/format";
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 8, filter: "blur(6px)" },
-  visible: { opacity: 1, y: 0, filter: "blur(0px)" },
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const } },
 };
 
 export default function AdvisorPage() {
@@ -233,8 +233,9 @@ export default function AdvisorPage() {
 
       {/* Card list */}
       <motion.div
-        variants={{ hidden: { opacity: 0, y: 12, filter: "blur(6px)" }, visible: { opacity: 1, y: 0, filter: "blur(0px)" } }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        initial="hidden"
+        animate="visible"
+        variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.04, delayChildren: 0.1 } } }}
         className="space-y-2"
       >
         <AnimatePresence mode="popLayout">

@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from "../config/supabase";
 import { throwIfDbError } from "../lib/errors";
 
+/** @see shared/types/credit.ts for the shared API contract type */
 export interface CreditBalance {
   growth_balance: number;
   eval_balance: number;

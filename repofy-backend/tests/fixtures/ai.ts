@@ -1,4 +1,4 @@
-import type { ScorerResponse, ScoringResult, AIAnalysisResponse, AdviceV2, AdviceV2Raw } from "../../src/types";
+import type { ScorerResponse, ScoringResult, AdviceV2, AdviceV2Raw } from "../../src/types";
 
 export function createScorerResponse(overrides: Partial<ScorerResponse> = {}): ScorerResponse {
   return {
@@ -72,65 +72,6 @@ export function createScoringResult(overrides: Partial<ScoringResult> = {}): Sco
     confidenceScore: 0.9,
     rubricVersion: "v1.1",
     modelVersion: "gpt-5.1",
-    ...overrides,
-  };
-}
-
-/** @deprecated Use createScorerResponse instead */
-export function createAIAnalysisResponse(overrides: Partial<AIAnalysisResponse> = {}): AIAnalysisResponse {
-  return {
-    candidateLevel: "Junior",
-    overallScore: 59,
-    recommendation: "Weak Hire",
-    summary: "Solid developer with good fundamentals.",
-    radarAxes: [
-      { axis: "Code Quality", value: 0.7 },
-      { axis: "Project Complexity", value: 0.6 },
-      { axis: "Technical Breadth", value: 0.65 },
-      { axis: "Eng. Practices", value: 0.5 },
-      { axis: "Consistency", value: 0.55 },
-      { axis: "Collaboration", value: 0.4 },
-    ],
-    radarBreakdown: [
-      { label: "Code Quality", score: 7, note: "Clean code." },
-      { label: "Project Complexity", score: 6, note: "Moderate complexity." },
-      { label: "Technical Breadth", score: 6.5, note: "Good range." },
-      { label: "Eng. Practices", score: 5, note: "Some CI but lacking tests." },
-      { label: "Consistency", score: 5.5, note: "Regular commits." },
-      { label: "Collaboration", score: 4, note: "Limited PR activity." },
-    ],
-    statsInterpretation: "Moderate GitHub presence.",
-    activityInterpretation: "Push-based workflow.",
-    languageInterpretation: "JavaScript-heavy with TypeScript.",
-    topRepos: [
-      {
-        name: "cool-project",
-        codeQuality: "B+",
-        testing: "C",
-        cicd: "C",
-        verdict: "Good project.",
-        isBestWork: true,
-      },
-    ],
-    strengths: [
-      { text: "Clean code", evidence: "Consistent naming." },
-      { text: "Active contributor", evidence: "Regular commits." },
-      { text: "Good variety", evidence: "Multiple project types." },
-    ],
-    weaknesses: [
-      { text: "No tests", evidence: "No test files found." },
-      { text: "Minimal docs", evidence: "Bare READMEs." },
-      { text: "No CI/CD", evidence: "No workflow files." },
-    ],
-    redFlags: [
-      { text: "No tests", severity: "Notable", explanation: "Lacks testing maturity." },
-    ],
-    interviewQuestions: [
-      { question: "Describe your testing philosophy.", why: "No tests found." },
-      { question: "How do you handle code reviews?", why: "Limited PRs." },
-      { question: "Walk me through your CI/CD setup.", why: "No CI config." },
-      { question: "How do you approach docs?", why: "Minimal READMEs." },
-    ],
     ...overrides,
   };
 }

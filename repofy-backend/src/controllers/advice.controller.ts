@@ -9,6 +9,7 @@ import { deductAndPersist } from "../services/advice-persistence.service";
 import { USERNAME_RE } from "../lib/validators";
 import { sendError, sendSuccess } from "../lib/response";
 import { handleControllerError } from "../lib/controller-utils";
+import type { AuthenticatedRequest } from "../types";
 
 /**
  * Track in-flight advice requests per user to prevent concurrent expensive calls.
@@ -35,11 +36,7 @@ export const adviseUser: RequestHandler = async (req, res) => {
     return;
   }
 
-  if (!req.userId) {
-    sendError(res, 401, "Authentication required");
-    return;
-  }
-  const userId = req.userId;
+  const { userId } = req as AuthenticatedRequest;
 
   if (activeAdviceRequests.has(userId)) {
     sendError(res, 429, "An advice request is already in progress. Please wait.");

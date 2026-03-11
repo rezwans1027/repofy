@@ -1,3 +1,12 @@
+import type { Request } from "express";
+import type {
+  CandidateLevel,
+  Recommendation,
+  RedFlagSeverity,
+  RepoVerdict,
+} from "@shared/report";
+import type { GenerationWarning } from "@shared/advice";
+
 declare global {
   namespace Express {
     interface Request {
@@ -6,6 +15,12 @@ declare global {
       signal?: AbortSignal;
     }
   }
+}
+
+/** Request type for routes behind `requireAuth` middleware — userId is guaranteed. */
+export interface AuthenticatedRequest extends Request {
+  userId: string;
+  userEmail: string;
 }
 
 export interface ApiResponse<T = unknown> {
@@ -188,6 +203,10 @@ export interface AggregateMetrics {
 
 // ── AI Analysis types ─────────────────────────────────────────────────
 
+// Re-exported from shared/types/ via TS project references
+export type { CandidateLevel, Recommendation, RedFlagSeverity, RepoVerdict };
+export type { GenerationWarning };
+
 export type AxisLabel =
   | "Code Quality"
   | "Project Complexity"
@@ -196,13 +215,12 @@ export type AxisLabel =
   | "Consistency"
   | "Collaboration";
 
+// Scorer-specific names for types that map to shared/types/report.ts equivalents
+// (CodeQuality, TestingLevel, CiCdStatus) — kept separate since the AI scorer
+// context differs from the frontend display context
 export type CodeQualityGrade = "Excellent" | "Good" | "Mixed" | "Weak" | "Unknown";
 export type TestingGrade = "Strong" | "Some" | "None" | "Unknown";
 export type CicdGrade = "Present" | "Partial" | "None" | "Unknown";
-export type RepoVerdict = "Standout" | "Strong" | "Solid" | "Needs Work" | "Risky";
-export type CandidateLevel = "Junior" | "Mid-Level" | "Senior" | "Staff";
-export type Recommendation = "No Hire" | "Weak Hire" | "Hire" | "Strong Hire";
-export type RedFlagSeverity = "Minor" | "Notable" | "Concerning";
 
 export interface ScorerResponse {
   radarAxes: { axis: AxisLabel; value: number }[];
@@ -236,47 +254,21 @@ export interface ScoringResult {
   modelVersion: string;
 }
 
-/** @deprecated Use ScorerResponse + ScoringResult instead */
-export interface AIAnalysisResponse {
-  candidateLevel: string;
-  overallScore: number;
-  recommendation: string;
-  summary: string;
-  radarAxes: { axis: string; value: number }[];
-  radarBreakdown: { label: string; score: number; note: string }[];
-  statsInterpretation: string;
-  activityInterpretation: string;
-  languageInterpretation: string;
-  topRepos: {
-    name: string;
-    codeQuality: string;
-    testing: string;
-    cicd: string;
-    verdict: string;
-    isBestWork: boolean;
-  }[];
-  strengths: { text: string; evidence: string }[];
-  weaknesses: { text: string; evidence: string }[];
-  redFlags: { text: string; severity: string; explanation: string }[];
-  interviewQuestions: { question: string; why: string }[];
-}
-
 // ── AI Advice V2 types ───────────────────────────────────────────────
 
-export type Level = "Junior" | "Mid-Level" | "Senior" | "Staff";
 export type Confidence = "Low" | "Medium" | "High";
 
-export enum GenerationWarning {
-  REPO_IMPROVEMENTS_UNAVAILABLE = "repo_improvements_unavailable",
-  REPO_IMPROVEMENTS_REDUCED = "repo_improvements_reduced",
-  WEEKLY_ROADMAP_SYNTHESIZED = "weekly_roadmap_synthesized",
-  SUCCESS_METRICS_REDUCED = "success_metrics_reduced",
-  PROFILE_OPTIMIZATIONS_REDUCED = "profile_optimizations_reduced",
-  SKILL_ROADMAP_REDUCED = "skill_roadmap_reduced",
-  CONTRIBUTION_STRATEGY_REDUCED = "contribution_strategy_reduced",
-  STRENGTHS_AND_GAPS_REDUCED = "strengths_and_gaps_reduced",
-  CAREER_POSITIONING_REDUCED = "career_positioning_reduced",
-}
+export const GENERATION_WARNINGS = {
+  REPO_IMPROVEMENTS_UNAVAILABLE: "repo_improvements_unavailable",
+  REPO_IMPROVEMENTS_REDUCED: "repo_improvements_reduced",
+  WEEKLY_ROADMAP_SYNTHESIZED: "weekly_roadmap_synthesized",
+  SUCCESS_METRICS_REDUCED: "success_metrics_reduced",
+  PROFILE_OPTIMIZATIONS_REDUCED: "profile_optimizations_reduced",
+  SKILL_ROADMAP_REDUCED: "skill_roadmap_reduced",
+  CONTRIBUTION_STRATEGY_REDUCED: "contribution_strategy_reduced",
+  STRENGTHS_AND_GAPS_REDUCED: "strengths_and_gaps_reduced",
+  CAREER_POSITIONING_REDUCED: "career_positioning_reduced",
+} as const satisfies Record<string, GenerationWarning>;
 
 export interface AdviceV2 {
   schemaVersion: "v2";
@@ -285,8 +277,8 @@ export interface AdviceV2 {
   summary: string;
 
   trajectory: {
-    currentEstimate: Level;
-    targetEstimate: Level;
+    currentEstimate: CandidateLevel;
+    targetEstimate: CandidateLevel;
     confidence: Confidence;
     rationale: string;
     calibration: {

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { reportData as staticReportData } from "@/lib/demo-data";
-import type { ReportData } from "@/types/report";
+import type { ReportData } from "@shared/types/report";
 
 import { TopBanner } from "./sections/top-banner";
 import { Summary } from "./sections/summary";

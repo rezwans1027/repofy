@@ -15,6 +15,7 @@ import { USERNAME_RE } from "../lib/validators";
 import { sendError, sendSuccess } from "../lib/response";
 import { logger } from "../lib/logger";
 import { handleControllerError } from "../lib/controller-utils";
+import type { AuthenticatedRequest } from "../types";
 
 export const analyzeUser: RequestHandler = async (req, res) => {
   const username = req.params.username as string;
@@ -24,11 +25,7 @@ export const analyzeUser: RequestHandler = async (req, res) => {
     return;
   }
 
-  if (!req.userId) {
-    sendError(res, 401, "Authentication required");
-    return;
-  }
-  const userId = req.userId;
+  const { userId } = req as AuthenticatedRequest;
 
   try {
     if (env.mockAi) {

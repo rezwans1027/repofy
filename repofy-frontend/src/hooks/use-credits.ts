@@ -1,18 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
+import { z } from "zod";
 import { useAuth } from "@/components/providers/auth-provider";
 import { api } from "@/lib/api-client";
 
-export interface CreditBalance {
-  growth_balance: number;
-  eval_balance: number;
-}
+const creditBalanceSchema = z.object({
+  growth_balance: z.number(),
+  eval_balance: z.number(),
+});
+
+export type CreditBalance = z.infer<typeof creditBalanceSchema>;
 
 export function useCreditBalance() {
   const { user } = useAuth();
   return useQuery({
     queryKey: ["credits", "balance"],
-    queryFn: () =>
-      api.get<CreditBalance>("/credits/balance", { auth: true }),
+    queryFn: ({ signal }) =>
+      api.get<CreditBalance>("/credits/balance", { signal, auth: true, schema: creditBalanceSchema }),
     enabled: !!user,
   });
 }
@@ -28,8 +31,8 @@ export function useAwaitCreditUpdate(
   const { user } = useAuth();
   return useQuery({
     queryKey: ["credits", "balance", "poll"],
-    queryFn: () =>
-      api.get<CreditBalance>("/credits/balance", { auth: true }),
+    queryFn: ({ signal }) =>
+      api.get<CreditBalance>("/credits/balance", { signal, auth: true, schema: creditBalanceSchema }),
     enabled: enabled && !!user && initialBalance !== undefined,
     refetchInterval: (query) => {
       const data = query.state.data;

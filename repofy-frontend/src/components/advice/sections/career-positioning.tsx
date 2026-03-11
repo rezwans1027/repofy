@@ -11,7 +11,7 @@ import {
   badgePop,
   EASE_OUT_EXPO,
 } from "@/lib/animation-variants";
-import type { AdviceData } from "@/types/advice";
+import type { AdviceData } from "@shared/types/advice";
 
 interface CareerPositioningProps {
   data: AdviceData["careerPositioning"];

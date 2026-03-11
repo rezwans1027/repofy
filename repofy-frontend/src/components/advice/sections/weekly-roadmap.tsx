@@ -8,7 +8,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { Badge } from "@/components/ui/badge";
 import { EASE_OUT_EXPO } from "@/lib/animation-variants";
 import type { Variants } from "framer-motion";
-import type { AdviceData } from "@/types/advice";
+import type { AdviceData } from "@shared/types/advice";
 
 // ── Color system ────────────────────────────────────────────────────
 

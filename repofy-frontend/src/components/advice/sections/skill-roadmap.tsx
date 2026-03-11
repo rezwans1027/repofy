@@ -14,7 +14,7 @@ import {
   contentFade,
   borderGrow,
 } from "@/lib/animation-variants";
-import type { AdviceData } from "@/types/advice";
+import type { AdviceData } from "@shared/types/advice";
 
 const PRIORITY_STYLES: Record<string, string> = {
   Now: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",

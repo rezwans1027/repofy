@@ -2,7 +2,7 @@ import { AlertTriangle } from "lucide-react";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
 import { EvidenceList } from "@/components/ui/evidence-list";
-import type { ReportData } from "@/types/report";
+import type { ReportData } from "@shared/types/report";
 
 interface WeaknessesProps {
   weaknesses: ReportData["weaknesses"];

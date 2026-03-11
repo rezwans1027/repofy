@@ -1,5 +1,4 @@
-// CANONICAL SOURCE: repofy-backend/src/types/index.ts (CandidateLevel, Recommendation)
-// ── ReportData – explicit interface for analysis reports ─────────────
+// ── ReportData – shared interface for analysis reports ─────────────
 
 export interface RadarAxis {
   axis: string;

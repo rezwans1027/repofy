@@ -11,7 +11,7 @@ import {
   contentFade,
   borderGrow,
 } from "@/lib/animation-variants";
-import type { AdviceData } from "@/types/advice";
+import type { AdviceData } from "@shared/types/advice";
 
 interface ContributionStrategyProps {
   items: AdviceData["contributionStrategy"];

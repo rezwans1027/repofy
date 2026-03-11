@@ -5,22 +5,17 @@ import { createCheckoutSession } from "../services/stripe.service";
 import { grantGrowthCredits } from "../services/credit.service";
 import { sendError, sendSuccess } from "../lib/response";
 import { logger } from "../lib/logger";
+import { handleControllerError } from "../lib/controller-utils";
+import type { AuthenticatedRequest } from "../types";
 
 export const createCheckout: RequestHandler = async (req, res) => {
   try {
-    const userId = req.userId;
-    const userEmail = req.userEmail;
-
-    if (!userId || !userEmail) {
-      sendError(res, 401, "Authentication required");
-      return;
-    }
+    const { userId, userEmail } = req as AuthenticatedRequest;
 
     const url = await createCheckoutSession(userId, userEmail);
     sendSuccess(res, { url });
   } catch (err) {
-    logger.error("Stripe checkout error:", err);
-    sendError(res, 500, "Failed to create checkout session");
+    handleControllerError(err, req, res, "Stripe Checkout", "Failed to create checkout session");
   }
 };
 
@@ -116,6 +111,6 @@ export const handleWebhook: RequestHandler = async (req, res) => {
     res.json({ received: true });
   } catch (err) {
     logger.error("Webhook processing error:", err);
-    res.status(200).json({ received: true, error: "Webhook processing failed" });
+    res.status(500).json({ received: false, error: "Webhook processing failed" });
   }
 };

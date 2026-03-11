@@ -1,298 +1,289 @@
 # Code Review Report — Repofy Monorepo
 
-**Date:** 2026-03-08
-**Scope:** Full-stack monorepo (`repofy-frontend` + `repofy-backend`)
-**Branch:** `code-quality`
-**Reviewers:** Architecture, Code Quality, Security, API Patterns (4-agent swarm)
+**Date:** 2026-03-11
+**Reviewed by:** 4-agent swarm (architecture, quality, security, API patterns)
+**Scope:** Full codebase — `repofy-frontend/`, `repofy-backend/`, `shared/`
 
 ---
 
 ## Executive Summary
 
-The Repofy codebase is **well-engineered** with strong security practices, clean layering, and consistent patterns. No critical security vulnerabilities were found. The codebase demonstrates mature patterns including timing-safe comparisons, parameterized queries, prompt injection defenses, nonce-based CSP, and proper Stripe webhook signature verification.
+The Repofy codebase demonstrates **strong engineering fundamentals** with clean architecture, proper security implementation, and consistent patterns. The monorepo is well-organized with clear separation of concerns in both frontend (Next.js 16) and backend (Express 4).
 
-The primary areas for improvement are:
-1. **Type duplication across frontend/backend** — the single most impactful structural issue
-2. **DRY violations** in UI components and backend utilities
-3. **Inconsistent error propagation** in Express controllers
-4. **Several code correctness issues** (null assertions, stale closures, input encoding)
+**0 critical issues** were found. The main areas for improvement are: eliminating structural duplication between the reports and advice CRUD layers (~300 lines), consolidating type definitions between `shared/` and backend, and adding pagination to list endpoints. Security posture is strong with proper auth, input validation, CSP, and prompt injection defenses.
 
-**Totals: 1 Critical, 9 High, 18 Medium, 18 Low**
+| Severity | Count |
+|----------|-------|
+| Critical | 0 |
+| High | 5 |
+| Medium | 11 |
+| Low | 15 |
 
 ---
 
-## Critical Issues (1)
+## Critical Issues
 
-### C1. Frontend/Backend Type Drift — No Shared Source of Truth
-**Category:** Architecture / Code Quality
+None found.
+
+---
+
+## High Priority Issues
+
+### H1. Reports/Advice CRUD Triplication (DRY)
+**Category:** Code Quality
 **Files:**
-- `repofy-backend/src/types/index.ts` — canonical types (`CandidateLevel`, `Recommendation`, `RedFlagSeverity`, `AdviceV2`, etc.)
-- `repofy-frontend/src/types/report.ts` — re-declares ~15 identical union types
-- `repofy-frontend/src/types/advice.ts` — re-declares `GenerationWarning` as string union (backend uses `enum`), `AdviceData` loosens literal types vs backend's `AdviceV2`
+- `repofy-backend/src/controllers/reports.controller.ts` vs `advice-read.controller.ts`
+- `repofy-backend/src/services/reports.service.ts` vs `advice-persistence.service.ts`
+- `repofy-frontend/src/hooks/use-reports.ts` vs `use-advice.ts`
 
-**Impact:** A backend schema change (e.g., adding a `Recommendation` value) won't produce a compile error on the frontend. `AdviceData.trajectory.currentEstimate` uses `string` where backend uses `Level = "Junior" | "Mid-Level" | "Senior" | "Staff"`, losing autocomplete and exhaustive checks. `GenerationWarning` enum vs string union is a concrete contract divergence.
+The reports and advice entities share nearly identical CRUD code across 3 layers (controller, service, hook). Each pair has the same auth checks, validation, error handling, query patterns, and optimistic delete logic. Only entity names, table names, and query keys differ. This represents ~300 lines of duplication.
 
-**Recommendation:** Extract shared types into a workspace package (`packages/shared`) or codegen TypeScript types from the backend.
+**Recommendation:** Create generic factories:
+- Backend: `createCrudController(service, entityName)` and `createEntityService(tableName)`
+- Frontend: `useEntityCrud(entityKey, apiPath, listSchema, detailSchema)`
 
----
-
-## High Severity Issues (9)
-
-### H1. Double Supabase API Call for Token Retrieval
-**File:** `repofy-frontend/src/lib/api-client.ts:46-53`
-
-Every authenticated API call makes TWO round trips: `getUser()` (server validation) then `getSession()` (get token). `getUser()` is unnecessary for attaching the auth header — the backend already re-validates the JWT via `supabase.auth.getUser(token)`.
-
-**Fix:** Use only `getSession()` for the auth header. Reserve `getUser()` for identity validation at login/auth changes.
-
----
-
-### H2. OTP Resend Resets Brute-Force Attempt Counter
-**File:** `repofy-backend/src/services/auth.service.ts:168`
-
-```typescript
-.update({ otp_code: hashOtp(otp), otp_expires_at: expiresAt, attempts: 0 })
-```
-
-An attacker can call resend to reset `attempts` to 0 before hitting the max, enabling unlimited OTP guesses (rate-limited to 15/min, but never locked out).
-
-**Fix:** Remove `attempts: 0` from the resend update. The attempt budget should be cumulative.
-
----
-
-### H3. `data!.id` Non-Null Assertion After Supabase `.single()`
-**Files:** `repofy-backend/src/services/advice-persistence.service.ts:40`, `reports.service.ts:28`
-
-If Supabase returns `{ data: null, error: null }` (zero rows match), `data!.id` throws an unhandled `TypeError`.
-
-**Fix:** Add explicit null check: `if (!data) throw new DatabaseError("No data returned", null);`
-
----
-
-### H4. Unsafe Type Casts in credit.service.ts
-**File:** `repofy-backend/src/services/credit.service.ts:38,55`
-
-`return data as boolean;` — Supabase RPC returns `unknown`. A schema change would produce silent incorrect behavior.
-
-**Fix:** Add runtime type validation before casting.
-
----
-
-### H5. GitHub Repo Names Not URL-Encoded in API Paths
-**File:** `repofy-backend/src/services/github.service.ts:168,698+`
-
-Repo names (which can contain `.` and special chars) are interpolated directly into URL paths without `encodeURIComponent()`.
-
-**Fix:** Apply `encodeURIComponent()` to `repo.name` in all URL constructions.
-
----
-
-### H6. Duplicate OpenAI Client Singleton
-**Files:** `repofy-backend/src/services/openai.service.ts:9-13`, `repofy-backend/src/services/advice.service.ts:15-19`
-
-Both files contain identical `getClient()` singleton code. If client config changes (baseURL, timeout, org), it must be updated in two places.
-
-**Fix:** Extract to `repofy-backend/src/lib/openai-client.ts`.
-
----
-
-### H7. Rubric Version Hardcoded in Two Places
-**Files:** `repofy-backend/src/controllers/analyze.controller.ts:19` (`"v1.1"`), `repofy-backend/src/services/scoring.service.ts:214` (`"v1.1"`)
-
-**Fix:** Export `RUBRIC_VERSION` from `scoring.service.ts` and import in the controller.
-
----
-
-### H8. Strengths/Weaknesses/RedFlags Item Layout Duplicated
+### H2. No Pagination on List Endpoints
+**Category:** Performance
 **Files:**
-- `repofy-frontend/src/components/report/sections/strengths.tsx:15-28`
-- `repofy-frontend/src/components/report/sections/weaknesses.tsx:14-28`
-- `repofy-frontend/src/components/compare/comparison-side-by-side.tsx:65-94`
+- `repofy-backend/src/services/reports.service.ts:32-41`
+- `repofy-backend/src/services/advice-persistence.service.ts` (equivalent)
 
-Identical HTML structure copied across report and compare views.
+List endpoints return ALL reports/advice for a user with no pagination. Frontend hooks fetch the full list on every load. This will degrade as users accumulate data.
 
-**Fix:** Extract a shared `<FindingItem>` primitive or have compare components import the report components.
+**Recommendation:** Add cursor-based or offset pagination with a default page size (e.g., 20). Update frontend hooks to support pagination.
 
----
+### H3. Type Definitions in 3 Places (Single Source of Truth)
+**Category:** Code Quality
+**Files:**
+- `shared/types/advice.ts` — `AdviceData` interface
+- `repofy-backend/src/types/index.ts` — `AdviceV2` interface (near-identical)
+- `repofy-backend/src/services/advice.service.ts` — JSON schemas mirroring the same structure
 
-### H9. Empty State Pattern Repeated Across Advice Sections
-**Files:** `repofy-frontend/src/components/advice/sections/repo-improvements.tsx:25-34`, `profile-optimizations.tsx:19-28`, `strengths-and-gaps.tsx:20-30`
+The same types are maintained in 3 places with subtle drift (e.g., `AdviceData.repoImprovements` has optional fields the backend lacks; `GenerationWarning` is a union type in shared but an enum in backend). Changes require updates in multiple files.
 
-Identical empty-state wrapper repeated 3+ times.
+**Recommendation:** Backend should import from `shared/types/` via path alias. Consider generating JSON schemas from Zod schemas defined alongside the shared types.
 
-**Fix:** Create `<EmptySection title="..." message="..." delay={...} />`.
+### H4. Redundant Auth/Error Guards in CRUD Controllers
+**Category:** API Patterns
+**Files:**
+- `repofy-backend/src/controllers/reports.controller.ts`
+- `repofy-backend/src/controllers/advice-read.controller.ts`
 
----
+Every handler duplicates `if (!req.userId)` checks and manual try/catch blocks, even though `requireAuth` middleware already validates auth and `asyncHandler` + `errorHandler` handle errors. The controllers don't trust the middleware chain.
 
-## Medium Severity Issues (18)
+**Recommendation:** Remove redundant `userId` checks (middleware guarantees it). Let `asyncHandler`/`errorHandler` catch errors instead of per-handler try/catch.
 
-### Architecture
+### H5. Dependency Vulnerabilities
+**Category:** Security
+**Files:** `package-lock.json` in both packages
 
-| # | Issue | File(s) |
-|---|-------|---------|
-| M1 | `advice.service.ts` is 790+ lines (god module) | `services/advice.service.ts` |
-| M2 | `github.service.ts` is 975+ lines | `services/github.service.ts` |
-| M3 | `(app)/layout.tsx` is `"use client"` — forces entire app subtree to client | `(app)/layout.tsx:1` |
-| M4 | Missing `Suspense` boundary for `useSearchParams()` in detail pages | `report/[id]/page.tsx`, `advisor/[id]/page.tsx` |
-| M5 | `AnalysisProvider` has disconnected mock setTimeout, mounted in root layout but unused by actual analysis flow | `analysis-provider.tsx:31-34` |
+- `rollup` 4.0.0-4.58.0 — arbitrary file write via path traversal (dev-only)
+- `@hono/node-server` — authorization bypass for static paths (transitive)
+- `dompurify` — XSS vulnerability (used by `html2canvas-pro` for PDF export)
 
-### Error Handling
-
-| # | Issue | File(s) |
-|---|-------|---------|
-| M6 | analyze/advice/stripe controllers bypass global `errorHandler` via inline `sendError` — `DatabaseError` special-case is dead code for these paths | `analyze.controller.ts:104`, `advice.controller.ts:89`, `stripe.controller.ts:21` |
-| M7 | `github.controller.ts` uses inline error handling instead of shared `handleControllerError` | `github.controller.ts:30-38` |
-| M8 | `admin.controller.ts` has no try/catch — inconsistent with other controllers | `admin.controller.ts:5-43` |
-| M9 | Stripe webhook returns 500 for invariant failures, causing Stripe retry loops | `stripe.controller.ts:73-99` |
-
-### Security
-
-| # | Issue | File(s) |
-|---|-------|---------|
-| M10 | `req.userId!` non-null assertions in controllers — crash if auth middleware removed | Multiple controllers |
-| M11 | `style-src 'unsafe-inline'` weakens CSP (required by next-themes/framer-motion) | `middleware.ts:84` |
-| M12 | In-memory concurrency guard (`activeAdviceRequests`) is process-scoped — fails with horizontal scaling | `advice.controller.ts:22-44` |
-
-### Code Quality
-
-| # | Issue | File(s) |
-|---|-------|---------|
-| M13 | `handleComplete` in generate pages uses weak `unknown` runtime type check instead of propagating generic | `generate/[username]/page.tsx:37-58` |
-| M14 | Inline animation variants duplicated 4+ times (existing `animation-variants.ts` not used) | `advisor/page.tsx`, `dashboard/page.tsx` |
-| M15 | Dead code: empty `if` block with comment body, no executable statements | `advice.service.ts:736-739` |
-| M16 | GitHub API fetch helpers duplicate timeout/signal/catch boilerplate across 3 functions | `github.service.ts` (`ghFetch`, `ghFetchRaw`, `ghGraphQL`) |
-| M17 | `verdictColor` logic duplicated as `verdictBadgeStyle` without importing original | `styles.ts:33`, `top-repos.tsx:137-146` |
-| M18 | Missing `balanceAtCheckout` in useEffect dependency array — stale closure risk | `pricing/page.tsx:74-83` |
+**Recommendation:** Run `npm audit fix` in both packages. Evaluate `html2canvas-pro` dependency for `dompurify` update.
 
 ---
 
-## Low Severity Issues (18)
+## Medium Priority Issues
 
-| # | Issue | File(s) |
-|---|-------|---------|
-| L1 | `LANGUAGE_COLORS` imported across service layers (presentation data in wrong layer) | `advice-builder.service.ts:2` |
-| L2 | Routes mounted without explicit sub-prefixes — must open each file to know paths | `routes/index.ts` |
-| L3 | `cleanExpiredCache()` exists but is never called — no scheduled cleanup | `cache.service.ts:63` |
-| L4 | Admin controller bypasses service layer (direct Supabase queries) | `admin.controller.ts` |
-| L5 | Auth page check uses hardcoded strings instead of `PROTECTED_ROUTES` constant | `middleware.ts:54` |
-| L6 | `DISABLED_ROUTES` hardcoded in middleware, not in constants file | `middleware.ts:72-77` |
-| L7 | `AnalysisLoading` `fetchStarted` ref doesn't survive React Strict Mode remount | `analysis-loading.tsx:35` |
-| L8 | `useAwaitCreditUpdate` polls indefinitely with no timeout/max attempts | `use-credits.ts:24-42` |
-| L9 | `useCreditBalance` missing explicit staleTime — inherits global 60s default | `use-credits.ts:10-18` |
-| L10 | 401 handling inconsistent across API-calling components | `api-client.ts:45-52` |
-| L11 | Raw `err.message` piped to user-facing error display | `analysis-loading.tsx:80` |
-| L12 | `any` usage in test files bypasses interface mismatch checks | Test setup + route tests |
-| L13 | `relativeDate` / `timeAgo` implement overlapping date formatting logic | `format.ts` |
-| L14 | In-memory rate limiting won't scale horizontally (documented with TODO) | `rateLimit.ts:8-11` |
-| L15 | `TRUST_PROXY` must be set behind reverse proxy for IP rate limits to work | `app.ts:15`, `env.ts:29` |
-| L16 | `auth.getSession()` on frontend instead of `auth.getUser()` (backend re-validates, so not exploitable) | `api-client.ts:48` |
-| L17 | `<img>` tags instead of `next/image` for GitHub avatars | `dashboard/page.tsx:208`, `profile/page.tsx:132` |
-| L18 | Phantom type fields in `supabase-queries.ts` config interface | `supabase-queries.ts:10-17` |
+### M1. Duplicate Supabase Migration Directories
+**Category:** Architecture
+**Files:** `supabase/migrations/` (root, 15 files) vs `repofy-backend/supabase/migrations/` (2 files)
+
+Two migration directories with different file counts. Unclear which is the source of truth.
+
+**Recommendation:** Consolidate to a single migration directory and document the convention.
+
+### M2. Duplicated Enum/Union Types Between Shared and Backend
+**Category:** Code Quality
+**Files:** `shared/types/report.ts` vs `repofy-backend/src/types/index.ts`
+
+`CandidateLevel`, `Recommendation`, `RedFlagSeverity`, `CodeQuality`, `TestingLevel`, `CiCdStatus`, `RepoVerdict` are defined identically in both locations.
+
+**Recommendation:** Backend should import these from `@shared/types`.
+
+### M3. Email Validation Repeated 3x in Auth Controller
+**Category:** Code Quality
+**File:** `repofy-backend/src/controllers/auth.controller.ts` (lines 13, 37, 69)
+
+The email validation pattern and `AuthError` handling block are copy-pasted across `handleInitiateSignup`, `handleVerifySignup`, and `handleResendOtp`.
+
+**Recommendation:** Extract `validateEmail(email)` and `handleAuthError(err, res)` helpers.
+
+### M4. Duplicated BASE_URL Logic
+**Category:** Code Quality
+**Files:** `repofy-frontend/src/lib/api-client.ts:4-11` vs `server-api.ts:3-10`
+
+Identical `BASE_URL` IIFE with env var resolution copy-pasted between client and server API modules.
+
+**Recommendation:** Extract to a shared `getApiBaseUrl()` utility.
+
+### M5. Server-Side Fetch Cache Disabled
+**Category:** Performance
+**File:** `repofy-frontend/src/lib/server-api.ts:18-19`
+
+`cache: "no-store"` on every server fetch disables Next.js's server-side cache entirely. Every page navigation re-fetches from the backend.
+
+**Recommendation:** Use `next: { revalidate: 60 }` for stable data like report/advice details.
+
+### M6. Session Overhead on Every API Call
+**Category:** Performance
+**File:** `repofy-frontend/src/lib/api-client.ts:47-53`
+
+Every authenticated request calls `supabase.auth.getSession()` and potentially `refreshSession()`, adding latency.
+
+**Recommendation:** Cache the session token client-side with a short TTL (e.g., 30s).
+
+### M7. OTP Attempts Not Reset on Resend
+**Category:** Security (UX)
+**File:** `repofy-backend/src/services/auth.service.ts:168-170`
+
+When a new OTP is generated via resend, the attempt counter isn't reset. Users can be locked out of a fresh code due to prior attempts.
+
+**Recommendation:** Reset attempts to 0 when generating a new OTP.
+
+### M8. Delete Endpoint IDs Not Validated as UUIDs
+**Category:** Security
+**Files:** `repofy-backend/src/controllers/reports.controller.ts:44`, `advice-read.controller.ts:44`
+
+IDs are validated as strings but not checked for UUID format. Non-UUID values reach the DB and return 500 instead of 400.
+
+**Recommendation:** Add UUID regex validation to return a proper 400 response.
+
+### M9. CSP style-src Uses 'unsafe-inline'
+**Category:** Security
+**File:** `repofy-frontend/src/middleware.ts:89`
+
+Required by framer-motion's inline styles. Documented in comments. Lower risk than inline scripts (which are nonce-based).
+
+### M10. Rate Limiter Uses In-Memory Store
+**Category:** Architecture
+**File:** `repofy-backend/src/middleware/rateLimit.ts:1-11`
+
+Per-process MemoryStore won't work across multiple instances. TODO comment already present.
+
+**Recommendation:** Switch to `rate-limit-redis` before horizontal scaling.
+
+### M11. Large Service Files
+**Category:** Code Quality
+**Files:**
+- `repofy-backend/src/services/github.service.ts` — 987 lines
+- `repofy-backend/src/services/advice.service.ts` — 803 lines
+
+Both files have self-documenting comments identifying natural split points, which mitigates the concern. `normalizeAdvice` is ~210 lines.
+
+**Recommendation:** Follow the commented split plans when next modifying these files.
 
 ---
 
-## DRY Violations Summary
+## Low Priority Issues
 
-| ID | Severity | Duplicated Code | Files | Fix |
-|----|----------|----------------|-------|-----|
-| D1 | High | Export bar components (~30 lines x 3) | `export-bar.tsx`, `advice-export-bar.tsx`, `comparison-export-bar.tsx` | Extract `<StickyBottomBar>` + `<ExportPdfButton>` |
-| D2 | High | PDF layout utilities (~25 lines x 2-3) | `pdf-layout.tsx`, `advice-pdf-layout.tsx` | Extract to `pdf-primitives.tsx` |
-| D3 | High | OpenAI client singleton (5 lines x 2) | `openai.service.ts`, `advice.service.ts` | Extract to `lib/openai-client.ts` |
-| D4 | High | Strengths/Weaknesses item layout (14 lines x 4) | Report + compare components | Extract `<FindingItem>` |
-| D5 | High | Empty state sections (10 lines x 3) | Advice section components | Extract `<EmptySection>` |
-| D6 | Medium | GitHub fetch timeout/signal logic (10 lines x 3) | `github.service.ts` | Extract `buildSignals()` + `handleFetchError()` |
-| D7 | Medium | Section card wrapper pattern (5 lines x 30+) | All section components | Create `<SectionCard>` |
-| D8 | Medium | Controller error handling pattern (20 lines x 2) | `advice.controller.ts`, `analyze.controller.ts` | Extend `handleControllerError` |
-| D9 | Medium | Type definitions between packages (~15 types) | `types/report.ts`, `types/index.ts` | Shared types package |
-
----
-
-## Positive Findings
-
-The codebase demonstrates strong engineering across many areas:
-
-1. **Prompt injection defense** — `sanitizeForPrompt()` strips control chars, prefixes instruction keywords with `[user-data]`, `===BEGIN/END USER-PROVIDED DATA===` delimiters, size budgets
-2. **Timing-safe comparisons** everywhere secrets are compared (OTP verification, admin key)
-3. **Idempotent payment processing** — `stripePaymentIntentId` as idempotency key in `grant_growth_credits` RPC
-4. **Comprehensive rate limiting** — per-user keying for auth routes, separate limits for AI (5/min), auth (10/min), OTP resend (3/min), admin, GitHub, Stripe
-5. **Proper Stripe webhook handling** — `express.raw()` registered before `express.json()`, signature verification with raw body
-6. **OTP security** — `crypto.randomInt()` generation, HMAC-SHA256 hashed storage, atomic attempt increment via RPC, timing-safe comparison
-7. **Anti-enumeration** — consistent generic messages for signup/resend regardless of email existence
-8. **CSP with per-request nonces** — `crypto.randomUUID()` nonce for script-src, `frame-ancestors 'none'` prevents clickjacking
-9. **Zero XSS vectors** — no `dangerouslySetInnerHTML`, `eval()`, or `new Function()` anywhere in source
-10. **Zero SQL injection risk** — all queries via Supabase SDK parameterized query builders
-11. **Strict CORS** — exact-match origin allowlist, no wildcards
-12. **App factory pattern** (`createApp()`) — easily testable backend
-13. **`createSupabaseQueries` factory** — excellent DRY pattern for frontend CRUD hooks with optimistic updates + rollback
-14. **`asyncHandler` wrapper** — all async routes catch unhandled rejections
-15. **`AbortSignal.timeout()` propagation** — timeouts propagated through GitHub and OpenAI calls with 504 response
-16. **Consistent response envelope** — `sendSuccess`/`sendError` enforce `{success, data}`/`{success, error}` shape
-17. **Input validation at all boundaries** — username regex, email format, OTP format, body size limit (100kb), search query sanitization
-18. **Error class hierarchy** — `GitHubError`, `DatabaseError`, `InsufficientCreditsError`, `AuthError` with meaningful status codes
+| # | Category | Finding | File |
+|---|----------|---------|------|
+| L1 | Quality | Inconsistent error handling patterns (handleControllerError vs manual sendError) | Various controllers |
+| L2 | Quality | `any` usage in test files (~30 instances) | Frontend test files |
+| L3 | Quality | Type assertions in advice.service.ts merge logic (9 `as` casts) | advice.service.ts |
+| L4 | Quality | Deprecated `AIAnalysisResponse` type still present | backend/src/types/index.ts:239 |
+| L5 | Quality | Deprecated test fixture | backend/tests/fixtures/ai.ts:79 |
+| L6 | Quality | Empty conditional block with only comments | advice.service.ts:744-747 |
+| L7 | Architecture | No ESLint config in backend (frontend has one) | repofy-backend/ |
+| L8 | Architecture | `reactStrictMode: false` undocumented | next.config.ts |
+| L9 | Architecture | `components/sections/` naming ambiguous (landing vs report sections) | repofy-frontend/src/components/ |
+| L10 | API | Missing `signal` in `useReport`/`useAdvice` query functions | use-reports.ts, use-advice.ts |
+| L11 | API | Missing explicit `staleTime` on detail queries | use-reports.ts, use-advice.ts |
+| L12 | API | No response compression middleware | repofy-backend |
+| L13 | API | No HTTP caching headers (Cache-Control, ETag) | repofy-backend |
+| L14 | API | No API versioning or OpenAPI documentation | repofy-backend |
+| L15 | API | Misleading `recentCost`/`recentTokens` in admin endpoint (page-scoped) | admin.controller.ts:28-36 |
 
 ---
 
 ## Architecture Assessment
 
-**Rating: Strong**
+**Rating: STRONG**
 
-- Clean monorepo with clear frontend/backend separation
-- Backend: app factory → routes → middleware → controllers → services (proper layering)
-- Frontend: Next.js App Router with `(app)` and `(auth)` route groups
-- Provider hierarchy: Theme → Auth → Analysis → Query
-- State management via React Query with proper cache configuration
+- Clean hybrid organization: type-based at top level, feature-based nesting in components
+- Proper layering: routes -> controllers -> services -> lib (backend), pages -> components -> hooks -> lib (frontend)
+- No circular dependencies detected
+- Good use of Next.js App Router patterns (route groups, server components, loading.tsx, middleware CSP)
+- Excellent Express patterns (factory pattern, proper middleware ordering, asyncHandler, timeout with AbortSignal)
+- `shared/` directory provides cross-package types via path aliases
 
-**Key improvements:** Share types between packages; consider splitting god modules (`advice.service.ts`, `github.service.ts`).
+**Key improvement:** Consolidate types so backend imports from `shared/` instead of maintaining parallel definitions.
 
 ---
 
 ## Security Posture
 
-**Rating: Strong — No Critical Vulnerabilities**
+**Rating: GOOD**
 
-- JWT validation server-side via `supabase.auth.getUser(token)` (not client decode)
-- OTPs: crypto-secure generation, HMAC-hashed, timing-safe verification, atomic attempt limits
-- Admin: timing-safe SHA-256 key comparison
-- All DB access parameterized, zero raw SQL
-- Zero XSS vectors, zero eval usage
-- Stripe webhooks: raw body signature verification, idempotent processing
-- CSP with nonces, clickjacking protection, strict CORS
+Strong security engineering throughout:
+- JWT auth validated server-side via `supabase.auth.getUser()` (not just decoded)
+- Timing-safe comparison for admin secret
+- Anti-enumeration patterns in auth flows
+- HMAC-SHA256 hashed OTPs with attempt limits and expiry
+- All data queries user-scoped via `user_id`
+- Prompt injection defenses (sanitization + data boundary markers)
+- CSP with nonce-based script-src and frame-ancestors 'none'
+- Comprehensive input validation (regex, length limits, body size limits)
+- No raw SQL, no innerHTML, no command execution
+- Stripe webhook signature verification with idempotency
+- Open redirect properly mitigated in auth callback
 
-**Key improvements:** Fix OTP attempt counter reset on resend; migrate CSP style-src from `unsafe-inline` when possible; plan Redis-backed rate limiting for horizontal scaling.
+**Key improvements:** Run `npm audit fix`, add UUID validation on deletes, plan Redis-backed rate limiting.
 
 ---
 
 ## API Patterns Assessment
 
-**Rating: Good**
+**Rating: GOOD**
 
-- Consistent `sendSuccess`/`sendError` envelope
-- Typed API client with optional Zod validation
-- `asyncHandler` covers unhandled rejections
-- `AbortSignal.timeout()` propagation with 504
-- Optimistic updates with rollback in `supabase-queries.ts`
-- Comprehensive, granular rate limiting
+- Consistent envelope response format (`{ success, data/error }`)
+- Well-designed React Query setup with hierarchical keys and tiered stale times
+- Proper optimistic updates with rollback
+- AbortSignal propagation for request cancellation
+- Comprehensive rate limiting per route type
+- Good timeout middleware with AbortController
 
-**Key improvements:** Unify error propagation through Express error pipeline; fix webhook 500→200 for invariant failures; add poll timeout to `useAwaitCreditUpdate`.
+**Key improvements:** Add pagination to list endpoints, enable Next.js server fetch caching, reduce per-request session overhead.
 
 ---
 
 ## Prioritized Recommendations
 
-| # | Action | Effort | Impact |
-|---|--------|--------|--------|
-| 1 | Fix OTP attempt counter reset on resend | 5 min | High — auth bypass fix |
-| 2 | Use only `getSession()` for auth header (drop redundant `getUser()`) | 10 min | High — 2x fewer API calls |
-| 3 | Add null checks after `.single()` calls | 10 min | High — prevents runtime crashes |
-| 4 | Share types between frontend/backend | 1-2 hours | High — eliminates type drift |
-| 5 | Extract shared OpenAI client singleton | 15 min | Medium — single config point |
-| 6 | Unify controller error handling pattern | 30 min | Medium — consistent pipeline |
-| 7 | Extract shared UI components (FindingItem, EmptySection, StickyBottomBar) | 30 min | Medium — reduces duplication |
-| 8 | URL-encode repo names in GitHub API paths | 15 min | Medium — defense-in-depth |
-| 9 | Export `RUBRIC_VERSION` from single location | 5 min | Low — prevents mismatch |
-| 10 | Move animation variants to `animation-variants.ts` | 5 min | Low — cleaner code |
-| 11 | Remove dead code (empty if block, vestigial AnalysisProvider) | 5 min | Low — reduces confusion |
-| 12 | Add cache cleanup job (pg_cron or startup task) | 30 min | Low — prevents stale accumulation |
-| 13 | Add poll timeout to `useAwaitCreditUpdate` | 5 min | Low — prevents infinite polling |
-| 14 | Return 200 for Stripe webhook invariant failures | 5 min | Low — prevents retry storms |
-| 15 | Plan Redis-backed rate limiting for horizontal scaling | 2-4 hours | Low (only if scaling) |
+### Quick Wins (< 1 hour each)
+1. Run `npm audit fix` in both packages
+2. Extract `validateEmail()` helper in auth controller
+3. Extract shared `getApiBaseUrl()` in frontend
+4. Add UUID validation on delete endpoints
+5. Remove deprecated `AIAnalysisResponse` type and test fixture
+6. Add `signal` and `staleTime` to detail query hooks
+7. Reset OTP attempts on resend
+
+### Medium Effort (1-4 hours each)
+8. Create generic CRUD controller/service factories for reports/advice
+9. Create `useEntityCrud` hook factory for reports/advice
+10. Backend imports types from `shared/` (add path alias to backend tsconfig)
+11. Add pagination to list endpoints + update frontend hooks
+12. Consolidate duplicate migration directories
+
+### Larger Effort (4+ hours)
+13. Enable selective server-side fetch caching in `server-api.ts`
+14. Split `github.service.ts` and `advice.service.ts` along documented boundaries
+15. Add ESLint to backend
+16. Add response compression + HTTP cache headers
+17. Add OpenAPI documentation
+
+---
+
+## Positive Highlights
+
+- Zero `any` in production backend code
+- Self-documenting comments in large files about future refactoring paths
+- Clean utility abstractions (`sendError/sendSuccess`, `handleControllerError`, `throwIfDbError`, `asyncHandler`)
+- Thoughtful React Query configuration with tiered stale times
+- Excellent timeout middleware with AbortController signal propagation
+- Proper Stripe webhook handling (raw body, signature verification, idempotency, invariant checks)
+- Well-implemented prompt injection defenses for LLM interactions
+- Consistent naming conventions throughout (kebab-case files, PascalCase components, camelCase functions)

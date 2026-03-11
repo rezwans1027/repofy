@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { CountUp } from "@/components/ui/count-up";
 import { Badge } from "@/components/ui/badge";
-import type { ReportData } from "@/types/report";
+import type { ReportData } from "@shared/types/report";
 import { recommendationStyle } from "@/lib/styles";
 
 interface TopBannerProps {

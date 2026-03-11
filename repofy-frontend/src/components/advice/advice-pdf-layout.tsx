@@ -2,7 +2,7 @@
  * Clean, document-style PDF layout for the advice report.
  * Designed for paper — no cards, badges, or web UI chrome.
  */
-import type { AdviceData } from "@/types/advice";
+import type { AdviceData } from "@shared/types/advice";
 import { Divider, Heading } from "@/components/ui/pdf-primitives";
 
 interface PdfLayoutProps {
