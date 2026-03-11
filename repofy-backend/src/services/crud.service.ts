@@ -31,7 +31,7 @@ export function createCrudService(config: CrudServiceConfig) {
       .select(detailSelect)
       .eq("id", id)
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
     throwIfDbError(error, `get ${entityName}`);
     return data;
   }
