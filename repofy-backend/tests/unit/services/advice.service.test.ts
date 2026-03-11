@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createGitHubUserData } from "../../fixtures/github";
 import { createAdviceV2Raw } from "../../fixtures/ai";
 import { getMockCreate } from "../../helpers/mock-openai";
-import { GenerationWarning } from "../../../src/types";
+import { GENERATION_WARNINGS } from "../../../src/types";
 import type { AdviceV2Raw, AdviceSectionName } from "../../../src/types";
 
 vi.mock("openai");
@@ -92,7 +92,7 @@ describe("advice.service", () => {
       // Should take early return (no validation errors), but still emit cardinality warning
       expect(mockCreate).toHaveBeenCalledTimes(1);
       expect(result.skillRoadmap).toHaveLength(2);
-      expect(result.generationWarnings).toContain(GenerationWarning.SKILL_ROADMAP_REDUCED);
+      expect(result.generationWarnings).toContain(GENERATION_WARNINGS.SKILL_ROADMAP_REDUCED);
     });
 
     it("passes signal to OpenAI client", async () => {
@@ -432,7 +432,7 @@ describe("advice.service", () => {
       );
 
       expect(advice.repoImprovements).toEqual([]);
-      expect(warnings).toContain(GenerationWarning.REPO_IMPROVEMENTS_UNAVAILABLE);
+      expect(warnings).toContain(GENERATION_WARNINGS.REPO_IMPROVEMENTS_UNAVAILABLE);
     });
   });
 
@@ -451,7 +451,7 @@ describe("advice.service", () => {
       );
 
       expect(advice.repoImprovements).toEqual([]);
-      expect(warnings).toContain(GenerationWarning.REPO_IMPROVEMENTS_UNAVAILABLE);
+      expect(warnings).toContain(GENERATION_WARNINGS.REPO_IMPROVEMENTS_UNAVAILABLE);
     });
 
     it("synthesizes weeklyRoadmap from milestones + warning", () => {
@@ -465,7 +465,7 @@ describe("advice.service", () => {
 
       expect(advice.weeklyRoadmap).toHaveLength(12);
       expect(advice.weeklyRoadmap![0].activeBuildTitle).toBe(attempt1.buildRoadmap[0].title);
-      expect(warnings).toContain(GenerationWarning.WEEKLY_ROADMAP_SYNTHESIZED);
+      expect(warnings).toContain(GENERATION_WARNINGS.WEEKLY_ROADMAP_SYNTHESIZED);
     });
 
     it("filters successMetrics keeping valid measurable subset + warning", () => {
@@ -483,7 +483,7 @@ describe("advice.service", () => {
       // Degrade keeps the measurable subset instead of discarding all
       expect(advice.successMetrics).toHaveLength(1);
       expect(advice.successMetrics![0]).toContain("3+ merged PRs");
-      expect(warnings).toContain(GenerationWarning.SUCCESS_METRICS_REDUCED);
+      expect(warnings).toContain(GENERATION_WARNINGS.SUCCESS_METRICS_REDUCED);
     });
 
     it("throws for critical section failure", async () => {

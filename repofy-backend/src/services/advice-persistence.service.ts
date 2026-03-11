@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from "../config/supabase";
 import { throwIfDbError, DatabaseError } from "../lib/errors";
 import { deductGrowthCredit } from "./credit.service";
+import { createCrudService } from "./crud.service";
 
 export class InsufficientCreditsError extends Error {
   constructor() {
@@ -8,6 +9,19 @@ export class InsufficientCreditsError extends Error {
     this.name = "InsufficientCreditsError";
   }
 }
+
+const crud = createCrudService({
+  table: "advice",
+  entityName: "advice",
+  listSelect: "id, analyzed_username, analyzed_name, generated_at",
+  detailSelect: "id, analyzed_username, user_id, advice_data",
+  existsColumn: "analyzed_username",
+});
+
+export const listAdvice = crud.list;
+export const getAdviceById = crud.getById;
+export const adviceExists = crud.exists;
+export const deleteAdvice = crud.deleteBatch;
 
 /** Atomically deduct one credit and persist advice in a single step. */
 export async function deductAndPersist(
@@ -39,49 +53,4 @@ export async function deductAndPersist(
   throwIfDbError(error, "persist advice");
   if (!data?.id) throw new DatabaseError("persist advice returned no id", null);
   return data.id as string;
-}
-
-export async function listAdvice(userId: string) {
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("advice")
-    .select("id, analyzed_username, analyzed_name, generated_at")
-    .eq("user_id", userId)
-    .order("generated_at", { ascending: false });
-  throwIfDbError(error, "list advice");
-  return data ?? [];
-}
-
-export async function getAdviceById(userId: string, id: string) {
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("advice")
-    .select("id, analyzed_username, user_id, advice_data")
-    .eq("id", id)
-    .eq("user_id", userId)
-    .single();
-  throwIfDbError(error, "get advice");
-  return data;
-}
-
-export async function adviceExists(userId: string, username: string): Promise<boolean> {
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("advice")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("analyzed_username", username.toLowerCase())
-    .limit(1);
-  throwIfDbError(error, "check advice exists");
-  return !!data && data.length > 0;
-}
-
-export async function deleteAdvice(userId: string, ids: string[]) {
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase
-    .from("advice")
-    .delete()
-    .in("id", ids)
-    .eq("user_id", userId);
-  throwIfDbError(error, "delete advice");
 }

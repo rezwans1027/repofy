@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { SectionHeader } from "@/components/ui/section-header";
 import { EvidenceList } from "@/components/ui/evidence-list";
-import type { ReportData } from "@/types/report";
+import type { ReportData } from "@shared/types/report";
 import { cn } from "@/lib/utils";
 import { codeQualityColor, testingColor, cicdColor, SEVERITY_STYLES } from "@/lib/styles";
 

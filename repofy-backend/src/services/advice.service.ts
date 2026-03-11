@@ -24,7 +24,8 @@ import type {
   AdviceV2Raw,
   AdviceSectionName,
 } from "../types";
-import { GenerationWarning } from "../types";
+import { GENERATION_WARNINGS } from "../types";
+import type { GenerationWarning } from "../types";
 
 // ── Section schemas (building blocks) ────────────────────────────────
 
@@ -535,35 +536,35 @@ const SECTION_DEGRADE_MAP: Partial<Record<AdviceSectionName, {
 }>> = {
   repoImprovements: {
     degrade: () => [],
-    warning: GenerationWarning.REPO_IMPROVEMENTS_UNAVAILABLE,
+    warning: GENERATION_WARNINGS.REPO_IMPROVEMENTS_UNAVAILABLE,
   },
   weeklyRoadmap: {
     degrade: (advice) => synthesizeWeeklyRoadmap(advice.buildRoadmap ?? []),
-    warning: GenerationWarning.WEEKLY_ROADMAP_SYNTHESIZED,
+    warning: GENERATION_WARNINGS.WEEKLY_ROADMAP_SYNTHESIZED,
   },
   successMetrics: {
     degrade: (advice) => (advice.successMetrics ?? []).filter(isMetricMeasurable).slice(0, 8),
-    warning: GenerationWarning.SUCCESS_METRICS_REDUCED,
+    warning: GENERATION_WARNINGS.SUCCESS_METRICS_REDUCED,
   },
   profileOptimizations: {
     degrade: (advice) => (advice.profileOptimizations ?? []).slice(0, 3),
-    warning: GenerationWarning.PROFILE_OPTIMIZATIONS_REDUCED,
+    warning: GENERATION_WARNINGS.PROFILE_OPTIMIZATIONS_REDUCED,
   },
   skillRoadmap: {
     degrade: (advice) => advice.skillRoadmap ?? [],
-    warning: GenerationWarning.SKILL_ROADMAP_REDUCED,
+    warning: GENERATION_WARNINGS.SKILL_ROADMAP_REDUCED,
   },
   contributionStrategy: {
     degrade: (advice) => (advice.contributionStrategy ?? []).slice(0, 2),
-    warning: GenerationWarning.CONTRIBUTION_STRATEGY_REDUCED,
+    warning: GENERATION_WARNINGS.CONTRIBUTION_STRATEGY_REDUCED,
   },
   strengthsAndGaps: {
     degrade: (advice) => advice.strengthsAndGaps ?? { strengths: [], gaps: [] },
-    warning: GenerationWarning.STRENGTHS_AND_GAPS_REDUCED,
+    warning: GENERATION_WARNINGS.STRENGTHS_AND_GAPS_REDUCED,
   },
   careerPositioning: {
     degrade: (advice) => advice.careerPositioning ?? { positioning: "", roles: [], differentiators: [] },
-    warning: GenerationWarning.CAREER_POSITIONING_REDUCED,
+    warning: GENERATION_WARNINGS.CAREER_POSITIONING_REDUCED,
   },
 };
 
@@ -687,10 +688,10 @@ async function callOpenAI(
 function collectCardinalityWarnings(advice: Partial<AdviceV2Raw>): GenerationWarning[] {
   const warnings: GenerationWarning[] = [];
   if ((advice.skillRoadmap?.length ?? 0) < 4) {
-    warnings.push(GenerationWarning.SKILL_ROADMAP_REDUCED);
+    warnings.push(GENERATION_WARNINGS.SKILL_ROADMAP_REDUCED);
   }
   if ((advice.successMetrics?.length ?? 0) < 5) {
-    warnings.push(GenerationWarning.SUCCESS_METRICS_REDUCED);
+    warnings.push(GENERATION_WARNINGS.SUCCESS_METRICS_REDUCED);
   }
   return warnings;
 }

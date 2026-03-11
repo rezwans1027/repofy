@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
-import type { ReportData } from "@/types/report";
+import type { ReportData } from "@shared/types/report";
 
 interface ActivityBreakdownProps {
   activityBreakdown: ReportData["activityBreakdown"];

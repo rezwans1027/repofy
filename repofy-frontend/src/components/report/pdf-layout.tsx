@@ -2,7 +2,7 @@
  * Clean, document-style PDF layout for the analysis report.
  * Designed for paper — no cards, badges, or web UI chrome.
  */
-import type { ReportData } from "@/types/report";
+import type { ReportData } from "@shared/types/report";
 import { stripMarkdown, Divider, Heading } from "@/components/ui/pdf-primitives";
 
 interface PdfLayoutProps {

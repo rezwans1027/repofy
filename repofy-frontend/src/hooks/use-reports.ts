@@ -1,75 +1,34 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api-client";
-import { useAuth } from "@/components/providers/auth-provider";
-import { STALE_LONG } from "@/lib/query-client";
-import type { ReportData } from "@/types/report";
+import { z } from "zod";
+import { createCrudHooks } from "./use-crud";
+import type { ReportData } from "@shared/types/report";
 
-export interface ReportListItem {
-  id: string;
-  analyzed_username: string;
-  overall_score: number;
-  recommendation: string;
-  generated_at: string;
-  analyzed_name: string | null;
-}
+const reportListItemSchema = z.object({
+  id: z.string(),
+  analyzed_username: z.string(),
+  overall_score: z.number(),
+  recommendation: z.string(),
+  generated_at: z.string(),
+  analyzed_name: z.string().nullable(),
+});
 
-interface ReportRow {
-  id: string;
-  analyzed_username: string;
-  report_data: ReportData;
-}
+const reportRowSchema = z.object({
+  id: z.string(),
+  analyzed_username: z.string(),
+  report_data: z.record(z.string(), z.unknown()),
+});
 
-export function useReports() {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: ["reports", "list"],
-    queryFn: () => api.get<ReportListItem[]>("/reports", { auth: true }),
-    enabled: !!user,
-    staleTime: STALE_LONG,
-  });
-}
+export type ReportListItem = z.infer<typeof reportListItemSchema>;
 
-export function useReport(id: string) {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: ["reports", "detail", id],
-    queryFn: () => api.get<ReportRow>(`/reports/${id}`, { auth: true }),
-    enabled: !!user && !!id,
-  });
-}
+type ReportRow = z.infer<typeof reportRowSchema> & { report_data: ReportData };
 
-export function useExistingReport(username: string) {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: ["reports", "exists", username.toLowerCase()],
-    queryFn: () => api.get<boolean>(`/reports/exists/${encodeURIComponent(username)}`, { auth: true }),
-    enabled: !!user,
-  });
-}
+const crud = createCrudHooks<ReportListItem>({
+  queryKey: "reports",
+  endpoint: "/reports",
+  listSchema: z.array(reportListItemSchema),
+  detailSchema: reportRowSchema,
+});
 
-export function useDeleteReports() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (ids: string[]) => { await api.delete("/reports", { auth: true, body: { ids } }); },
-    onMutate: async (ids) => {
-      await queryClient.cancelQueries({ queryKey: ["reports", "list"] });
-      const previous = queryClient.getQueryData<ReportListItem[]>(["reports", "list"]);
-      if (previous) {
-        const idSet = new Set(ids);
-        queryClient.setQueryData(
-          ["reports", "list"],
-          previous.filter((item) => !idSet.has(item.id)),
-        );
-      }
-      return { previous };
-    },
-    onError: (_err, _ids, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(["reports", "list"], context.previous);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["reports"] });
-    },
-  });
-}
+export const useReports = crud.useList;
+export const useReport = crud.useDetail;
+export const useExistingReport = crud.useExists;
+export const useDeleteReports = crud.useDelete;

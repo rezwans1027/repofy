@@ -1,23 +1,10 @@
-import { Suspense } from "react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import { render, screen, act } from "@testing-library/react";
-import { navState, navModule, resetNavState } from "@/__tests__/helpers/mock-navigation";
-import { authMockFactory } from "@/__tests__/helpers/mock-auth";
+import { render, screen } from "@testing-library/react";
 
-vi.mock("next/navigation", () => navModule);
-vi.mock("@/components/providers/auth-provider", () => authMockFactory());
-
-const reportState = {
-  data: null as any,
-  isLoading: false,
-  error: null as any,
-};
-vi.mock("@/hooks/use-reports", () => ({
-  useReport: () => ({
-    data: reportState.data,
-    isLoading: reportState.isLoading,
-    error: reportState.error,
-  }),
+// Mock server-api
+const mockServerFetch = vi.fn();
+vi.mock("@/lib/server-api", () => ({
+  serverFetch: (...args: any[]) => mockServerFetch(...args),
 }));
 
 // Mock child components
@@ -29,39 +16,31 @@ vi.mock("@/components/report/analysis-report", () => ({
   ),
 }));
 
+vi.mock("@/components/ui/back-link", () => ({
+  BackLink: ({ href, label }: any) => <a href={href}>{label}</a>,
+}));
+
+vi.mock("@/components/ui/error-card", () => ({
+  ErrorCard: ({ message }: any) => <div>{message}</div>,
+}));
+
 import ReportPage from "./page";
 
-async function renderPage() {
-  let result: ReturnType<typeof render>;
-  await act(async () => {
-    result = render(
-      <Suspense fallback={<div>loading suspense</div>}>
-        <ReportPage params={Promise.resolve({ id: "report-1" })} />
-      </Suspense>,
-    );
-  });
-  return result!;
+async function renderPage(id = "report-1", from?: string) {
+  const params = Promise.resolve({ id });
+  const searchParams = Promise.resolve(from ? { from } : {});
+  const Component = await ReportPage({ params, searchParams });
+  render(Component);
 }
 
 describe("ReportPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    resetNavState();
-    reportState.data = null;
-    reportState.isLoading = false;
-    reportState.error = null;
+    mockServerFetch.mockResolvedValue(null);
   });
 
-  it("shows loading skeleton when isLoading is true", async () => {
-    reportState.isLoading = true;
-
-    await renderPage();
-
-    expect(screen.getByTestId("loading-skeleton")).toBeInTheDocument();
-  });
-
-  it("shows error card when error exists", async () => {
-    reportState.error = new Error("fail");
+  it("shows error card when report is not found", async () => {
+    mockServerFetch.mockResolvedValue(null);
 
     await renderPage();
 
@@ -69,11 +48,11 @@ describe("ReportPage", () => {
   });
 
   it("shows back link to /reports by default when report is loaded", async () => {
-    reportState.data = {
+    mockServerFetch.mockResolvedValue({
       id: "report-1",
       analyzed_username: "alice",
       report_data: {},
-    };
+    });
 
     await renderPage();
 
@@ -82,25 +61,24 @@ describe("ReportPage", () => {
   });
 
   it("shows back link to /profile/{username} when from=profile", async () => {
-    navState.searchParams = new URLSearchParams("from=profile");
-    reportState.data = {
+    mockServerFetch.mockResolvedValue({
       id: "report-1",
       analyzed_username: "alice",
       report_data: {},
-    };
+    });
 
-    await renderPage();
+    await renderPage("report-1", "profile");
 
     const link = screen.getByText("back to profile");
     expect(link.closest("a")).toHaveAttribute("href", "/profile/alice");
   });
 
   it("renders AnalysisReport when data is loaded", async () => {
-    reportState.data = {
+    mockServerFetch.mockResolvedValue({
       id: "report-1",
       analyzed_username: "alice",
       report_data: { overallScore: 82 },
-    };
+    });
 
     await renderPage();
 
@@ -109,11 +87,11 @@ describe("ReportPage", () => {
   });
 
   it("passes correct props to AnalysisReport", async () => {
-    reportState.data = {
+    mockServerFetch.mockResolvedValue({
       id: "report-1",
       analyzed_username: "alice",
       report_data: { overallScore: 82 },
-    };
+    });
 
     await renderPage();
 
@@ -122,12 +100,11 @@ describe("ReportPage", () => {
     expect(el).toHaveAttribute("data-score", "82");
   });
 
-  it("shows error when report data is null", async () => {
-    reportState.data = null;
-    reportState.error = null;
+  it("calls serverFetch with correct path", async () => {
+    mockServerFetch.mockResolvedValue(null);
 
-    await renderPage();
+    await renderPage("abc-123");
 
-    expect(screen.getByText("Report not found")).toBeInTheDocument();
+    expect(mockServerFetch).toHaveBeenCalledWith("/reports/abc-123");
   });
 });
