@@ -1,20 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Shared mock functions so the singleton inside api-client uses the same refs
-const mockGetUser = vi.fn().mockResolvedValue({
-  data: { user: { id: "user-123" } },
-  error: null,
-});
 const mockGetSession = vi.fn().mockResolvedValue({
-  data: { session: { access_token: "test-token" } },
+  data: { session: { access_token: "test-token", expires_at: Date.now() / 1000 + 3600 } },
 });
+const mockRefreshSession = vi.fn();
 
 // Mock the supabase client module before api-client imports it
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({
     auth: {
-      getUser: mockGetUser,
       getSession: mockGetSession,
+      refreshSession: mockRefreshSession,
     },
   }),
 }));
@@ -99,10 +96,9 @@ describe("api.get", () => {
     );
   });
 
-  it("does not include auth header when getUser returns error", async () => {
-    mockGetUser.mockResolvedValueOnce({
-      data: { user: null },
-      error: new Error("Invalid token"),
+  it("does not include auth header when session is null", async () => {
+    mockGetSession.mockResolvedValueOnce({
+      data: { session: null },
     });
 
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
