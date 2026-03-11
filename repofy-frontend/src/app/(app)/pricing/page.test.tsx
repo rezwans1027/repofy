@@ -133,11 +133,15 @@ describe("PricingPage", () => {
       isLoading: false,
     });
 
-    // Polling returns increased balance
-    mockUseAwaitCreditUpdate.mockReturnValue({
-      data: { growth_balance: 2, eval_balance: 0 },
-      isLoading: false,
-    });
+    // Polling starts loading, then returns increased balance.
+    // The polledBalance changing from undefined → data triggers the effect
+    // that detects the credit increase and sets creditsReceived = true.
+    mockUseAwaitCreditUpdate
+      .mockReturnValueOnce({ data: undefined, isLoading: true })
+      .mockReturnValue({
+        data: { growth_balance: 2, eval_balance: 0 },
+        isLoading: false,
+      });
 
     renderPricing();
 

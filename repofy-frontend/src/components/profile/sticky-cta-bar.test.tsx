@@ -88,40 +88,12 @@ describe("StickyCTABar", () => {
     expect(screen.getByText("@octocat")).toBeInTheDocument();
   });
 
-  // 3. Bar hidden initially before delay
-  it("is hidden initially before delay", () => {
+  // 3. Bar uses CSS animate-slide-up animation
+  it("has CSS slide-up animation class", () => {
     const { container } = render(<StickyCTABar username="octocat" />);
 
     const bar = container.firstElementChild as HTMLElement;
-    expect(bar.className).toContain("translate-y-full");
-    expect(bar.className).toContain("opacity-0");
-  });
-
-  // 4. Bar visible after delay
-  it("becomes visible after delay", async () => {
-    const { container } = render(<StickyCTABar username="octocat" />);
-
-    await act(() => vi.advanceTimersByTime(50));
-
-    const bar = container.firstElementChild as HTMLElement;
-    expect(bar.className).toContain("translate-y-0");
-    expect(bar.className).toContain("opacity-100");
-  });
-
-  // 5. Respects custom delay prop
-  it("respects custom delay prop", async () => {
-    const { container } = render(
-      <StickyCTABar username="octocat" delay={200} />,
-    );
-
-    // Still hidden at 100ms
-    await act(() => vi.advanceTimersByTime(100));
-    const bar = container.firstElementChild as HTMLElement;
-    expect(bar.className).toContain("translate-y-full");
-
-    // Visible at 200ms
-    await act(() => vi.advanceTimersByTime(100));
-    expect(bar.className).toContain("translate-y-0");
+    expect(bar.className).toContain("animate-slide-up");
   });
 
   // 6. "Start Analysis" button is disabled (Coming Soon)

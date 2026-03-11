@@ -51,6 +51,10 @@ vi.mock("framer-motion", async () => {
       set: vi.fn(),
     }),
     useTransform: () => ({ get: () => 0 }),
+    useScroll: () => ({
+      scrollYProgress: { get: () => 0 },
+      scrollXProgress: { get: () => 0 },
+    }),
   };
 });
 
