@@ -88,6 +88,7 @@ export const DEFAULT_COLOR = "#8b949e";
 // ── GitHub API helpers ────────────────────────────────────────────────
 
 const GITHUB_API = "https://api.github.com";
+const GITHUB_TIMEOUT_MS = 15_000;
 
 function headers(): Record<string, string> {
   return {
@@ -97,18 +98,24 @@ function headers(): Record<string, string> {
   };
 }
 
-async function ghFetch<T>(path: string, signal?: AbortSignal): Promise<T> {
-  const signals = [AbortSignal.timeout(15_000)];
+async function ghRequest(url: string, init: RequestInit, signal: AbortSignal | undefined, timeoutMessage: string): Promise<Response> {
+  const signals: AbortSignal[] = [AbortSignal.timeout(GITHUB_TIMEOUT_MS)];
   if (signal) signals.push(signal);
-  const res = await fetch(`${GITHUB_API}${path}`, {
-    headers: headers(),
-    signal: AbortSignal.any(signals),
-  }).catch((err) => {
+  return fetch(url, { ...init, signal: AbortSignal.any(signals) }).catch((err) => {
     if (err instanceof DOMException && err.name === "TimeoutError") {
-      throw new GitHubError("GitHub API request timed out", 504);
+      throw new GitHubError(timeoutMessage, 504);
     }
     throw err;
   });
+}
+
+async function ghFetch<T>(path: string, signal?: AbortSignal): Promise<T> {
+  const res = await ghRequest(
+    `${GITHUB_API}${path}`,
+    { headers: headers() },
+    signal,
+    "GitHub API request timed out",
+  );
 
   if (!res.ok) {
     if (res.status === 404) {
@@ -128,18 +135,12 @@ async function ghFetch<T>(path: string, signal?: AbortSignal): Promise<T> {
 
 /** Fetch with response object to inspect headers (e.g. Link header for pagination counts). */
 async function ghFetchRaw(path: string, signal?: AbortSignal): Promise<Response> {
-  const signals = [AbortSignal.timeout(15_000)];
-  if (signal) signals.push(signal);
-  const res = await fetch(`${GITHUB_API}${path}`, {
-    headers: headers(),
-    signal: AbortSignal.any(signals),
-  }).catch((err) => {
-    if (err instanceof DOMException && err.name === "TimeoutError") {
-      throw new GitHubError("GitHub API request timed out", 504);
-    }
-    throw err;
-  });
-  return res;
+  return ghRequest(
+    `${GITHUB_API}${path}`,
+    { headers: headers() },
+    signal,
+    "GitHub API request timed out",
+  );
 }
 
 // ── GitHub GraphQL API helper ─────────────────────────────────────────
@@ -147,23 +148,20 @@ async function ghFetchRaw(path: string, signal?: AbortSignal): Promise<Response>
 const GITHUB_GRAPHQL = "https://api.github.com/graphql";
 
 async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>, signal?: AbortSignal): Promise<T> {
-  const signals = [AbortSignal.timeout(15_000)];
-  if (signal) signals.push(signal);
-  const res = await fetch(GITHUB_GRAPHQL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${env.githubToken}`,
-      "User-Agent": "Repofy",
+  const res = await ghRequest(
+    GITHUB_GRAPHQL,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${env.githubToken}`,
+        "User-Agent": "Repofy",
+      },
+      body: JSON.stringify({ query, variables }),
     },
-    body: JSON.stringify({ query, variables }),
-    signal: AbortSignal.any(signals),
-  }).catch((err) => {
-    if (err instanceof DOMException && err.name === "TimeoutError") {
-      throw new GitHubError("GitHub GraphQL request timed out", 504);
-    }
-    throw err;
-  });
+    signal,
+    "GitHub GraphQL request timed out",
+  );
   if (!res.ok) throw new GitHubError(`GitHub GraphQL error: ${res.status}`, res.status);
   return res.json() as Promise<T>;
 }

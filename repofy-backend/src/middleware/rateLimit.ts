@@ -76,3 +76,6 @@ export const creditRateLimit = createLimiter({ max: 30, keyGenerator: userKeyGen
 
 /** Moderate limiter for GitHub proxy routes: 30 req/min per user */
 export const githubRateLimit = createLimiter({ max: 30, keyGenerator: userKeyGenerator });
+
+/** Read endpoint limiter: 60 req/min per user */
+export const readRateLimit = createLimiter({ max: 60, keyGenerator: userKeyGenerator });

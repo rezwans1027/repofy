@@ -18,9 +18,10 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   logger.error("Unhandled error", { status, message: err.message, stack: err.stack });
 
   const message = status >= 500 ? "Internal server error" : err.message;
-  const body: Record<string, unknown> = { success: false, error: message };
-  if (process.env.NODE_ENV !== "production" && err.stack) {
-    body.stack = err.stack;
+  if (process.env.NODE_ENV === "development" && err.stack) {
+    const body: Record<string, unknown> = { success: false, error: message, stack: err.stack };
+    res.status(status).json(body);
+    return;
   }
-  res.status(status).json(body);
+  sendError(res, status, message);
 };

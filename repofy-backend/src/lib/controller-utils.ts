@@ -6,7 +6,7 @@ import { logger } from "./logger";
 
 /**
  * Shared error handler for AI-powered controller endpoints (analyze, advice).
- * Returns `true` if the error was handled (response sent or skipped), `false` otherwise.
+ * Handles the error by sending a response. Returns early if the response was already sent.
  */
 export function handleControllerError(
   err: unknown,
@@ -14,20 +14,19 @@ export function handleControllerError(
   res: Response,
   context: string,
   fallbackMessage: string,
-): boolean {
-  if (req.signal?.aborted || res.headersSent) return true;
+): void {
+  if (req.signal?.aborted || res.headersSent) return;
 
   if (err instanceof InsufficientCreditsError) {
     sendError(res, 402, err.message);
-    return true;
+    return;
   }
 
   if (err instanceof GitHubError) {
     sendError(res, err.statusCode, err.message);
-    return true;
+    return;
   }
 
   logger.error(`${context} error:`, err);
   sendError(res, 500, fallbackMessage);
-  return true;
 }

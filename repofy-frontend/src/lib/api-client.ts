@@ -96,4 +96,7 @@ export const api = {
   post<T>(path: string, opts?: RequestOptions) {
     return request<T>("POST", path, opts);
   },
+  delete<T>(path: string, opts?: RequestOptions) {
+    return request<T>("DELETE", path, opts);
+  },
 };
