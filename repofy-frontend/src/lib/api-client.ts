@@ -1,14 +1,14 @@
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 
-const BASE_URL = (() => {
+function getBaseUrl() {
   const url = process.env.NEXT_PUBLIC_API_URL;
   if (url) return url;
   if (process.env.NODE_ENV === "production") {
     throw new Error("NEXT_PUBLIC_API_URL must be set in production");
   }
   return "http://localhost:3001/api";
-})();
+}
 
 export class ApiError extends Error {
   constructor(
@@ -61,7 +61,7 @@ async function request<T>(
     headers["Content-Type"] = "application/json";
   }
 
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetch(`${getBaseUrl()}${path}`, {
     method,
     ...rest,
     headers: { ...(callerHeaders as Record<string, string>), ...headers },

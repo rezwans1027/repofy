@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
     console.error(
       "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY env vars",
     );
-    return NextResponse.next();
+    return new NextResponse("Internal Server Error", { status: 500 });
   }
 
   const supabase = createServerClient(
