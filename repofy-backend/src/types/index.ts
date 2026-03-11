@@ -4,8 +4,8 @@ import type {
   Recommendation,
   RedFlagSeverity,
   RepoVerdict,
-} from "@shared/report";
-import type { GenerationWarning } from "@shared/advice";
+} from "./shared/report";
+import type { GenerationWarning } from "./shared/advice";
 
 declare global {
   namespace Express {

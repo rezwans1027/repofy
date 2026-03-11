@@ -6,9 +6,6 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "baseUrl": ".",
-    "paths": {
-      "@shared/*": ["../shared/types/*"]
-    },
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -19,6 +16,5 @@
     "sourceMap": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "../shared" }]
+  "exclude": ["node_modules", "dist"]
 }
