@@ -60,35 +60,35 @@ export async function initiateSignup(
     throw new AuthError("Failed to initiate signup", 500);
   }
 
-  if (!emailTaken) {
-    const otp = generateOtp();
-    const expiresAt = expiresInMinutes(OTP_EXPIRY_MINUTES);
-
-    // Upsert — replaces any prior pending signup for the same email
-    const { error: upsertError } = await supabase.from("pending_signups").upsert(
-      {
-        email,
-        display_name: displayName,
-        otp_code: hashOtp(otp),
-        otp_expires_at: expiresAt,
-        attempts: 0,
-      },
-      { onConflict: "email" },
-    );
-
-    if (upsertError) {
-      logger.error("Failed to upsert pending signup", { email, error: upsertError });
-      throw new AuthError("Failed to initiate signup", 500);
-    }
-
-    // Fire-and-forget: send email async so response time is identical
-    // regardless of whether the email exists, preventing timing enumeration.
-    sendOtpEmail(email, otp, displayName).catch((err) => {
-      logger.error("Failed to send OTP email during signup", { email, error: err });
-    });
+  if (emailTaken) {
+    throw new AuthError("An account with this email already exists.", 409);
   }
 
-  return { message: "If this email is available, a verification code has been sent." };
+  const otp = generateOtp();
+  const expiresAt = expiresInMinutes(OTP_EXPIRY_MINUTES);
+
+  // Upsert — replaces any prior pending signup for the same email
+  const { error: upsertError } = await supabase.from("pending_signups").upsert(
+    {
+      email,
+      display_name: displayName,
+      otp_code: hashOtp(otp),
+      otp_expires_at: expiresAt,
+      attempts: 0,
+    },
+    { onConflict: "email" },
+  );
+
+  if (upsertError) {
+    logger.error("Failed to upsert pending signup", { email, error: upsertError });
+    throw new AuthError("Failed to initiate signup", 500);
+  }
+
+  sendOtpEmail(email, otp, displayName).catch((err) => {
+    logger.error("Failed to send OTP email during signup", { email, error: err });
+  });
+
+  return { message: "A verification code has been sent to your email." };
 }
 
 export async function verifySignup(
