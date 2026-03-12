@@ -16,9 +16,13 @@ const NO_CREDITS_SENTINEL = "__NO_CREDITS__";
 
 const ADVICE_PHASES = [
   "Scanning profile...",
-  "Inferring career trajectory...",
-  "Sequencing builds across 12 weeks...",
-  "Generating weekly roadmap...",
+  "Mapping skill landscape...",
+  "Analyzing market demand...",
+  "Evaluating project complexity...",
+  "Planning 12-week progression...",
+  "Writing learning objectives...",
+  "Validating roadmap coherence...",
+  "Generating growth plan...",
 ];
 
 export default function GenerateAdvicePage({

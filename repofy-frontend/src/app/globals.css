@@ -192,6 +192,13 @@ body[data-scroll-locked] {
   animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* ── Analysis loading waveform ──────────────────────────────────── */
+
+@keyframes wave-bar {
+  0%, 100% { transform: scaleY(0.25); }
+  50% { transform: scaleY(1); }
+}
+
 /* ── Advisor report ambient animations ─────────────────────────── */
 
 @keyframes glow-pulse {
