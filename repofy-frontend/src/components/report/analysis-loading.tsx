@@ -81,7 +81,6 @@ export function AnalysisLoading({
 }: AnalysisLoadingProps) {
   const phases = phasesProp ?? DEFAULT_PHASES;
   const [phase, setPhase] = useState(0);
-  const [progress, setProgress] = useState(0);
   const [fading, setFading] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -93,6 +92,11 @@ export function AnalysisLoading({
   const accentCls = isAdvisor ? "text-emerald-400" : "text-cyan";
   const logPool = isAdvisor ? ADVISOR_LOG : REPORT_LOG;
   const complete = phase >= phases.length;
+  const displayProgress = complete
+    ? 100
+    : elapsed < 90
+      ? (elapsed / 90) * 94
+      : 94 + Math.min(((elapsed - 90) / 30) * 4, 4);
 
   /* Elapsed timer — ticks every 100 ms */
   useEffect(() => {
@@ -145,19 +149,6 @@ export function AnalysisLoading({
     let res: { data?: unknown; error?: string } | null = null;
     let dead = false;
 
-    const tick = () => {
-      if (dead) return;
-      const e = Date.now() - t0;
-      // 0 → 94% smoothly over 90s, then slow crawl toward 98%
-      const v =
-        e < 90000
-          ? (e / 90000) * 94
-          : 94 + Math.min(((e - 90000) / 30000) * 4, 4);
-      setProgress(v);
-      requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-
     fetchReport()
       .then((d) => {
         res = { data: d };
@@ -177,7 +168,6 @@ export function AnalysisLoading({
             onError(res.error);
             return;
           }
-          setProgress(100);
           setPhase(phases.length);
           setTimeout(() => setFading(true), 400);
           setTimeout(() => onComplete(res!.data), 800);
@@ -222,7 +212,7 @@ export function AnalysisLoading({
                     {elapsed.toFixed(1)}s
                   </span>
                   <span className="font-mono text-[10px] tabular-nums text-muted-foreground/50">
-                    {Math.round(progress)}%
+                    {Math.round(displayProgress)}%
                   </span>
                 </div>
               </div>
@@ -372,9 +362,11 @@ export function AnalysisLoading({
                     <div
                       className="absolute inset-y-0 left-0 rounded-full"
                       style={{
-                        width: `${Math.max(progress, 2)}%`,
+                        width: `${Math.max(displayProgress, 2)}%`,
                         backgroundColor: "#34d399",
-                        transition: "width 0.1s linear",
+                        transition: complete
+                          ? "width 0.3s ease-out"
+                          : "width 0.15s linear",
                       }}
                     />
                   </div>
