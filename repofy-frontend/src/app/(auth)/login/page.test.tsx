@@ -39,8 +39,8 @@ describe("LoginPage", () => {
 
   it("renders link to signup", () => {
     render(<LoginPage />);
-    const signupLink = screen.getByRole("link", { name: /sign up/i });
-    expect(signupLink).toHaveAttribute("href", "/signup");
+    const signupButton = screen.getByRole("button", { name: /sign up/i });
+    expect(signupButton).toBeInTheDocument();
   });
 
   it("shows email validation error for empty email", async () => {

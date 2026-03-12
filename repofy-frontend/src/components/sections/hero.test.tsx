@@ -66,7 +66,7 @@ describe("Hero", () => {
   it("renders subtitle text", () => {
     render(<Hero />);
     expect(
-      screen.getByText("AI-powered GitHub analysis for technical hiring"),
+      screen.getByText("AI-powered GitHub intelligence platform"),
     ).toBeInTheDocument();
   });
 
@@ -160,6 +160,6 @@ describe("Hero", () => {
 
   it("renders trust line", () => {
     render(<Hero />);
-    expect(screen.getByText(/free during beta/i)).toBeInTheDocument();
+    expect(screen.getByText(/free to explore/i)).toBeInTheDocument();
   });
 });
