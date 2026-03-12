@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
@@ -29,18 +29,16 @@ type Phase = "form" | "otp" | "success";
 const EASE_OUT_EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 const phaseVariants = {
-  enter: { opacity: 0, x: 20, filter: "blur(6px)" },
+  enter: { opacity: 0, filter: "blur(6px)" },
   center: {
     opacity: 1,
-    x: 0,
     filter: "blur(0px)",
-    transition: { duration: 0.4, ease: EASE_OUT_EXPO },
+    transition: { duration: 0.35, ease: EASE_OUT_EXPO },
   },
   exit: {
     opacity: 0,
-    x: -20,
     filter: "blur(6px)",
-    transition: { duration: 0.25 },
+    transition: { duration: 0.2 },
   },
 };
 
@@ -176,20 +174,73 @@ export default function SignupPage() {
     }
   }, [cooldown, email]);
 
-  // ── Render ──
-  const terminalPrompt =
-    phase === "otp"
-      ? "repofy auth signup --verify"
-      : "repofy auth signup";
+  // ── Smooth height animation for phase transitions ──
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [contentHeight, setContentHeight] = useState<number | "auto">("auto");
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      setContentHeight(el.scrollHeight);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // ── Typewriter for --verify flag ──
+  const [displayedFlag, setDisplayedFlag] = useState("");
+  const [showFlagCursor, setShowFlagCursor] = useState(false);
+  const verifyFlag = " --verify";
+
+  useEffect(() => {
+    if (phase === "otp" && displayedFlag !== verifyFlag) {
+      setShowFlagCursor(true);
+      let i = 0;
+      const typeChar = () => {
+        i++;
+        setDisplayedFlag(verifyFlag.slice(0, i));
+        if (i < verifyFlag.length) {
+          setTimeout(typeChar, 60);
+        } else {
+          setTimeout(() => setShowFlagCursor(false), 300);
+        }
+      };
+      typeChar();
+    } else if (phase === "form" && displayedFlag !== "") {
+      setShowFlagCursor(true);
+      let text = displayedFlag;
+      const backspace = () => {
+        text = text.slice(0, -1);
+        setDisplayedFlag(text);
+        if (text.length > 0) {
+          setTimeout(backspace, 40);
+        } else {
+          setTimeout(() => setShowFlagCursor(false), 300);
+        }
+      };
+      backspace();
+    }
+  }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="space-y-6">
       <div>
         <p className="font-mono text-sm text-muted-foreground">
-          <span className="text-cyan">$</span> {terminalPrompt}
+          <span className="text-cyan">$</span> repofy auth signup{displayedFlag}
+          {showFlagCursor && (
+            <span className="ml-px text-cyan">▎</span>
+          )}
         </p>
       </div>
 
+      <motion.div
+        className="overflow-hidden"
+        animate={{ height: contentHeight }}
+        initial={false}
+        transition={{ duration: 0.35, ease: EASE_OUT_EXPO }}
+      >
+      <div ref={contentRef}>
       <AnimatePresence mode="wait">
         {/* ── Phase: Success fallback ── */}
         {phase === "success" && (
@@ -485,8 +536,41 @@ export default function SignupPage() {
                 )}
               </Button>
             </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      </div>
+      </motion.div>
 
-            <p className="text-center font-mono text-xs text-muted-foreground">
+      <div className="relative h-5">
+        <AnimatePresence initial={false}>
+          {phase === "form" ? (
+            <motion.p
+              key="signin"
+              className="absolute inset-0 text-center font-mono text-xs text-muted-foreground"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              Already have an account?{" "}
+              <button
+                type="button"
+                onClick={() => navigateTo("/login")}
+                className="text-cyan hover:underline underline-offset-4"
+              >
+                Sign in
+              </button>
+            </motion.p>
+          ) : phase === "otp" ? (
+            <motion.p
+              key="resend"
+              className="absolute inset-0 text-center font-mono text-xs text-muted-foreground"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            >
               Didn&apos;t receive a code?{" "}
               {cooldown > 0 ? (
                 <span className="text-muted-foreground/60">
@@ -501,23 +585,10 @@ export default function SignupPage() {
                   Resend code
                 </button>
               )}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {phase === "form" && (
-        <p className="text-center font-mono text-xs text-muted-foreground">
-          Already have an account?{" "}
-          <button
-            type="button"
-            onClick={() => navigateTo("/login")}
-            className="text-cyan hover:underline underline-offset-4"
-          >
-            Sign in
-          </button>
-        </p>
-      )}
+            </motion.p>
+          ) : null}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
