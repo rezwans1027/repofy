@@ -54,7 +54,7 @@ export function Hero() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
           <p className="text-cyan mb-4 font-mono text-sm tracking-wide">
-            AI-powered GitHub analysis for technical hiring
+            AI-powered GitHub intelligence platform
           </p>
           <h1 className="font-mono text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
             Know any developer.
@@ -62,8 +62,9 @@ export function Hero() {
             <span className="text-cyan">From their code.</span>
           </h1>
           <p className="text-muted-foreground mx-auto mt-6 max-w-xl text-base sm:text-lg">
-            Paste a GitHub username. Get a hiring-grade evaluation, actionable career
-            advice, or a side-by-side candidate comparison — powered by AI.
+            Explore any GitHub profile in depth, get AI-powered career advice
+            with a personalized growth plan, and export polished PDFs — with
+            hiring-grade developer analysis coming soon.
           </p>
         </motion.div>
 
@@ -124,7 +125,7 @@ export function Hero() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.6 }}
         >
-          Free during beta &middot; No credit card required
+          Free to explore &middot; No credit card required
         </motion.p>
       </div>
     </section>

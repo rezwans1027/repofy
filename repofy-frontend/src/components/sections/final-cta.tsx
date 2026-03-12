@@ -11,12 +11,12 @@ export function FinalCta() {
       <AnimateOnView>
         <div className="rounded-lg border border-cyan/20 bg-cyan/5 p-8 text-center sm:p-12">
           <h2 className="font-mono text-xl font-bold sm:text-2xl">
-            Start analyzing.{" "}
+            Start exploring.{" "}
             <span className="text-cyan">It&apos;s free.</span>
           </h2>
           <p className="text-muted-foreground mx-auto mt-3 max-w-md text-sm">
-            Paste any GitHub username and get a full developer evaluation in
-            seconds. No credit card. No signup fees. Full access during beta.
+            Search any GitHub user, explore their full profile, and get
+            AI-powered career advice — all in one place. No credit card required.
           </p>
           <div className="mt-6">
             <Button

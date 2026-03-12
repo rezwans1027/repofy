@@ -10,19 +10,17 @@ import { ArrowRight } from "lucide-react";
 
 const plans = [
   {
-    name: "Beta",
+    name: "Explorer",
     price: "Free",
-    period: "during beta",
-    description: "Everything. No limits. No catch.",
+    period: "to start",
+    description: "Explore profiles for free. AI advisor sessions cost growth credits.",
     features: [
-      "AI developer analysis",
-      "AI profile advisor with action plans",
-      "Side-by-side candidate comparison",
-      "6-axis Developer DNA radar chart",
-      "Per-repo code quality grades",
-      "Strengths, red flags & interview questions",
-      "PDF export for reports, advice & comparisons",
-      "Evals dashboard with search & filters",
+      "GitHub profile explorer with real stats",
+      "Top repos, languages & activity feed",
+      "Contribution heatmap & history",
+      "AI Profile Advisor — $5 for 2 growth credits",
+      "Personalized project ideas & 12-week roadmap",
+      "PDF export for advice plans",
     ],
     cta: "Get Started Free",
     highlighted: true,
@@ -34,11 +32,12 @@ const plans = [
     period: "/mo",
     description: "For teams who hire at scale.",
     features: [
-      "Everything in Beta",
+      "Everything in Explorer",
+      "AI developer analysis with scored reports",
+      "6-axis Developer DNA radar chart",
+      "Side-by-side candidate comparison",
+      "Evals dashboard with search & filters",
       "Team dashboard & shared reports",
-      "API access for integrations",
-      "Custom evaluation criteria",
-      "Candidate pipeline management",
       "Priority support",
     ],
     cta: "Coming Soon",
@@ -53,7 +52,7 @@ export function Pricing() {
       <AnimateOnView>
         <SectionHeader
           title="Pricing"
-          subtitle="Free while in beta. Full access. No credit card required."
+          subtitle="Explore profiles for free. Advisor credits start at $5."
         />
       </AnimateOnView>
 
@@ -99,6 +98,26 @@ export function Pricing() {
                     </li>
                   ))}
                 </ul>
+                {plan.highlighted && (
+                  <div className="rounded-md border border-cyan/20 bg-cyan/5 px-4 py-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs text-muted-foreground">
+                        AI Advisor session
+                      </span>
+                      <span className="font-mono text-sm font-bold text-cyan">
+                        1 credit
+                      </span>
+                    </div>
+                    <div className="mt-1.5 flex items-center justify-between">
+                      <span className="font-mono text-xs text-muted-foreground">
+                        Credit pack
+                      </span>
+                      <span className="font-mono text-sm font-bold text-foreground">
+                        $5 <span className="text-muted-foreground text-xs font-normal">/ 2 credits</span>
+                      </span>
+                    </div>
+                  </div>
+                )}
                 {plan.highlighted ? (
                   <Button
                     className="w-full bg-cyan text-background hover:bg-cyan/90 font-mono"

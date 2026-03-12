@@ -8,16 +8,16 @@ import { Search, Cpu, ClipboardCheck } from "lucide-react";
 
 const diffLines = {
   old: [
-    { type: "remove" as const, text: "- Read 200 resumes" },
-    { type: "remove" as const, text: "- Guess from job titles" },
-    { type: "remove" as const, text: '- "5 years of React"' },
-    { type: "remove" as const, text: "- Hope for the best" },
+    { type: "remove" as const, text: "- Skim GitHub profiles manually" },
+    { type: "remove" as const, text: "- Guess skills from pinned repos" },
+    { type: "remove" as const, text: "- Generic career advice" },
+    { type: "remove" as const, text: "- No actionable next steps" },
   ],
   new: [
-    { type: "add" as const, text: "+ Analyze actual code" },
-    { type: "add" as const, text: "+ Measure real patterns" },
-    { type: "add" as const, text: "+ See commit discipline" },
-    { type: "add" as const, text: "+ Hire with confidence" },
+    { type: "add" as const, text: "+ Deep-dive any profile instantly" },
+    { type: "add" as const, text: "+ AI-powered skill insights" },
+    { type: "add" as const, text: "+ Personalized growth plans" },
+    { type: "add" as const, text: "+ Export polished PDFs" },
   ],
 };
 
@@ -31,14 +31,14 @@ const steps = [
   {
     step: "02",
     icon: Cpu,
-    title: "Analyze",
-    desc: "AI processes the data to generate a hiring-grade evaluation or personalized career advice. Every insight backed by real code.",
+    title: "Explore",
+    desc: "Dive deep into their profile — stats, top repos, language breakdown, activity feed, and contribution patterns. All in one place.",
   },
   {
     step: "03",
     icon: ClipboardCheck,
-    title: "Decide",
-    desc: "Get a scored report, compare candidates side-by-side, or export a PDF. All your analyses are saved and searchable.",
+    title: "Get Advice",
+    desc: "Generate AI-powered career advice with project ideas, skills to learn, repo improvements, and a 12-week roadmap. Export as a PDF.",
   },
 ];
 
@@ -48,7 +48,7 @@ export function HowItWorks() {
       <AnimateOnView>
         <SectionHeader
           title="How It Works"
-          subtitle="From GitHub username to hiring decision in seconds."
+          subtitle="From GitHub username to actionable insights in seconds."
         />
       </AnimateOnView>
 

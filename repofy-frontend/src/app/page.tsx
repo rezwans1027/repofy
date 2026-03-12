@@ -20,8 +20,8 @@ export default function Home() {
       <PageContainer>
         <Hero />
         <FeaturesOverview />
-        <AnalysisPreview />
         <AdvisorPreview />
+        <AnalysisPreview />
         <ComparePreview />
         <HowItWorks />
         <Pricing />
