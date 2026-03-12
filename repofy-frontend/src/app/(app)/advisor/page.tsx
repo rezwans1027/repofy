@@ -121,32 +121,51 @@ export default function AdvisorPage() {
   if (items.length === 0) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
+        initial="hidden"
+        animate="visible"
+        variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
         className="space-y-4"
       >
-        <h1 className="font-mono text-lg font-bold">Advisor</h1>
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <div className="text-center">
-            <div className="mx-auto flex size-14 items-center justify-center rounded-2xl border border-border bg-secondary/50">
-              <Lightbulb className="size-6 text-muted-foreground/50" />
+        <motion.h1
+          variants={{ hidden: { opacity: 0, y: 12, filter: "blur(6px)" }, visible: { opacity: 1, y: 0, filter: "blur(0px)" } }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          className="font-mono text-lg font-bold"
+        >
+          Advisor
+        </motion.h1>
+        <motion.div
+          variants={{ hidden: { opacity: 0, y: 12, filter: "blur(6px)" }, visible: { opacity: 1, y: 0, filter: "blur(0px)" } }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          className="flex min-h-[50vh] items-center justify-center rounded-xl border border-border bg-card"
+        >
+          <div className="flex max-w-xs flex-col items-center text-center px-6 py-12">
+            <div className="relative">
+              <div className="flex size-16 items-center justify-center rounded-2xl border border-cyan/20 bg-cyan/[0.06]">
+                <Lightbulb className="size-7 text-cyan" />
+              </div>
+              <div className="absolute -right-1 -top-1 size-3 rounded-full border-2 border-card bg-cyan/40" />
             </div>
-            <p className="mt-4 font-mono text-sm font-medium text-foreground">
+
+            <h2 className="mt-6 font-mono text-sm font-semibold text-foreground">
               No advice generated yet
+            </h2>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              Get a personalized 12-week growth roadmap, skill recommendations, and project ideas for any developer.
             </p>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Search for a developer and get actionable profile advice.
-            </p>
+
             <Link
               href="/dashboard"
-              className="mt-5 inline-flex items-center gap-1.5 rounded-lg border border-emerald-400/20 bg-emerald-400/5 px-4 py-2 font-mono text-xs font-medium text-emerald-400 transition-colors hover:bg-emerald-400/10"
+              className="group mt-6 inline-flex items-center gap-2 rounded-lg bg-cyan px-5 py-2.5 font-mono text-xs font-medium text-background transition-all hover:brightness-110"
             >
-              Go to search
-              <ArrowRight className="size-3" />
+              Search a developer
+              <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
             </Link>
+
+            <p className="mt-4 font-mono text-[11px] text-muted-foreground/60">
+              1 credit per advisor session
+            </p>
           </div>
-        </div>
+        </motion.div>
       </motion.div>
     );
   }
