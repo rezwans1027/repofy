@@ -4,18 +4,37 @@ import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
+import { SectionHeader } from "@/components/ui/section-header";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useCreditBalance, useAwaitCreditUpdate } from "@/hooks/use-credits";
 import { api } from "@/lib/api-client";
-import { Check, CreditCard, Loader2, Users, X, Coins } from "lucide-react";
+import {
+  Check,
+  CreditCard,
+  Loader2,
+  Users,
+  X,
+  Coins,
+  Zap,
+  Shield,
+  ArrowRight,
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 const DEVELOPER_FEATURES = [
-  "2 growth credits per purchase",
-  "1 credit per AI-powered advice session",
-  "Full GitHub profile analysis",
-  "AI-powered skill radar",
-  "Personalized improvement advice",
+  { text: "2 growth credits per purchase", highlight: true },
+  { text: "1 credit per AI-powered advice session", highlight: false },
+  { text: "Full GitHub profile analysis", highlight: false },
+  { text: "AI-powered skill radar", highlight: false },
+  { text: "Personalized 12-week roadmap", highlight: false },
+];
+
+const RECRUITER_FEATURES = [
+  "Bulk candidate analysis",
+  "Team dashboards & analytics",
+  "ATS integration",
+  "Priority support",
 ];
 
 function PricingContent() {
@@ -30,14 +49,11 @@ function PricingContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Capture balance BEFORE the checkout redirect so we can detect when it increases.
-  // We store it in sessionStorage before redirecting to Stripe, then read it back
-  // on the success return. This avoids the race where the webhook fires before we
-  // capture the old balance.
-  const [balanceAtCheckout, setBalanceAtCheckout] = useState<number | undefined>(undefined);
+  const [balanceAtCheckout, setBalanceAtCheckout] = useState<
+    number | undefined
+  >(undefined);
   const [creditsReceived, setCreditsReceived] = useState(false);
 
-  // On success redirect, read the pre-checkout balance from sessionStorage
   useEffect(() => {
     if (success && balanceAtCheckout === undefined) {
       const stored = sessionStorage.getItem("pre_checkout_balance");
@@ -45,9 +61,6 @@ function PricingContent() {
         setBalanceAtCheckout(Number(stored));
         sessionStorage.removeItem("pre_checkout_balance");
       } else {
-        // Fallback: no stored balance (e.g. user navigated directly).
-        // Use current balance if available; if credits already arrived this
-        // will be the new balance and the comparison below handles it.
         if (balance) {
           setBalanceAtCheckout(balance.growth_balance);
         }
@@ -55,25 +68,19 @@ function PricingContent() {
     }
   }, [success, balance, balanceAtCheckout]);
 
-  // Timeout: if credits haven't arrived after 30s, stop spinning and show success
   useEffect(() => {
     if (!success || creditsReceived) return;
     const timer = setTimeout(() => setCreditsReceived(true), 30_000);
     return () => clearTimeout(timer);
   }, [success, creditsReceived]);
 
-  // Poll for balance update after successful checkout
   const { data: polledBalance } = useAwaitCreditUpdate(
     success && !creditsReceived,
     balanceAtCheckout,
   );
 
-  // When polled balance shows increase, sync it to the main query cache.
-  // Also handle the case where credits arrived before we even started polling
-  // (balance already higher than pre-checkout snapshot).
   useEffect(() => {
     if (success && !creditsReceived && balanceAtCheckout !== undefined) {
-      // Check polled balance first
       const current = polledBalance ?? balance;
       if (current && current.growth_balance > balanceAtCheckout) {
         setCreditsReceived(true);
@@ -86,7 +93,6 @@ function PricingContent() {
     setLoading(true);
     setError(null);
     try {
-      // Store current balance before redirect so we can detect the increase on return
       sessionStorage.setItem(
         "pre_checkout_balance",
         String(balance?.growth_balance ?? 0),
@@ -111,8 +117,8 @@ function PricingContent() {
         </div>
         <Skeleton className="h-11 w-full rounded-lg" />
         <div className="grid gap-6 sm:grid-cols-2">
-          <Skeleton className="h-72 rounded-lg" />
-          <Skeleton className="h-72 rounded-lg" />
+          <Skeleton className="h-[400px] rounded-lg" />
+          <Skeleton className="h-[400px] rounded-lg" />
         </div>
       </div>
     );
@@ -122,148 +128,261 @@ function PricingContent() {
     <div className="space-y-6">
       {/* Page header */}
       <AnimateOnView>
-        <div className="mb-2">
+        <div className="mb-4">
           <h2 className="font-mono text-base font-bold tracking-tight sm:text-lg">
             Pricing
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Choose the plan that fits your needs.
+            Flexible plans to level up your developer profile.
           </p>
         </div>
       </AnimateOnView>
 
       {/* Credit balance */}
       <AnimateOnView delay={0.03}>
-        <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
-          <Coins className="size-4 text-cyan" />
-          <p className="font-mono text-xs">
-            You have <span className="font-bold text-cyan">{balance?.growth_balance ?? 0}</span> growth credit{balance?.growth_balance !== 1 ? "s" : ""}
-          </p>
+        <div className="inline-flex items-center gap-2.5 rounded-lg border border-border bg-card px-4 py-2.5">
+          <div className="flex size-7 items-center justify-center rounded-full bg-cyan/10">
+            <Coins className="size-3.5 text-cyan" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              Your balance
+            </span>
+            <span className="font-mono text-sm font-bold">
+              <span className="text-cyan">
+                {balance?.growth_balance ?? 0}
+              </span>{" "}
+              credit{balance?.growth_balance !== 1 ? "s" : ""}
+            </span>
+          </div>
         </div>
       </AnimateOnView>
 
-      {/* Success banner */}
+      {/* Status banners */}
       {success && (
-        <AnimateOnView delay={0.05}>
+        <AnimateOnView delay={0.05} variant="scaleIn">
           {creditsReceived ? (
-            <div className="flex items-center gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
-              <Check className="size-4 text-emerald-400" />
-              <p className="font-mono text-xs text-emerald-400">
-                2 growth credits added! Thank you for your purchase.
-              </p>
+            <div className="flex items-center gap-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+              <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
+                <Check className="size-3.5 text-emerald-400" />
+              </div>
+              <div>
+                <p className="font-mono text-xs font-semibold text-emerald-400">
+                  Credits added!
+                </p>
+                <p className="text-[11px] text-emerald-400/70">
+                  2 growth credits are now in your account.
+                </p>
+              </div>
             </div>
           ) : (
-            <div className="flex items-center gap-3 rounded-lg border border-cyan/30 bg-cyan/10 px-4 py-3">
-              <Loader2 className="size-4 animate-spin text-cyan" />
-              <p className="font-mono text-xs text-cyan">
-                Payment received! Processing your credits&hellip;
-              </p>
+            <div className="flex items-center gap-3 rounded-lg border border-cyan/20 bg-cyan/5 px-4 py-3">
+              <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-cyan/10">
+                <Loader2 className="size-3.5 animate-spin text-cyan" />
+              </div>
+              <div>
+                <p className="font-mono text-xs font-semibold text-cyan">
+                  Processing...
+                </p>
+                <p className="text-[11px] text-cyan/70">
+                  Payment received, adding credits to your account.
+                </p>
+              </div>
             </div>
           )}
         </AnimateOnView>
       )}
 
-      {/* Canceled banner */}
       {canceled && (
-        <AnimateOnView delay={0.05}>
-          <div className="flex items-center gap-3 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-4 py-3">
-            <X className="size-4 text-yellow-400" />
-            <p className="font-mono text-xs text-yellow-400">
-              Payment canceled. No charges were made.
-            </p>
+        <AnimateOnView delay={0.05} variant="scaleIn">
+          <div className="flex items-center gap-3 rounded-lg border border-yellow-500/20 bg-yellow-500/5 px-4 py-3">
+            <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-yellow-500/10">
+              <X className="size-3.5 text-yellow-400" />
+            </div>
+            <div>
+              <p className="font-mono text-xs font-semibold text-yellow-400">
+                Payment canceled
+              </p>
+              <p className="text-[11px] text-yellow-400/70">
+                No charges were made to your account.
+              </p>
+            </div>
           </div>
         </AnimateOnView>
       )}
 
       {/* Pricing cards */}
       <div className="grid gap-6 sm:grid-cols-2">
-        {/* Developers card */}
+        {/* Developer card — featured */}
         <AnimateOnView delay={0.1}>
-          <div className="flex h-full flex-col rounded-lg border border-border bg-card p-6">
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-md bg-cyan/10">
-                <CreditCard className="size-4 text-cyan" />
+          <div className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-cyan/20 bg-card">
+            {/* Subtle top glow */}
+            <div className="pointer-events-none absolute -top-20 left-1/2 h-40 w-64 -translate-x-1/2 rounded-full bg-cyan/6 blur-3xl transition-all duration-500 group-hover:bg-cyan/10" />
+
+            <div className="relative flex flex-1 flex-col p-6">
+              {/* Card header */}
+              <div className="mb-4 flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-9 items-center justify-center rounded-md bg-cyan/10 ring-1 ring-cyan/20">
+                    <Zap className="size-4 text-cyan" />
+                  </div>
+                  <div>
+                    <h3 className="font-mono text-sm font-bold">Developers</h3>
+                    <p className="text-[11px] text-muted-foreground">
+                      One-time purchase
+                    </p>
+                  </div>
+                </div>
+                <Badge className="border-cyan/20 bg-cyan/10 text-[10px] font-semibold text-cyan hover:bg-cyan/10">
+                  Popular
+                </Badge>
               </div>
-              <div>
-                <h3 className="font-mono text-sm font-bold">Developers</h3>
-                <p className="text-xs text-muted-foreground">
-                  One-time payment
+
+              {/* Price */}
+              <div className="mb-5">
+                <div className="flex items-baseline gap-1">
+                  <span className="font-mono text-3xl font-extrabold tracking-tight">
+                    $5
+                  </span>
+                  <span className="text-xs text-muted-foreground">USD</span>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  for 2 growth credits
                 </p>
               </div>
-            </div>
 
-            <div className="mb-6">
-              <span className="font-mono text-3xl font-bold">$5</span>
-              <span className="ml-1 text-xs text-muted-foreground">USD</span>
-            </div>
+              {/* Divider */}
+              <div className="mb-5 h-px bg-gradient-to-r from-border via-border to-transparent" />
 
-            <ul className="mb-6 flex-1 space-y-2">
-              {DEVELOPER_FEATURES.map((feature) => (
-                <li
-                  key={feature}
-                  className="flex items-start gap-2 text-xs text-muted-foreground"
-                >
-                  <Check className="mt-0.5 size-3 shrink-0 text-cyan" />
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
+              {/* Features */}
+              <ul className="mb-6 flex-1 space-y-2.5">
+                {DEVELOPER_FEATURES.map(({ text, highlight }) => (
+                  <li key={text} className="flex items-start gap-2">
+                    <div
+                      className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full ${highlight ? "bg-cyan/15" : "bg-secondary"}`}
+                    >
+                      <Check
+                        className={`size-2.5 ${highlight ? "text-cyan" : "text-muted-foreground"}`}
+                      />
+                    </div>
+                    <span
+                      className={`text-xs ${highlight ? "font-medium text-foreground" : "text-muted-foreground"}`}
+                    >
+                      {text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
 
-            {error && (
-              <p className="mb-3 font-mono text-xs text-destructive">
-                {error}
-              </p>
-            )}
-
-            <button
-              onClick={handleCheckout}
-              disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-md bg-cyan px-4 py-2.5 font-mono text-xs font-medium text-white transition-colors hover:bg-cyan/90 disabled:opacity-50"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="size-3.5 animate-spin" />
-                  Redirecting…
-                </>
-              ) : (
-                "Get Started — $5"
+              {/* Error */}
+              {error && (
+                <p className="mb-3 font-mono text-xs text-destructive">
+                  {error}
+                </p>
               )}
-            </button>
+
+              {/* CTA */}
+              <button
+                onClick={handleCheckout}
+                disabled={loading}
+                className="group/btn flex w-full items-center justify-center gap-2 rounded-md bg-cyan px-4 py-2.5 font-mono text-xs font-semibold text-white shadow-sm shadow-cyan/20 transition-all hover:shadow-md hover:shadow-cyan/25 hover:brightness-110 disabled:opacity-50"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="size-3.5 animate-spin" />
+                    Redirecting to checkout...
+                  </>
+                ) : (
+                  <>
+                    Get Started
+                    <ArrowRight className="size-3.5 transition-transform group-hover/btn:translate-x-0.5" />
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </AnimateOnView>
 
-        {/* Recruiters card */}
+        {/* Recruiter card — coming soon */}
         <AnimateOnView delay={0.15}>
-          <div className="flex h-full flex-col rounded-lg border border-border bg-card p-6">
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-md bg-secondary">
-                <Users className="size-4 text-muted-foreground" />
+          <div className="flex h-full flex-col rounded-lg border border-border bg-card">
+            <div className="flex flex-1 flex-col p-6">
+              {/* Card header */}
+              <div className="mb-4 flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-9 items-center justify-center rounded-md bg-secondary">
+                    <Users className="size-4 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-mono text-sm font-bold">Recruiters</h3>
+                    <p className="text-[11px] text-muted-foreground">
+                      For hiring teams
+                    </p>
+                  </div>
+                </div>
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] font-semibold"
+                >
+                  Soon
+                </Badge>
               </div>
-              <div>
-                <h3 className="font-mono text-sm font-bold">Recruiters</h3>
-                <p className="text-xs text-muted-foreground">
-                  For hiring teams
+
+              {/* Price placeholder */}
+              <div className="mb-5">
+                <div className="flex items-baseline gap-1">
+                  <span className="font-mono text-3xl font-extrabold tracking-tight text-muted-foreground/40">
+                    ---
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  pricing to be announced
                 </p>
               </div>
-            </div>
 
-            <div className="mb-6">
-              <span className="font-mono text-3xl font-bold text-muted-foreground">
-                —
-              </span>
-            </div>
+              {/* Divider */}
+              <div className="mb-5 h-px bg-gradient-to-r from-border via-border to-transparent" />
 
-            <p className="mb-6 flex-1 text-xs text-muted-foreground">
-              Bulk candidate analysis, team dashboards, ATS integration, and
-              more. We&apos;re building something great for recruiters.
-            </p>
+              {/* Features */}
+              <ul className="mb-6 flex-1 space-y-2.5">
+                {RECRUITER_FEATURES.map((text) => (
+                  <li key={text} className="flex items-start gap-2">
+                    <div className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full bg-secondary">
+                      <Check className="size-2.5 text-muted-foreground/50" />
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
 
-            <div className="flex w-full items-center justify-center rounded-md border border-border bg-secondary/50 px-4 py-2.5 font-mono text-xs text-muted-foreground">
-              Coming Soon
+              {/* CTA placeholder */}
+              <div className="flex w-full items-center justify-center rounded-md border border-border bg-secondary/50 px-4 py-2.5 font-mono text-xs text-muted-foreground">
+                Coming Soon
+              </div>
             </div>
           </div>
         </AnimateOnView>
       </div>
+
+      {/* Trust bar */}
+      <AnimateOnView delay={0.2}>
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <Shield className="size-3" />
+            <span>Secure checkout via Stripe</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <CreditCard className="size-3" />
+            <span>No subscription required</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <Zap className="size-3" />
+            <span>Credits never expire</span>
+          </div>
+        </div>
+      </AnimateOnView>
     </div>
   );
 }

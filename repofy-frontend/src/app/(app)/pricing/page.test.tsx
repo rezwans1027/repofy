@@ -69,7 +69,7 @@ describe("PricingPage", () => {
   it("renders the checkout button", () => {
     renderPricing();
 
-    expect(screen.getByRole("button", { name: /Get Started — \$5/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Get Started/i })).toBeInTheDocument();
   });
 
   it("renders Coming Soon for Recruiters", () => {
@@ -95,8 +95,7 @@ describe("PricingPage", () => {
     renderPricing();
 
     expect(screen.getByText("3")).toBeInTheDocument();
-    // Match the balance card text "You have N growth credits" (not feature list)
-    expect(screen.getByText(/You have/)).toBeInTheDocument();
+    expect(screen.getByText("Your balance")).toBeInTheDocument();
   });
 
   it("does not show credit balance card when loading", () => {
@@ -104,7 +103,7 @@ describe("PricingPage", () => {
 
     renderPricing();
 
-    expect(screen.queryByText(/You have/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Your balance/i)).not.toBeInTheDocument();
   });
 
   it("shows singular 'credit' for balance of 1", () => {
@@ -115,10 +114,9 @@ describe("PricingPage", () => {
 
     renderPricing();
 
-    // The balance line renders "You have 1 growth credit" (no trailing 's')
-    const balanceLine = screen.getByText(/You have/);
-    expect(balanceLine.textContent).toContain("1");
-    expect(balanceLine.textContent).toMatch(/growth credit$/);
+    expect(screen.getByText("1")).toBeInTheDocument();
+    // Should show singular "credit" not "credits"
+    expect(screen.getByText("credit")).toBeInTheDocument();
   });
 
   it("shows success banner with credit message when ?success=true", async () => {
@@ -146,7 +144,7 @@ describe("PricingPage", () => {
     renderPricing();
 
     await waitFor(() => {
-      expect(screen.getByText(/2 growth credits added/i)).toBeInTheDocument();
+      expect(screen.getByText(/Credits added/i)).toBeInTheDocument();
     });
   });
 
@@ -161,7 +159,7 @@ describe("PricingPage", () => {
   it("does not show banners by default", () => {
     renderPricing();
 
-    expect(screen.queryByText(/growth credits added/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Credits added/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Payment canceled/i)).not.toBeInTheDocument();
   });
 
@@ -182,7 +180,7 @@ describe("PricingPage", () => {
     const user = userEvent.setup();
     renderPricing();
 
-    await user.click(screen.getByRole("button", { name: /Get Started — \$5/i }));
+    await user.click(screen.getByRole("button", { name: /Get Started/i }));
 
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith("/stripe/create-checkout-session", { auth: true });
@@ -199,7 +197,7 @@ describe("PricingPage", () => {
     const user = userEvent.setup();
     renderPricing();
 
-    await user.click(screen.getByRole("button", { name: /Get Started — \$5/i }));
+    await user.click(screen.getByRole("button", { name: /Get Started/i }));
 
     await waitFor(() => {
       expect(screen.getByText("Network error")).toBeInTheDocument();
@@ -213,10 +211,10 @@ describe("PricingPage", () => {
     const user = userEvent.setup();
     renderPricing();
 
-    await user.click(screen.getByRole("button", { name: /Get Started — \$5/i }));
+    await user.click(screen.getByRole("button", { name: /Get Started/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("Redirecting…")).toBeInTheDocument();
+      expect(screen.getByText(/Redirecting to checkout/i)).toBeInTheDocument();
     });
   });
 });
