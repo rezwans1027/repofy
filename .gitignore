@@ -25,6 +25,10 @@ yarn-error.log*
 
 # TypeScript
 *.tsbuildinfo
+shared/types/*.js
+shared/types/*.js.map
+shared/types/*.d.ts
+shared/types/*.d.ts.map
 
 # Supabase
 supabase/.temp/
