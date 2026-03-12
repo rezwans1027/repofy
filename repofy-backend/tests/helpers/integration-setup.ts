@@ -5,7 +5,7 @@ import {
   createGitHubApiEvent,
   createContributionResponse,
 } from "../fixtures/github";
-import { getMockCreate } from "./mock-openai";
+import { createScorerResponse, createScoringResult, createAdviceV2Response } from "../fixtures/ai";
 
 export function mockFetchJson(data: unknown, ok = true, status = 200) {
   return Promise.resolve({
@@ -79,35 +79,54 @@ export async function setupAuthMock(valid = true) {
   });
 }
 
-export async function setupOpenAIMock(responseFactory: () => unknown) {
-  const mockCreate = await getMockCreate();
-  mockCreate.mockImplementation((params: Record<string, unknown>) => {
-    const messages = params.messages as { role: string; content: string }[] | undefined;
-    const systemContent = messages?.[0]?.content ?? "";
+/**
+ * Wraps the current fetchMock implementation to also handle engine /analyze calls.
+ * Must be called AFTER setupGitHubMocks.
+ */
+export function setupEngineAnalyzeMock(fetchMock: ReturnType<typeof vi.fn>) {
+  const narrativeReport = [
+    "A capable developer with a solid foundation in software engineering. Their profile demonstrates consistent effort across multiple projects.",
+    "Their work shows clean code practices and thoughtful architecture. The repository structure reflects someone who takes pride in organized, maintainable code. Testing coverage varies across projects but shows awareness of quality practices.",
+    "Some areas could benefit from more attention, particularly around CI/CD and documentation. Confidence in this assessment is moderate given the available data. Based on the evidence reviewed, the overall recommendation is reasonable for this candidate's level.",
+  ].join("\n\n");
 
-    // Narrator call: return 3-paragraph prose ending with LOCKED_LINE extracted from user message
-    if (systemContent.includes("professional hiring evaluation")) {
-      const userContent = messages?.[1]?.content ?? "";
-      const lockedMatch = userContent.match(/^(LOCKED: .+)$/m);
-      const lockedLine = lockedMatch?.[1] ?? "";
+  const engineResponse = {
+    scorerResponse: createScorerResponse(),
+    scoringResult: createScoringResult(),
+    narrativeReport,
+    tokenUsage: [],
+  };
 
-      const prose = [
-        "A capable developer with a solid foundation in software engineering. Their profile demonstrates consistent effort across multiple projects.",
-        "Their work shows clean code practices and thoughtful architecture. The repository structure reflects someone who takes pride in organized, maintainable code. Testing coverage varies across projects but shows awareness of quality practices.",
-        "Some areas could benefit from more attention, particularly around CI/CD and documentation. Confidence in this assessment is moderate given the available data. Based on the evidence reviewed, the overall recommendation is reasonable for this candidate's level.",
-      ].join("\n\n");
+  wrapFetchMockForEngine(fetchMock, "/analyze", engineResponse);
+}
 
-      return Promise.resolve({
-        choices: [{ message: { content: `${prose}\n${lockedLine}` } }],
-      });
+/**
+ * Wraps the current fetchMock implementation to also handle engine /advice calls.
+ * Must be called AFTER setupGitHubMocks.
+ */
+export function setupEngineAdviceMock(fetchMock: ReturnType<typeof vi.fn>) {
+  const engineResponse = {
+    advice: createAdviceV2Response(),
+    tokenUsage: [],
+  };
+
+  wrapFetchMockForEngine(fetchMock, "/advice", engineResponse);
+}
+
+function wrapFetchMockForEngine(
+  fetchMock: ReturnType<typeof vi.fn>,
+  path: string,
+  response: object,
+) {
+  const prevImpl = fetchMock.getMockImplementation();
+  fetchMock.mockImplementation((url: string, ...args: unknown[]) => {
+    const urlStr = url.toString();
+    // Match engine calls (localhost:3002 or railway.internal) but not GitHub API
+    if (urlStr.includes(path) && !urlStr.includes("github.com")) {
+      return mockFetchJson(response);
     }
-
-    // Scorer / advice call: return JSON from the factory
-    return Promise.resolve({
-      choices: [{ message: { content: JSON.stringify(responseFactory()) } }],
-    });
+    return prevImpl ? prevImpl(url, ...args) : mockFetchJson({}, false, 404);
   });
-  return mockCreate;
 }
 
 /**

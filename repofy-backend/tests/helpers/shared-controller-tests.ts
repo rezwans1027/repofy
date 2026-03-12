@@ -25,26 +25,6 @@ export function sharedControllerBehaviorTests(config: ControllerBehaviorConfig) 
     expect(next).not.toHaveBeenCalled();
   });
 
-  it("returns 500 when openaiApiKey is missing", async () => {
-    const originalKey = mockEnv.openaiApiKey;
-    mockEnv.openaiApiKey = "";
-
-    try {
-      const { req, res, next } = createControllerMocks();
-
-      await handler(req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({
-        success: false,
-        error: "OpenAI API key is not configured",
-      });
-      expect(next).not.toHaveBeenCalled();
-    } finally {
-      mockEnv.openaiApiKey = originalKey;
-    }
-  });
-
   it("returns early when signal is aborted", async () => {
     mockFetchGitHubUserData.mockRejectedValue(new Error("aborted"));
     const { req, res, next, abortController } = createControllerMocks();

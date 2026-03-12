@@ -14,6 +14,6 @@ describe("analyze routes wiring", () => {
   it("POST /analyze/:username has correct middleware chain in order", () => {
     const layer = stack.find((l: any) => l.route?.path === "/analyze/:username");
     const names = layer.route.stack.map((s: any) => s.handle.name);
-    expect(names).toEqual(["", "timeoutMiddleware", "requireAuth", "asyncHandlerWrapper"]);
+    expect(names).toEqual(["requireAuth", "", "timeoutMiddleware", "asyncHandlerWrapper"]);
   });
 });

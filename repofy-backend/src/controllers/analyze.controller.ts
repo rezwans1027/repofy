@@ -1,8 +1,7 @@
 import { RequestHandler } from "express";
 import { env } from "../config/env";
 import { fetchGitHubUserData } from "../services/github.service";
-import { generateScorerResponse, generateNarrativeReport } from "../services/openai.service";
-import { computeScoring, RUBRIC_VERSION } from "../services/scoring.service";
+import { callEngine } from "../services/engine.service";
 import { buildReportData } from "../services/analyze.service";
 import {
   computeSnapshotHash,
@@ -11,11 +10,22 @@ import {
   setCachedAnalysis,
 } from "../services/cache.service";
 import { saveReport } from "../services/reports.service";
+import { logTokenUsage } from "../lib/usage-logger";
 import { USERNAME_RE } from "../lib/validators";
 import { sendError, sendSuccess } from "../lib/response";
 import { logger } from "../lib/logger";
 import { handleControllerError } from "../lib/controller-utils";
-import type { AuthenticatedRequest } from "../types";
+import type { AuthenticatedRequest, ScorerResponse, ScoringResult } from "../types";
+
+interface AnalyzeEngineResponse {
+  scorerResponse: ScorerResponse;
+  scoringResult: ScoringResult;
+  narrativeReport: string;
+  tokenUsage?: { endpoint: string; model: string; usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number } }[];
+}
+
+// RUBRIC_VERSION must match the engine's version for cache key consistency
+const RUBRIC_VERSION = "v1.1";
 
 export const analyzeUser: RequestHandler = async (req, res) => {
   const username = req.params.username as string;
@@ -34,11 +44,6 @@ export const analyzeUser: RequestHandler = async (req, res) => {
       const report = buildMockReport(githubData);
       const reportId = await saveReport(userId, username, githubData.profile.name, report);
       sendSuccess(res, { analyzedName: githubData.profile.name, report, reportId });
-      return;
-    }
-
-    if (!env.openaiApiKey) {
-      sendError(res, 500, "OpenAI API key is not configured");
       return;
     }
 
@@ -63,31 +68,21 @@ export const analyzeUser: RequestHandler = async (req, res) => {
       return;
     }
 
-    // 3. Call Scorer
-    const scorerResponse = await generateScorerResponse(githubData, req.signal);
+    // 3. Call engine for AI analysis
+    const { scorerResponse, scoringResult, narrativeReport, tokenUsage } =
+      await callEngine<AnalyzeEngineResponse>("/analyze", { githubData }, req.signal);
 
-    // 4. Compute scoring (backend deterministic)
-    const scoringResult = computeScoring(
-      scorerResponse,
-      githubData.aggregateMetrics,
-      githubData.repoSnapshots,
-    );
+    // Log token usage to Supabase (fire-and-forget)
+    tokenUsage?.forEach((u) => logTokenUsage(u.endpoint, u.model, u.usage));
 
-    // 5. Call Narrator
-    const narrativeReport = await generateNarrativeReport(
-      scorerResponse,
-      scoringResult,
-      req.signal,
-    );
-
-    // 6. Cache results (fire-and-forget)
+    // 4. Cache results (fire-and-forget)
     setCachedAnalysis(cacheKey, snapshotHash, env.openaiModel, RUBRIC_VERSION, {
       scorerResponse,
       scoringResult,
       narrativeReport,
     });
 
-    // 7. Build report & persist
+    // 5. Build report & persist
     const report = buildReportData(scorerResponse, scoringResult, narrativeReport, githubData);
     const reportId = await saveReport(userId, username, githubData.profile.name, report);
 

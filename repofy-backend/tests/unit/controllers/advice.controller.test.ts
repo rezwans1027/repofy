@@ -9,8 +9,8 @@ vi.mock("../../../src/services/github.service", async (importOriginal) => {
     fetchGitHubUserData: vi.fn(),
   };
 });
-vi.mock("../../../src/services/advice.service", () => ({
-  generateAdvice: vi.fn(),
+vi.mock("../../../src/services/engine.service", () => ({
+  callEngine: vi.fn(),
 }));
 vi.mock("../../../src/services/advice-builder.service", () => ({
   buildAdviceData: vi.fn(),
@@ -37,9 +37,11 @@ vi.mock("../../../src/config/supabase", () => ({
 vi.mock("../../../src/lib/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
+vi.mock("../../../src/lib/usage-logger", () => ({
+  logTokenUsage: vi.fn(),
+}));
 const mockEnv: Record<string, unknown> = {
   mockAi: false,
-  openaiApiKey: "sk-test",
 };
 vi.mock("../../../src/config/env", () => ({
   env: new Proxy({} as Record<string, unknown>, {
@@ -49,12 +51,12 @@ vi.mock("../../../src/config/env", () => ({
 
 import { adviseUser } from "../../../src/controllers/advice.controller";
 import { fetchGitHubUserData, GitHubError } from "../../../src/services/github.service";
-import { generateAdvice } from "../../../src/services/advice.service";
+import { callEngine } from "../../../src/services/engine.service";
 import { buildAdviceData } from "../../../src/services/advice-builder.service";
 import { getCreditBalance, deductGrowthCredit } from "../../../src/services/credit.service";
 
 const mockFetchGitHubUserData = fetchGitHubUserData as ReturnType<typeof vi.fn>;
-const mockGenerateAdvice = generateAdvice as ReturnType<typeof vi.fn>;
+const mockCallEngine = callEngine as ReturnType<typeof vi.fn>;
 const mockBuildAdviceData = buildAdviceData as ReturnType<typeof vi.fn>;
 const mockGetCreditBalance = getCreditBalance as ReturnType<typeof vi.fn>;
 const mockDeductGrowthCredit = deductGrowthCredit as ReturnType<typeof vi.fn>;
@@ -63,7 +65,6 @@ describe("adviseUser controller", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockEnv.mockAi = false;
-    mockEnv.openaiApiKey = "sk-test";
     mockGetCreditBalance.mockResolvedValue({ growth_balance: 5, eval_balance: 0 });
     mockDeductGrowthCredit.mockResolvedValue(true);
     mockSupabaseUpsert.mockReturnValue({ data: { id: "advice-row-1" }, error: null });
@@ -76,12 +77,12 @@ describe("adviseUser controller", () => {
     GitHubError,
   });
 
-  it("returns adviceId on happy path (AI succeeds, then deduct + persist)", async () => {
+  it("returns adviceId on happy path (engine succeeds, then deduct + persist)", async () => {
     const githubData = { profile: { name: "Octocat" } };
-    const aiResult = { schemaVersion: "v2", summary: "Good profile" };
+    const engineResponse = { advice: { schemaVersion: "v2", summary: "Good profile" }, tokenUsage: [] };
     const advice = { schemaVersion: "v2", summary: "Good profile" };
     mockFetchGitHubUserData.mockResolvedValue(githubData);
-    mockGenerateAdvice.mockResolvedValue(aiResult);
+    mockCallEngine.mockResolvedValue(engineResponse);
     mockBuildAdviceData.mockReturnValue(advice);
 
     const { req, res, next } = createControllerMocks();
@@ -101,7 +102,7 @@ describe("adviseUser controller", () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it("pre-checks balance, then GitHub, then AI, then deducts (verifies order)", async () => {
+  it("pre-checks balance, then GitHub, then engine, then deducts (verifies order)", async () => {
     const callOrder: string[] = [];
     mockGetCreditBalance.mockImplementation(async () => {
       callOrder.push("precheck");
@@ -111,9 +112,9 @@ describe("adviseUser controller", () => {
       callOrder.push("github");
       return { profile: { name: "Octocat" } };
     });
-    mockGenerateAdvice.mockImplementation(async () => {
-      callOrder.push("ai");
-      return { summary: "result" };
+    mockCallEngine.mockImplementation(async () => {
+      callOrder.push("engine");
+      return { advice: { summary: "result" }, tokenUsage: [] };
     });
     mockBuildAdviceData.mockReturnValue({ summary: "result" });
     mockDeductGrowthCredit.mockImplementation(async () => {
@@ -126,7 +127,7 @@ describe("adviseUser controller", () => {
 
     await adviseUser(req, res, next);
 
-    expect(callOrder).toEqual(["precheck", "github", "ai", "deduct"]);
+    expect(callOrder).toEqual(["precheck", "github", "engine", "deduct"]);
   });
 
   it("returns 402 early when pre-check shows zero balance (no GitHub call)", async () => {
@@ -140,12 +141,12 @@ describe("adviseUser controller", () => {
     expect(res.status).toHaveBeenCalledWith(402);
     expect(mockFetchGitHubUserData).not.toHaveBeenCalled();
     expect(mockDeductGrowthCredit).not.toHaveBeenCalled();
-    expect(mockGenerateAdvice).not.toHaveBeenCalled();
+    expect(mockCallEngine).not.toHaveBeenCalled();
   });
 
   it("returns 402 when atomic deduct returns false (race condition)", async () => {
     mockFetchGitHubUserData.mockResolvedValue({ profile: { name: "Octocat" } });
-    mockGenerateAdvice.mockResolvedValue({ summary: "Good" });
+    mockCallEngine.mockResolvedValue({ advice: { summary: "Good" }, tokenUsage: [] });
     mockBuildAdviceData.mockReturnValue({ summary: "Good" });
     mockDeductGrowthCredit.mockResolvedValue(false);
 
@@ -161,9 +162,9 @@ describe("adviseUser controller", () => {
     });
   });
 
-  it("does NOT deduct credit when AI fails", async () => {
+  it("does NOT deduct credit when engine fails", async () => {
     mockFetchGitHubUserData.mockResolvedValue({ profile: { name: "Octocat" } });
-    mockGenerateAdvice.mockRejectedValue(new Error("AI service down"));
+    mockCallEngine.mockRejectedValue(new Error("Engine service down"));
 
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
@@ -176,7 +177,7 @@ describe("adviseUser controller", () => {
 
   it("does NOT deduct credit when buildAdviceData throws", async () => {
     mockFetchGitHubUserData.mockResolvedValue({ profile: { name: "Octocat" } });
-    mockGenerateAdvice.mockResolvedValue({ summary: "Good" });
+    mockCallEngine.mockResolvedValue({ advice: { summary: "Good" }, tokenUsage: [] });
     mockBuildAdviceData.mockImplementation(() => {
       throw new Error("Build failed");
     });

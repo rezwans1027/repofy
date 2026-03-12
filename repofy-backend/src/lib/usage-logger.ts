@@ -1,6 +1,11 @@
-import type { CompletionUsage } from "openai/resources/completions";
 import { getSupabaseAdmin } from "../config/supabase";
 import { logger } from "./logger";
+
+interface TokenUsage {
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+}
 
 // Pricing per 1M tokens (USD) — update when model pricing changes
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
@@ -28,7 +33,7 @@ function estimateCost(
 export function logTokenUsage(
   endpoint: string,
   model: string,
-  usage: CompletionUsage | undefined,
+  usage: TokenUsage | undefined,
 ): void {
   if (!usage) {
     logger.warn(`[${endpoint}] OpenAI response missing usage data`);

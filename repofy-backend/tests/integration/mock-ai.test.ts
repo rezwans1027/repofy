@@ -2,12 +2,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import { getApp } from "../helpers/supertest-app";
 import { setupAuthMock } from "../helpers/integration-setup";
-import { getMockCreate } from "../helpers/mock-openai";
 
 const fetchMock = vi.fn();
 vi.stubGlobal("fetch", fetchMock);
-
-vi.mock("openai");
 
 vi.mock("../../src/config/supabase", () => ({
   getSupabaseAdmin: vi.fn(),
@@ -28,7 +25,7 @@ describe("MOCK_AI mode", () => {
     fetchMock.mockReset();
   });
 
-  it("POST /api/analyze/:username returns mock analysis without calling OpenAI", async () => {
+  it("POST /api/analyze/:username returns mock analysis without calling engine", async () => {
     await setupAuthMock(true);
 
     const app = getApp();
@@ -46,14 +43,11 @@ describe("MOCK_AI mode", () => {
     expect(report.radarAxes).toHaveLength(6);
     expect(report.narrativeReport).toBeDefined();
 
-    // Mock AI path uses buildMockGitHubData — no real GitHub fetch calls
+    // Mock AI path uses buildMockGitHubData — no real GitHub or engine fetch calls
     expect(fetchMock).not.toHaveBeenCalled();
-
-    const mockCreate = await getMockCreate();
-    expect(mockCreate).not.toHaveBeenCalled();
   });
 
-  it("POST /api/advice/:username returns mock v2 advice without calling OpenAI", async () => {
+  it("POST /api/advice/:username returns mock v2 advice without calling engine", async () => {
     await setupAuthMock(true);
 
     const app = getApp();
@@ -65,10 +59,7 @@ describe("MOCK_AI mode", () => {
     expect(res.body.success).toBe(true);
     expect(res.body.data.adviceId).toBeDefined();
 
-    // Mock AI path uses buildMockGitHubData — no real GitHub fetch calls
+    // Mock AI path uses buildMockGitHubData — no real GitHub or engine fetch calls
     expect(fetchMock).not.toHaveBeenCalled();
-
-    const mockCreate = await getMockCreate();
-    expect(mockCreate).not.toHaveBeenCalled();
   });
 });

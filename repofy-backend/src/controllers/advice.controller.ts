@@ -2,29 +2,23 @@ import crypto from "crypto";
 import { RequestHandler } from "express";
 import { env } from "../config/env";
 import { fetchGitHubUserData } from "../services/github.service";
-import { generateAdvice } from "../services/advice.service";
+import { callEngine } from "../services/engine.service";
 import { buildAdviceData } from "../services/advice-builder.service";
 import { getCreditBalance } from "../services/credit.service";
 import { deductAndPersist } from "../services/advice-persistence.service";
+import { logTokenUsage } from "../lib/usage-logger";
 import { USERNAME_RE } from "../lib/validators";
 import { sendError, sendSuccess } from "../lib/response";
 import { handleControllerError } from "../lib/controller-utils";
-import type { AuthenticatedRequest } from "../types";
+import type { AuthenticatedRequest, AdviceV2 } from "../types";
+
+interface AdviceEngineResponse {
+  advice: AdviceV2;
+  tokenUsage?: { endpoint: string; model: string; usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number } }[];
+}
 
 /**
  * Track in-flight advice requests per user to prevent concurrent expensive calls.
- *
- * This is an in-memory, per-process guard — it will NOT prevent duplicate
- * requests across multiple server instances. However, the downstream
- * `advice` table upsert on `(user_id, analyzed_username)` ensures at most
- * one advice row per user/target pair, so the worst-case race is a single
- * extra credit deduction rather than duplicate data.
- *
- * Migration options for multi-instance deployments:
- *  - Postgres advisory lock: `SELECT pg_try_advisory_lock(hashtext(userId))` — zero deps
- *  - Redis SETNX: `SET advice:lock:{userId} 1 NX EX 120` — if Redis is already in the stack
- *  - Idempotency key on credit deduction: pass `requestId` to a UNIQUE constraint so
- *    the second deduction attempt is silently rejected at the DB level
  */
 const activeAdviceRequests = new Map<string, true>();
 
@@ -62,11 +56,6 @@ export const adviseUser: RequestHandler = async (req, res) => {
       return;
     }
 
-    if (!env.openaiApiKey) {
-      sendError(res, 500, "OpenAI API key is not configured");
-      return;
-    }
-
     // Cheap pre-check: reject early if user has zero credits (avoids burning GitHub quota)
     const balance = await getCreditBalance(userId);
     if (balance.growth_balance <= 0) {
@@ -76,7 +65,13 @@ export const adviseUser: RequestHandler = async (req, res) => {
 
     // Do ALL expensive work before touching credits
     const githubData = await fetchGitHubUserData(username, req.signal);
-    const aiAdvice = await generateAdvice(githubData, req.signal);
+
+    const { advice: aiAdvice, tokenUsage } =
+      await callEngine<AdviceEngineResponse>("/advice", { githubData }, req.signal);
+
+    // Log token usage to Supabase (fire-and-forget)
+    tokenUsage?.forEach((u) => logTokenUsage(u.endpoint, u.model, u.usage));
+
     const advice = buildAdviceData(aiAdvice, githubData);
 
     // Only deduct + persist after everything succeeded

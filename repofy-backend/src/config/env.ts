@@ -31,7 +31,6 @@ export const env = {
   supabaseUrl: requireEnv("SUPABASE_URL"),
   supabaseServiceRoleKey: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
   githubToken: requireEnvUnlessMockAi("GITHUB_TOKEN"),
-  openaiApiKey: requireEnvUnlessMockAi("OPENAI_API_KEY"),
   openaiModel: process.env.OPENAI_MODEL || "gpt-5.1",
   adminSecret: requireEnv("ADMIN_SECRET"),
   frontendUrl: process.env.FRONTEND_URL || process.env.CORS_ORIGIN || "http://localhost:3000",
@@ -39,4 +38,6 @@ export const env = {
   stripeWebhookSecret: requireEnv("STRIPE_WEBHOOK_SECRET"),
   resendApiKey: requireEnv("RESEND_API_KEY"),
   otpHmacSecret: requireEnv("OTP_HMAC_SECRET"),
+  engineUrl: process.env.ENGINE_URL || "http://localhost:3002",
+  engineInternalKey: process.env.ENGINE_INTERNAL_KEY || "",
 } as const;

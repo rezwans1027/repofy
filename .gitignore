@@ -29,6 +29,10 @@ yarn-error.log*
 # Supabase
 supabase/.temp/
 
+# Private engine (separate repo)
+repofy-engine/
+
 # Misc
 .vercel
 skills/
+.env*.local

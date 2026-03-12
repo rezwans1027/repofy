@@ -9,7 +9,6 @@ const ENV_KEYS = [
   "SUPABASE_URL",
   "SUPABASE_SERVICE_ROLE_KEY",
   "GITHUB_TOKEN",
-  "OPENAI_API_KEY",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
   "RESEND_API_KEY",
@@ -55,30 +54,9 @@ describe("env config", () => {
     );
   });
 
-  it("allows missing OPENAI_API_KEY when MOCK_AI is enabled", async () => {
-    process.env.MOCK_AI = "true";
-    process.env.NODE_ENV = "test";
-    delete process.env.OPENAI_API_KEY;
-
-    const { env } = await import("../../../src/config/env");
-
-    expect(env.openaiApiKey).toBeUndefined();
-    expect(env.mockAi).toBe(true);
-  });
-
-  it("requires OPENAI_API_KEY when MOCK_AI is disabled", async () => {
-    process.env.MOCK_AI = "false";
-    delete process.env.OPENAI_API_KEY;
-
-    await expect(import("../../../src/config/env")).rejects.toThrow(
-      "Missing required environment variable: OPENAI_API_KEY",
-    );
-  });
-
   it("disables MOCK_AI in production even when set", async () => {
     process.env.MOCK_AI = "true";
     process.env.NODE_ENV = "production";
-    process.env.OPENAI_API_KEY = "sk-real-key";
 
     const { env } = await import("../../../src/config/env");
 

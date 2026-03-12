@@ -1,8 +1,7 @@
 import { it, expect, vi } from "vitest";
 import request from "supertest";
 import { getApp } from "./supertest-app";
-import { setupGitHubMocks, setupAuthMock, createShortTimeoutApp } from "./integration-setup";
-import { getMockCreate } from "./mock-openai";
+import { setupGitHubMocks, setupAuthMock, mockFetchJson, createShortTimeoutApp } from "./integration-setup";
 import type { RequestHandler } from "express";
 
 export interface AuthEndpointConfig {
@@ -61,11 +60,19 @@ export function sharedAuthEndpointTests(config: AuthEndpointConfig) {
     expect(res.body.success).toBe(false);
   });
 
-  it("returns 500 when OpenAI fails", async () => {
+  it("returns 500 when engine call fails", async () => {
     setupGitHubMocks(fetchMock);
     await setupAuthMock(true);
-    const mockCreate = await getMockCreate();
-    mockCreate.mockRejectedValue(new Error("OpenAI rate limit exceeded"));
+
+    // Wrap GitHub mock to make engine calls fail
+    const prevImpl = fetchMock.getMockImplementation();
+    fetchMock.mockImplementation((url: string, ...args: unknown[]) => {
+      const urlStr = url.toString();
+      if (!urlStr.includes("github.com") && !urlStr.includes("/graphql")) {
+        return mockFetchJson({ error: "Engine unavailable" }, false, 500);
+      }
+      return prevImpl ? prevImpl(url, ...args) : mockFetchJson({}, false, 404);
+    });
 
     const app = getApp();
     const res = await request(app)

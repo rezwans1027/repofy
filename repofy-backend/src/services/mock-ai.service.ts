@@ -7,7 +7,6 @@ import type {
   RepoSnapshot,
   AggregateMetrics,
 } from "../types";
-import { computeScoring } from "./scoring.service";
 import { buildReportData } from "./analyze.service";
 
 export const MOCK_SCORER_RESPONSE: ScorerResponse = {
@@ -267,16 +266,30 @@ export function buildMockGitHubData(username: string): GitHubUserData {
   };
 }
 
+/** Hardcoded scoring result for mock mode (avoids dependency on scoring.service). */
+const MOCK_SCORING_RESULT: ScoringResult = {
+  overallScore: 55,
+  candidateLevel: "Junior",
+  recommendation: "Weak Hire",
+  radarBreakdownScores: {
+    "Code Quality": 6,
+    "Project Complexity": 6,
+    "Technical Breadth": 7,
+    "Eng. Practices": 4,
+    Consistency: 6,
+    Collaboration: 3,
+  },
+  riskSignals: { concerningCount: 0, notableCount: 1 },
+  confidenceScore: 0.95,
+  rubricVersion: "v1.1",
+  modelVersion: "mock",
+};
+
 /**
- * Build a full mock report using the scorer → scoring → narrator pipeline.
+ * Build a full mock report using hardcoded scorer + scoring data.
  */
 export function buildMockReport(githubData: GitHubUserData) {
-  const scoringResult = computeScoring(
-    MOCK_SCORER_RESPONSE,
-    githubData.aggregateMetrics,
-    githubData.repoSnapshots,
-  );
-  return buildReportData(MOCK_SCORER_RESPONSE, scoringResult, MOCK_NARRATIVE, githubData);
+  return buildReportData(MOCK_SCORER_RESPONSE, MOCK_SCORING_RESULT, MOCK_NARRATIVE, githubData);
 }
 
 export const MOCK_ADVICE_RESPONSE: AdviceV2 = {
