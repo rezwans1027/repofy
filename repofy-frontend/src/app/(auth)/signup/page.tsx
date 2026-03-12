@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { api, ApiError } from "@/lib/api-client";
-import { TerminalWindow } from "@/components/ui/terminal-window";
+import { useAuthTransition } from "../auth-transition";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,8 +26,27 @@ import {
 
 type Phase = "form" | "otp" | "success";
 
+const EASE_OUT_EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+const phaseVariants = {
+  enter: { opacity: 0, x: 20, filter: "blur(6px)" },
+  center: {
+    opacity: 1,
+    x: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.4, ease: EASE_OUT_EXPO },
+  },
+  exit: {
+    opacity: 0,
+    x: -20,
+    filter: "blur(6px)",
+    transition: { duration: 0.25 },
+  },
+};
+
 export default function SignupPage() {
   const router = useRouter();
+  const { navigateTo } = useAuthTransition();
 
   // Phase 1 fields
   const [displayName, setDisplayName] = useState("");
@@ -131,7 +150,6 @@ export default function SignupPage() {
       });
 
       if (signInError) {
-        // Fallback — account created but auto-signin failed
         setPhase("success");
       } else {
         router.push("/dashboard");
@@ -161,48 +179,54 @@ export default function SignupPage() {
   // ── Render ──
   const terminalPrompt =
     phase === "otp"
-      ? "$ repofy auth signup --verify"
-      : "$ repofy auth signup";
+      ? "repofy auth signup --verify"
+      : "repofy auth signup";
 
   return (
     <div className="space-y-6">
-      <Link
-        href="/"
-        className="text-cyan font-mono text-lg font-bold tracking-tight hover:opacity-80 transition-opacity inline-block"
-      >
-        repofy
-      </Link>
+      <div>
+        <p className="font-mono text-sm text-muted-foreground">
+          <span className="text-cyan">$</span> {terminalPrompt}
+        </p>
+      </div>
 
-      <TerminalWindow title="auth — signup">
-        <div className="space-y-6">
-          <div>
-            <p className="font-mono text-sm text-muted-foreground">
-              <span className="text-cyan">$</span>{" "}
-              {terminalPrompt.replace("$ ", "")}
+      <AnimatePresence mode="wait">
+        {/* ── Phase: Success fallback ── */}
+        {phase === "success" && (
+          <motion.div
+            key="success"
+            className="space-y-4"
+            variants={phaseVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+          >
+            <p className="font-mono text-sm text-green-400">
+              <span className="font-bold">success:</span> Account created
+              successfully.
             </p>
-          </div>
+            <p className="font-mono text-sm text-muted-foreground">
+              You can now sign in with your email and password.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigateTo("/login")}
+              className="text-cyan font-mono text-sm hover:underline underline-offset-4"
+            >
+              &larr; Go to login
+            </button>
+          </motion.div>
+        )}
 
-          {/* ── Phase: Success fallback ── */}
-          {phase === "success" && (
-            <div className="space-y-4">
-              <p className="font-mono text-sm text-green-400">
-                <span className="font-bold">success:</span> Account created
-                successfully.
-              </p>
-              <p className="font-mono text-sm text-muted-foreground">
-                You can now sign in with your email and password.
-              </p>
-              <Link
-                href="/login"
-                className="text-cyan font-mono text-sm hover:underline underline-offset-4 inline-block"
-              >
-                &larr; Go to login
-              </Link>
-            </div>
-          )}
-
-          {/* ── Phase 1: Email + Display Name ── */}
-          {phase === "form" && (
+        {/* ── Phase 1: Email + Display Name ── */}
+        {phase === "form" && (
+          <motion.div
+            key="form"
+            variants={phaseVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+          >
             <form onSubmit={handleInitiate} noValidate className="space-y-4">
               <div className="space-y-2">
                 <label
@@ -266,9 +290,14 @@ export default function SignupPage() {
               </div>
 
               {errors.form && (
-                <p className="font-mono text-sm text-destructive">
+                <motion.p
+                  className="font-mono text-sm text-destructive"
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
                   <span className="font-bold">error:</span> {errors.form}
-                </p>
+                </motion.p>
               )}
 
               <Button
@@ -286,196 +315,209 @@ export default function SignupPage() {
                 )}
               </Button>
             </form>
-          )}
+          </motion.div>
+        )}
 
-          {/* ── Phase 2: OTP + Password ── */}
-          {phase === "otp" && (
-            <div className="space-y-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setPhase("form");
-                  setOtp("");
-                  setPassword("");
-                  setConfirmPassword("");
-                  setErrors({});
-                }}
-                className="flex items-center gap-1 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ArrowLeft className="size-3" />
-                Back
-              </button>
+        {/* ── Phase 2: OTP + Password ── */}
+        {phase === "otp" && (
+          <motion.div
+            key="otp"
+            className="space-y-4"
+            variants={phaseVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setPhase("form");
+                setOtp("");
+                setPassword("");
+                setConfirmPassword("");
+                setErrors({});
+              }}
+              className="flex items-center gap-1 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="size-3" />
+              Back
+            </button>
 
-              <p className="font-mono text-sm text-muted-foreground">
-                Verification code sent to{" "}
-                <span className="text-cyan">{email}</span>
-              </p>
+            <p className="font-mono text-sm text-muted-foreground">
+              Verification code sent to{" "}
+              <span className="text-cyan">{email}</span>
+            </p>
 
-              <form onSubmit={handleVerify} noValidate className="space-y-4">
-                <div className="space-y-2">
-                  <label className="font-mono text-xs text-muted-foreground">
-                    verification code
-                  </label>
-                  <div className="flex justify-center">
-                    <InputOTP
-                      maxLength={6}
-                      value={otp}
-                      onChange={(value) => {
-                        setOtp(value);
-                        if (errors.otp)
-                          setErrors((p) => ({ ...p, otp: undefined }));
-                      }}
-                    >
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} />
-                        <InputOTPSlot index={1} />
-                        <InputOTPSlot index={2} />
-                      </InputOTPGroup>
-                      <InputOTPSeparator />
-                      <InputOTPGroup>
-                        <InputOTPSlot index={3} />
-                        <InputOTPSlot index={4} />
-                        <InputOTPSlot index={5} />
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </div>
-                  {errors.otp && (
-                    <p className="font-mono text-xs text-destructive text-center">
-                      <span className="font-bold">error:</span> {errors.otp}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label
-                    htmlFor="password"
-                    className="font-mono text-xs text-muted-foreground"
+            <form onSubmit={handleVerify} noValidate className="space-y-4">
+              <div className="space-y-2">
+                <label className="font-mono text-xs text-muted-foreground">
+                  verification code
+                </label>
+                <div className="flex justify-center">
+                  <InputOTP
+                    maxLength={6}
+                    value={otp}
+                    onChange={(value) => {
+                      setOtp(value);
+                      if (errors.otp)
+                        setErrors((p) => ({ ...p, otp: undefined }));
+                    }}
                   >
-                    password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (errors.password)
-                          setErrors((p) => ({ ...p, password: undefined }));
-                      }}
-                      aria-invalid={!!errors.password}
-                      className="pl-10 pr-10 font-mono text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="size-4" />
-                      ) : (
-                        <Eye className="size-4" />
-                      )}
-                    </button>
-                  </div>
-                  {errors.password && (
-                    <p className="font-mono text-xs text-destructive">
-                      <span className="font-bold">error:</span>{" "}
-                      {errors.password}
-                    </p>
-                  )}
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                    </InputOTPGroup>
+                    <InputOTPSeparator />
+                    <InputOTPGroup>
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
                 </div>
-
-                <div className="space-y-2">
-                  <label
-                    htmlFor="confirmPassword"
-                    className="font-mono text-xs text-muted-foreground"
-                  >
-                    confirm password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                    <Input
-                      id="confirmPassword"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={confirmPassword}
-                      onChange={(e) => {
-                        setConfirmPassword(e.target.value);
-                        if (errors.confirmPassword)
-                          setErrors((p) => ({
-                            ...p,
-                            confirmPassword: undefined,
-                          }));
-                      }}
-                      aria-invalid={!!errors.confirmPassword}
-                      className="pl-10 font-mono text-sm"
-                    />
-                  </div>
-                  {errors.confirmPassword && (
-                    <p className="font-mono text-xs text-destructive">
-                      <span className="font-bold">error:</span>{" "}
-                      {errors.confirmPassword}
-                    </p>
-                  )}
-                </div>
-
-                {errors.form && (
-                  <p className="font-mono text-sm text-destructive">
-                    <span className="font-bold">error:</span> {errors.form}
+                {errors.otp && (
+                  <p className="font-mono text-xs text-destructive text-center">
+                    <span className="font-bold">error:</span> {errors.otp}
                   </p>
                 )}
+              </div>
 
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-cyan text-background hover:bg-cyan/90 font-mono text-sm"
+              <div className="space-y-2">
+                <label
+                  htmlFor="password"
+                  className="font-mono text-xs text-muted-foreground"
                 >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin" />
-                      Verifying...
-                    </>
-                  ) : (
-                    "Create Account"
-                  )}
-                </Button>
-              </form>
-
-              <p className="text-center font-mono text-xs text-muted-foreground">
-                Didn&apos;t receive a code?{" "}
-                {cooldown > 0 ? (
-                  <span className="text-muted-foreground/60">
-                    Resend in {cooldown}s
-                  </span>
-                ) : (
+                  password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errors.password)
+                        setErrors((p) => ({ ...p, password: undefined }));
+                    }}
+                    aria-invalid={!!errors.password}
+                    className="pl-10 pr-10 font-mono text-sm"
+                  />
                   <button
                     type="button"
-                    onClick={handleResend}
-                    className="text-cyan hover:underline underline-offset-4"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Resend code
+                    {showPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
                   </button>
+                </div>
+                {errors.password && (
+                  <p className="font-mono text-xs text-destructive">
+                    <span className="font-bold">error:</span>{" "}
+                    {errors.password}
+                  </p>
                 )}
-              </p>
-            </div>
-          )}
+              </div>
 
-          {phase === "form" && (
-            <p className="text-center font-mono text-xs text-muted-foreground">
-              Already have an account?{" "}
-              <Link
-                href="/login"
-                className="text-cyan hover:underline underline-offset-4"
+              <div className="space-y-2">
+                <label
+                  htmlFor="confirmPassword"
+                  className="font-mono text-xs text-muted-foreground"
+                >
+                  confirm password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                  <Input
+                    id="confirmPassword"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      if (errors.confirmPassword)
+                        setErrors((p) => ({
+                          ...p,
+                          confirmPassword: undefined,
+                        }));
+                    }}
+                    aria-invalid={!!errors.confirmPassword}
+                    className="pl-10 font-mono text-sm"
+                  />
+                </div>
+                {errors.confirmPassword && (
+                  <p className="font-mono text-xs text-destructive">
+                    <span className="font-bold">error:</span>{" "}
+                    {errors.confirmPassword}
+                  </p>
+                )}
+              </div>
+
+              {errors.form && (
+                <motion.p
+                  className="font-mono text-sm text-destructive"
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <span className="font-bold">error:</span> {errors.form}
+                </motion.p>
+              )}
+
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-cyan text-background hover:bg-cyan/90 font-mono text-sm"
               >
-                Sign in
-              </Link>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  "Create Account"
+                )}
+              </Button>
+            </form>
+
+            <p className="text-center font-mono text-xs text-muted-foreground">
+              Didn&apos;t receive a code?{" "}
+              {cooldown > 0 ? (
+                <span className="text-muted-foreground/60">
+                  Resend in {cooldown}s
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  className="text-cyan hover:underline underline-offset-4"
+                >
+                  Resend code
+                </button>
+              )}
             </p>
-          )}
-        </div>
-      </TerminalWindow>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {phase === "form" && (
+        <p className="text-center font-mono text-xs text-muted-foreground">
+          Already have an account?{" "}
+          <button
+            type="button"
+            onClick={() => navigateTo("/login")}
+            className="text-cyan hover:underline underline-offset-4"
+          >
+            Sign in
+          </button>
+        </p>
+      )}
     </div>
   );
 }

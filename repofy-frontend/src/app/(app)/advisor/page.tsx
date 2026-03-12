@@ -365,7 +365,7 @@ export default function AdvisorPage() {
                   <Button
                     variant="destructive"
                     size="sm"
-                    className="h-8 gap-1.5 font-mono text-xs"
+                    className="h-8 gap-1.5 font-mono text-xs hover:brightness-125 transition-all"
                     disabled={deleteAdvice.isPending}
                   >
                     <Trash2 className="size-3.5" />
