@@ -47,7 +47,7 @@ export function Navbar() {
                   className="flex items-center rounded-md border border-border bg-muted/50 py-1.5 font-mono text-xs animate-in fade-in duration-300 hover:bg-muted"
                   style={{ paddingInline: hasData ? 12 : 8, gap: hasData ? 12 : 6 }}
                 >
-                  <span className="flex items-center gap-1 text-cyan">
+                  <span className="flex items-center gap-1 text-emerald-400">
                     <Zap className="h-3.5 w-3.5" />
                     <span
                       className="inline-block overflow-hidden transition-all duration-300 ease-out"
@@ -70,7 +70,7 @@ export function Navbar() {
               <TooltipContent side="bottom" sideOffset={8}>
                 <div className="flex flex-col gap-1.5 py-0.5">
                   <span className="flex items-center gap-1.5">
-                    <Zap className="h-3 w-3 text-cyan" />
+                    <Zap className="h-3 w-3 text-emerald-400" />
                     <span>Growth credits — generate advisor reports</span>
                   </span>
                   <span className="flex items-center gap-1.5">

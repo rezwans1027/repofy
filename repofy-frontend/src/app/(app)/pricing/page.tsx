@@ -141,15 +141,15 @@ function PricingContent() {
       {/* Credit balance */}
       <AnimateOnView delay={0.03}>
         <div className="inline-flex items-center gap-2.5 rounded-lg border border-border bg-card px-4 py-2.5">
-          <div className="flex size-7 items-center justify-center rounded-full bg-cyan/10">
-            <Coins className="size-3.5 text-cyan" />
+          <div className="flex size-7 items-center justify-center rounded-full bg-emerald-500/10">
+            <Coins className="size-3.5 text-emerald-400" />
           </div>
           <div className="flex flex-col">
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Your balance
             </span>
             <span className="font-mono text-sm font-bold">
-              <span className="text-cyan">
+              <span className="text-emerald-400">
                 {balance?.growth_balance ?? 0}
               </span>{" "}
               credit{balance?.growth_balance !== 1 ? "s" : ""}
@@ -176,15 +176,15 @@ function PricingContent() {
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-3 rounded-lg border border-cyan/20 bg-cyan/5 px-4 py-3">
-              <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-cyan/10">
-                <Loader2 className="size-3.5 animate-spin text-cyan" />
+            <div className="flex items-center gap-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+              <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
+                <Loader2 className="size-3.5 animate-spin text-emerald-400" />
               </div>
               <div>
-                <p className="font-mono text-xs font-semibold text-cyan">
+                <p className="font-mono text-xs font-semibold text-emerald-400">
                   Processing...
                 </p>
-                <p className="text-[11px] text-cyan/70">
+                <p className="text-[11px] text-emerald-400/70">
                   Payment received, adding credits to your account.
                 </p>
               </div>
@@ -215,16 +215,16 @@ function PricingContent() {
       <div className="grid gap-6 sm:grid-cols-2">
         {/* Developer card — featured */}
         <AnimateOnView delay={0.1}>
-          <div className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-cyan/20 bg-card">
+          <div className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-emerald-500/20 bg-card">
             {/* Subtle top glow */}
-            <div className="pointer-events-none absolute -top-20 left-1/2 h-40 w-64 -translate-x-1/2 rounded-full bg-cyan/6 blur-3xl transition-all duration-500 group-hover:bg-cyan/10" />
+            <div className="pointer-events-none absolute -top-20 left-1/2 h-40 w-64 -translate-x-1/2 rounded-full bg-emerald-500/6 blur-3xl transition-all duration-500 group-hover:bg-emerald-500/10" />
 
             <div className="relative flex flex-1 flex-col p-6">
               {/* Card header */}
               <div className="mb-4 flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-9 items-center justify-center rounded-md bg-cyan/10 ring-1 ring-cyan/20">
-                    <Zap className="size-4 text-cyan" />
+                  <div className="flex size-9 items-center justify-center rounded-md bg-emerald-500/10 ring-1 ring-emerald-500/20">
+                    <Zap className="size-4 text-emerald-400" />
                   </div>
                   <div>
                     <h3 className="font-mono text-sm font-bold">Developers</h3>
@@ -233,7 +233,7 @@ function PricingContent() {
                     </p>
                   </div>
                 </div>
-                <Badge className="border-cyan/20 bg-cyan/10 text-[10px] font-semibold text-cyan hover:bg-cyan/10">
+                <Badge className="border-emerald-500/20 bg-emerald-500/10 text-[10px] font-semibold text-emerald-400 hover:bg-emerald-500/10">
                   Popular
                 </Badge>
               </div>
@@ -259,10 +259,10 @@ function PricingContent() {
                 {DEVELOPER_FEATURES.map(({ text, highlight }) => (
                   <li key={text} className="flex items-start gap-2">
                     <div
-                      className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full ${highlight ? "bg-cyan/15" : "bg-secondary"}`}
+                      className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full ${highlight ? "bg-emerald-500/15" : "bg-secondary"}`}
                     >
                       <Check
-                        className={`size-2.5 ${highlight ? "text-cyan" : "text-muted-foreground"}`}
+                        className={`size-2.5 ${highlight ? "text-emerald-400" : "text-muted-foreground"}`}
                       />
                     </div>
                     <span
@@ -285,7 +285,7 @@ function PricingContent() {
               <button
                 onClick={handleCheckout}
                 disabled={loading}
-                className="group/btn flex w-full items-center justify-center gap-2 rounded-md bg-cyan px-4 py-2.5 font-mono text-xs font-semibold text-white shadow-sm shadow-cyan/20 transition-all hover:shadow-md hover:shadow-cyan/25 hover:brightness-110 disabled:opacity-50"
+                className="group/btn flex w-full items-center justify-center gap-2 rounded-md bg-emerald-500 px-4 py-2.5 font-mono text-xs font-semibold text-white shadow-sm shadow-emerald-500/20 transition-all hover:shadow-md hover:shadow-emerald-500/25 hover:brightness-110 disabled:opacity-50"
               >
                 {loading ? (
                   <>
