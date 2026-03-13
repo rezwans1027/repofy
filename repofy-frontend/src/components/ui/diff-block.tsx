@@ -28,7 +28,7 @@ export function DiffBlock({ lines, delay = 0 }: DiffBlockProps) {
           initial={{ opacity: 0, x: line.type === "add" ? 20 : -20 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: delay + i * 0.15 }}
+          transition={{ duration: 0.3, delay: delay + i * 0.08 }}
         >
           {line.text}
         </motion.div>

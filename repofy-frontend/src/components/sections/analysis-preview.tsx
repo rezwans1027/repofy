@@ -3,6 +3,7 @@
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
 import {
   FileSearch,
   Radar,
@@ -83,11 +84,21 @@ export function AnalysisPreview() {
             </p>
           </div>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <motion.div
+            className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-40px" }}
+            variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
+          >
             {plannedFeatures.map((feature) => (
-              <div
+              <motion.div
                 key={feature.label}
                 className="rounded-md border border-border bg-background/50 p-4"
+                variants={{
+                  hidden: { opacity: 0, y: 16, filter: "blur(4px)" },
+                  visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.4 } },
+                }}
               >
                 <feature.icon className="h-4 w-4 text-cyan" />
                 <p className="mt-2 font-mono text-xs font-bold">
@@ -96,9 +107,9 @@ export function AnalysisPreview() {
                 <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">
                   {feature.description}
                 </p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </AnimateOnView>
     </section>
