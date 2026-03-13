@@ -74,6 +74,11 @@ export const adviseUser: RequestHandler = async (req, res) => {
 
     const advice = buildAdviceData(aiAdvice, githubData);
 
+    // If the client disconnected while we were working, skip deducting credits
+    if (req.signal?.aborted) {
+      return;
+    }
+
     // Only deduct + persist after everything succeeded
     const adviceId = await deductAndPersist(
       userId,

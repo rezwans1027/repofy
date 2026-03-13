@@ -61,7 +61,9 @@ export async function initiateSignup(
   }
 
   if (emailTaken) {
-    throw new AuthError("An account with this email already exists.", 409);
+    // Return the same success message to prevent account enumeration.
+    // The existing user won't receive an OTP, so no action is taken.
+    return { message: "A verification code has been sent to your email." };
   }
 
   const otp = generateOtp();

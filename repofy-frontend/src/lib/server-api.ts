@@ -11,7 +11,10 @@ function getBaseUrl() {
 
 export async function serverFetch<T>(path: string): Promise<T | null> {
   const supabase = await createClient();
-  // Session already validated by middleware's getUser() call
+  // getUser() validates the JWT server-side (signature + expiry);
+  // getSession() only reads the token from cookies without verification.
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.access_token) return null;
 

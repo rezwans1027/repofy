@@ -39,5 +39,5 @@ export const env = {
   resendApiKey: requireEnv("RESEND_API_KEY"),
   otpHmacSecret: requireEnv("OTP_HMAC_SECRET"),
   engineUrl: process.env.ENGINE_URL || "http://localhost:3002",
-  engineInternalKey: process.env.ENGINE_INTERNAL_KEY || "",
+  engineInternalKey: requireEnvUnlessMockAi("ENGINE_INTERNAL_KEY") ?? "",
 } as const;

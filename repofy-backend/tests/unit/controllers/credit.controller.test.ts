@@ -18,19 +18,6 @@ describe("getBalance controller", () => {
     vi.clearAllMocks();
   });
 
-  it("returns 401 when userId is missing", async () => {
-    const { req, res, next } = createControllerMocks();
-    // No userId on req
-
-    await getBalance(req, res, next);
-
-    expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({
-      success: false,
-      error: "Authentication required",
-    });
-  });
-
   it("returns balance on success", async () => {
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";

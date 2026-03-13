@@ -55,6 +55,8 @@ vi.mock("framer-motion", async () => {
       scrollYProgress: { get: () => 0 },
       scrollXProgress: { get: () => 0 },
     }),
+    useReducedMotion: () => false,
+    MotionConfig: ({ children }: any) => children,
   };
 });
 

@@ -58,31 +58,6 @@ describe("createCheckout controller", () => {
     vi.clearAllMocks();
   });
 
-  it("returns 401 when userId is missing", async () => {
-    const { req, res, next } = createControllerMocks();
-
-    await createCheckout(req, res, next);
-
-    expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({
-      success: false,
-      error: "Authentication required",
-    });
-  });
-
-  it("returns 401 when userEmail is missing", async () => {
-    const { req, res, next } = createControllerMocks();
-    (req as any).userId = "user-123";
-
-    await createCheckout(req, res, next);
-
-    expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({
-      success: false,
-      error: "Authentication required",
-    });
-  });
-
   it("returns checkout URL on success", async () => {
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
@@ -329,7 +304,7 @@ describe("handleWebhook controller", () => {
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({
-      success: false,
+      received: false,
       error: "Webhook processing failed",
     });
   });

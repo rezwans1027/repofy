@@ -14,6 +14,7 @@ const ENV_KEYS = [
   "RESEND_API_KEY",
   "OTP_HMAC_SECRET",
   "ADMIN_SECRET",
+  "ENGINE_INTERNAL_KEY",
   "MOCK_AI",
   "NODE_ENV",
   "PORT",
@@ -35,6 +36,8 @@ describe("env config", () => {
       if (val === undefined) delete process.env[key];
       else process.env[key] = val;
     }
+    // ENGINE_INTERNAL_KEY is required when MOCK_AI is off
+    process.env.ENGINE_INTERNAL_KEY ??= "test-engine-key";
     vi.resetModules();
   });
 
