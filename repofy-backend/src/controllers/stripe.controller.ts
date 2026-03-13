@@ -48,7 +48,6 @@ export const handleWebhook: RequestHandler = async (req, res) => {
         logger.info("Checkout completed", {
           sessionId: session.id,
           userId: session.client_reference_id,
-          email: session.customer_email,
           amountTotal: session.amount_total,
         });
 

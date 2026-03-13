@@ -14,6 +14,7 @@
  */
 import { env } from "../config/env";
 import { logger } from "../lib/logger";
+import { fetchWithRetry } from "../lib/retry";
 import { daysAgo } from "../lib/date-utils";
 import type {
   GitHubApiUser,
@@ -101,7 +102,8 @@ function headers(): Record<string, string> {
 async function ghRequest(url: string, init: RequestInit, signal: AbortSignal | undefined, timeoutMessage: string): Promise<Response> {
   const signals: AbortSignal[] = [AbortSignal.timeout(GITHUB_TIMEOUT_MS)];
   if (signal) signals.push(signal);
-  return fetch(url, { ...init, signal: AbortSignal.any(signals) }).catch((err) => {
+  const combined = AbortSignal.any(signals);
+  return fetchWithRetry(url, { ...init, signal: combined }, { label: "GitHub", retryableStatuses: [500, 502, 503] }).catch((err) => {
     if (err instanceof DOMException && err.name === "TimeoutError") {
       throw new GitHubError(timeoutMessage, 504);
     }
@@ -869,8 +871,8 @@ async function fetchCodeSnippets(
   }
   if (testEntry) filesToFetch.push(testEntry.path);
 
-  for (const filePath of filesToFetch.slice(0, 2)) {
-    try {
+  const results = await Promise.allSettled(
+    filesToFetch.slice(0, 2).map(async (filePath) => {
       const fileData = await ghFetch<{ content: string; encoding: string }>(
         `/repos/${username}/${repoName}/contents/${filePath}`,
         signal,
@@ -880,11 +882,13 @@ async function fetchCodeSnippets(
           .toString("utf-8")
           .slice(0, MAX_SNIPPET_SIZE_BYTES);
         const lines = text.split("\n").slice(0, MAX_SNIPPET_LINES);
-        snippets.push(`--- ${filePath} ---\n${lines.join("\n")}`);
+        return `--- ${filePath} ---\n${lines.join("\n")}`;
       }
-    } catch {
-      // Non-critical, skip
-    }
+      return null;
+    }),
+  );
+  for (const r of results) {
+    if (r.status === "fulfilled" && r.value) snippets.push(r.value);
   }
 
   return snippets;

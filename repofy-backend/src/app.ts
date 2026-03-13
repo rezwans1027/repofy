@@ -6,18 +6,26 @@ import { errorHandler } from "./middleware/errorHandler";
 import { notFound } from "./middleware/notFound";
 import { handleWebhook } from "./controllers/stripe.controller";
 import { webhookRateLimit } from "./middleware/rateLimit";
+import { requestId } from "./middleware/requestId";
 import routes from "./routes";
 
 export function createApp() {
   const app = express();
 
-  // Only trust reverse proxy when explicitly configured (production behind LB/Nginx)
+  // Trust reverse proxy in production (behind LB/Nginx) unless explicitly disabled
   if (env.trustProxy) {
     app.set("trust proxy", 1);
   }
 
+  // Request ID for log correlation — must be first
+  app.use(requestId);
+
+  // Helmet sets security headers on all responses — safe before raw body parsing
+  app.use(helmet());
+
   // Stripe webhook needs raw body for signature verification — must be registered
   // before express.json() so the body is not parsed as JSON.
+  // CORS is not needed: Stripe sends server-to-server, not browser requests.
   app.post(
     "/api/stripe/webhook",
     webhookRateLimit,
@@ -25,7 +33,6 @@ export function createApp() {
     handleWebhook,
   );
 
-  app.use(helmet());
   app.use(corsMiddleware);
   app.use(express.json({ limit: "100kb" }));
 

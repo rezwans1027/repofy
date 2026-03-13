@@ -160,7 +160,7 @@ function PricingContent() {
 
       {/* Status banners */}
       {success && (
-        <AnimateOnView delay={0.05} variant="scaleIn">
+        <AnimateOnView delay={0.05}>
           {creditsReceived ? (
             <div className="flex items-center gap-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
               <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">

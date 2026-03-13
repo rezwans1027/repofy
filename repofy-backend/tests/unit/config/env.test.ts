@@ -18,6 +18,7 @@ const ENV_KEYS = [
   "MOCK_AI",
   "NODE_ENV",
   "PORT",
+  "CORS_ORIGIN",
 ] as const;
 
 describe("env config", () => {
@@ -60,6 +61,7 @@ describe("env config", () => {
   it("disables MOCK_AI in production even when set", async () => {
     process.env.MOCK_AI = "true";
     process.env.NODE_ENV = "production";
+    process.env.CORS_ORIGIN = "https://example.com";
 
     const { env } = await import("../../../src/config/env");
 

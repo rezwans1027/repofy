@@ -21,19 +21,23 @@ function requireEnvUnlessMockAi(name: string): string | undefined {
   return requireEnv(name);
 }
 
+const _isProduction = process.env.NODE_ENV === "production";
+
 export const env = {
   port: parseInt(process.env.PORT || "3001", 10),
-  corsOrigin: process.env.CORS_ORIGIN || "http://localhost:3000",
+  corsOrigin: _isProduction ? requireEnv("CORS_ORIGIN") : (process.env.CORS_ORIGIN || "http://localhost:3000"),
   nodeEnv: process.env.NODE_ENV || "development",
-  isProduction: process.env.NODE_ENV === "production",
-  trustProxy: process.env.TRUST_PROXY === "true",
+  isProduction: _isProduction,
+  trustProxy: _isProduction ? process.env.TRUST_PROXY !== "false" : process.env.TRUST_PROXY === "true",
   mockAi: _mockAi,
   supabaseUrl: requireEnv("SUPABASE_URL"),
   supabaseServiceRoleKey: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
   githubToken: requireEnvUnlessMockAi("GITHUB_TOKEN"),
   openaiModel: process.env.OPENAI_MODEL || "gpt-5.1",
   adminSecret: requireEnv("ADMIN_SECRET"),
-  frontendUrl: process.env.FRONTEND_URL || process.env.CORS_ORIGIN || "http://localhost:3000",
+  frontendUrl: _isProduction
+    ? (process.env.FRONTEND_URL || requireEnv("CORS_ORIGIN"))
+    : (process.env.FRONTEND_URL || process.env.CORS_ORIGIN || "http://localhost:3000"),
   stripeSecretKey: requireEnv("STRIPE_SECRET_KEY"),
   stripeWebhookSecret: requireEnv("STRIPE_WEBHOOK_SECRET"),
   resendApiKey: requireEnv("RESEND_API_KEY"),

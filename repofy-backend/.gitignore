@@ -2,4 +2,8 @@ node_modules/
 dist/
 coverage/
 .env
+.env.local
+.env.production
+.env.staging
+.env.*.local
 supabase/.temp/

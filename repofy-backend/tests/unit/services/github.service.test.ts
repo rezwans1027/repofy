@@ -222,9 +222,13 @@ describe("github.service", () => {
     });
 
     it("passes through status for other errors", async () => {
-      fetchMock.mockReturnValueOnce(
-        Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve({}) }),
-      );
+      // Provide enough responses for retry attempts (fetchWithRetry retries 500s)
+      const error500 = () =>
+        Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve({}) });
+      fetchMock
+        .mockReturnValueOnce(error500())
+        .mockReturnValueOnce(error500())
+        .mockReturnValueOnce(error500());
 
       await expect(searchGitHubUsers("test")).rejects.toMatchObject({
         statusCode: 500,
