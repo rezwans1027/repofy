@@ -11,13 +11,13 @@ export function Footer() {
         <div className="flex items-center gap-4">
           <a
             href="#"
-            className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+            className="text-muted-foreground hover:text-foreground text-sm"
           >
             GitHub
           </a>
           <a
             href="#"
-            className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+            className="text-muted-foreground hover:text-foreground text-sm"
           >
             Twitter
           </a>

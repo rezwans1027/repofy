@@ -34,7 +34,7 @@ export function TopRepos({ topRepos, expandAll }: TopReposProps) {
                 onClick={() =>
                   !expandAll && setExpanded(expanded === repo.name ? null : repo.name)
                 }
-                className="flex w-full items-center justify-between p-3 text-left hover:bg-secondary/30 transition-colors"
+                className="flex w-full items-center justify-between p-3 text-left hover:bg-secondary/30"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-mono text-sm font-bold truncate">

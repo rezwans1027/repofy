@@ -45,7 +45,7 @@ export function ProfileOptimizations({ optimizations }: ProfileOptimizationsProp
               variants={staggerItemScale}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
               whileHover={{ scale: 1.02, y: -2 }}
-              className="rounded-md border border-border bg-background p-3 space-y-2 transition-colors hover:border-emerald-500/20 cursor-default"
+              className="rounded-md border border-border bg-background p-3 space-y-2 hover:border-emerald-500/20 cursor-default"
             >
               <div className="flex items-center gap-2">
                 <Target className="size-3.5 shrink-0 text-emerald-400" />

@@ -46,7 +46,7 @@ export function ContributionStrategy({ items }: ContributionStrategyProps) {
               variants={staggerItem}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
               whileHover={{ x: 4 }}
-              className="rounded-md border border-border bg-background p-3 space-y-2 transition-colors hover:border-emerald-500/30 cursor-default"
+              className="rounded-md border border-border bg-background p-3 space-y-2 hover:border-emerald-500/30 cursor-default"
             >
               <div className="flex gap-3">
                 <TrendingUp className="size-4 shrink-0 text-emerald-400 mt-0.5" />

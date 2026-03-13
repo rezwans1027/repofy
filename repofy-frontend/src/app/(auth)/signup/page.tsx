@@ -388,7 +388,7 @@ export default function SignupPage() {
                 setConfirmPassword("");
                 setErrors({});
               }}
-              className="flex items-center gap-1 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1 font-mono text-xs text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="size-3" />
               Back
@@ -459,7 +459,7 @@ export default function SignupPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     {showPassword ? (
                       <EyeOff className="size-4" />

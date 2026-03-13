@@ -50,7 +50,7 @@ export function Navbar() {
                   <span className="flex items-center gap-1 text-emerald-400">
                     <Zap className="h-3.5 w-3.5" />
                     <span
-                      className="inline-block overflow-hidden transition-all duration-300 ease-out"
+                      className="inline-block overflow-hidden transition-[width,opacity] duration-300 ease-out"
                       style={{ width: hasData ? "auto" : 0, opacity: hasData ? 1 : 0 }}
                     >
                       {credits?.growth_balance ?? 0}
@@ -59,7 +59,7 @@ export function Navbar() {
                   <span className="flex items-center gap-1 text-muted-foreground opacity-40">
                     <BarChart3 className="h-3.5 w-3.5" />
                     <span
-                      className="inline-block overflow-hidden transition-all duration-300 ease-out"
+                      className="inline-block overflow-hidden transition-[width,opacity] duration-300 ease-out"
                       style={{ width: hasData ? "auto" : 0, opacity: hasData ? 1 : 0 }}
                     >
                       {credits?.eval_balance ?? 0}
@@ -96,8 +96,8 @@ export function Navbar() {
           }}
           className="h-8 w-8"
         >
-          <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <Sun className="h-4 w-4 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
           <span className="sr-only">Toggle theme</span>
         </Button>
 

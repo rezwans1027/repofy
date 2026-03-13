@@ -217,7 +217,7 @@ function PricingContent() {
         <AnimateOnView delay={0.1}>
           <div className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-emerald-500/20 bg-card">
             {/* Subtle top glow */}
-            <div className="pointer-events-none absolute -top-20 left-1/2 h-40 w-64 -translate-x-1/2 rounded-full bg-emerald-500/6 blur-3xl transition-all duration-500 group-hover:bg-emerald-500/10" />
+            <div className="pointer-events-none absolute -top-20 left-1/2 h-40 w-64 -translate-x-1/2 rounded-full bg-emerald-500/6 blur-3xl transition-[background-color] duration-500 group-hover:bg-emerald-500/10" />
 
             <div className="relative flex flex-1 flex-col p-6">
               {/* Card header */}
@@ -285,7 +285,7 @@ function PricingContent() {
               <button
                 onClick={handleCheckout}
                 disabled={loading}
-                className="group/btn flex w-full items-center justify-center gap-2 rounded-md bg-emerald-500 px-4 py-2.5 font-mono text-xs font-semibold text-white shadow-sm shadow-emerald-500/20 transition-all hover:shadow-md hover:shadow-emerald-500/25 hover:brightness-110 disabled:opacity-50"
+                className="group/btn flex w-full items-center justify-center gap-2 rounded-md bg-emerald-500 px-4 py-2.5 font-mono text-xs font-semibold text-white shadow-sm shadow-emerald-500/20 transition-[box-shadow,filter] hover:shadow-md hover:shadow-emerald-500/25 hover:brightness-110 disabled:opacity-50"
               >
                 {loading ? (
                   <>

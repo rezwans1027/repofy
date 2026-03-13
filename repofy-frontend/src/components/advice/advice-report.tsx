@@ -111,7 +111,7 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
               <button
                 key={tab.key}
                 onClick={() => handleTabChange(tab.key)}
-                className={`relative shrink-0 rounded-md px-4 py-2 font-mono text-xs font-medium transition-colors ${
+                className={`relative shrink-0 rounded-md px-4 py-2 font-mono text-xs font-medium ${
                   activeTab === tab.key
                     ? "text-emerald-400"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"

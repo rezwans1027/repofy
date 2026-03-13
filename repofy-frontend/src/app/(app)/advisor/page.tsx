@@ -155,7 +155,7 @@ export default function AdvisorPage() {
 
             <Link
               href="/dashboard"
-              className="group mt-6 inline-flex items-center gap-2 rounded-lg bg-cyan px-5 py-2.5 font-mono text-xs font-medium text-background transition-all hover:brightness-110"
+              className="group mt-6 inline-flex items-center gap-2 rounded-lg bg-cyan px-5 py-2.5 font-mono text-xs font-medium text-background transition-[filter] hover:brightness-110"
             >
               Search a developer
               <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
@@ -287,7 +287,7 @@ export default function AdvisorPage() {
                   exit={{ opacity: 0, y: -8, filter: "blur(4px)", transition: { duration: 0.2 } }}
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   layout
-                  className={`group relative flex items-center gap-4 rounded-xl border p-4 transition-colors duration-200 ${
+                  className={`group relative flex items-center gap-4 rounded-xl border p-4 ${
                     isSelected
                       ? "border-primary/30 bg-primary/[0.04]"
                       : "border-border bg-card hover:border-border hover:bg-secondary/30"
@@ -295,7 +295,7 @@ export default function AdvisorPage() {
                   onClick={selectMode ? () => toggleSelect(item.id) : () => router.push(`/advisor/${item.id}`)}
                 >
                   {/* Checkbox */}
-                  <div className={`overflow-hidden transition-all duration-200 ease-out ${selectMode ? "w-5 opacity-100" : "w-0 -mr-4 opacity-0"}`}>
+                  <div className={`overflow-hidden transition-[width,opacity] duration-200 ease-out ${selectMode ? "w-5 opacity-100" : "w-0 -mr-4 opacity-0"}`}>
                     <div className="flex w-5 shrink-0 items-center justify-center" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={isSelected}
@@ -313,7 +313,7 @@ export default function AdvisorPage() {
                   {/* Content */}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className={`truncate font-mono text-sm font-semibold text-foreground transition-colors ${!selectMode ? "group-hover:text-primary" : ""}`}>
+                      <span className={`truncate font-mono text-sm font-semibold text-foreground ${!selectMode ? "group-hover:text-primary" : ""}`}>
                         @{item.analyzed_username}
                       </span>
                     </div>
@@ -331,8 +331,8 @@ export default function AdvisorPage() {
                       <Calendar className="size-3" />
                       {relativeDate(item.generated_at)}
                     </span>
-                    <div className={`overflow-hidden transition-all duration-200 ease-out ${selectMode ? "w-0 opacity-0" : "w-7 opacity-100"}`}>
-                      <ChevronRight className="ml-3 size-4 text-muted-foreground/30 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
+                    <div className={`overflow-hidden transition-[width,opacity] duration-200 ease-out ${selectMode ? "w-0 opacity-0" : "w-7 opacity-100"}`}>
+                      <ChevronRight className="ml-3 size-4 text-muted-foreground/30 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
                     </div>
                   </div>
                 </motion.div>
@@ -354,7 +354,7 @@ export default function AdvisorPage() {
             <button
               type="button"
               onClick={() => toggleSelectAll(filteredIds)}
-              className="w-full rounded-lg border border-dashed border-border px-4 py-2.5 text-center font-mono text-xs text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground"
+              className="w-full rounded-lg border border-dashed border-border px-4 py-2.5 text-center font-mono text-xs text-muted-foreground hover:border-primary/30 hover:text-foreground"
             >
               {allFilteredSelected ? "Deselect all" : `Select all ${filteredItems.length} items`}
             </button>
@@ -384,7 +384,7 @@ export default function AdvisorPage() {
                   <Button
                     variant="destructive"
                     size="sm"
-                    className="h-8 gap-1.5 font-mono text-xs hover:brightness-125 transition-all"
+                    className="h-8 gap-1.5 font-mono text-xs hover:brightness-125 transition-[filter]"
                     disabled={deleteAdvice.isPending}
                   >
                     <Trash2 className="size-3.5" />

@@ -152,7 +152,7 @@ export default function DashboardPage() {
                   exit={{ opacity: 0, y: -8, filter: "blur(4px)", transition: { duration: 0.2 } }}
                   transition={{ delay: i * 0.05 }}
                   layout
-                  className="cursor-pointer rounded-lg border border-border bg-card p-4 transition-colors hover:border-cyan/50"
+                  className="cursor-pointer rounded-lg border border-border bg-card p-4 hover:border-cyan/50"
                 >
                   <div className="flex items-center gap-4">
                     {/* eslint-disable-next-line @next/next/no-img-element */}

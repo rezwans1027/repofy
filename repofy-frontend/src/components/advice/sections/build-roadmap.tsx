@@ -42,7 +42,7 @@ export function BuildRoadmap({ builds }: BuildRoadmapProps) {
               variants={staggerItem}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
               whileHover={{ scale: 1.01, y: -2 }}
-              className="rounded-md border border-border bg-background p-4 space-y-3 transition-colors hover:border-emerald-500/20 cursor-default"
+              className="rounded-md border border-border bg-background p-4 space-y-3 hover:border-emerald-500/20 cursor-default"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">

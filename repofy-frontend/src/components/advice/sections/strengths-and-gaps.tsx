@@ -56,7 +56,7 @@ export function StrengthsAndGaps({ data }: StrengthsAndGapsProps) {
                   x: 4,
                   transition: { type: "spring", stiffness: 400, damping: 30 },
                 }}
-                className="flex gap-3 rounded-md border border-border bg-background p-3 transition-colors hover:border-emerald-500/30 cursor-default"
+                className="flex gap-3 rounded-md border border-border bg-background p-3 hover:border-emerald-500/30 cursor-default"
               >
                 <Check className="size-4 shrink-0 text-emerald-400 mt-0.5" />
                 <div>
@@ -86,7 +86,7 @@ export function StrengthsAndGaps({ data }: StrengthsAndGapsProps) {
                   x: -4,
                   transition: { type: "spring", stiffness: 400, damping: 30 },
                 }}
-                className="flex gap-3 rounded-md border border-border bg-background p-3 transition-colors hover:border-orange-500/30 cursor-default"
+                className="flex gap-3 rounded-md border border-border bg-background p-3 hover:border-orange-500/30 cursor-default"
               >
                 <AlertTriangle className="size-4 shrink-0 text-orange-400 mt-0.5" />
                 <div>

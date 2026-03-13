@@ -71,7 +71,7 @@ export function CandidatePicker({
             aria-haspopup="listbox"
             aria-controls={listboxId}
             className={cn(
-              "flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 text-left font-mono text-xs transition-colors",
+              "flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 text-left font-mono text-xs",
               borderColor,
               !selected && "text-muted-foreground"
             )}

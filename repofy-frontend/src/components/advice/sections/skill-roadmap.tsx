@@ -58,7 +58,7 @@ export function SkillRoadmap({ skills }: SkillRoadmapProps) {
               variants={staggerItemScale}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
               whileHover={{ scale: 1.02, y: -2 }}
-              className="rounded-md border border-border bg-background p-4 space-y-2 transition-colors hover:border-emerald-500/20 cursor-default"
+              className="rounded-md border border-border bg-background p-4 space-y-2 hover:border-emerald-500/20 cursor-default"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-mono text-sm font-bold min-w-0">{skill.skill}</h3>

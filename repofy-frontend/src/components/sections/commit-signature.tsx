@@ -70,7 +70,7 @@ export function CommitSignature() {
               return (
                 <span
                   key={verb.word}
-                  className="font-mono transition-colors hover:text-cyan"
+                  className="font-mono hover:text-cyan"
                   style={{
                     fontSize: `${scale}rem`,
                     opacity: 0.4 + (verb.weight / maxWeight) * 0.6,

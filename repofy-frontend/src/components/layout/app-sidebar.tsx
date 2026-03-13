@@ -55,7 +55,7 @@ export function AppSidebar() {
                   href={href}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "relative flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors duration-200",
+                    "relative flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm",
                     isActive
                       ? "text-cyan"
                       : "text-muted-foreground hover:text-foreground"
@@ -112,7 +112,7 @@ export function AppSidebar() {
                 href={href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "relative flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 font-mono text-xs transition-colors",
+                  "relative flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 font-mono text-xs",
                   isActive ? "text-cyan" : "text-muted-foreground"
                 )}
               >

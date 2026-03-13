@@ -54,13 +54,13 @@ export function RepoImprovements({ repoImprovements, expandAll = false }: RepoIm
               variants={staggerItem}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
               whileHover={{ scale: 1.01, y: -1 }}
-              className="rounded-md border border-border bg-background overflow-hidden transition-colors hover:border-emerald-500/20 cursor-default"
+              className="rounded-md border border-border bg-background overflow-hidden hover:border-emerald-500/20 cursor-default"
             >
               <button
                 onClick={() =>
                   setExpanded(expanded === repo.repoName ? null : repo.repoName)
                 }
-                className="flex w-full items-center justify-between p-3 text-left hover:bg-secondary/30 transition-colors"
+                className="flex w-full items-center justify-between p-3 text-left hover:bg-secondary/30"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <Wrench className="size-3.5 shrink-0 text-emerald-400" />

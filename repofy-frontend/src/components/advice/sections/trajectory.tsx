@@ -141,7 +141,7 @@ export function TrajectorySection({ trajectory }: TrajectoryProps) {
                   scale: 1.02,
                   transition: { type: "spring", stiffness: 400, damping: 30 },
                 }}
-                className="rounded-md border border-border bg-background p-3 transition-colors hover:border-emerald-500/30"
+                className="rounded-md border border-border bg-background p-3 hover:border-emerald-500/30"
               >
                 <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
                   {entry.label}
