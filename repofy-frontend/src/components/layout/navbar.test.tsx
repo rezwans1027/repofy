@@ -112,11 +112,11 @@ describe("Navbar", () => {
     // The credit badge link is present (icons visible)
     const badge = container.querySelector('a[href="/pricing"]');
     expect(badge).toBeInTheDocument();
-    // Numbers are hidden (width: 0, opacity: 0)
-    const spans = badge!.querySelectorAll("span.inline-block");
+    // Numbers are hidden (grid-template-columns: 0fr, opacity: 0)
+    const spans = badge!.querySelectorAll("span.inline-grid");
     expect(spans).toHaveLength(2);
     for (const span of spans) {
-      expect(span).toHaveStyle({ width: "0", opacity: "0" });
+      expect(span).toHaveStyle({ gridTemplateColumns: "0fr", opacity: "0" });
     }
   });
 });
