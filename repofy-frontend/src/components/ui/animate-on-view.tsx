@@ -2,8 +2,7 @@
 
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { ReactNode } from "react";
-
-const EASE_OUT_EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
+import { EASE_OUT_EXPO } from "@/lib/animation-variants";
 
 interface AnimateOnViewProps {
   children: ReactNode;

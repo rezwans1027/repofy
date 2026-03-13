@@ -1,46 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { TYPEWRITER_USERNAMES } from "@/lib/constants";
+import { useTypewriter } from "@/hooks/use-typewriter";
 import { ArrowRight } from "lucide-react";
 
 export function Hero() {
-  const [placeholder, setPlaceholder] = useState("");
-  const [usernameIndex, setUsernameIndex] = useState(0);
-  const [charIndex, setCharIndex] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    const currentName = TYPEWRITER_USERNAMES[usernameIndex];
-
-    const timeout = setTimeout(
-      () => {
-        if (!isDeleting) {
-          setPlaceholder(currentName.slice(0, charIndex + 1));
-          setCharIndex((c) => c + 1);
-
-          if (charIndex + 1 === currentName.length) {
-            setTimeout(() => setIsDeleting(true), 1500);
-          }
-        } else {
-          setPlaceholder(currentName.slice(0, charIndex - 1));
-          setCharIndex((c) => c - 1);
-
-          if (charIndex <= 1) {
-            setIsDeleting(false);
-            setUsernameIndex((i) => (i + 1) % TYPEWRITER_USERNAMES.length);
-            setCharIndex(0);
-          }
-        }
-      },
-      isDeleting ? 50 : 120
-    );
-
-    return () => clearTimeout(timeout);
-  }, [charIndex, isDeleting, usernameIndex]);
+  const placeholder = useTypewriter(TYPEWRITER_USERNAMES);
 
   return (
     <section

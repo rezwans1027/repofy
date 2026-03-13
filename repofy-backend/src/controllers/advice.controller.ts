@@ -6,7 +6,7 @@ import { callEngine } from "../services/engine.service";
 import { buildAdviceData } from "../services/advice-builder.service";
 import { getCreditBalance } from "../services/credit.service";
 import { deductAndPersist } from "../services/advice-persistence.service";
-import { logTokenUsage } from "../lib/usage-logger";
+import { logTokenUsage, type TokenUsage } from "../lib/usage-logger";
 import { USERNAME_RE } from "../lib/validators";
 import { sendError, sendSuccess } from "../lib/response";
 import { handleControllerError } from "../lib/controller-utils";
@@ -14,11 +14,15 @@ import type { AuthenticatedRequest, AdviceV2 } from "../types";
 
 interface AdviceEngineResponse {
   advice: AdviceV2;
-  tokenUsage?: { endpoint: string; model: string; usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number } }[];
+  tokenUsage?: { endpoint: string; model: string; usage: TokenUsage }[];
 }
 
 /**
  * Track in-flight advice requests per user to prevent concurrent expensive calls.
+ *
+ * NOTE: This is per-process only. In a horizontally-scaled deployment (multiple
+ * replicas), each instance tracks state independently. Migrate to a shared store
+ * (e.g. Redis SETNX with TTL) when scaling beyond a single process.
  */
 const activeAdviceRequests = new Map<string, true>();
 

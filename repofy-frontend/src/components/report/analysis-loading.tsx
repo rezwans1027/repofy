@@ -85,6 +85,7 @@ export function AnalysisLoading({
   const [elapsed, setElapsed] = useState(0);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const fetchStarted = useRef(false);
+  const mountedRef = useRef(true);
   const logId = useRef(0);
 
   const isAdvisor = accentColor?.includes("emerald");
@@ -139,43 +140,60 @@ export function AnalysisLoading({
     return () => timers.forEach(clearTimeout);
   }, [phase, phases.length, logPool]);
 
-  /* Fetch + progress bar */
+  /* Fetch + progress bar
+   *
+   * mountedRef tracks whether the component is currently mounted.
+   * fetchStarted prevents duplicate API calls (important: advisor deducts credits).
+   *
+   * In React Strict Mode the effect sequence is:
+   *   mount-1 → cleanup → mount-2
+   * Refs survive across this cycle, so fetchStarted stays true and only one
+   * fetch fires. mountedRef is reset to true on every mount, so the fetch
+   * completion handler (from mount-1's closure) still sees mountedRef.current
+   * === true after mount-2 runs, allowing it to finish normally.
+   *
+   * A closure-local `dead` flag would be set to true by cleanup and never
+   * cleared, silently swallowing the response — that was the original bug.
+   */
   useEffect(() => {
-    if (fetchStarted.current) return;
-    fetchStarted.current = true;
+    mountedRef.current = true;
 
-    const t0 = Date.now();
-    const MIN = 3000;
-    let res: { data?: unknown; error?: string } | null = null;
-    let dead = false;
+    if (!fetchStarted.current) {
+      fetchStarted.current = true;
 
-    fetchReport()
-      .then((d) => {
-        res = { data: d };
-      })
-      .catch((err) => {
-        res = {
-          error: err instanceof Error ? err.message : "Analysis failed",
-        };
-      })
-      .finally(() => {
-        if (dead) return;
-        const wait = Math.max(MIN - (Date.now() - t0), 0);
-        setTimeout(() => {
-          if (dead) return;
-          dead = true;
-          if (res?.error) {
-            onError(res.error);
-            return;
-          }
-          setPhase(phases.length);
-          setTimeout(() => setFading(true), 400);
-          setTimeout(() => onComplete(res!.data), 800);
-        }, wait);
-      });
+      const t0 = Date.now();
+      const MIN = 3000;
+      let res: { data?: unknown; error?: string } | null = null;
+
+      fetchReport()
+        .then((d) => {
+          res = { data: d };
+        })
+        .catch((err) => {
+          res = {
+            error: err instanceof Error ? err.message : "Analysis failed",
+          };
+        })
+        .finally(() => {
+          if (!mountedRef.current) return;
+          const wait = Math.max(MIN - (Date.now() - t0), 0);
+          setTimeout(() => {
+            if (!mountedRef.current) return;
+            if (res?.error) {
+              onError(res.error);
+              return;
+            }
+            setPhase(phases.length);
+            setTimeout(() => setFading(true), 400);
+            setTimeout(() => {
+              if (mountedRef.current) onComplete(res!.data);
+            }, 800);
+          }, wait);
+        });
+    }
 
     return () => {
-      dead = true;
+      mountedRef.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

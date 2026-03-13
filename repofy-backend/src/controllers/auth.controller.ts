@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { sendSuccess, sendError } from "../lib/response";
-import { initiateSignup, verifySignup, resendOtp, AuthError } from "../services/auth.service";
+import { handleControllerError } from "../lib/controller-utils";
+import { initiateSignup, verifySignup, resendOtp } from "../services/auth.service";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_EMAIL_LEN = 254;
@@ -23,11 +24,7 @@ export const handleInitiateSignup: RequestHandler = async (req, res) => {
     const result = await initiateSignup(email.toLowerCase().trim(), displayName.trim());
     sendSuccess(res, result);
   } catch (err) {
-    if (err instanceof AuthError) {
-      sendError(res, err.status, err.message);
-      return;
-    }
-    sendError(res, 500, "An unexpected error occurred.");
+    handleControllerError(err, req, res, "Auth Signup", "An unexpected error occurred.");
   }
 };
 
@@ -55,11 +52,7 @@ export const handleVerifySignup: RequestHandler = async (req, res) => {
     const result = await verifySignup(email.toLowerCase().trim(), otp, password);
     sendSuccess(res, result);
   } catch (err) {
-    if (err instanceof AuthError) {
-      sendError(res, err.status, err.message);
-      return;
-    }
-    sendError(res, 500, "An unexpected error occurred.");
+    handleControllerError(err, req, res, "Auth Verify", "An unexpected error occurred.");
   }
 };
 
@@ -75,10 +68,6 @@ export const handleResendOtp: RequestHandler = async (req, res) => {
     const result = await resendOtp(email.toLowerCase().trim());
     sendSuccess(res, result);
   } catch (err) {
-    if (err instanceof AuthError) {
-      sendError(res, err.status, err.message);
-      return;
-    }
-    sendError(res, 500, "An unexpected error occurred.");
+    handleControllerError(err, req, res, "Auth Resend", "An unexpected error occurred.");
   }
 };

@@ -30,9 +30,9 @@ function LanguageBar({
           <motion.div
             key={lang.name}
             className="h-full"
-            style={{ backgroundColor: lang.color }}
-            initial={{ width: 0 }}
-            animate={{ width: `${lang.percentage}%` }}
+            style={{ backgroundColor: lang.color, width: `${lang.percentage}%`, transformOrigin: "left" }}
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
             transition={{ duration: 1, ease: "easeOut" }}
           />
         ))}

@@ -4,9 +4,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { EASE_OUT_EXPO } from "@/lib/animation-variants";
 import { AuthTransitionContext } from "./auth-transition";
-
-const EASE_OUT_EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 const SUFFIX_MAP: Record<string, string> = {
   "/login": "login",

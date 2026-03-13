@@ -21,12 +21,16 @@ function requireEnvUnlessMockAi(name: string): string | undefined {
   return requireEnv(name);
 }
 
-const _isProduction = process.env.NODE_ENV === "production";
+if (!process.env.NODE_ENV) {
+  console.warn("WARNING: NODE_ENV is not set — defaulting to \"production\" for safety");
+}
+
+const _isProduction = (process.env.NODE_ENV ?? "production") === "production";
 
 export const env = {
   port: parseInt(process.env.PORT || "3001", 10),
   corsOrigin: _isProduction ? requireEnv("CORS_ORIGIN") : (process.env.CORS_ORIGIN || "http://localhost:3000"),
-  nodeEnv: process.env.NODE_ENV || "development",
+  nodeEnv: process.env.NODE_ENV ?? "production",
   isProduction: _isProduction,
   trustProxy: _isProduction ? process.env.TRUST_PROXY !== "false" : process.env.TRUST_PROXY === "true",
   mockAi: _mockAi,

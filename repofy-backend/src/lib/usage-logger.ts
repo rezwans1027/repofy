@@ -1,7 +1,7 @@
 import { getSupabaseAdmin } from "../config/supabase";
 import { logger } from "./logger";
 
-interface TokenUsage {
+export interface TokenUsage {
   prompt_tokens: number;
   completion_tokens: number;
   total_tokens: number;

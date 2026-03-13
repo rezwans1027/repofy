@@ -44,25 +44,25 @@ export function Navbar() {
               <TooltipTrigger asChild>
                 <Link
                   href="/pricing"
-                  className="flex items-center rounded-md border border-border bg-muted/50 py-1.5 font-mono text-xs animate-in fade-in duration-300 hover:bg-muted"
+                  className="flex items-center rounded-md border border-border bg-muted/50 py-1.5 font-mono text-xs animate-in fade-in duration-150 hover:bg-muted transition-[padding,gap] duration-150 ease-out"
                   style={{ paddingInline: hasData ? 12 : 8, gap: hasData ? 12 : 6 }}
                 >
                   <span className="flex items-center gap-1 text-emerald-400">
                     <Zap className="h-3.5 w-3.5" />
                     <span
-                      className="inline-block overflow-hidden transition-[width,opacity] duration-300 ease-out"
-                      style={{ width: hasData ? "auto" : 0, opacity: hasData ? 1 : 0 }}
+                      className="inline-grid overflow-hidden transition-[grid-template-columns,opacity] duration-150 ease-out"
+                      style={{ gridTemplateColumns: hasData ? "1fr" : "0fr", opacity: hasData ? 1 : 0 }}
                     >
-                      {credits?.growth_balance ?? 0}
+                      <span className="min-w-0">{credits?.growth_balance ?? 0}</span>
                     </span>
                   </span>
                   <span className="flex items-center gap-1 text-muted-foreground opacity-40">
                     <BarChart3 className="h-3.5 w-3.5" />
                     <span
-                      className="inline-block overflow-hidden transition-[width,opacity] duration-300 ease-out"
-                      style={{ width: hasData ? "auto" : 0, opacity: hasData ? 1 : 0 }}
+                      className="inline-grid overflow-hidden transition-[grid-template-columns,opacity] duration-150 ease-out"
+                      style={{ gridTemplateColumns: hasData ? "1fr" : "0fr", opacity: hasData ? 1 : 0 }}
                     >
-                      {credits?.eval_balance ?? 0}
+                      <span className="min-w-0">{credits?.eval_balance ?? 0}</span>
                     </span>
                   </span>
                 </Link>

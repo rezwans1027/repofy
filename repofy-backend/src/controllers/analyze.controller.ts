@@ -10,7 +10,7 @@ import {
   setCachedAnalysis,
 } from "../services/cache.service";
 import { saveReport } from "../services/reports.service";
-import { logTokenUsage } from "../lib/usage-logger";
+import { logTokenUsage, type TokenUsage } from "../lib/usage-logger";
 import { USERNAME_RE } from "../lib/validators";
 import { sendError, sendSuccess } from "../lib/response";
 import { logger } from "../lib/logger";
@@ -21,7 +21,7 @@ interface AnalyzeEngineResponse {
   scorerResponse: ScorerResponse;
   scoringResult: ScoringResult;
   narrativeReport: string;
-  tokenUsage?: { endpoint: string; model: string; usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number } }[];
+  tokenUsage?: { endpoint: string; model: string; usage: TokenUsage }[];
 }
 
 // RUBRIC_VERSION must match the engine's version for cache key consistency

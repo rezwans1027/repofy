@@ -23,10 +23,9 @@ import {
   Loader2,
   ArrowLeft,
 } from "lucide-react";
+import { EASE_OUT_EXPO } from "@/lib/animation-variants";
 
 type Phase = "form" | "otp" | "success";
-
-const EASE_OUT_EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 const phaseVariants = {
   enter: { opacity: 0, filter: "blur(6px)" },

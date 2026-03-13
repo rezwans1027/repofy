@@ -5,7 +5,7 @@ import { MAX_DELETE_IDS } from "../lib/validators";
 import type { AuthenticatedRequest } from "../types";
 
 interface CrudServiceMethods {
-  list: (userId: string) => Promise<unknown>;
+  list: (userId: string, limit?: number, offset?: number) => Promise<unknown>;
   getById: (userId: string, id: string) => Promise<unknown>;
   exists: (userId: string, value: string) => Promise<boolean>;
   deleteBatch: (userId: string, ids: string[]) => Promise<void>;
@@ -30,8 +30,10 @@ export function createCrudController(config: CrudControllerConfig): CrudControll
   return {
     list: async (req, res) => {
       const { userId } = req as AuthenticatedRequest;
+      const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined;
+      const offset = req.query.offset ? parseInt(String(req.query.offset), 10) : undefined;
       try {
-        const data = await service.list(userId);
+        const data = await service.list(userId, limit, offset);
         sendSuccess(res, data);
       } catch (err) {
         handleControllerError(err, req, res, `List ${capName}`, `Failed to fetch ${entityName}s`);

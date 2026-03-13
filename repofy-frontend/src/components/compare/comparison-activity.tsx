@@ -37,9 +37,9 @@ function ActivityBar({
           <motion.div
             key={seg.key}
             className="h-full"
-            style={{ backgroundColor: seg.color }}
-            initial={{ width: 0 }}
-            animate={{ width: `${data[seg.key]}%` }}
+            style={{ backgroundColor: seg.color, width: `${data[seg.key]}%`, transformOrigin: "left" }}
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
             transition={{ duration: 1, ease: "easeOut" }}
           />
         ))}

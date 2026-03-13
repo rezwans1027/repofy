@@ -1,3 +1,4 @@
+import compression from "compression";
 import express from "express";
 import helmet from "helmet";
 import { env } from "./config/env";
@@ -22,6 +23,9 @@ export function createApp() {
 
   // Helmet sets security headers on all responses — safe before raw body parsing
   app.use(helmet());
+
+  // gzip/brotli compression — ~60-70% payload savings on JSON responses
+  app.use(compression());
 
   // Stripe webhook needs raw body for signature verification — must be registered
   // before express.json() so the body is not parsed as JSON.

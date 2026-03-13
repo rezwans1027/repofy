@@ -90,6 +90,7 @@ export async function middleware(request: NextRequest) {
     "img-src 'self' avatars.githubusercontent.com data: blob:", // data:/blob: needed for html2canvas-pro + jspdf
     "font-src 'self'",
     `connect-src 'self' ${supabaseUrl} ${apiUrl}`,
+    "object-src 'none'",
     "frame-ancestors 'none'",
   ].join("; ");
   supabaseResponse.headers.set("Content-Security-Policy", csp);

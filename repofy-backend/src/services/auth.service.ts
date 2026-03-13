@@ -27,7 +27,10 @@ function hashOtp(otp: string): string {
 }
 
 function safeEqual(a: string, b: string): boolean {
-  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
 }
 
 async function cleanupExpiredSignups(): Promise<void> {
@@ -161,6 +164,12 @@ export async function resendOtp(email: string): Promise<{ message: string }> {
 
   if (error || !pending) {
     // Same generic message to prevent enumeration
+    return { message: "If a pending signup exists, a new code has been sent." };
+  }
+
+  // Don't resend if the user has exhausted their OTP attempts — the new code
+  // would be unusable since increment_otp_attempt rejects locked-out rows.
+  if (pending.attempts >= OTP_MAX_ATTEMPTS) {
     return { message: "If a pending signup exists, a new code has been sent." };
   }
 

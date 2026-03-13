@@ -3,6 +3,7 @@ import request from "supertest";
 import { getApp } from "../helpers/supertest-app";
 import { setupGitHubMocks, setupAuthMock, setupEngineAnalyzeMock } from "../helpers/integration-setup";
 import { sharedAuthEndpointTests } from "../helpers/authenticated-endpoint";
+import { clearMemCache } from "../../src/services/cache.service";
 
 const fetchMock = vi.fn();
 vi.stubGlobal("fetch", fetchMock);
@@ -16,6 +17,7 @@ describe("POST /api/analyze/:username", () => {
     // Re-stub global fetch since vi.restoreAllMocks() in afterEach undoes vi.stubGlobal
     vi.stubGlobal("fetch", fetchMock);
     fetchMock.mockReset();
+    clearMemCache();
   });
 
   it("returns 200 with report data when authenticated", async () => {

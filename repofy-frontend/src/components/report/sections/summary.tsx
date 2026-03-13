@@ -1,19 +1,9 @@
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
+import { stripMarkdown } from "@/lib/format";
 
 interface SummaryProps {
   narrativeReport: string;
-}
-
-/** Strip markdown formatting that shouldn't appear in plain prose */
-function stripMarkdown(text: string): string {
-  return text
-    .replace(/^#{1,6}\s+/gm, "")   // remove markdown headers
-    .replace(/\*\*(.+?)\*\*/g, "$1") // remove bold
-    .replace(/\*(.+?)\*/g, "$1")     // remove italic
-    .replace(/^[-*]\s+/gm, "")      // remove bullet points
-    .replace(/^\d+\.\s+/gm, "")     // remove numbered lists
-    .trim();
 }
 
 export function Summary({ narrativeReport }: SummaryProps) {

@@ -10,6 +10,47 @@ export interface CachedAnalysis {
   narrativeReport: string;
 }
 
+/**
+ * Simple in-memory LRU cache to avoid hitting Supabase on repeated lookups.
+ * Entries are evicted after MAX_AGE_MS or when the cache exceeds MAX_ENTRIES.
+ */
+const MEM_MAX_ENTRIES = 64;
+const MEM_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
+
+interface MemEntry {
+  data: CachedAnalysis;
+  storedAt: number;
+}
+
+const memCache = new Map<string, MemEntry>();
+
+/** Clear the in-memory cache. Exposed for test isolation. */
+export function clearMemCache(): void {
+  memCache.clear();
+}
+
+function memGet(key: string): CachedAnalysis | null {
+  const entry = memCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.storedAt > MEM_MAX_AGE_MS) {
+    memCache.delete(key);
+    return null;
+  }
+  // Move to end for LRU ordering
+  memCache.delete(key);
+  memCache.set(key, entry);
+  return entry.data;
+}
+
+function memSet(key: string, data: CachedAnalysis): void {
+  if (memCache.size >= MEM_MAX_ENTRIES) {
+    // Evict oldest entry (first key in Map iteration order)
+    const oldest = memCache.keys().next().value;
+    if (oldest !== undefined) memCache.delete(oldest);
+  }
+  memCache.set(key, { data, storedAt: Date.now() });
+}
+
 export function computeSnapshotHash(githubData: GitHubUserData): string {
   const payload = JSON.stringify({
     snapshots: githubData.repoSnapshots,
@@ -27,6 +68,10 @@ export function buildCacheKey(model: string, rubricVersion: string, snapshotHash
 }
 
 export async function getCachedAnalysis(cacheKey: string): Promise<CachedAnalysis | null> {
+  // Check in-memory cache first to avoid a Supabase round-trip
+  const cached = memGet(cacheKey);
+  if (cached) return cached;
+
   try {
     const { data, error } = await getSupabaseAdmin()
       .from("analysis_cache")
@@ -41,11 +86,14 @@ export async function getCachedAnalysis(cacheKey: string): Promise<CachedAnalysi
       return null;
     }
 
-    return {
+    const result: CachedAnalysis = {
       scorerResponse: data.scorer_response as ScorerResponse,
       scoringResult: data.scoring_result as ScoringResult,
       narrativeReport: data.narrative_report as string,
     };
+
+    memSet(cacheKey, result);
+    return result;
   } catch (err) {
     logger.warn("Cache lookup failed:", err);
     return null;
@@ -80,6 +128,8 @@ export async function setCachedAnalysis(
 
     if (error) {
       logger.error("Failed to write analysis cache:", error.message);
+    } else {
+      memSet(cacheKey, analysis);
     }
   } catch (err) {
     logger.warn("Cache write failed:", err);
