@@ -232,7 +232,7 @@ export function AnalysisLoading({
                     style={{ height: 48 }}
                   >
                     {Array.from({ length: BAR_COUNT }, (_, i) => (
-                      <div
+                      <motion.div
                         key={i}
                         className="w-[3px] shrink-0 rounded-full"
                         style={{
@@ -241,14 +241,23 @@ export function AnalysisLoading({
                           backgroundColor: complete
                             ? "rgba(52,211,153,0.35)"
                             : `${hex}60`,
-                          animation: complete
-                            ? "none"
-                            : `wave-bar 1.8s ease-in-out ${i * 50}ms infinite`,
-                          transform: complete ? "scaleY(0.1)" : undefined,
-                          transition: complete
-                            ? "transform 0.6s ease, background-color 0.4s ease"
-                            : "background-color 0.4s ease",
+                          transition: "background-color 0.4s ease",
                         }}
+                        animate={
+                          complete
+                            ? { scaleY: 0.1 }
+                            : { scaleY: [0.25, 1, 0.25] }
+                        }
+                        transition={
+                          complete
+                            ? { duration: 0.6, ease: "easeOut" }
+                            : {
+                                duration: 1.8,
+                                ease: "easeInOut",
+                                repeat: Infinity,
+                                delay: i * 0.05,
+                              }
+                        }
                       />
                     ))}
                   </div>

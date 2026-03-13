@@ -183,12 +183,6 @@ body[data-scroll-locked] {
     }
   }
 
-  /* ── Analysis loading waveform ──────────────────────────────── */
-  @keyframes wave-bar {
-    0%, 100% { transform: scaleY(0.25); }
-    50% { transform: scaleY(1); }
-  }
-
   /* ── Advisor report ambient animations ───────────────────────── */
   @keyframes glow-pulse {
     0%, 100% {
