@@ -1,3 +1,9 @@
+/*
+ * Accent colors
+ * - cyan (#22D3EE / text-cyan)  — primary brand accent, used app-wide
+ * - emerald (text-emerald-400)  — advisor feature accent only
+ */
+
 /** Code quality enum -> text color class */
 export function codeQualityColor(grade: string): string {
   switch (grade) {

@@ -3,12 +3,13 @@ import { getReports, getReport, checkReportExists, removeReports } from "../cont
 import { asyncHandler } from "../middleware/asyncHandler";
 import { requireAuth } from "../middleware/auth";
 import { readRateLimit } from "../middleware/rateLimit";
+import { timeout } from "../middleware/timeout";
 
 const router = Router();
 
-router.get("/reports", requireAuth, readRateLimit, asyncHandler(getReports));
-router.get("/reports/exists/:username", requireAuth, readRateLimit, asyncHandler(checkReportExists));
-router.get("/reports/:id", requireAuth, readRateLimit, asyncHandler(getReport));
-router.delete("/reports", requireAuth, readRateLimit, asyncHandler(removeReports));
+router.get("/reports", readRateLimit, requireAuth, timeout(30_000), asyncHandler(getReports));
+router.get("/reports/exists/:username", readRateLimit, requireAuth, timeout(30_000), asyncHandler(checkReportExists));
+router.get("/reports/:id", readRateLimit, requireAuth, timeout(30_000), asyncHandler(getReport));
+router.delete("/reports", readRateLimit, requireAuth, timeout(30_000), asyncHandler(removeReports));
 
 export default router;

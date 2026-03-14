@@ -24,9 +24,6 @@ interface AnalyzeEngineResponse {
   tokenUsage?: { endpoint: string; model: string; usage: TokenUsage }[];
 }
 
-// RUBRIC_VERSION must match the engine's version for cache key consistency
-const RUBRIC_VERSION = "v1.1";
-
 export const analyzeUser: RequestHandler = async (req, res) => {
   const username = req.params.username as string;
 
@@ -52,7 +49,7 @@ export const analyzeUser: RequestHandler = async (req, res) => {
 
     // 2. Compute snapshot hash → check cache
     const snapshotHash = computeSnapshotHash(githubData);
-    const cacheKey = buildCacheKey(env.openaiModel, RUBRIC_VERSION, snapshotHash);
+    const cacheKey = buildCacheKey(env.openaiModel, env.rubricVersion, snapshotHash);
 
     const cached = await getCachedAnalysis(cacheKey);
     if (cached) {
@@ -76,7 +73,7 @@ export const analyzeUser: RequestHandler = async (req, res) => {
     tokenUsage?.forEach((u) => logTokenUsage(u.endpoint, u.model, u.usage));
 
     // 4. Cache results (fire-and-forget)
-    setCachedAnalysis(cacheKey, snapshotHash, env.openaiModel, RUBRIC_VERSION, {
+    setCachedAnalysis(cacheKey, snapshotHash, env.openaiModel, env.rubricVersion, {
       scorerResponse,
       scoringResult,
       narrativeReport,

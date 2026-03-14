@@ -39,6 +39,31 @@ import type {
 const MAX_README_SIZE_BYTES = 524_288;    // 512 KB
 const MAX_SNIPPET_SIZE_BYTES = 262_144;   // 256 KB
 
+// ── Path safety helpers ──────────────────────────────────────────────
+
+/**
+ * Normalize and validate a file path from the GitHub tree API before
+ * interpolating it into a URL.  Rejects path-traversal attempts (segments
+ * containing "..") and URI-encodes each segment so special characters
+ * (spaces, #, ?, etc.) don't break the request or escape the path.
+ *
+ * Returns the sanitized, URI-encoded path string or `null` if the path
+ * is unsafe.
+ */
+function safePath(raw: string): string | null {
+  // Normalize: collapse duplicate slashes, trim leading/trailing slashes
+  const normalized = raw.replace(/\/+/g, "/").replace(/^\/|\/$/g, "");
+  if (!normalized) return null;
+
+  const segments = normalized.split("/");
+
+  // Reject any ".." segment (path traversal)
+  if (segments.some((s) => s === "..")) return null;
+
+  // URI-encode each segment individually so "/" separators are preserved
+  return segments.map((s) => encodeURIComponent(s)).join("/");
+}
+
 // ── Error class ───────────────────────────────────────────────────────
 
 export class GitHubError extends Error {
@@ -130,7 +155,11 @@ async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>, 
     "GitHub GraphQL request timed out",
   );
   if (!res.ok) throw new GitHubError(`GitHub GraphQL error: ${res.status}`, res.status);
-  return res.json() as Promise<T>;
+  const json = await res.json() as T & { errors?: { message: string }[] };
+  if (json.errors?.length) {
+    throw new GitHubError(`GitHub GraphQL: ${json.errors[0].message}`, 422);
+  }
+  return json;
 }
 
 // ── Paginated repo fetch ──────────────────────────────────────────────
@@ -138,21 +167,42 @@ async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>, 
 const MAX_REPO_PAGES = 10; // Cap at 1000 repos max
 
 async function fetchAllRepos(username: string, signal?: AbortSignal): Promise<GitHubApiRepo[]> {
-  const repos: GitHubApiRepo[] = [];
-  let page = 1;
-  const perPage = 100;
-
-  while (page <= MAX_REPO_PAGES) {
-    const batch = await ghFetch<GitHubApiRepo[]>(
-      `/users/${username}/repos?per_page=${perPage}&page=${page}&sort=updated`,
-      signal,
-    );
-    repos.push(...batch);
-    if (batch.length < perPage) break;
-    page++;
+  // Fetch first page with headers to determine total page count
+  const firstRes = await ghFetchRaw(
+    `/users/${username}/repos?per_page=100&page=1&sort=updated`,
+    signal,
+  );
+  if (!firstRes.ok) {
+    if (firstRes.status === 404) throw new GitHubError("User not found", 404);
+    if (firstRes.status === 403 || firstRes.status === 429) {
+      throw new GitHubError("GitHub API rate limit exceeded. Try again later.", 429);
+    }
+    throw new GitHubError(`GitHub API error: ${firstRes.status}`, firstRes.status);
   }
 
-  return repos;
+  const firstBatch = await firstRes.json() as GitHubApiRepo[];
+  if (firstBatch.length < 100) return firstBatch;
+
+  // Determine remaining pages from Link header
+  const linkHeader = firstRes.headers.get("link");
+  let lastPage = MAX_REPO_PAGES;
+  if (linkHeader) {
+    const match = linkHeader.match(/[&?]page=(\d+)>;\s*rel="last"/);
+    if (match) lastPage = Math.min(parseInt(match[1], 10), MAX_REPO_PAGES);
+  }
+
+  // Fetch remaining pages in parallel
+  const pages = Array.from({ length: lastPage - 1 }, (_, i) => i + 2);
+  const batches = await Promise.all(
+    pages.map((page) =>
+      ghFetch<GitHubApiRepo[]>(
+        `/users/${username}/repos?per_page=100&page=${page}&sort=updated`,
+        signal,
+      ).catch(() => [] as GitHubApiRepo[]),
+    ),
+  );
+
+  return [...firstBatch, ...batches.flat()];
 }
 
 // ── Pinned repos (GraphQL) ────────────────────────────────────────────
@@ -435,6 +485,29 @@ function selectTopRepos(
   return selected.slice(0, 6);
 }
 
+// ── Concurrency limiter ───────────────────────────────────────────
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let next = 0;
+
+  async function worker() {
+    while (next < items.length) {
+      const idx = next++;
+      results[idx] = await fn(items[idx]);
+    }
+  }
+
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, () => worker()),
+  );
+  return results;
+}
+
 // ── Repo snapshot fetching ────────────────────────────────────────────
 
 const SOURCE_EXTENSIONS = new Set([
@@ -707,19 +780,24 @@ async function fetchRepoSnapshot(
       if (readmeEntry.size !== undefined && readmeEntry.size > MAX_README_SIZE_BYTES) {
         readmeWordCount = 0; // README too large, skip
       } else {
-        try {
-          const readmeData = await ghFetch<{ content: string; encoding: string }>(
-            `/repos/${username}/${encodedRepoName}/contents/${readmeEntry.path}`,
-            signal,
-          );
-          if (readmeData.encoding === "base64") {
-            const text = Buffer.from(readmeData.content, "base64")
-              .toString("utf-8")
-              .slice(0, MAX_README_SIZE_BYTES);
-            readmeWordCount = text.split(/\s+/).filter(Boolean).length;
+        const safeReadmePath = safePath(readmeEntry.path);
+        if (!safeReadmePath) {
+          logger.warn(`Skipping README with unsafe path: ${readmeEntry.path}`);
+        } else {
+          try {
+            const readmeData = await ghFetch<{ content: string; encoding: string }>(
+              `/repos/${username}/${encodedRepoName}/contents/${safeReadmePath}`,
+              signal,
+            );
+            if (readmeData.encoding === "base64") {
+              const text = Buffer.from(readmeData.content, "base64")
+                .toString("utf-8")
+                .slice(0, MAX_README_SIZE_BYTES);
+              readmeWordCount = text.split(/\s+/).filter(Boolean).length;
+            }
+          } catch {
+            // Non-critical
           }
-        } catch {
-          // Non-critical
         }
       }
     }
@@ -832,10 +910,16 @@ async function fetchCodeSnippets(
   }
   if (testEntry) filesToFetch.push(testEntry.path);
 
+  const encodedRepo = encodeURIComponent(repoName);
   const results = await Promise.allSettled(
     filesToFetch.slice(0, 2).map(async (filePath) => {
+      const encodedPath = safePath(filePath);
+      if (!encodedPath) {
+        logger.warn(`Skipping snippet with unsafe path: ${filePath}`);
+        return null;
+      }
       const fileData = await ghFetch<{ content: string; encoding: string }>(
-        `/repos/${username}/${repoName}/contents/${filePath}`,
+        `/repos/${username}/${encodedRepo}/contents/${encodedPath}`,
         signal,
       );
       if (fileData.encoding === "base64") {
@@ -930,10 +1014,10 @@ export async function fetchGitHubUserData(
   const topByStars = [...topRepositories].sort((a, b) => b.stars - a.stars);
   const top3Names = new Set(topByStars.slice(0, 3).map((r) => r.name));
 
-  const repoSnapshots = await Promise.all(
-    topRepositories.map((repo) =>
-      fetchRepoSnapshot(username, repo, top3Names.has(repo.name), signal),
-    ),
+  const repoSnapshots = await mapWithConcurrency(
+    topRepositories,
+    3,
+    (repo) => fetchRepoSnapshot(username, repo, top3Names.has(repo.name), signal),
   );
 
   const aggregateMetrics = computeAggregateMetrics(repoSnapshots);

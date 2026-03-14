@@ -9,7 +9,18 @@ import { sendError, sendSuccess } from "../lib/response";
 import { handleControllerError } from "../lib/controller-utils";
 import type { GitHubUserData } from "../types";
 
-// In-memory cache for GitHub user data — avoids 30+ API calls on repeat visits
+/**
+ * In-memory cache for GitHub user data — avoids 30+ API calls on repeat visits.
+ *
+ * This is per-process only. In a multi-replica deployment each instance keeps
+ * its own cache, which is acceptable (just causes extra GitHub API calls, not
+ * incorrect behaviour). The cache is bounded by GITHUB_CACHE_MAX entries and
+ * expired entries are swept every GITHUB_CACHE_TTL ms to prevent holding stale
+ * data in memory.
+ *
+ * TODO(scaling): If cache-hit ratio matters across replicas, consider a shared
+ * Redis cache. For a single Railway instance this is unnecessary.
+ */
 const GITHUB_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const GITHUB_CACHE_MAX = 128;
 
@@ -19,6 +30,16 @@ interface GHCacheEntry {
 }
 
 const ghCache = new Map<string, GHCacheEntry>();
+
+// Periodic sweep of expired entries so stale data doesn't linger in memory.
+// The interval is unref'd so it won't keep the process alive during shutdown.
+const ghCacheSweepInterval = setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of ghCache) {
+    if (now - entry.storedAt > GITHUB_CACHE_TTL) ghCache.delete(key);
+  }
+}, GITHUB_CACHE_TTL);
+ghCacheSweepInterval.unref();
 
 function ghCacheGet(key: string): GitHubUserData | null {
   const entry = ghCache.get(key);

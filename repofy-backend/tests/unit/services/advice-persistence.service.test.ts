@@ -6,6 +6,7 @@ vi.mock("../../../src/config/supabase", () => ({
 
 vi.mock("../../../src/services/credit.service", () => ({
   deductGrowthCredit: vi.fn(),
+  refundGrowthCredit: vi.fn(),
 }));
 
 vi.mock("../../../src/lib/logger", () => ({
@@ -13,12 +14,13 @@ vi.mock("../../../src/lib/logger", () => ({
 }));
 
 import { deductAndPersist, InsufficientCreditsError } from "../../../src/services/advice-persistence.service";
-import { deductGrowthCredit } from "../../../src/services/credit.service";
+import { deductGrowthCredit, refundGrowthCredit } from "../../../src/services/credit.service";
 import { getSupabaseAdmin } from "../../../src/config/supabase";
 import { DatabaseError } from "../../../src/lib/errors";
 import type { AdviceData } from "../../../src/types/shared/advice";
 
 const mockDeductGrowthCredit = deductGrowthCredit as ReturnType<typeof vi.fn>;
+const mockRefundGrowthCredit = refundGrowthCredit as ReturnType<typeof vi.fn>;
 const mockGetSupabaseAdmin = getSupabaseAdmin as ReturnType<typeof vi.fn>;
 
 // ── Fixtures ─────────────────────────────────────────────────────────
@@ -204,31 +206,36 @@ describe("advice-persistence.service", () => {
       ).rejects.toThrow("Database operation failed: persist advice");
     });
 
-    it("still deducts credit even when persistence fails", async () => {
+    it("refunds credit when persistence fails", async () => {
       mockDeductGrowthCredit.mockResolvedValue(true);
+      mockRefundGrowthCredit.mockResolvedValue(true);
       mockSupabaseUpsertError(new Error("constraint violation"));
 
       await expect(
         deductAndPersist(USER_ID, REQUEST_ID, USERNAME, DISPLAY_NAME, fakeAdviceData),
       ).rejects.toThrow();
 
-      // Credit was already deducted before the DB write
-      expect(mockDeductGrowthCredit).toHaveBeenCalledTimes(1);
+      expect(mockRefundGrowthCredit).toHaveBeenCalledWith(USER_ID, REQUEST_ID, {
+        reason: "persist_failed",
+        username: USERNAME,
+      });
     });
 
     // ── Failure: upsert succeeds but returns no id ───────────────────────
 
-    it("throws DatabaseError when upsert returns no id", async () => {
+    it("throws DatabaseError and refunds when upsert returns no id", async () => {
       mockDeductGrowthCredit.mockResolvedValue(true);
+      mockRefundGrowthCredit.mockResolvedValue(true);
       mockSupabaseUpsertNoData();
 
       await expect(
         deductAndPersist(USER_ID, REQUEST_ID, USERNAME, DISPLAY_NAME, fakeAdviceData),
       ).rejects.toThrow(DatabaseError);
 
-      await expect(
-        deductAndPersist(USER_ID, REQUEST_ID, USERNAME, DISPLAY_NAME, fakeAdviceData),
-      ).rejects.toThrow("persist advice returned no id");
+      expect(mockRefundGrowthCredit).toHaveBeenCalledWith(USER_ID, REQUEST_ID, {
+        reason: "persist_failed",
+        username: USERNAME,
+      });
     });
 
     // ── Edge: InsufficientCreditsError properties ────────────────────────

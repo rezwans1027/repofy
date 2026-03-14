@@ -15,6 +15,7 @@ const ENV_KEYS = [
   "OTP_HMAC_SECRET",
   "ADMIN_SECRET",
   "ENGINE_INTERNAL_KEY",
+  "ENGINE_URL",
   "MOCK_AI",
   "NODE_ENV",
   "PORT",
@@ -62,6 +63,7 @@ describe("env config", () => {
     process.env.MOCK_AI = "true";
     process.env.NODE_ENV = "production";
     process.env.CORS_ORIGIN = "https://example.com";
+    process.env.ENGINE_URL = "https://engine.example.com";
 
     const { env } = await import("../../../src/config/env");
 

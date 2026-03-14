@@ -2,7 +2,6 @@ import { ErrorRequestHandler } from "express";
 import { logger } from "../lib/logger";
 import { DatabaseError } from "../lib/errors";
 import { sendError } from "../lib/response";
-import { env } from "../config/env";
 
 export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   if (res.headersSent) return;
@@ -19,10 +18,5 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   logger.error("Unhandled error", { requestId: req.requestId, status, message: err.message, stack: err.stack });
 
   const message = status >= 500 ? "Internal server error" : err.message;
-  if (!env.isProduction && err.stack) {
-    const body: Record<string, unknown> = { success: false, error: message, stack: err.stack };
-    res.status(status).json(body);
-    return;
-  }
   sendError(res, status, message);
 };

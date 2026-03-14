@@ -57,16 +57,13 @@ function PricingContent() {
   useEffect(() => {
     if (success && balanceAtCheckout === undefined) {
       const stored = sessionStorage.getItem("pre_checkout_balance");
-      if (stored !== null) {
-        setBalanceAtCheckout(Number(stored));
-        sessionStorage.removeItem("pre_checkout_balance");
-      } else {
-        if (balance) {
-          setBalanceAtCheckout(balance.growth_balance);
-        }
-      }
+      sessionStorage.removeItem("pre_checkout_balance");
+      // Use stored pre-checkout balance, or 0 as fallback.
+      // Falling back to the current balance would mask the webhook race
+      // (credits already granted before the page loads).
+      setBalanceAtCheckout(stored !== null ? Number(stored) : 0);
     }
-  }, [success, balance, balanceAtCheckout]);
+  }, [success, balanceAtCheckout]);
 
   useEffect(() => {
     if (!success || creditsReceived) return;

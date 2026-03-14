@@ -32,11 +32,22 @@ export async function fetchWithRetry(
   let lastError: unknown;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    let retryDelay = baseDelay * 2 ** (attempt - 1);
+
     try {
       const res = await fetch(input, init);
 
       if (res.ok || !retryable.has(res.status) || attempt === maxAttempts) {
         return res;
+      }
+
+      // Respect Retry-After header (value in seconds)
+      const retryAfter = res.headers.get("Retry-After");
+      if (retryAfter) {
+        const seconds = parseInt(retryAfter, 10);
+        if (!isNaN(seconds) && seconds > 0) {
+          retryDelay = Math.min(seconds * 1000, 60_000);
+        }
       }
 
       logger.warn(`${label} returned ${res.status}, retrying (${attempt}/${maxAttempts})`);
@@ -51,7 +62,7 @@ export async function fetchWithRetry(
       logger.warn(`${label} network error, retrying (${attempt}/${maxAttempts})`);
     }
 
-    await new Promise((r) => setTimeout(r, baseDelay * 2 ** (attempt - 1)));
+    await new Promise((r) => setTimeout(r, retryDelay));
   }
 
   throw lastError;

@@ -12,7 +12,16 @@ export interface CachedAnalysis {
 
 /**
  * Simple in-memory LRU cache to avoid hitting Supabase on repeated lookups.
- * Entries are evicted after MAX_AGE_MS or when the cache exceeds MAX_ENTRIES.
+ * Entries are evicted after MEM_MAX_AGE_MS or when the cache exceeds
+ * MEM_MAX_ENTRIES. A periodic sweep removes expired entries proactively
+ * so stale data doesn't linger between access-time checks.
+ *
+ * This is per-process only, which is fine for a single Railway instance.
+ *
+ * TODO(scaling): For multi-replica deployments, consider a shared Redis
+ * cache to improve cross-instance hit rates. The Supabase DB layer already
+ * provides shared persistence, so this is an optimisation, not a correctness
+ * concern.
  */
 const MEM_MAX_ENTRIES = 64;
 const MEM_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
@@ -23,6 +32,16 @@ interface MemEntry {
 }
 
 const memCache = new Map<string, MemEntry>();
+
+// Periodic sweep of expired in-memory entries.
+// Unref'd so it won't keep the process alive during shutdown.
+const memCacheSweepInterval = setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of memCache) {
+    if (now - entry.storedAt > MEM_MAX_AGE_MS) memCache.delete(key);
+  }
+}, MEM_MAX_AGE_MS);
+memCacheSweepInterval.unref();
 
 /** Clear the in-memory cache. Exposed for test isolation. */
 export function clearMemCache(): void {

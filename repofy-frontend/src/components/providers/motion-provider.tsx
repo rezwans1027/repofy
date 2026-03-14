@@ -1,11 +1,13 @@
 "use client";
 
-import { MotionConfig } from "framer-motion";
+import { LazyMotion, domAnimation, MotionConfig } from "framer-motion";
 
 export function MotionProvider({ children }: { children: React.ReactNode }) {
   return (
-    <MotionConfig reducedMotion="user">
-      {children}
-    </MotionConfig>
+    <LazyMotion features={domAnimation}>
+      <MotionConfig reducedMotion="user">
+        {children}
+      </MotionConfig>
+    </LazyMotion>
   );
 }

@@ -29,7 +29,7 @@ export async function getUsageStats(page: number, limit: number) {
     throw new Error("Failed to fetch usage data");
   }
 
-  const rows = data as UsageRow[];
+  const rows: UsageRow[] = Array.isArray(data) ? data : [];
   const recentCost = rows.reduce((sum, row) => sum + (row.estimated_cost ?? 0), 0);
   const recentTokens = rows.reduce((sum, row) => sum + row.total_tokens, 0);
   const totalCount = count ?? rows.length;

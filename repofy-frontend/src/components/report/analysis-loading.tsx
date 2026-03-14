@@ -87,6 +87,12 @@ export function AnalysisLoading({
   const fetchStarted = useRef(false);
   const mountedRef = useRef(true);
   const logId = useRef(0);
+  const fetchReportRef = useRef(fetchReport);
+  const onCompleteRef = useRef(onComplete);
+  const onErrorRef = useRef(onError);
+  fetchReportRef.current = fetchReport;
+  onCompleteRef.current = onComplete;
+  onErrorRef.current = onError;
 
   const isAdvisor = accentColor?.includes("emerald");
   const hex = isAdvisor ? "#34d399" : "#22d3ee";
@@ -165,7 +171,7 @@ export function AnalysisLoading({
       const MIN = 3000;
       let res: { data?: unknown; error?: string } | null = null;
 
-      fetchReport()
+      fetchReportRef.current()
         .then((d) => {
           res = { data: d };
         })
@@ -180,13 +186,13 @@ export function AnalysisLoading({
           setTimeout(() => {
             if (!mountedRef.current) return;
             if (res?.error) {
-              onError(res.error);
+              onErrorRef.current(res.error);
               return;
             }
             setPhase(phases.length);
             setTimeout(() => setFading(true), 400);
             setTimeout(() => {
-              if (mountedRef.current) onComplete(res!.data);
+              if (mountedRef.current) onCompleteRef.current(res!.data);
             }, 800);
           }, wait);
         });
@@ -195,8 +201,7 @@ export function AnalysisLoading({
     return () => {
       mountedRef.current = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [phases.length]);
 
   /* Only show the last 4 log entries */
   const visibleLogs = logs.slice(-4);
@@ -250,7 +255,7 @@ export function AnalysisLoading({
                     style={{ height: 48 }}
                   >
                     {Array.from({ length: BAR_COUNT }, (_, i) => (
-                      <motion.div
+                      <div
                         key={i}
                         className="w-[3px] shrink-0 rounded-full"
                         style={{
@@ -259,23 +264,14 @@ export function AnalysisLoading({
                           backgroundColor: complete
                             ? "rgba(52,211,153,0.35)"
                             : `${hex}60`,
-                          transition: "background-color 0.4s ease",
+                          transition: complete
+                            ? "background-color 0.4s ease, transform 0.6s ease-out"
+                            : "background-color 0.4s ease",
+                          transform: complete ? "scaleY(0.1)" : undefined,
+                          animation: complete
+                            ? "none"
+                            : `waveform-bar 1.8s ease-in-out ${i * 0.05}s infinite`,
                         }}
-                        animate={
-                          complete
-                            ? { scaleY: 0.1 }
-                            : { scaleY: [0.25, 1, 0.25] }
-                        }
-                        transition={
-                          complete
-                            ? { duration: 0.6, ease: "easeOut" }
-                            : {
-                                duration: 1.8,
-                                ease: "easeInOut",
-                                repeat: Infinity,
-                                delay: i * 0.05,
-                              }
-                        }
                       />
                     ))}
                   </div>

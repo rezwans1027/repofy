@@ -20,12 +20,25 @@ export async function serverFetch<T>(
   options?: { revalidate?: number | false },
 ): Promise<ServerResult<T>> {
   const supabase = await createClient();
-  // getUser() validates the JWT server-side (signature + expiry);
-  // getSession() only reads the token from cookies without verification.
+
+  // getUser() validates the JWT server-side (signature + expiry). If the
+  // token was rotated it also refreshes the session and writes the new
+  // cookies on this SSR client instance.
+  //
+  // getSession() is then called on the *same* client — so the access_token
+  // is guaranteed to come from the post-refresh cookie store.  We must call
+  // getUser() *before* getSession() (never parallel, never reversed) because
+  // getSession() only reads from storage without verification.
+  //
+  // As a defence-in-depth measure we also assert that the session belongs to
+  // the verified user, catching any cookie-level mismatch.
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { data: null, error: "unauthenticated" };
+
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.access_token) return { data: null, error: "unauthenticated" };
+  if (!session?.access_token || session.user.id !== user.id) {
+    return { data: null, error: "unauthenticated" };
+  }
 
   const cacheStrategy: RequestInit =
     options?.revalidate !== undefined && options.revalidate !== false

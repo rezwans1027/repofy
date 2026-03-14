@@ -6,7 +6,7 @@ import { logger } from "./logger";
 
 /** Duck-type check for errors with a numeric status (e.g. AuthError). */
 function hasStatus(err: unknown): err is Error & { status: number } {
-  return err instanceof Error && typeof (err as any).status === "number";
+  return err instanceof Error && "status" in err && typeof err.status === "number";
 }
 
 /**

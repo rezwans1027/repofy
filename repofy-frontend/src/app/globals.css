@@ -207,6 +207,12 @@ body[data-scroll-locked] {
     100% { transform: translateX(100%); }
   }
 
+  /* Waveform bar pulse */
+  @keyframes waveform-bar {
+    0%, 100% { transform: scaleY(0.25); }
+    50% { transform: scaleY(1); }
+  }
+
   /* Heatmap cell fade-in */
   @keyframes heatmapFadeIn {
     from { opacity: 0; }

@@ -1,5 +1,5 @@
 import { getResend } from "../config/resend";
-import { logger } from "../lib/logger";
+import { logger, maskEmail } from "../lib/logger";
 
 export function escapeHtml(str: string): string {
   return str
@@ -25,11 +25,11 @@ export async function sendOtpEmail(
   });
 
   if (error) {
-    logger.error("Failed to send OTP email", { email, error });
+    logger.error("Failed to send OTP email", { email: maskEmail(email), error });
     throw new Error("Failed to send verification email");
   }
 
-  logger.info("OTP email sent", { email });
+  logger.info("OTP email sent", { email: maskEmail(email) });
 }
 
 function buildOtpHtml(otp: string, displayName: string): string {

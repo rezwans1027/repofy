@@ -130,6 +130,6 @@ describe("ReportPage", () => {
 
     await renderPage("abc-123");
 
-    expect(mockServerFetch).toHaveBeenCalledWith("/reports/abc-123");
+    expect(mockServerFetch).toHaveBeenCalledWith("/reports/abc-123", { revalidate: 3600 });
   });
 });

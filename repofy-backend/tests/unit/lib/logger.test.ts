@@ -1,4 +1,31 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { maskEmail } from "../../../src/lib/logger";
+
+describe("maskEmail", () => {
+  it("masks a standard email address", () => {
+    expect(maskEmail("alice@example.com")).toBe("a***@example.com");
+  });
+
+  it("masks a single-character local part", () => {
+    expect(maskEmail("a@example.com")).toBe("a***@example.com");
+  });
+
+  it("masks a long local part", () => {
+    expect(maskEmail("rezwan.sheikh@company.co.uk")).toBe("r***@company.co.uk");
+  });
+
+  it("returns *** for empty string (no @ sign)", () => {
+    expect(maskEmail("nope")).toBe("***");
+  });
+
+  it("returns *** for string starting with @", () => {
+    expect(maskEmail("@example.com")).toBe("***");
+  });
+
+  it("handles email with multiple @ signs (uses first)", () => {
+    expect(maskEmail("user@host@extra")).toBe("u***@host@extra");
+  });
+});
 
 describe("logger", () => {
   beforeEach(() => {

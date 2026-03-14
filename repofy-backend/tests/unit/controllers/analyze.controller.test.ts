@@ -33,6 +33,7 @@ vi.mock("../../../src/lib/usage-logger", () => ({
 const mockEnv: Record<string, unknown> = {
   mockAi: false,
   openaiModel: "gpt-5.1",
+  rubricVersion: "v1.1",
 };
 vi.mock("../../../src/config/env", () => ({
   env: new Proxy({} as Record<string, unknown>, {

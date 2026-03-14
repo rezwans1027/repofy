@@ -1,13 +1,26 @@
 /**
  * Rate limiters for various API routes.
  *
- * All limiters use the default MemoryStore, which is **per-process**.
- * In a single-instance deployment this is fine, but if the backend is
- * scaled horizontally (multiple processes / containers), each instance
- * tracks limits independently.
+ * All limiters use the default MemoryStore from express-rate-limit v8,
+ * which is **per-process**. The v8 MemoryStore handles TTL expiry
+ * internally (entries are pruned each `windowMs` cycle), so there is
+ * no memory-leak risk from stale entries.
  *
- * TODO: Switch to a shared store (e.g. rate-limit-redis) when deploying
- * behind multiple replicas to enforce global limits.
+ * Limitation: In a single-instance deployment (e.g. one Railway service)
+ * this works correctly. If the backend is scaled horizontally to multiple
+ * replicas, each instance will track limits independently — a client
+ * could get N × max requests by hitting different instances.
+ *
+ * TODO(scaling): When scaling beyond a single replica, switch to a shared
+ * store such as `rate-limit-redis` (or `@rate-limit/redis` for v8):
+ *
+ *   1. `npm install rate-limit-redis ioredis`
+ *   2. Create a shared RedisStore and pass it via the `store` option in
+ *      `createLimiter()` below.
+ *   3. Ensure REDIS_URL is set in the environment.
+ *
+ * For a single Railway instance this is unnecessary overhead — the
+ * built-in MemoryStore is faster, simpler, and sufficient.
  */
 import rateLimit from "express-rate-limit";
 import type { Request } from "express";
@@ -79,3 +92,14 @@ export const githubRateLimit = createLimiter({ max: 30, keyGenerator: userKeyGen
 
 /** Read endpoint limiter: 60 req/min per user */
 export const readRateLimit = createLimiter({ max: 60, keyGenerator: userKeyGenerator });
+
+/**
+ * Global IP-based rate limiter applied to ALL routes.
+ * 100 requests per 15-minute window per IP.
+ * Acts as a safety net above the per-route limiters.
+ */
+export const globalRateLimit = createLimiter({
+  max: 100,
+  windowMs: 15 * 60_000,
+  message: "Too many requests from this IP. Please try again later.",
+});

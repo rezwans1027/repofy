@@ -6,9 +6,13 @@ vi.mock("../../../src/config/supabase", () => ({
 vi.mock("../../../src/services/email.service", () => ({
   sendOtpEmail: vi.fn(),
 }));
-vi.mock("../../../src/lib/logger", () => ({
-  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
-}));
+vi.mock("../../../src/lib/logger", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../../src/lib/logger")>();
+  return {
+    maskEmail: actual.maskEmail,
+    logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+  };
+});
 vi.mock("../../../src/config/env", () => ({
   env: { otpHmacSecret: "test-secret" },
 }));

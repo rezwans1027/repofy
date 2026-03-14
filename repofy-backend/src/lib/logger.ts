@@ -1,5 +1,18 @@
 const isProduction = process.env.NODE_ENV === "production";
 
+/**
+ * Mask an email address for safe logging (GDPR/CCPA compliant).
+ * "alice@example.com" → "a***@example.com"
+ * Preserves the domain so ops can still correlate issues by mail provider.
+ */
+export function maskEmail(email: string): string {
+  const atIndex = email.indexOf("@");
+  if (atIndex <= 0) return "***";
+  const local = email.slice(0, atIndex);
+  const domain = email.slice(atIndex); // includes the "@"
+  return local[0] + "***" + domain;
+}
+
 function serializeExtra(extra: unknown): Record<string, unknown> {
   if (extra instanceof Error) return { error: extra.message, stack: extra.stack };
   if (extra && typeof extra === "object" && !Array.isArray(extra)) return extra as Record<string, unknown>;

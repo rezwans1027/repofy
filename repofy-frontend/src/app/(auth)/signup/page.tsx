@@ -189,9 +189,11 @@ export default function SignupPage() {
   const [displayedFlag, setDisplayedFlag] = useState("");
   const [showFlagCursor, setShowFlagCursor] = useState(false);
   const verifyFlag = " --verify";
+  const displayedFlagRef = useRef(displayedFlag);
+  displayedFlagRef.current = displayedFlag;
 
   useEffect(() => {
-    if (phase === "otp" && displayedFlag !== verifyFlag) {
+    if (phase === "otp" && displayedFlagRef.current !== verifyFlag) {
       setShowFlagCursor(true);
       let i = 0;
       const typeChar = () => {
@@ -204,9 +206,9 @@ export default function SignupPage() {
         }
       };
       typeChar();
-    } else if (phase === "form" && displayedFlag !== "") {
+    } else if (phase === "form" && displayedFlagRef.current !== "") {
       setShowFlagCursor(true);
-      let text = displayedFlag;
+      let text = displayedFlagRef.current;
       const backspace = () => {
         text = text.slice(0, -1);
         setDisplayedFlag(text);
@@ -218,7 +220,7 @@ export default function SignupPage() {
       };
       backspace();
     }
-  }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [phase]);
 
   return (
     <div className="space-y-6">

@@ -2,8 +2,17 @@ import { RequestHandler } from "express";
 import { getSupabaseAdmin } from "../config/supabase";
 import { sendError } from "../lib/response";
 
-// Short-lived cache to avoid a Supabase HTTP roundtrip on every request.
-// 3-5 auth-guarded calls per page load × ~60s TTL = safe + significant savings.
+/**
+ * Short-lived cache to avoid a Supabase HTTP roundtrip on every request.
+ * 3-5 auth-guarded calls per page load x ~60s TTL = safe + significant savings.
+ *
+ * This is per-process only. In a multi-replica deployment each instance
+ * maintains its own token cache, which is fine — worst case is an extra
+ * Supabase call, not a security issue.
+ *
+ * TODO(scaling): If Supabase auth latency becomes a bottleneck across
+ * replicas, consider a shared Redis cache for verified tokens.
+ */
 const TOKEN_CACHE_TTL = 60 * 1000; // 60 seconds
 const TOKEN_CACHE_MAX = 256;
 
@@ -14,6 +23,16 @@ interface TokenEntry {
 }
 
 const tokenCache = new Map<string, TokenEntry>();
+
+// Periodic sweep of expired tokens so stale entries don't linger.
+// Unref'd so it won't keep the process alive during shutdown.
+const tokenCacheSweepInterval = setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of tokenCache) {
+    if (now >= entry.expiresAt) tokenCache.delete(key);
+  }
+}, TOKEN_CACHE_TTL);
+tokenCacheSweepInterval.unref();
 
 /** Exposed for test isolation. */
 export function clearTokenCache(): void {

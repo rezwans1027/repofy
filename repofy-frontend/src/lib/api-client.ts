@@ -44,12 +44,19 @@ async function request<T>(
 
   if (auth) {
     const supabase = getSupabase();
+
+    // The browser client auto-refreshes expired tokens internally, so
+    // getSession() returns a valid (possibly just-refreshed) session.
+    // We still guard against near-expiry tokens (< 60 s) by explicitly
+    // calling refreshSession(), which is idempotent if the token is fresh.
     let { data: { session } } = await supabase.auth.getSession();
 
-    // If the cached token is expired (or about to expire in 60s), refresh it
-    if (session?.expires_at && session.expires_at * 1000 - Date.now() < 60_000) {
-      const { data } = await supabase.auth.refreshSession();
-      session = data.session;
+    if (
+      !session?.access_token ||
+      (session.expires_at && session.expires_at * 1000 - Date.now() < 60_000)
+    ) {
+      const result = await supabase.auth.refreshSession();
+      session = result?.data?.session ?? null;
     }
 
     if (session?.access_token) {

@@ -23,8 +23,23 @@ interface AdviceEngineResponse {
  * NOTE: This is per-process only. In a horizontally-scaled deployment (multiple
  * replicas), each instance tracks state independently. Migrate to a shared store
  * (e.g. Redis SETNX with TTL) when scaling beyond a single process.
+ *
+ * Safety: entries are removed in the `finally` block of adviseUser. As a belt-
+ * and-suspenders measure, a periodic sweep removes any entry older than
+ * ADVICE_LOCK_TTL_MS in case a request somehow exits without cleanup.
  */
-const activeAdviceRequests = new Map<string, true>();
+const ADVICE_LOCK_TTL_MS = 10 * 60 * 1000; // 10 minutes (max realistic advice duration)
+const activeAdviceRequests = new Map<string, number>(); // userId -> timestamp
+
+// Safety sweep: remove stale locks that survived past ADVICE_LOCK_TTL_MS.
+// Unref'd so it won't prevent graceful shutdown.
+const adviceLockSweepInterval = setInterval(() => {
+  const now = Date.now();
+  for (const [userId, startedAt] of activeAdviceRequests) {
+    if (now - startedAt > ADVICE_LOCK_TTL_MS) activeAdviceRequests.delete(userId);
+  }
+}, 60_000); // check every minute
+adviceLockSweepInterval.unref();
 
 export const adviseUser: RequestHandler = async (req, res) => {
   const username = req.params.username as string;
@@ -42,7 +57,7 @@ export const adviseUser: RequestHandler = async (req, res) => {
   }
 
   const requestId = crypto.randomUUID();
-  activeAdviceRequests.set(userId, true);
+  activeAdviceRequests.set(userId, Date.now());
 
   try {
     if (env.mockAi) {

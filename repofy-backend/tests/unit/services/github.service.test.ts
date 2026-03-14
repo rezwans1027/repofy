@@ -548,7 +548,17 @@ describe("github.service", () => {
         if (urlStr.includes("/graphql")) return mockFetchJson(contributions);
         if (urlStr.includes("/users/octocat/repos")) {
           if (urlStr.includes("page=2")) return mockFetchJson(partialBatch);
-          return mockFetchJson(fullBatch);
+          // First page returns Link header so parallel fetcher knows total pages
+          const headers = new Headers();
+          headers.set("link", '<https://api.github.com/users/octocat/repos?page=2>; rel="last"');
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(fullBatch),
+            text: () => Promise.resolve(JSON.stringify(fullBatch)),
+            headers,
+            statusText: "OK",
+          });
         }
         if (urlStr.includes("/users/octocat/events")) return mockFetchJson(events);
         if (urlStr.includes("/users/octocat")) return mockFetchJson(user);

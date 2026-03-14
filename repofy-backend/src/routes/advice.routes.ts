@@ -8,10 +8,10 @@ import { timeout } from "../middleware/timeout";
 
 const router = Router();
 
-router.get("/advice", requireAuth, readRateLimit, asyncHandler(getAdviceList));
-router.get("/advice/exists/:username", requireAuth, readRateLimit, asyncHandler(checkAdviceExists));
-router.get("/advice/:id", requireAuth, readRateLimit, asyncHandler(getAdviceDetail));
-router.delete("/advice", requireAuth, readRateLimit, asyncHandler(removeAdvice));
-router.post("/advice/:username", requireAuth, aiRateLimit, timeout(300_000), asyncHandler(adviseUser));
+router.get("/advice", readRateLimit, requireAuth, asyncHandler(getAdviceList));
+router.get("/advice/exists/:username", readRateLimit, requireAuth, asyncHandler(checkAdviceExists));
+router.get("/advice/:id", readRateLimit, requireAuth, asyncHandler(getAdviceDetail));
+router.delete("/advice", readRateLimit, requireAuth, asyncHandler(removeAdvice));
+router.post("/advice/:username", aiRateLimit, requireAuth, timeout(300_000), asyncHandler(adviseUser));
 
 export default router;

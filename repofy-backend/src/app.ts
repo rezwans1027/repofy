@@ -6,7 +6,7 @@ import { corsMiddleware } from "./middleware/cors";
 import { errorHandler } from "./middleware/errorHandler";
 import { notFound } from "./middleware/notFound";
 import { handleWebhook } from "./controllers/stripe.controller";
-import { webhookRateLimit } from "./middleware/rateLimit";
+import { webhookRateLimit, globalRateLimit } from "./middleware/rateLimit";
 import { requestId } from "./middleware/requestId";
 import routes from "./routes";
 
@@ -21,8 +21,43 @@ export function createApp() {
   // Request ID for log correlation — must be first
   app.use(requestId);
 
-  // Helmet sets security headers on all responses — safe before raw body parsing
-  app.use(helmet());
+  // Global IP-based rate limit — applies to ALL routes as a safety net
+  app.use(globalRateLimit);
+
+  // Redirect HTTP → HTTPS in production when behind a reverse proxy.
+  // Reverse proxies (Railway, Vercel, Nginx) set X-Forwarded-Proto to indicate
+  // the original protocol. We redirect if it's not HTTPS.
+  if (env.isProduction) {
+    app.use((req, res, next) => {
+      if (req.headers["x-forwarded-proto"] === "http") {
+        const httpsUrl = `https://${req.headers.host}${req.originalUrl}`;
+        return res.redirect(301, httpsUrl);
+      }
+      next();
+    });
+  }
+
+  // Helmet sets security headers on all responses.
+  // This is an API-only server (no HTML/JS served), so CSP is maximally restrictive.
+  // HSTS tells browsers to only use HTTPS for the next 1 year, including subdomains.
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'none'"],     // API serves JSON only — block everything
+          frameAncestors: ["'none'"],
+          baseUri: ["'none'"],
+          formAction: ["'none'"],
+        },
+      },
+      hsts: {
+        maxAge: 365 * 24 * 60 * 60, // 1 year in seconds
+        includeSubDomains: true,
+        preload: true,
+      },
+      crossOriginEmbedderPolicy: false, // would break CORS-based API consumers
+    }),
+  );
 
   // gzip/brotli compression — ~60-70% payload savings on JSON responses
   app.use(compression());

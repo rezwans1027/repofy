@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { getSupabaseAdmin } from "../config/supabase";
 import { sendOtpEmail } from "./email.service";
 import { env } from "../config/env";
-import { logger } from "../lib/logger";
+import { logger, maskEmail } from "../lib/logger";
 import { expiresInMinutes } from "../lib/date-utils";
 
 const OTP_EXPIRY_MINUTES = 10;
@@ -59,7 +59,7 @@ export async function initiateSignup(
   // Check if email already exists in auth.users (O(1) indexed lookup)
   const { data: emailTaken, error: rpcError } = await supabase.rpc("email_exists_in_auth", { p_email: email });
   if (rpcError) {
-    logger.error("email_exists_in_auth RPC failed", { email, error: rpcError });
+    logger.error("email_exists_in_auth RPC failed", { email: maskEmail(email), error: rpcError });
     throw new AuthError("Failed to initiate signup", 500);
   }
 
@@ -85,12 +85,12 @@ export async function initiateSignup(
   );
 
   if (upsertError) {
-    logger.error("Failed to upsert pending signup", { email, error: upsertError });
+    logger.error("Failed to upsert pending signup", { email: maskEmail(email), error: upsertError });
     throw new AuthError("Failed to initiate signup", 500);
   }
 
   sendOtpEmail(email, otp, displayName).catch((err) => {
-    logger.error("Failed to send OTP email during signup", { email, error: err });
+    logger.error("Failed to send OTP email during signup", { email: maskEmail(email), error: err });
   });
 
   return { message: "A verification code has been sent to your email." };
@@ -112,7 +112,7 @@ export async function verifySignup(
   });
 
   if (rpcError) {
-    logger.error("increment_otp_attempt RPC failed", { email, error: rpcError });
+    logger.error("increment_otp_attempt RPC failed", { email: maskEmail(email), error: rpcError });
     throw new AuthError("Failed to verify signup", 500);
   }
 
@@ -138,7 +138,7 @@ export async function verifySignup(
   });
 
   if (createError) {
-    logger.error("Failed to create user", { email, error: createError });
+    logger.error("Failed to create user", { email: maskEmail(email), error: createError });
     if (createError.message?.includes("already been registered")) {
       throw new AuthError("An account with this email already exists.", 409);
     }
@@ -148,7 +148,7 @@ export async function verifySignup(
   // Clean up pending signup
   await supabase.from("pending_signups").delete().eq("email", email);
 
-  logger.info("User created via OTP signup", { email, userId: userData.user.id });
+  logger.info("User created via OTP signup", { email: maskEmail(email), userId: userData.user.id });
 
   return { user: { id: userData.user.id, email: userData.user.email ?? email } };
 }
@@ -178,18 +178,18 @@ export async function resendOtp(email: string): Promise<{ message: string }> {
 
   const { data: updated, error: updateError } = await supabase
     .from("pending_signups")
-    .update({ otp_code: hashOtp(otp), otp_expires_at: expiresAt })
+    .update({ otp_code: hashOtp(otp), otp_expires_at: expiresAt, attempts: 0 })
     .eq("email", email)
     .select("email")
     .maybeSingle();
 
   if (updateError || !updated) {
-    logger.error("Failed to update OTP for resend", { email, error: updateError });
+    logger.error("Failed to update OTP for resend", { email: maskEmail(email), error: updateError });
     throw new AuthError("Failed to resend code. Please try again.", 500);
   }
 
   sendOtpEmail(email, otp, pending.display_name).catch((err) => {
-    logger.error("Failed to send OTP email during resend", { email, error: err });
+    logger.error("Failed to send OTP email during resend", { email: maskEmail(email), error: err });
   });
 
   return { message: "If a pending signup exists, a new code has been sent." };

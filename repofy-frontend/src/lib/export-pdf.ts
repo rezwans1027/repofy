@@ -140,10 +140,14 @@ export async function exportToPdf(
   const sectionBreaks = collectSectionBreaks(element, scale);
 
   // Capture full element as a single high-res canvas
+  // useCORS fetches cross-origin images (GitHub avatars) with CORS headers,
+  // keeping the canvas untainted so toDataURL() works reliably.
+  // allowTaint is explicitly false to prevent silent taint that would break
+  // canvas export in some browsers.
   const canvas = await html2canvas(element, {
     scale,
     useCORS: true,
-    allowTaint: true,
+    allowTaint: false,
     backgroundColor: pdfBg,
     onclone: (_doc, clonedEl) => {
       // ── 1. Switch to light PDF theme ──

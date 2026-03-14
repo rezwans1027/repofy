@@ -142,7 +142,7 @@ describe("handleWebhook controller", () => {
     expect(mockGrantGrowthCredits).toHaveBeenCalledWith("user-123", 2, "pi_abc", {
       stripe_event_id: "evt_123",
     });
-    expect(res.json).toHaveBeenCalledWith({ received: true });
+    expect(res.json).toHaveBeenCalledWith({ success: true, data: { received: true } });
   });
 
   it("logs idempotent skip when grant returns false", async () => {
@@ -163,7 +163,7 @@ describe("handleWebhook controller", () => {
       "Growth credits already granted (idempotent)",
       expect.objectContaining({ userId: "user-123", paymentIntentId: "pi_abc" }),
     );
-    expect(res.json).toHaveBeenCalledWith({ received: true });
+    expect(res.json).toHaveBeenCalledWith({ success: true, data: { received: true } });
   });
 
   it("skips grant when client_reference_id is null", async () => {
@@ -181,7 +181,7 @@ describe("handleWebhook controller", () => {
       "Webhook: missing client_reference_id",
       expect.any(Object),
     );
-    expect(res.json).toHaveBeenCalledWith({ received: true });
+    expect(res.json).toHaveBeenCalledWith({ success: true, data: { received: true } });
   });
 
   it("skips grant when payment_status is not paid", async () => {
@@ -304,7 +304,7 @@ describe("handleWebhook controller", () => {
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({
-      received: false,
+      success: false,
       error: "Webhook processing failed",
     });
   });
@@ -324,6 +324,6 @@ describe("handleWebhook controller", () => {
 
     await handleWebhook(req, res, next);
 
-    expect(res.json).toHaveBeenCalledWith({ received: true });
+    expect(res.json).toHaveBeenCalledWith({ success: true, data: { received: true } });
   });
 });

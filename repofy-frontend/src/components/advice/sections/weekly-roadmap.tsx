@@ -81,15 +81,6 @@ const cardSlide: Variants = {
   },
 };
 
-const cardContent: Variants = {
-  hidden: { opacity: 0, y: 8 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: EASE_OUT_EXPO },
-  },
-};
-
 const phaseDivider: Variants = {
   hidden: { opacity: 0, scaleX: 0 },
   visible: {
@@ -209,19 +200,10 @@ export function WeeklyRoadmap({ weeks, builds }: WeeklyRoadmapProps) {
                     {/* Card */}
                     <motion.div
                       variants={cardSlide}
-                      whileHover={{ scale: 1.01, y: -2 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 25,
-                      }}
-                      className={`flex-1 rounded-md border ${color.border} ${color.bg} ${color.hoverBorder} ${color.hoverGlow} p-3 space-y-2 cursor-default transition-shadow`}
+                      className={`flex-1 rounded-md border ${color.border} ${color.bg} ${color.hoverBorder} ${color.hoverGlow} p-3 space-y-2 cursor-default transition-[box-shadow,transform] duration-200 hover:scale-[1.01] hover:-translate-y-0.5`}
                     >
                       {/* Header */}
-                      <motion.div
-                        className="flex items-center justify-between gap-2"
-                        variants={cardContent}
-                      >
+                      <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
                           <Calendar className={`size-3.5 shrink-0 ${color.text}`} />
                           <span className={`font-mono text-xs font-bold ${color.text}`}>
@@ -231,21 +213,15 @@ export function WeeklyRoadmap({ weeks, builds }: WeeklyRoadmapProps) {
                             {week.activeBuildTitle}
                           </Badge>
                         </div>
-                      </motion.div>
+                      </div>
 
                       {/* Focus */}
-                      <motion.p
-                        className="text-xs font-medium"
-                        variants={cardContent}
-                      >
+                      <p className="text-xs font-medium">
                         {week.focus}
-                      </motion.p>
+                      </p>
 
                       {/* Details grid */}
-                      <motion.div
-                        className="grid gap-2 sm:grid-cols-2"
-                        variants={cardContent}
-                      >
+                      <div className="grid gap-2 sm:grid-cols-2">
                         <div>
                           <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
                             Tasks
@@ -282,7 +258,7 @@ export function WeeklyRoadmap({ weeks, builds }: WeeklyRoadmapProps) {
                             </p>
                           </div>
                         </div>
-                      </motion.div>
+                      </div>
                     </motion.div>
                   </motion.div>
                 </div>
