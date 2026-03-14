@@ -155,7 +155,7 @@ export function ProfileSections({ user, repos }: ProfileSectionsProps) {
               transition={{ delay: i * 0.05 }}
             >
               <div className="flex items-start justify-between">
-                {repo.url ? (
+                {repo.url && /^https?:\/\//i.test(repo.url) ? (
                   <a
                     href={repo.url}
                     target="_blank"
@@ -303,7 +303,7 @@ export function ProfileSections({ user, repos }: ProfileSectionsProps) {
                 <span className="font-mono text-xs">Merge Rate</span>
               </div>
               <CountUp
-                end={Math.round((user.prActivity.merged / user.prActivity.opened) * 100)}
+                end={user.prActivity.opened > 0 ? Math.round((user.prActivity.merged / user.prActivity.opened) * 100) : 0}
                 suffix="%"
                 className="text-xl font-bold text-foreground"
               />

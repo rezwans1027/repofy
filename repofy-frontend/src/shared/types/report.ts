@@ -48,8 +48,8 @@ export type RepoVerdict = "Standout" | "Strong" | "Solid" | "Needs Work" | "Risk
 
 export interface TopRepo {
   name: string;
-  description: string;
-  language: string;
+  description: string | null;
+  language: string | null;
   languageColor: string;
   stars: number;
   forks: number;

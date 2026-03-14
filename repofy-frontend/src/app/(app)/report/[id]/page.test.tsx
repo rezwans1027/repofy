@@ -1,6 +1,12 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 
+// Mock next/navigation — redirect() throws in real Next.js to halt execution
+const mockRedirect = vi.fn(() => { throw new Error("NEXT_REDIRECT"); });
+vi.mock("next/navigation", () => ({
+  redirect: (...args: any[]) => mockRedirect(...args),
+}));
+
 // Mock server-api
 const mockServerFetch = vi.fn();
 vi.mock("@/lib/server-api", () => ({
@@ -36,22 +42,44 @@ async function renderPage(id = "report-1", from?: string) {
 describe("ReportPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockServerFetch.mockResolvedValue(null);
+    mockServerFetch.mockResolvedValue({ data: null, error: "not-found" });
   });
 
   it("shows error card when report is not found", async () => {
-    mockServerFetch.mockResolvedValue(null);
+    mockServerFetch.mockResolvedValue({ data: null, error: "not-found" });
 
     await renderPage();
 
     expect(screen.getByText("Report not found")).toBeInTheDocument();
   });
 
+  it("shows access denied when forbidden", async () => {
+    mockServerFetch.mockResolvedValue({ data: null, error: "forbidden" });
+
+    await renderPage();
+
+    expect(screen.getByText("Access denied")).toBeInTheDocument();
+  });
+
+  it("shows server error message", async () => {
+    mockServerFetch.mockResolvedValue({ data: null, error: "server-error" });
+
+    await renderPage();
+
+    expect(screen.getByText("Something went wrong")).toBeInTheDocument();
+  });
+
+  it("redirects to login when unauthenticated", async () => {
+    mockServerFetch.mockResolvedValue({ data: null, error: "unauthenticated" });
+
+    await expect(renderPage()).rejects.toThrow("NEXT_REDIRECT");
+    expect(mockRedirect).toHaveBeenCalledWith("/login");
+  });
+
   it("shows back link to /reports by default when report is loaded", async () => {
     mockServerFetch.mockResolvedValue({
-      id: "report-1",
-      analyzed_username: "alice",
-      report_data: {},
+      data: { id: "report-1", analyzed_username: "alice", report_data: {} },
+      error: null,
     });
 
     await renderPage();
@@ -62,9 +90,8 @@ describe("ReportPage", () => {
 
   it("shows back link to /profile/{username} when from=profile", async () => {
     mockServerFetch.mockResolvedValue({
-      id: "report-1",
-      analyzed_username: "alice",
-      report_data: {},
+      data: { id: "report-1", analyzed_username: "alice", report_data: {} },
+      error: null,
     });
 
     await renderPage("report-1", "profile");
@@ -75,9 +102,8 @@ describe("ReportPage", () => {
 
   it("renders AnalysisReport when data is loaded", async () => {
     mockServerFetch.mockResolvedValue({
-      id: "report-1",
-      analyzed_username: "alice",
-      report_data: { overallScore: 82 },
+      data: { id: "report-1", analyzed_username: "alice", report_data: { overallScore: 82 } },
+      error: null,
     });
 
     await renderPage();
@@ -88,9 +114,8 @@ describe("ReportPage", () => {
 
   it("passes correct props to AnalysisReport", async () => {
     mockServerFetch.mockResolvedValue({
-      id: "report-1",
-      analyzed_username: "alice",
-      report_data: { overallScore: 82 },
+      data: { id: "report-1", analyzed_username: "alice", report_data: { overallScore: 82 } },
+      error: null,
     });
 
     await renderPage();
@@ -101,7 +126,7 @@ describe("ReportPage", () => {
   });
 
   it("calls serverFetch with correct path", async () => {
-    mockServerFetch.mockResolvedValue(null);
+    mockServerFetch.mockResolvedValue({ data: null, error: "not-found" });
 
     await renderPage("abc-123");
 

@@ -2,6 +2,24 @@ import { RequestHandler } from "express";
 import { getSupabaseAdmin } from "../config/supabase";
 import { sendError } from "../lib/response";
 
+// Short-lived cache to avoid a Supabase HTTP roundtrip on every request.
+// 3-5 auth-guarded calls per page load × ~60s TTL = safe + significant savings.
+const TOKEN_CACHE_TTL = 60 * 1000; // 60 seconds
+const TOKEN_CACHE_MAX = 256;
+
+interface TokenEntry {
+  userId: string;
+  email: string | undefined;
+  expiresAt: number;
+}
+
+const tokenCache = new Map<string, TokenEntry>();
+
+/** Exposed for test isolation. */
+export function clearTokenCache(): void {
+  tokenCache.clear();
+}
+
 export const requireAuth: RequestHandler = async (req, res, next) => {
   try {
     if (res.headersSent) return;
@@ -15,14 +33,36 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
 
+    // Check cache first
+    const cached = tokenCache.get(token);
+    if (cached && Date.now() < cached.expiresAt) {
+      req.userId = cached.userId;
+      req.userEmail = cached.email;
+      next();
+      return;
+    }
+
     const { data, error } = await getSupabaseAdmin().auth.getUser(token);
 
     if (res.headersSent) return;
 
     if (error || !data.user) {
+      // Remove stale cache entry if present
+      tokenCache.delete(token);
       sendError(res, 401, "Invalid or expired token");
       return;
     }
+
+    // Cache the verified token
+    if (tokenCache.size >= TOKEN_CACHE_MAX) {
+      const oldest = tokenCache.keys().next().value;
+      if (oldest !== undefined) tokenCache.delete(oldest);
+    }
+    tokenCache.set(token, {
+      userId: data.user.id,
+      email: data.user.email,
+      expiresAt: Date.now() + TOKEN_CACHE_TTL,
+    });
 
     req.userId = data.user.id;
     req.userEmail = data.user.email;

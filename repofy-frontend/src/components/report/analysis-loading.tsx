@@ -208,15 +208,15 @@ export function AnalysisLoading({
           className="flex min-h-[60vh] items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 0.97, filter: "blur(10px)" }}
+          exit={{ opacity: 0, scale: 0.97 }}
           transition={{ duration: 0.5, ease: EASE }}
         >
           <div className="relative w-full max-w-xl">
             {/* ── Terminal card ────────────────────────────────── */}
             <motion.div
               className="relative overflow-hidden rounded-xl border border-border bg-card"
-              initial={{ y: 20, opacity: 0, filter: "blur(8px)" }}
-              animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5, ease: EASE, delay: 0.1 }}
             >
               {/* Title bar */}
@@ -292,11 +292,11 @@ export function AnalysisLoading({
                       <motion.div
                         key={text}
                         className="flex items-center gap-3 font-mono text-sm"
-                        initial={{ opacity: 0, x: -10, filter: "blur(4px)" }}
+                        initial={{ opacity: 0, x: -10 }}
                         animate={
                           visible
-                            ? { opacity: 1, x: 0, filter: "blur(0px)" }
-                            : { opacity: 0, x: -10, filter: "blur(4px)" }
+                            ? { opacity: 1, x: 0 }
+                            : { opacity: 0, x: -10 }
                         }
                         transition={{ duration: 0.35, ease: EASE }}
                       >
@@ -362,8 +362,8 @@ export function AnalysisLoading({
                       {visibleLogs.map((entry) => (
                         <motion.div
                           key={entry.id}
-                          initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
-                          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.3, ease: EASE }}
                           className="flex items-center gap-3 py-0.5"

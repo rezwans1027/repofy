@@ -46,6 +46,7 @@ import { callEngine } from "../../../src/services/engine.service";
 import { buildReportData } from "../../../src/services/analyze.service";
 import { computeSnapshotHash, buildCacheKey, getCachedAnalysis, setCachedAnalysis } from "../../../src/services/cache.service";
 import { getSupabaseAdmin } from "../../../src/config/supabase";
+import { logger } from "../../../src/lib/logger";
 
 const mockFetchGitHubUserData = fetchGitHubUserData as ReturnType<typeof vi.fn>;
 const mockCallEngine = callEngine as ReturnType<typeof vi.fn>;
@@ -139,5 +140,112 @@ describe("analyzeUser controller", () => {
       error: "Analysis failed. Please try again.",
     });
     expect(next).not.toHaveBeenCalled();
+  });
+
+  describe("cache hit path", () => {
+    const cachedData = {
+      scorerResponse: { radarAxes: ["Code Quality"] },
+      scoringResult: { overallScore: 80 },
+      narrativeReport: "Cached narrative.",
+    };
+    const githubData = {
+      profile: { name: "Octocat" },
+      repoSnapshots: [],
+      aggregateMetrics: { medianLatestPushDaysAgo: 30, hasCode: true },
+    };
+
+    beforeEach(() => {
+      mockFetchGitHubUserData.mockResolvedValue(githubData);
+      vi.mocked(getCachedAnalysis).mockResolvedValue(cachedData as any);
+    });
+
+    it("returns cached data without calling the AI engine", async () => {
+      const report = { candidateLevel: "Mid", overallScore: 80 };
+      mockBuildReportData.mockReturnValue(report);
+
+      const { req, res, next } = createControllerMocks();
+      (req as any).userId = "user-123";
+
+      await analyzeUser(req, res, next);
+
+      expect(mockCallEngine).not.toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        data: { analyzedName: "Octocat", report, reportId: "report-1" },
+      });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it("does not write back to cache on a cache hit", async () => {
+      mockBuildReportData.mockReturnValue({ candidateLevel: "Mid" });
+
+      const { req, res, next } = createControllerMocks();
+      (req as any).userId = "user-123";
+
+      await analyzeUser(req, res, next);
+
+      expect(vi.mocked(setCachedAnalysis)).not.toHaveBeenCalled();
+    });
+
+    it("passes cached scorer/scoring/narrative to buildReportData with fresh githubData", async () => {
+      mockBuildReportData.mockReturnValue({ candidateLevel: "Mid" });
+
+      const { req, res, next } = createControllerMocks();
+      (req as any).userId = "user-123";
+
+      await analyzeUser(req, res, next);
+
+      expect(mockBuildReportData).toHaveBeenCalledWith(
+        cachedData.scorerResponse,
+        cachedData.scoringResult,
+        cachedData.narrativeReport,
+        githubData,
+      );
+    });
+
+    it("logs a cache hit message", async () => {
+      mockBuildReportData.mockReturnValue({ candidateLevel: "Mid" });
+
+      const { req, res, next } = createControllerMocks();
+      (req as any).userId = "user-123";
+
+      await analyzeUser(req, res, next);
+
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining("Cache hit for octocat"),
+      );
+    });
+
+    it("still fetches GitHub data before checking cache", async () => {
+      mockBuildReportData.mockReturnValue({ candidateLevel: "Mid" });
+
+      const { req, res, next } = createControllerMocks();
+      (req as any).userId = "user-123";
+
+      await analyzeUser(req, res, next);
+
+      expect(mockFetchGitHubUserData).toHaveBeenCalledWith("octocat", req.signal);
+      expect(vi.mocked(computeSnapshotHash)).toHaveBeenCalledWith(githubData);
+      expect(vi.mocked(buildCacheKey)).toHaveBeenCalledWith("gpt-5.1", "v1.1", "hash123");
+      expect(vi.mocked(getCachedAnalysis)).toHaveBeenCalledWith("cachekey123");
+    });
+
+    it("persists the report even on cache hit", async () => {
+      const report = { candidateLevel: "Mid", overallScore: 80 };
+      mockBuildReportData.mockReturnValue(report);
+
+      const { req, res, next } = createControllerMocks();
+      (req as any).userId = "user-123";
+
+      await analyzeUser(req, res, next);
+
+      // saveReport is called via Supabase — verify the response includes reportId
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          data: expect.objectContaining({ reportId: "report-1" }),
+        }),
+      );
+    });
   });
 });

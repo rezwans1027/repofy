@@ -101,6 +101,9 @@ function PricingContent() {
         "/stripe/create-checkout-session",
         { auth: true },
       );
+      if (!url.startsWith("https://checkout.stripe.com/")) {
+        throw new Error("Invalid checkout URL");
+      }
       window.location.href = url;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

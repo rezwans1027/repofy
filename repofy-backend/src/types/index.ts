@@ -13,6 +13,7 @@ declare global {
       userId?: string;
       userEmail?: string;
       signal?: AbortSignal;
+      requestId: string;
     }
   }
 }

@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from "../config/supabase";
 import { throwIfDbError, DatabaseError } from "../lib/errors";
 import { createCrudService } from "./crud.service";
+import type { ReportData } from "../types/shared/report";
 
 const crud = createCrudService({
   table: "reports",
@@ -19,7 +20,7 @@ export async function saveReport(
   userId: string,
   analyzedUsername: string,
   analyzedName: string | null,
-  report: Record<string, unknown>,
+  report: ReportData,
 ): Promise<string> {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
@@ -29,8 +30,8 @@ export async function saveReport(
         user_id: userId,
         analyzed_username: analyzedUsername.toLowerCase(),
         analyzed_name: analyzedName,
-        overall_score: typeof report.overallScore === "number" ? report.overallScore : 0,
-        recommendation: typeof report.recommendation === "string" ? report.recommendation : "",
+        overall_score: report.overallScore,
+        recommendation: report.recommendation,
         report_data: report,
       },
       { onConflict: "user_id,analyzed_username" },

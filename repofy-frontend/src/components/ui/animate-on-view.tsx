@@ -13,46 +13,41 @@ interface AnimateOnViewProps {
 
 const presets: Record<string, Variants> = {
   fadeUp: {
-    hidden: { opacity: 0, y: 24, filter: "blur(6px)" },
+    hidden: { opacity: 0, y: 24 },
     visible: (d: number) => ({
       opacity: 1,
       y: 0,
-      filter: "blur(0px)",
       transition: { duration: 0.6, delay: d, ease: EASE_OUT_EXPO },
     }),
   },
   fadeIn: {
-    hidden: { opacity: 0, filter: "blur(6px)" },
+    hidden: { opacity: 0 },
     visible: (d: number) => ({
       opacity: 1,
-      filter: "blur(0px)",
       transition: { duration: 0.5, delay: d, ease: EASE_OUT_EXPO },
     }),
   },
   scaleIn: {
-    hidden: { opacity: 0, scale: 0.95, filter: "blur(4px)" },
+    hidden: { opacity: 0, scale: 0.95 },
     visible: (d: number) => ({
       opacity: 1,
       scale: 1,
-      filter: "blur(0px)",
       transition: { duration: 0.5, delay: d, ease: EASE_OUT_EXPO },
     }),
   },
   slideLeft: {
-    hidden: { opacity: 0, x: -24, filter: "blur(4px)" },
+    hidden: { opacity: 0, x: -24 },
     visible: (d: number) => ({
       opacity: 1,
       x: 0,
-      filter: "blur(0px)",
       transition: { duration: 0.5, delay: d, ease: EASE_OUT_EXPO },
     }),
   },
   slideRight: {
-    hidden: { opacity: 0, x: 24, filter: "blur(4px)" },
+    hidden: { opacity: 0, x: 24 },
     visible: (d: number) => ({
       opacity: 1,
       x: 0,
-      filter: "blur(0px)",
       transition: { duration: 0.5, delay: d, ease: EASE_OUT_EXPO },
     }),
   },

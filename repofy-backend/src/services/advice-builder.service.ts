@@ -1,5 +1,5 @@
 import type { GitHubUserData, AdviceV2 } from "../types";
-import { LANGUAGE_COLORS, DEFAULT_COLOR } from "./github.service";
+import { LANGUAGE_COLORS, DEFAULT_COLOR } from "../lib/language-colors";
 
 /**
  * Merge AI advice with GitHub repo data to enrich repo improvements
@@ -25,19 +25,5 @@ export function buildAdviceData(ai: AdviceV2, github: GitHubUserData) {
     };
   });
 
-  return {
-    schemaVersion: ai.schemaVersion,
-    generationWarnings: ai.generationWarnings,
-    summary: ai.summary,
-    trajectory: ai.trajectory,
-    buildRoadmap: ai.buildRoadmap,
-    skillRoadmap: ai.skillRoadmap,
-    repoImprovements,
-    contributionStrategy: ai.contributionStrategy,
-    profileOptimizations: ai.profileOptimizations,
-    weeklyRoadmap: ai.weeklyRoadmap,
-    strengthsAndGaps: ai.strengthsAndGaps,
-    careerPositioning: ai.careerPositioning,
-    successMetrics: ai.successMetrics,
-  };
+  return { ...ai, repoImprovements };
 }

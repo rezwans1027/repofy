@@ -28,15 +28,13 @@ import { EASE_OUT_EXPO } from "@/lib/animation-variants";
 type Phase = "form" | "otp" | "success";
 
 const phaseVariants = {
-  enter: { opacity: 0, filter: "blur(6px)" },
+  enter: { opacity: 0 },
   center: {
     opacity: 1,
-    filter: "blur(0px)",
     transition: { duration: 0.35, ease: EASE_OUT_EXPO },
   },
   exit: {
     opacity: 0,
-    filter: "blur(6px)",
     transition: { duration: 0.2 },
   },
 };
@@ -298,11 +296,12 @@ export default function SignupPage() {
                         setErrors((p) => ({ ...p, displayName: undefined }));
                     }}
                     aria-invalid={!!errors.displayName}
+                    aria-describedby={errors.displayName ? "displayName-error" : undefined}
                     className="pl-10 font-mono text-sm"
                   />
                 </div>
                 {errors.displayName && (
-                  <p className="font-mono text-xs text-destructive">
+                  <p id="displayName-error" className="font-mono text-xs text-destructive">
                     <span className="font-bold">error:</span>{" "}
                     {errors.displayName}
                   </p>
@@ -329,11 +328,12 @@ export default function SignupPage() {
                         setErrors((p) => ({ ...p, email: undefined }));
                     }}
                     aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? "signup-email-error" : undefined}
                     className="pl-10 font-mono text-sm"
                   />
                 </div>
                 {errors.email && (
-                  <p className="font-mono text-xs text-destructive">
+                  <p id="signup-email-error" className="font-mono text-xs text-destructive">
                     <span className="font-bold">error:</span> {errors.email}
                   </p>
                 )}
@@ -412,6 +412,7 @@ export default function SignupPage() {
                       if (errors.otp)
                         setErrors((p) => ({ ...p, otp: undefined }));
                     }}
+                    aria-describedby={errors.otp ? "otp-error" : undefined}
                   >
                     <InputOTPGroup>
                       <InputOTPSlot index={0} />
@@ -427,7 +428,7 @@ export default function SignupPage() {
                   </InputOTP>
                 </div>
                 {errors.otp && (
-                  <p className="font-mono text-xs text-destructive text-center">
+                  <p id="otp-error" className="font-mono text-xs text-destructive text-center">
                     <span className="font-bold">error:</span> {errors.otp}
                   </p>
                 )}
@@ -453,11 +454,13 @@ export default function SignupPage() {
                         setErrors((p) => ({ ...p, password: undefined }));
                     }}
                     aria-invalid={!!errors.password}
+                    aria-describedby={errors.password ? "signup-password-error" : undefined}
                     className="pl-10 pr-10 font-mono text-sm"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     {showPassword ? (
@@ -468,7 +471,7 @@ export default function SignupPage() {
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="font-mono text-xs text-destructive">
+                  <p id="signup-password-error" className="font-mono text-xs text-destructive">
                     <span className="font-bold">error:</span>{" "}
                     {errors.password}
                   </p>
@@ -498,11 +501,12 @@ export default function SignupPage() {
                         }));
                     }}
                     aria-invalid={!!errors.confirmPassword}
+                    aria-describedby={errors.confirmPassword ? "confirmPassword-error" : undefined}
                     className="pl-10 font-mono text-sm"
                   />
                 </div>
                 {errors.confirmPassword && (
-                  <p className="font-mono text-xs text-destructive">
+                  <p id="confirmPassword-error" className="font-mono text-xs text-destructive">
                     <span className="font-bold">error:</span>{" "}
                     {errors.confirmPassword}
                   </p>

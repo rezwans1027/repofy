@@ -1,5 +1,5 @@
 import type { ScorerResponse, ScoringResult, GitHubUserData, AxisLabel } from "../types";
-import { LANGUAGE_COLORS, DEFAULT_COLOR } from "./github.service";
+import { LANGUAGE_COLORS, DEFAULT_COLOR } from "../lib/language-colors";
 
 /**
  * Merge Scorer AI response, backend-computed scoring, and narrative report
@@ -13,14 +13,27 @@ export function buildReportData(
 ) {
   const { profile, topRepositories, languages, activity, stats, contributions } = github;
 
-  // Activity percentages from raw event counts
+  // Activity percentages from raw event counts (largest-remainder method)
   const totalEvents = activity.totalEvents;
   let pushPct = 0, prPct = 0, issuePct = 0, reviewPct = 0;
   if (totalEvents > 0) {
-    pushPct = Math.round((activity.pushEvents / totalEvents) * 100);
-    prPct = Math.round((activity.prEvents / totalEvents) * 100);
-    issuePct = Math.round((activity.issueEvents / totalEvents) * 100);
-    reviewPct = Math.max(100 - pushPct - prPct - issuePct, 0); // remainder to avoid > 100
+    const raw = [
+      { key: "push", exact: (activity.pushEvents / totalEvents) * 100 },
+      { key: "pr", exact: (activity.prEvents / totalEvents) * 100 },
+      { key: "issue", exact: (activity.issueEvents / totalEvents) * 100 },
+      { key: "review", exact: (activity.reviewEvents / totalEvents) * 100 },
+    ];
+    const floored = raw.map((r) => ({ ...r, floor: Math.floor(r.exact) }));
+    let remainder = 100 - floored.reduce((s, r) => s + r.floor, 0);
+    floored
+      .sort((a, b) => (b.exact - b.floor) - (a.exact - a.floor))
+      .forEach((r) => { if (remainder > 0) { r.floor++; remainder--; } });
+    for (const r of floored) {
+      if (r.key === "push") pushPct = r.floor;
+      else if (r.key === "pr") prPct = r.floor;
+      else if (r.key === "issue") issuePct = r.floor;
+      else reviewPct = r.floor;
+    }
   }
 
   // Computed ratios
@@ -99,7 +112,7 @@ export function buildReportData(
       push: pushPct,
       pr: prPct,
       issue: issuePct,
-      review: Math.max(reviewPct, 0),
+      review: reviewPct,
       interpretation: scorer.activityInterpretation,
     },
 

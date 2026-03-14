@@ -127,14 +127,14 @@ export default function AdvisorPage() {
         className="space-y-4"
       >
         <motion.h1
-          variants={{ hidden: { opacity: 0, y: 12, filter: "blur(6px)" }, visible: { opacity: 1, y: 0, filter: "blur(0px)" } }}
+          variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="font-mono text-lg font-bold"
         >
           Advisor
         </motion.h1>
         <motion.div
-          variants={{ hidden: { opacity: 0, y: 12, filter: "blur(6px)" }, visible: { opacity: 1, y: 0, filter: "blur(0px)" } }}
+          variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="flex min-h-[50vh] items-center justify-center rounded-xl border border-border bg-card"
         >
@@ -178,7 +178,7 @@ export default function AdvisorPage() {
       className="space-y-5"
     >
       <motion.div
-        variants={{ hidden: { opacity: 0, y: 12, filter: "blur(6px)" }, visible: { opacity: 1, y: 0, filter: "blur(0px)" } }}
+        variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="flex items-baseline justify-between"
       >
@@ -190,7 +190,7 @@ export default function AdvisorPage() {
 
       {/* Filter bar */}
       <motion.div
-        variants={{ hidden: { opacity: 0, y: 12, filter: "blur(6px)" }, visible: { opacity: 1, y: 0, filter: "blur(0px)" } }}
+        variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="flex flex-wrap items-center gap-2"
       >
@@ -284,15 +284,27 @@ export default function AdvisorPage() {
                 <motion.div
                   key={item.id}
                   variants={itemVariants}
-                  exit={{ opacity: 0, y: -8, filter: "blur(4px)", transition: { duration: 0.2 } }}
+                  exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   layout
+                  role="button"
+                  tabIndex={0}
                   className={`group relative flex items-center gap-4 rounded-xl border p-4 ${
                     isSelected
                       ? "border-primary/30 bg-primary/[0.04]"
                       : "border-border bg-card hover:border-border hover:bg-secondary/30"
-                  } cursor-pointer`}
+                  } cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50`}
                   onClick={selectMode ? () => toggleSelect(item.id) : () => router.push(`/advisor/${item.id}`)}
+                  onKeyDown={(e: React.KeyboardEvent) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      if (selectMode) {
+                        toggleSelect(item.id);
+                      } else {
+                        router.push(`/advisor/${item.id}`);
+                      }
+                    }
+                  }}
                 >
                   {/* Checkbox */}
                   <div className={`overflow-hidden transition-[width,opacity] duration-200 ease-out ${selectMode ? "w-5 opacity-100" : "w-0 -mr-4 opacity-0"}`}>

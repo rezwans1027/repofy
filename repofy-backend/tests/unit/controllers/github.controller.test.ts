@@ -13,7 +13,7 @@ vi.mock("../../../src/lib/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
-import { searchGitHub, getGitHubUser } from "../../../src/controllers/github.controller";
+import { searchGitHub, getGitHubUser, clearGhCache } from "../../../src/controllers/github.controller";
 import {
   searchGitHubUsers,
   fetchGitHubUserData,
@@ -109,6 +109,7 @@ describe("searchGitHub controller", () => {
 describe("getGitHubUser controller", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    clearGhCache();
   });
 
   it("returns 400 for invalid username", async () => {

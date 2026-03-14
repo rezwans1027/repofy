@@ -150,7 +150,7 @@ export async function verifySignup(
 
   logger.info("User created via OTP signup", { email, userId: userData.user.id });
 
-  return { user: { id: userData.user.id, email: userData.user.email! } };
+  return { user: { id: userData.user.id, email: userData.user.email ?? email } };
 }
 
 export async function resendOtp(email: string): Promise<{ message: string }> {
@@ -158,7 +158,7 @@ export async function resendOtp(email: string): Promise<{ message: string }> {
 
   const { data: pending, error } = await supabase
     .from("pending_signups")
-    .select("*")
+    .select("email, display_name, attempts")
     .eq("email", email)
     .maybeSingle();
 

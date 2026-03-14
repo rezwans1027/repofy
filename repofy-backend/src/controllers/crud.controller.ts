@@ -30,8 +30,10 @@ export function createCrudController(config: CrudControllerConfig): CrudControll
   return {
     list: async (req, res) => {
       const { userId } = req as AuthenticatedRequest;
-      const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined;
-      const offset = req.query.offset ? parseInt(String(req.query.offset), 10) : undefined;
+      const rawLimit = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined;
+      const rawOffset = req.query.offset ? parseInt(String(req.query.offset), 10) : undefined;
+      const limit = rawLimit !== undefined && !Number.isNaN(rawLimit) ? rawLimit : undefined;
+      const offset = rawOffset !== undefined && !Number.isNaN(rawOffset) ? rawOffset : undefined;
       try {
         const data = await service.list(userId, limit, offset);
         sendSuccess(res, data);

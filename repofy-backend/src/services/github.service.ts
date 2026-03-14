@@ -14,6 +14,7 @@
  */
 import { env } from "../config/env";
 import { logger } from "../lib/logger";
+import { LANGUAGE_COLORS, DEFAULT_COLOR } from "../lib/language-colors";
 import { fetchWithRetry } from "../lib/retry";
 import { daysAgo } from "../lib/date-utils";
 import type {
@@ -49,42 +50,6 @@ export class GitHubError extends Error {
     this.name = "GitHubError";
   }
 }
-
-// ── Language colors ───────────────────────────────────────────────────
-
-export const LANGUAGE_COLORS: Record<string, string> = {
-  JavaScript: "#f1e05a",
-  TypeScript: "#3178c6",
-  Python: "#3572A5",
-  Java: "#b07219",
-  Go: "#00ADD8",
-  Rust: "#dea584",
-  "C++": "#f34b7d",
-  C: "#555555",
-  "C#": "#178600",
-  Ruby: "#701516",
-  PHP: "#4F5D95",
-  Swift: "#F05138",
-  Kotlin: "#A97BFF",
-  Dart: "#00B4AB",
-  Shell: "#89e051",
-  HTML: "#e34c26",
-  CSS: "#563d7c",
-  SCSS: "#c6538c",
-  Vue: "#41b883",
-  Svelte: "#ff3e00",
-  Lua: "#000080",
-  Haskell: "#5e5086",
-  Elixir: "#6e4a7e",
-  Scala: "#c22d40",
-  R: "#198CE7",
-  Jupyter: "#DA5B0B",
-  Zig: "#ec915c",
-  Nix: "#7e7eff",
-  OCaml: "#3be133",
-};
-
-export const DEFAULT_COLOR = "#8b949e";
 
 // ── GitHub API helpers ────────────────────────────────────────────────
 
@@ -528,10 +493,6 @@ function buildTreeString(entries: GitTreeEntry[], maxDepth: number): string {
     lines.push(`${indent}${name}${suffix}`);
   }
   return lines.slice(0, 100).join("\n"); // cap at 100 lines
-}
-
-function hasExtension(path: string, extensions: string[]): boolean {
-  return extensions.some((ext) => path.toLowerCase().endsWith(ext));
 }
 
 function isTestPath(p: string, filename: string, hasGitStyleTests: boolean): boolean {

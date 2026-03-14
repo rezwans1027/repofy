@@ -33,6 +33,8 @@ export function HeatmapGrid({ data }: HeatmapGridProps) {
     <div className="overflow-x-auto">
       <div
         ref={ref}
+        role="img"
+        aria-label="Contribution heatmap showing activity levels over time"
         className="grid gap-[3px]"
         style={{
           gridTemplateColumns: `repeat(${data[0]?.length ?? 52}, 1fr)`,

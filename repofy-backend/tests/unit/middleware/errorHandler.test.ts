@@ -36,10 +36,9 @@ describe("errorHandler", () => {
     errorHandler(err, req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({
-      success: false,
-      error: "Bad request",
-    });
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ success: false, error: "Bad request", stack: expect.any(String) }),
+    );
   });
 
   it("defaults to 500 when err.status is missing", () => {

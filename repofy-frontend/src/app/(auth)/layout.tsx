@@ -83,8 +83,8 @@ export default function AuthLayout({
       <div className="relative flex min-h-screen items-start justify-center px-4 pt-[25vh] overflow-hidden">
         <motion.div
           className="relative z-10 w-full max-w-md space-y-6"
-          initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: EASE_OUT_EXPO }}
         >
           <Link

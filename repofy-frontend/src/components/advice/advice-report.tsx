@@ -81,8 +81,8 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
         {/* Warning banner */}
         {warnings.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: -8, filter: "blur(4px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3, ease: EASE_OUT_EXPO }}
             className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4"
           >

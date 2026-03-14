@@ -146,13 +146,21 @@ export default function DashboardPage() {
                 <motion.div
                   key={user.username}
                   data-testid={`search-result-${user.username}`}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => router.push(`/profile/${user.username}`)}
+                  onKeyDown={(e: React.KeyboardEvent) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      router.push(`/profile/${user.username}`);
+                    }
+                  }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8, filter: "blur(4px)", transition: { duration: 0.2 } }}
+                  exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
                   transition={{ delay: i * 0.05 }}
                   layout
-                  className="cursor-pointer rounded-lg border border-border bg-card p-4 hover:border-cyan/50"
+                  className="cursor-pointer rounded-lg border border-border bg-card p-4 hover:border-cyan/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/50"
                 >
                   <div className="flex items-center gap-4">
                     {/* eslint-disable-next-line @next/next/no-img-element */}

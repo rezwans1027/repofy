@@ -2,6 +2,7 @@ import { getSupabaseAdmin } from "../config/supabase";
 import { throwIfDbError, DatabaseError } from "../lib/errors";
 import { deductGrowthCredit } from "./credit.service";
 import { createCrudService } from "./crud.service";
+import type { AdviceData } from "../types/shared/advice";
 
 export class InsufficientCreditsError extends Error {
   constructor() {
@@ -29,7 +30,7 @@ export async function deductAndPersist(
   requestId: string,
   analyzedUsername: string,
   analyzedName: string | null,
-  adviceData: Record<string, unknown>,
+  adviceData: AdviceData,
 ): Promise<string> {
   // 1. Atomic deduct — fails if balance is 0
   const deducted = await deductGrowthCredit(userId, requestId, {

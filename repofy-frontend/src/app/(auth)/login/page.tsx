@@ -82,11 +82,12 @@ export default function LoginPage() {
                 if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
               }}
               aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "email-error" : undefined}
               className="pl-10 font-mono text-sm"
             />
           </div>
           {errors.email && (
-            <p className="font-mono text-xs text-destructive">
+            <p id="email-error" className="font-mono text-xs text-destructive">
               <span className="font-bold">error:</span> {errors.email}
             </p>
           )}
@@ -108,18 +109,20 @@ export default function LoginPage() {
                 if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
               }}
               aria-invalid={!!errors.password}
+              aria-describedby={errors.password ? "password-error" : undefined}
               className="pl-10 pr-10 font-mono text-sm"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
           </div>
           {errors.password && (
-            <p className="font-mono text-xs text-destructive">
+            <p id="password-error" className="font-mono text-xs text-destructive">
               <span className="font-bold">error:</span> {errors.password}
             </p>
           )}

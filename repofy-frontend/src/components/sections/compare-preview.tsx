@@ -69,8 +69,8 @@ export function ComparePreview() {
                 key={feature.label}
                 className="rounded-md border border-border bg-background/50 p-4"
                 variants={{
-                  hidden: { opacity: 0, y: 16, filter: "blur(4px)" },
-                  visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.4 } },
+                  hidden: { opacity: 0, y: 16 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
                 }}
               >
                 <feature.icon className="h-4 w-4 text-violet-400" />

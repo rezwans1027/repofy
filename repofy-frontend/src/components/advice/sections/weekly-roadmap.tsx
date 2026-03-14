@@ -73,11 +73,10 @@ const connectorLine: Variants = {
 };
 
 const cardSlide: Variants = {
-  hidden: { opacity: 0, x: 24, filter: "blur(6px)" },
+  hidden: { opacity: 0, x: 24 },
   visible: {
     opacity: 1,
     x: 0,
-    filter: "blur(0px)",
     transition: { duration: 0.55, ease: EASE_OUT_EXPO },
   },
 };
