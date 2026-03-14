@@ -1,178 +1,218 @@
-# Repofy — Consolidated Review Report
+# Repofy — Consolidated Audit Report
 
-**Sources:** Code Quality Review (R1), Security Audit (R2), Performance & Optimization Review (R3)
-**Scope:** 94+ source files, 36+ test files across the monorepo
-**Duplicates removed:** 23 findings consolidated across reports
-
----
-
-## Overall Assessment
-
-The codebase is **well-architected and production-capable**. Auth, payments, data isolation, and error handling are fundamentally sound. Security posture is strong — no critical code-level exploits, consistent auth enforcement, no eval/innerHTML/dangerouslySetInnerHTML, CSP with nonces, Helmet, CORS allowlisting. The main gaps are operational/scaling concerns, performance inefficiencies, and maintainability issues.
+46 unique issues identified across security, code quality, performance, and architecture.
+Consolidated from 4 separate reviews with duplicates merged.
 
 ---
 
-## HIGH (2 findings)
+## CRITICAL (2)
 
-### Security — Non-Blockers
+### 1. Missing credit check on /analyze endpoint
+- **Category:** Security
+- **Location:** `repofy-backend/src/controllers/analyze.controller.ts:27-94`
+- **Issue:** AI analysis runs without checking or deducting credits. The `/advice` endpoint properly calls `getCreditBalance()` and `deductAndPersist()`, but `/analyze` has neither — allowing unlimited free usage.
 
-| # | Issue | Location | Sources |
-|---|-------|----------|---------|
-| H7 | **In-process-only concurrency lock** — `activeAdviceRequests` Map breaks under horizontal scaling, allowing double-charge | `advice.controller.ts:27` | R1, R2 |
-
-### Performance
-
-| # | Issue | Location | Sources |
-|---|-------|----------|---------|
-| H18 | **`cleanExpiredCache` never called** — DB cache rows accumulate forever | `cache.service.ts:139-152` | R3 |
+### 2. Shared types have drifted — three disconnected copies
+- **Category:** Architecture
+- **Files:** `shared/types/report.ts` vs `repofy-frontend/src/shared/types/report.ts` vs `repofy-backend/src/types/shared/report.ts`
+- **Issue:** The root `shared/` says `TopRepo.description: string` and `TopRepo.language: string`, but both frontend and backend copies say `string | null`. The root `shared/` directory (with its own `tsconfig.json` and compiled `dist/`) is completely orphaned — neither project imports from it.
+- **Fix:** Pick one canonical location (root `shared/`), wire both projects to import from it via path aliases or npm workspaces, and delete the duplicate copies.
 
 ---
 
-## MEDIUM (36 findings)
+## HIGH (11)
 
-### Security & Reliability
+### 3. Race condition in concurrent advice requests
+- **Category:** Security
+- **Location:** `repofy-backend/src/controllers/advice.controller.ts:32-42`
+- **Issue:** In-flight tracking (`activeAdviceRequests` Map) is per-process only. In horizontally-scaled deployments, each replica tracks state independently, allowing double-spending of credits via concurrent requests to different instances. The Map also has no max size cap — no hard ceiling for traffic spikes.
+- **Fix:** Migrate to a shared store (e.g. Redis SETNX with TTL) when scaling beyond a single process.
 
-| # | Issue | Location | Sources |
-|---|-------|----------|---------|
-| M1 | Credit deduction and persistence not atomic — credit lost if persist fails. Pre-check is TOCTOU (DB RPC is true enforcement). | `advice-persistence.service.ts:42-43`, `advice.controller.ts:64-68` | R1, R2 |
-| M2 | `ENGINE_URL` from env used as fetch target with no validation — SSRF if misconfigured | `engine.service.ts:9` | R2 |
-| M3 | `getSession()` used after `getUser()` — token may differ during rotation | `server-api.ts:22-25` | R2, R3 |
-| M4 | `style-src 'unsafe-inline'` in CSP required by framer-motion (documented trade-off) | `middleware.ts:89` | R1, R2 |
-| M6 | Email addresses logged at INFO level (PII) — may violate GDPR/CCPA | `auth.service.ts`, `email.service.ts` | R2 |
-| M7 | `filePath` not URI-encoded in GitHub content fetch — no `..` traversal check | `github.service.ts:838` | R2 |
-| M8 | `allowTaint: true` in PDF html2canvas — broader than necessary (only GitHub avatars) | `export-pdf.ts:146` | R2 |
-| M9 | In-memory rate limiting won't work when horizontally scaling — needs Redis store | `rateLimit.ts` | R1, R2 |
-| M10 | No HTTPS enforcement in backend beyond Helmet defaults — depends on reverse proxy | Backend infra | R2 |
-| M11 | `resendOtp` does not reset OTP attempts counter | `auth.service.ts:179-183` | R3 |
-| M12 | Auth verification runs before rate limiting on all routes | `github.routes.ts:10`, `analyze.routes.ts:10` | R3 |
-| M13 | No global IP-based rate limiter for unauthenticated abuse | `app.ts:13-48` | R3 |
+### 4. SSRF DNS rebinding unprotected in dev
+- **Category:** Security
+- **Location:** `repofy-backend/src/services/engine.service.ts:24-25`
+- **Issue:** `assertHostNotPrivate()` is gated behind `env.isProduction`. In development, DNS rebinding attacks can resolve public hostnames to private IPs (e.g., 127.0.0.1) without detection.
+
+### 5. NaN propagation in admin query params
+- **Category:** Security
+- **Location:** `repofy-backend/src/controllers/admin.controller.ts:6-7`
+- **Issue:** `Math.max(1, parseInt(req.query.page as string))` returns NaN when `page` is non-numeric, since `Math.max(1, NaN)` evaluates to NaN. This propagates into database queries, potentially corrupting pagination.
+
+### 6. Insufficient query parameter type validation in GitHub search
+- **Category:** Security
+- **Location:** `repofy-backend/src/controllers/github.controller.ts:69`
+- **Issue:** The `q` parameter is coerced via `.toString()` without explicit type validation. Relies on downstream services to handle unexpected input rather than validating at the API boundary.
+
+### 7. No CI/CD pipeline
+- **Category:** Architecture
+- **Issue:** No `.github/workflows/` directory exists. Tests, type checking, and linting don't run on PRs — broken code can be merged undetected.
+
+### 8. Root `shared/` directory is dead code
+- **Category:** Architecture
+- **Issue:** The composite TypeScript project, compiled `dist/`, and type exports in the root `shared/` are unused by either project. Both frontend and backend maintain their own local copies.
+
+### 9. Module-level Supabase singleton in AuthProvider
+- **Category:** Code Quality
+- **Location:** `repofy-frontend/src/components/providers/auth-provider.tsx:14`
+- **Issue:** `const supabase = createClient()` executes at import time. If ever imported during SSR, it crashes. The `api-client.ts` already uses a lazy singleton pattern — AuthProvider should match.
+
+### 10. `serverFetch` swallows JSON parse errors
+- **Category:** Code Quality
+- **Location:** `repofy-frontend/src/lib/server-api.ts:62`
+- **Issue:** If the backend returns HTML instead of JSON, `res.json()` throws an unhandled rejection. The client-side `api-client.ts` wraps this in try/catch but `serverFetch` does not.
+
+### 11. Global rate limit too restrictive
+- **Category:** Security
+- **Location:** `repofy-backend/src/middleware/rateLimit.ts:101-105`
+- **Issue:** 100 requests/15 min per IP. A normal session makes 3-5 API calls per page load. Behind corporate NAT, multiple users share the budget. Per-route limits already provide granular protection — raise the global to 300-500.
+
+### 12. HeatmapGrid renders ~364 individually animated divs
+- **Category:** Performance
+- **Location:** `repofy-frontend/src/components/ui/heatmap-grid.tsx:44-57`
+- **Issue:** Each cell is a plain `<div>` with a unique CSS `animationDelay`, creating ~364 staggered animations. Can cause jank on slower devices.
+- **Fix:** Use CSS Grid animation or reduce to row-level animation.
+
+### 13. PDF layout components imported eagerly
+- **Category:** Performance
+- **Files:** `repofy-frontend/src/components/report/analysis-report.tsx:10`, `repofy-frontend/src/components/advice/advice-report.tsx:20`
+- **Issue:** `AnalysisReportPdfLayout` and `AdviceReportPdfLayout` are statically imported but only rendered when `exporting === true`.
+- **Fix:** Use `dynamic(() => import(...), { ssr: false })`.
+
+---
+
+## MEDIUM (24)
+
+### Security
+
+#### 14. Rate limiting is per-process only
+- **Location:** `repofy-backend/src/middleware/rateLimit.ts`
+- **Issue:** All rate limiters use express-rate-limit's default MemoryStore. In horizontally-scaled deployments, each replica tracks limits independently, effectively multiplying allowed requests by the number of instances. A TODO comment acknowledges the need for Redis.
+
+#### 15. CSP unsafe-inline for styles
+- **Location:** `repofy-frontend/src/middleware.ts:105`
+- **Issue:** `style-src 'self' 'unsafe-inline'` weakens XSS protection. Required by framer-motion and html2canvas-pro. Documented as an accepted risk with mitigations (nonce-locked script-src, restrictive connect-src).
+
+#### 16. Error messages expose API internals
+- **Location:** `repofy-backend/src/middleware/errorHandler.ts:20-21`
+- **Issue:** For non-500 errors, raw `err.message` is sent to the client. This can leak implementation details, database error messages, or internal paths. Raw engine response body is also interpolated into thrown Error messages (`engine.service.ts:42-45`).
+- **Fix:** Audit all non-500 error paths or sanitize all error messages regardless of status code.
+
+#### 17. No UUID format validation on batch delete IDs
+- **Location:** `repofy-backend/src/controllers/crud.controller.ts:66-76`
+- **Issue:** Batch delete only validates `typeof "string"`. No UUID format regex or `validate()` check, allowing arbitrary strings to reach the database layer.
+
+#### 18. Session storage used for credit balance
+- **Location:** `repofy-frontend/src/app/(app)/pricing/page.tsx:59-65`
+- **Issue:** Pre-checkout credit balance is stored in `sessionStorage`, accessible to XSS. Impact is low since value is for UI display comparison only, not authorization.
+
+#### 19. Token cache uses FIFO not LRU, no invalidation on logout
+- **Location:** `repofy-backend/src/middleware/auth.ts:25-35, 56-62`
+- **Issue:** The 256-entry token cache evicts via `Map.keys().next().value` (first inserted), not least recently used. An attacker can pollute the cache to evict frequently-used tokens. Additionally, the 60-second TTL has no event-based invalidation — between logout and cache expiry, a stolen token remains valid.
+
+#### 20. OTP email sent fire-and-forget
+- **Location:** `repofy-backend/src/services/auth.service.ts:92-94`
+- **Issue:** `.catch()` logs the error but the user is told "code sent" regardless of delivery status.
+
+#### 21. Resend OTP resets attempt counter — weakens brute-force protection
+- **Location:** `repofy-backend/src/services/auth.service.ts:181`
+- **Issue:** `attempts: 0` on resend gives 5 fresh attempts each time, creating a rate-limit bypass if resend itself isn't separately limited.
 
 ### Code Quality
 
-| # | Issue | Location | Sources |
-|---|-------|----------|---------|
-| M14 | `as any` type assertion instead of `Record<string, unknown>` | `controller-utils.ts:9` | R1 |
-| M15 | `admin.service.ts:33` — `data as UsageRow[]` assertion with no runtime validation | `admin.service.ts:33` | R1 |
-| M16 | Stripe webhook errors use different response shape than rest of API | `stripe.controller.ts` | R1 |
-| M18 | `RUBRIC_VERSION` hardcoded in controller, must stay in sync with engine | Controller | R1 |
-| M19 | LRU cache has no size-based eviction by data size (64 entries x ~100KB) | `cache.service.ts` | R1 |
-| M20 | `mock-ai.service.ts` — 490-line file mixing hardcoded mock data with logic | `mock-ai.service.ts` | R1 |
-| M21 | `suppressHydrationWarning` on `<body>` could mask real issues | `layout.tsx:41` | R1, R2 |
-| M22 | `signup/page.tsx:221` — eslint-disable for exhaustive-deps hides stale closure risk | `signup/page.tsx:221` | R1 |
-| M23 | `pricing/page.tsx` — `balanceAtCheckout` race condition if webhook fires before page load | `pricing/page.tsx:57-69` | R1 |
-| M24 | `<Suspense>` with no fallback prop (blank flash) | `pricing/page.tsx:392` | R1 |
-| M25 | Inconsistent accent colors (emerald vs cyan) with no shared constant | Multiple components | R1 |
+#### 22. ProfileSections is a 418-line god component
+- **Location:** `repofy-frontend/src/components/profile/profile-sections.tsx`
+- **Issue:** All 7 sections (stats, languages, repos, activity, PRs, collaborators, heatmap) are inline JSX in a single component. Any prop change re-renders everything.
+- **Fix:** Split into separate `React.memo` wrapped sub-components.
+
+#### 23. Signup page: 599 lines, 13 useState calls, 3 phases in one component
+- **Location:** `repofy-frontend/src/app/(auth)/signup/page.tsx`
+
+#### 24. useTypewriter creates timeout chains causing multiple re-renders per character
+- **Location:** `repofy-frontend/src/hooks/use-typewriter.ts`
+- **Issue:** Nested `setTimeout` chains (50ms/120ms per character) trigger multiple state updates per character cycle.
+
+#### 25. Loose `Record<string, string>` types instead of union types in style utils
+- **Location:** `repofy-frontend/src/lib/styles.ts`
+- **Issue:** 5 instances use `Record<string, string>` instead of typed union keys.
+
+#### 26. handleComplete accepts `unknown` then casts — bypasses type safety
+- **Location:** `repofy-frontend/src/app/(app)/generate/[username]/page.tsx:37-47`
+
+#### 27. AdviceRow.advice_data: Zod and TypeScript disagree
+- **Location:** `repofy-frontend/src/hooks/use-advice.ts:16-21`
+- **Issue:** Schema validates as `Record<string, unknown>` but type is overridden with `AdviceData` intersection, bypassing Zod's guarantee.
+
+#### 28. Duplicated credit confirmation dialog across 2 components
+- **Files:** `repofy-frontend/src/components/profile/sticky-cta-bar.tsx`, `repofy-frontend/src/components/advice/sections/advice-export-bar.tsx`
+
+#### 29. `<img>` tags in banners instead of `next/image`
+- **Files:** `repofy-frontend/src/components/report/sections/top-banner.tsx:33`, `repofy-frontend/src/components/advice/sections/advice-top-banner.tsx:35`
+
+#### 30. serverFetch has no timeout — SSR hangs if backend is slow
+- **Location:** `repofy-frontend/src/lib/server-api.ts`
+- **Issue:** No `AbortSignal.timeout()` or timeout mechanism on the fetch call.
+
+#### 31. PDF export errors silently swallowed
+- **Location:** `repofy-frontend/src/hooks/use-export-pdf.ts:34-35`
+- **Issue:** Catch block only logs to console; no error state or user notification.
+
+#### 32. Middleware disables routes but components still exist
+- **Location:** `repofy-frontend/src/middleware.ts:72-77`
+- **Issue:** `/report/` and `/generate/` routes blocked at middleware level while fully functional page components remain in the codebase.
+
+#### 33. GitHub data fetched twice — no shared service-level cache
+- **Files:** `repofy-backend/src/controllers/analyze.controller.ts:48`, `repofy-backend/src/controllers/advice.controller.ts:86`
+- **Issue:** Both controllers independently call `fetchGitHubUserData(username, req.signal)` with no shared cache.
+
+#### 34. AdviceV2 vs AdviceData structural divergence
+- **Files:** `repofy-backend/src/types/index.ts` vs `shared/types/advice.ts`
+- **Issue:** AdviceData has enriched fields (`repoUrl`, `language`, `languageColor`, `stars`) that AdviceV2 lacks. Type definitions diverge without documentation of the enrichment step.
+
+#### 35. serverFetch has no Zod runtime validation (client-side api does)
+- **Location:** `repofy-frontend/src/lib/server-api.ts`
+- **Issue:** Client-side `api-client.ts` accepts optional `schema?: z.ZodType` for runtime validation; `serverFetch` does not.
 
 ### Performance
 
-| # | Issue | Location | Sources |
-|---|-------|----------|---------|
-| M26 | `serverFetch` makes 2 sequential Supabase auth calls — parallelize or reduce to 1 | `server-api.ts:22-25` | R3 |
-| M27 | Dashboard raw `<img>` + manual preloading anti-pattern — use `next/image` | `dashboard/page.tsx:26-52, 166-173` | R1, R3 |
-| M28 | AnalysisLoading: 48 infinite JS animations + 100ms timer re-renders — use CSS keyframes | `analysis-loading.tsx:103-107, 252-280` | R3 |
-| M29 | HeatmapGrid renders 364 individually animated cells — consider canvas or single fade | `heatmap-grid.tsx:44-57` | R3 |
-| M30 | Zero `React.memo` usage across 91 client components | All components | R3 |
-| M31 | `demo-data.ts` (16KB) always bundled even when real data is passed | `analysis-report.tsx:4` | R1, R3 |
-| M32 | `react-type-animation` eliminable — custom `useTypewriter` hook already exists | `dashboard/page.tsx:6` | R3 |
-| M33 | `AnalysisReport` statically imports all 11 section components — use lazy loading | `analysis-report.tsx:7-18` | R3 |
-| M34 | `framer-motion` (~40KB) forced into root bundle — use `LazyMotion` | `layout.tsx:43` | R3 |
-| M35 | WeeklyRoadmap: ~60+ motion nodes with layout-triggering `whileHover` | `weekly-roadmap.tsx:162-287` | R3 |
-| M36 | No timeout middleware on reports, credits, advice read routes | `reports.routes.ts`, `credit.routes.ts` | R3 |
-| M37 | Sequential paginated repo fetching (up to 10 pages); no concurrency limit on 6 parallel snapshot fetches (~30 simultaneous GitHub calls) | `github.service.ts:140-156, 933-937` | R3 |
-| M38 | GraphQL `errors` field not checked in response body; retry on 429 ignores `Retry-After` header | `github.service.ts:117-134`, `retry.ts:36-42` | R3 |
+#### 36. Missing HTTP Cache-Control headers
+- **Location:** `repofy-backend/src/lib/response.ts`
+- **Issue:** No `Cache-Control` headers on any response. Browser re-fetches identical data on every load despite 5-min in-memory cache.
+- **Fix:** Add `Cache-Control: public, max-age=300` on GET endpoints for GitHub user data.
 
-### Build & Config
-
-| # | Issue | Location | Sources |
-|---|-------|----------|---------|
-| M39 | Missing `experimental.optimizePackageImports` for `lucide-react`, `framer-motion`, `radix-ui` | `next.config.ts` | R3 |
-| M40 | Frontend `target: "ES2017"` is unnecessarily conservative | `tsconfig.json:3` | R3 |
+#### 37. AnalysisLoading has ~13 simultaneous active timers
+- **Location:** `repofy-frontend/src/components/report/analysis-loading.tsx:109-147`
+- **Issue:** Creates 1 `setInterval(100ms)` + 8 phase `setTimeout`s + 4 log `setTimeout`s per phase simultaneously. The 100ms interval alone is 10 state updates/sec.
+- **Fix:** Consolidate into a single timer-based state machine.
 
 ---
 
-## LOW (28 findings)
+## LOW (9)
 
-### Code Quality
-
-| # | Issue | Location | Sources |
-|---|-------|----------|---------|
-| L1 | `unhandledRejection` handler exits without graceful shutdown | Backend process handler | R1 |
-| L2 | Stripe webhook route registered outside the route system | `app.ts` | R1 |
-| L3 | Test helper uses `Record<string, any>` instead of `unknown` | Test helpers | R1 |
-| L4 | LOC estimation assumes 40 bytes/line (rough heuristic) | Backend service | R1 |
-| L5 | `buildTreeString` truncates at 100 lines with no indicator | Backend service | R1 |
-| L6 | Missing unit tests for 7 services (cache, engine, email, stripe, admin, reports, crud) | Test directory | R1 |
-| L7 | `EMAIL_RE` regex in auth controller should move to shared `validators.ts` | Auth controller | R1 |
-| L8 | `SmoothCaretInput` doesn't forward ref (limits reusability) | `smooth-caret-input.tsx` | R1 |
-| L9 | `SignOutButton` has no try/catch around sign-out call | Sign-out button | R1 |
-| L10 | Unused type aliases `ReportRow` and `AdviceRow` in hooks | Frontend hooks | R1 |
-| L11 | Stack traces exposed in non-production envs | `errorHandler.ts:22-26` | R2 |
-| L12 | No `noUncheckedIndexedAccess` in backend tsconfig | `tsconfig.json` | R2 |
-| L13 | No RLS as defense-in-depth (service role key used; all queries filter by `user_id`) | `supabase.ts:9` | R2 |
-| L14 | `sortOptions` constant declared inside component body — recreated every render | `advisor/page.tsx:85-88` | R3 |
-| L16 | `CountUp` — no `cancelAnimationFrame` cleanup; IntersectionObserver recreated on state change | `count-up.tsx:42-58` | R3 |
-| L17 | `useActiveSection` creates N IntersectionObservers instead of 1 | `use-active-section.ts:12-27` | R3 |
-| L18 | `useTypewriter` uses 4 separate state values — could consolidate into `useReducer` | `use-typewriter.ts:6-9` | R3 |
-| L19 | `headers()` allocates a new object per GitHub API call | `github.service.ts:59-65` | R3 |
-| L20 | Health check doesn't verify Supabase connectivity | `health.controller.ts` | R3 |
-| L21 | `declaration: true` generates unnecessary `.d.ts` files for private app | `tsconfig.json:14` | R3 |
-| L22 | Helmet applies unnecessary browser-security headers to a JSON API | `app.ts:25` | R3 |
-| L23 | `cleanupExpiredSignups` runs on every signup — better on an interval | `auth.service.ts:55-57` | R3 |
-| L24 | Supabase client created at module scope in auth-provider — should use lazy singleton | `auth-provider.tsx:14` | R1, R3 |
-| L25 | `RadarChart` / `ComparisonRadarChart` `pathData` not memoized | `radar-chart.tsx:28-30` | R3 |
-
-### Accessibility
-
-| # | Issue | Location | Sources |
-|---|-------|----------|---------|
-| L26 | Missing `aria-label` on advisor search input and checkbox containers | Advisor page | R1 |
-| L27 | Footer links point to `#` (placeholder) | Frontend footer | R1 |
-| L28 | `.env.example` lists `OPENAI_API_KEY` that backend doesn't use (misleading) | `.env.example` | R1 |
-| L29 | Health endpoint exposes `process.uptime()` and has no rate limiting | `health.controller.ts:14` | R1, R2 |
+| # | Issue | Location |
+|---|-------|----------|
+| 38 | `.next/` directory exists in backend project | `repofy-backend/.next/` |
+| 39 | `OPENAI_API_KEY` in `.env.example` but unused in codebase | `repofy-backend/.env.example` |
+| 40 | `ENGINE_URL` and `ENGINE_INTERNAL_KEY` missing from `.env.example` | `repofy-backend/.env.example` |
+| 41 | `@types/node` version mismatch (`^20` frontend vs `^22` backend) | Both `package.json` files |
+| 42 | No backend ESLint config | `repofy-backend/` |
+| 43 | Frontend test coverage thresholds low (60/55/50/60 vs backend 80/80/75/80) | `vitest.config.ts` |
+| 44 | No tests for reports/admin controllers and services | `repofy-backend/tests/` |
+| 45 | Weak request ID format validation (accepts any 1-128 char alphanumeric string) | `repofy-backend/src/middleware/requestId.ts` |
+| 46 | Health endpoint has no rate limiter | `repofy-backend/src/routes/health.routes.ts` |
 
 ---
 
-## Blocker Summary
+## NICE-TO-HAVE (10)
 
-This **1 item** must be fixed before scaling or going live:
-
-| # | Severity | Issue | Quick Fix? |
-|---|----------|-------|------------|
-| H7 | High | In-process concurrency lock — double-charge risk at scale | No — needs distributed lock |
-
----
-
-## Recommended Priority Order
-
-1. **Call `cleanExpiredCache` on an interval** — prevent unbounded DB growth (H18)
-2. **Plan for distributed lock** before horizontal scaling (H7)
-3. Address remaining MEDIUM performance items (M27, M28, M29)
-
----
-
-## What's Done Well
-
-| Area | Highlights |
-|------|-----------|
-| **Auth** | Supabase JWT on all routes, timing-safe comparisons, HMAC OTPs, 5-attempt lockout, 10-min expiry |
-| **Payments** | Stripe signature verification, amount/currency/product validation, idempotent credit grants |
-| **Security Headers** | HSTS, X-Frame-Options DENY, nonce-based CSP, nosniff, strict referrer, permissions policy |
-| **Data Safety** | No IDOR (all queries filter by `user_id`), no SSRF, no prompt injection surface, no mass assignment |
-| **Architecture** | CRUD factories, app factory pattern, AbortSignal propagation, typed error hierarchy |
-| **Testing** | PGlite against real migrations, financial transaction coverage, shared test helpers |
-| **Frontend** | `viewport={{ once: true }}`, `useReducedMotion`, lazy devtools, Zod API validation, no barrel files |
-| **Build** | Self-hosted WOFF2 fonts, source maps disabled in prod, lazy PDF loading, proper tree-shaking |
-| **Auth Tokens** | httpOnly cookies via `@supabase/ssr`, proactive refresh 60s before expiry, no localStorage |
-
----
-
-## Summary by the Numbers
-
-| Severity | Count |
-|----------|-------|
-| Critical | 0 |
-| High | 2 |
-| Medium | 36 |
-| Low | 28 |
-| **Total (deduplicated)** | **66** |
-| **Blockers** | **1** |
+| # | Issue | Location |
+|---|-------|----------|
+| 47 | `react-type-animation` installed but unused (only in test mock) | Frontend `package.json` |
+| 48 | 3 separate in-memory cache implementations (identical pattern) | `auth.ts`, `cache.service.ts`, `github.controller.ts` |
+| 49 | Missing `loading.tsx` for settings route | `repofy-frontend/src/app/(app)/settings/` |
+| 50 | No page-specific metadata / missing SEO (no robots.ts, sitemap.ts, OG tags, JSON-LD) | All sub-pages |
+| 51 | `process.uptime()` exposed in unauthenticated health endpoint | `health.controller.ts:16` |
+| 52 | Stripe checkout URL validation uses `startsWith` instead of hostname check | `pricing/page.tsx:101` |
+| 53 | No root `package.json` — no monorepo orchestration | Project root |
+| 54 | No Suspense boundaries on home page (6 dynamic imports) | `repofy-frontend/src/app/page.tsx` |
+| 55 | Missing `output: "standalone"` in next.config.ts | `repofy-frontend/next.config.ts` |
+| 56 | Missing `optimizePackageImports` for radix-ui and lucide-react | `repofy-frontend/next.config.ts` |

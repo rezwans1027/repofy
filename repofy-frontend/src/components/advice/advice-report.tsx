@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 
@@ -17,9 +18,13 @@ import { ProfileOptimizations } from "./sections/profile-optimizations";
 import { StrengthsAndGaps } from "./sections/strengths-and-gaps";
 import { CareerPositioning } from "./sections/career-positioning";
 import { AdviceExportBar } from "./sections/advice-export-bar";
-import { AdviceReportPdfLayout } from "./advice-pdf-layout";
 import { tabContentVariants, EASE_OUT_EXPO } from "@/lib/animation-variants";
 import type { AdviceData, GenerationWarning } from "@shared/types/advice";
+
+const AdviceReportPdfLayout = dynamic(
+  () => import("./advice-pdf-layout").then((m) => ({ default: m.AdviceReportPdfLayout })),
+  { ssr: false }
+);
 
 export type { AdviceData, GenerationWarning };
 

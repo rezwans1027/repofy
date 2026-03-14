@@ -3,8 +3,10 @@ import { getUsageStats } from "../services/admin.service";
 import { sendSuccess, sendError } from "../lib/response";
 
 export const handleGetUsageStats: RequestHandler = async (req, res) => {
-  const page = Math.max(1, parseInt(req.query.page as string) || 1);
-  const limit = Math.min(200, Math.max(1, parseInt(req.query.limit as string) || 50));
+  const rawPage = req.query.page ? parseInt(String(req.query.page), 10) : NaN;
+  const rawLimit = req.query.limit ? parseInt(String(req.query.limit), 10) : NaN;
+  const page = !Number.isNaN(rawPage) ? Math.max(1, rawPage) : 1;
+  const limit = !Number.isNaN(rawLimit) ? Math.min(200, Math.max(1, rawLimit)) : 50;
 
   try {
     const stats = await getUsageStats(page, limit);

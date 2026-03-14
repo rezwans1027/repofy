@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
 
 interface AuthContextType {
   user: User | null;
@@ -11,11 +11,26 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const supabase = createClient();
+// Lazy singleton: only created on first call, which happens inside the
+// component (i.e. in the browser), never at module-evaluation time during SSR.
+let cachedClient: SupabaseClient | null = null;
+function getSupabaseClient(): SupabaseClient {
+  if (!cachedClient) {
+    cachedClient = createClient();
+  }
+  return cachedClient;
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const supabaseRef = useRef<SupabaseClient | null>(null);
+
+  // Stable reference: create the client once per component lifetime (browser only).
+  if (!supabaseRef.current) {
+    supabaseRef.current = getSupabaseClient();
+  }
+  const supabase = supabaseRef.current;
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -34,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [supabase]);
 
   const value = useMemo(() => ({ user, isLoading }), [user, isLoading]);
 

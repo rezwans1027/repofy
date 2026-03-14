@@ -1,99 +1,104 @@
-# Repofy Code Quality Review - Unified Report
+# Security Audit Report — Verified Issues
 
-**3 agents reviewed 94+ source files and 36+ test files across the monorepo.**
-
-## Overall Verdict
-
-The codebase is **well-architected and production-capable**. Auth, payments, data isolation, and error handling are all fundamentally sound. The main gaps are maintainability issues (dead code, DRY violations) and operational concerns (scaling rate limiters) rather than critical security flaws.
+17 real issues identified across repofy-frontend and repofy-backend.
 
 ---
 
-## CRITICAL (2 findings)
+## CRITICAL
 
-| # | Area | File | Issue |
-|---|------|------|-------|
-| 1 | Backend | `advice-builder.service.ts:28-42` | Manual field copying instead of spread -- silently drops new fields added to `AdviceV2` |
-| 2 | Backend | `auth.service.ts:153` | `email!` non-null assertion -- unsafe if Supabase returns a user without email |
-
----
-
-## HIGH (9 findings)
-
-| # | Area | File | Issue |
-|---|------|------|-------|
-| 1 | Backend | `analyze.service.ts:23` | Activity percentages can sum to >100 due to rounding (reviewPct clamped to 0 but total not normalized) |
-| 2 | Backend | `crud.controller.ts:33-34` | `parseInt` of non-numeric string returns `NaN`, propagates to Supabase `.range(NaN, NaN)` |
-| 3 | Backend | `types/index.ts` + `requestId.ts` | Express namespace augmentation split across 2 files -- easy to miss |
-| 4 | Backend | `controller-utils.ts:9` | `as any` type assertion instead of `Record<string, unknown>` |
-| 5 | Backend | `mock-ai.service.ts` | 490-line file mixing hardcoded mock data with logic -- should extract fixtures |
-| 6 | Frontend | `profile-sections.tsx:306` | Division by zero: `prActivity.merged / prActivity.opened` when opened is 0 |
-| 7 | Frontend | 5 dead section components | `analysis-input`, `code-dna`, `profile-summary`, `language-fingerprint`, `commit-signature` -- never imported |
-| 8 | Frontend | 8 dead compare components | Entire `compare/` directory is dead code (compare page shows ComingSoonCard) |
-| 9 | Security | `requestId.ts:13` | Client-supplied `x-request-id` accepted without length/format validation -- log injection risk |
+### #2 — Missing credit check on /analyze endpoint
+- **Location:** `analyze.controller.ts:27-94`
+- **Severity:** Critical
+- **Description:** AI analysis runs without checking or deducting credits. The `/advice` endpoint properly calls `getCreditBalance()` and `deductAndPersist()`, but `/analyze` has neither — allowing unlimited free usage.
 
 ---
 
-## MEDIUM (15 findings)
+## HIGH
 
-| # | Area | Issue |
-|---|------|-------|
-| 1 | Backend | `advice-persistence.service.ts:42-43` -- Credit deduction and persistence are not atomic (credit lost if persist fails) |
-| 2 | Backend | Language color lookup pattern repeated 3 times -- extract `getLanguageColor()` helper |
-| 3 | Backend | `RUBRIC_VERSION` hardcoded in controller, must stay in sync with engine |
-| 4 | Backend | In-memory `activeAdviceRequests` Map doesn't work across multiple instances |
-| 5 | Backend | `cache.service.ts` -- LRU cache has no size-based eviction by data size (64 entries x ~100KB) |
-| 6 | Backend | `admin.service.ts:33` -- `data as UsageRow[]` assertion with no runtime validation |
-| 7 | Backend | `stripe.controller.ts` webhook errors use different response shape than rest of API |
-| 8 | Frontend | `auth-provider.tsx:14` -- Supabase client created at module scope (should use lazy singleton) |
-| 9 | Frontend | `signup/page.tsx:221` -- eslint-disable for exhaustive-deps hides stale closure risk |
-| 10 | Frontend | `pricing/page.tsx:57-69` -- `balanceAtCheckout` race condition if webhook fires before page load |
-| 11 | Frontend | `pricing/page.tsx:392` -- `<Suspense>` with no fallback prop (blank flash) |
-| 12 | Frontend | Inconsistent accent colors (emerald vs cyan) with no shared constant |
-| 13 | Frontend | `layout.tsx:41` -- Unnecessary `suppressHydrationWarning` on `<body>` could mask real issues |
-| 14 | Security | `style-src 'unsafe-inline'` in CSP (required by framer-motion, documented trade-off) |
-| 15 | Security | In-memory rate limiting won't work when horizontally scaling -- needs Redis store |
+### #4 — Race condition in concurrent advice requests
+- **Location:** `advice.controller.ts:32-42`
+- **Severity:** High
+- **Description:** In-flight tracking uses a per-process `Map<string, number>`. In multi-instance deployments, each replica tracks state independently, allowing double-spending of credits via concurrent requests to different instances.
 
----
+### #5 — SSRF DNS rebinding unprotected in dev
+- **Location:** `engine.service.ts:24-25`
+- **Severity:** High
+- **Description:** `assertHostNotPrivate()` is gated behind `env.isProduction`. In development, DNS rebinding attacks can resolve public hostnames to private IPs (e.g., 127.0.0.1) without detection.
 
-## LOW (16 findings)
+### #7 — NaN propagation in admin query params
+- **Location:** `admin.controller.ts:6-7`
+- **Severity:** High
+- **Description:** `Math.max(1, parseInt(req.query.page as string))` returns NaN when `page` is non-numeric, since `Math.max(1, NaN)` evaluates to NaN. This NaN propagates into database queries, potentially corrupting pagination.
 
-| # | Area | Issue |
-|---|------|-------|
-| 1 | Backend | `unhandledRejection` handler exits without graceful shutdown |
-| 2 | Backend | Stripe webhook route registered outside the route system in `app.ts` |
-| 3 | Backend | Test helper uses `Record<string, any>` instead of `unknown` |
-| 4 | Backend | LOC estimation assumes 40 bytes/line (rough heuristic) |
-| 5 | Backend | `buildTreeString` truncates at 100 lines with no indicator |
-| 6 | Backend | Missing unit tests for 7 services (cache, engine, email, stripe, admin, reports, crud) |
-| 7 | Backend | `EMAIL_RE` regex in auth controller should move to shared `validators.ts` |
-| 8 | Frontend | Footer links point to `#` (placeholder) |
-| 9 | Frontend | `demo-data.ts` (290+ lines) shipped in production bundle as fallback |
-| 10 | Frontend | `<img>` used instead of `next/image` for dashboard avatars |
-| 11 | Frontend | `SmoothCaretInput` doesn't forward ref (limits reusability) |
-| 12 | Frontend | `SignOutButton` has no try/catch around sign-out call |
-| 13 | Frontend | Unused type aliases `ReportRow` and `AdviceRow` in hooks |
-| 14 | Frontend | Missing `aria-label` on advisor search input and checkbox containers |
-| 15 | Security | `.env.example` lists `OPENAI_API_KEY` that backend doesn't use (misleading) |
-| 16 | Security | Health endpoint has no rate limiting |
+### #8 — Insufficient query parameter type validation in GitHub search
+- **Location:** `github.controller.ts:69`
+- **Severity:** High
+- **Description:** The `q` parameter is coerced via `.toString()` without explicit type validation. Relies on downstream services to handle unexpected input rather than validating at the API boundary.
 
 ---
 
-## Top Positives
+## MEDIUM
 
-- **Excellent error handling**: `handleControllerError` + typed error hierarchy eliminates duplication
-- **Strong security**: Timing-safe comparisons, HMAC-hashed OTPs, account enumeration prevention, nonce-based CSP
-- **Clean CRUD generics**: `createCrudController` + `createCrudService` on backend, `createCrudHooks` on frontend
-- **Proper abort signal propagation**: Prevents double-response crashes
-- **Thorough test infrastructure**: Shared helpers, PGlite-based DB tests, integration setup
-- **Good React patterns**: Proper memoization, `useReducedMotion`, lazy-loaded devtools, Zod validation at API boundaries
+### #10 — Rate limiting is per-process only
+- **Location:** `rateLimit.ts`
+- **Severity:** Medium
+- **Description:** All rate limiters use express-rate-limit's default MemoryStore. In horizontally-scaled deployments, each replica tracks limits independently, effectively multiplying allowed requests by the number of instances. A TODO comment acknowledges the need to switch to Redis.
+
+### #11 — GitHub API budget exhaustion
+- **Location:** `rateLimit.ts:90-91`
+- **Severity:** Medium
+- **Description:** The proxy allows 30 search requests/min per user, but each profile fetch triggers multiple GitHub API calls (user, repos, events, contributions, per-repo data). With concurrency of 3, multiple simultaneous users can exceed GitHub's 60 req/min token limit. Severity is somewhat mitigated by the concurrency cap.
+
+### #12 — CSP unsafe-inline for styles
+- **Location:** `middleware.ts:105`
+- **Severity:** Medium
+- **Description:** `style-src 'self' 'unsafe-inline'` weakens XSS protection. Required by framer-motion and html2canvas-pro which manipulate `element.style` directly. Documented as an accepted risk with mitigations (nonce-locked script-src, restrictive connect-src).
+
+### #13 — Error messages expose API internals
+- **Location:** `errorHandler.ts:20-21`
+- **Severity:** Medium
+- **Description:** For non-500 errors, the raw `err.message` is sent to the client. This can leak implementation details, database error messages, or internal paths to attackers.
+
+### #14 — No UUID format validation on batch delete IDs
+- **Location:** `crud.controller.ts:66-76`
+- **Severity:** Medium
+- **Description:** Batch delete only validates that each ID is a `typeof "string"`. No UUID format regex or `validate()` check is applied, allowing arbitrary strings (including potential injection payloads) to reach the database layer.
+
+### #15 — Session storage used for credit balance
+- **Location:** `pricing/page.tsx:59-65`
+- **Severity:** Medium
+- **Description:** Pre-checkout credit balance is stored in `sessionStorage`, which is accessible to XSS. Impact is low since the value is used for UI display comparison only (detecting when credits arrive), not for authorization decisions.
+
+### #16 — Token cache uses FIFO not LRU
+- **Location:** `auth.ts:25-35`
+- **Severity:** Medium
+- **Description:** The 256-entry token cache evicts via `Map.keys().next().value` (first inserted), not least recently used. An attacker can pollute the cache with valid tokens to evict frequently-used ones, forcing Supabase roundtrips and enabling performance-based DoS.
 
 ---
 
-## Recommended Priority Order
+## LOW
 
-1. Fix the 2 **critical** items (spread in advice-builder, email null assertion)
-2. Fix **division by zero** in profile-sections and **NaN pagination** in crud controller
-3. **Delete dead code** (13 unused components/files) to reduce bundle size
-4. Fix **request ID validation** (log injection risk)
-5. Address **non-atomic credit deduction** for payment reliability
-6. Extract DRY violations and consolidate type augmentations
+### #18 — Weak request ID format validation
+- **Location:** `requestId.ts`
+- **Severity:** Low
+- **Description:** Accepts any 1-128 character alphanumeric/hyphen string as a client-provided request ID. No validation for UUID or other structured format, potentially enabling log injection or correlation issues.
+
+### #19 — Unused OPENAI_API_KEY reference in .env.example
+- **Location:** `.env.example:10`
+- **Severity:** Low
+- **Description:** `OPENAI_API_KEY` is listed in the example env file but appears unused in the codebase. Creates confusion for new developers and suggests a dependency that doesn't exist.
+
+### #20 — Client-side search has no rate cap
+- **Location:** `dashboard/page.tsx:22`
+- **Severity:** Low
+- **Description:** Search input uses a 300ms debounce but has no request rate cap. Rapid input of different queries can generate many API calls per second without throttling beyond the debounce window.
+
+### #21 — Unsanitized engine error text
+- **Location:** `engine.service.ts:44`
+- **Severity:** Low
+- **Description:** Raw response text from the engine service is thrown directly in `new Error()` without sanitization. If the engine returns verbose or malicious content, it propagates into error handlers and logs.
+
+### #22 — Health endpoint has no rate limiter
+- **Location:** `health.routes.ts`
+- **Severity:** Low
+- **Description:** The `/api/health` endpoint has no rate-limiting middleware. Can be hammered without restriction, enabling DoS or log inflation.

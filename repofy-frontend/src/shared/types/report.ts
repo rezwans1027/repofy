@@ -1,4 +1,6 @@
 // ── ReportData – shared interface for analysis reports ─────────────
+// SYNC: This file is duplicated in repofy-backend/src/types/shared/report.ts
+//       If you update this file, update the backend copy too.
 
 export interface RadarAxis {
   axis: string;

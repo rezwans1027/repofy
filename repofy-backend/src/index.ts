@@ -1,6 +1,7 @@
 import { createApp } from "./app";
 import { env } from "./config/env";
 import { logger } from "./lib/logger";
+import { closeRedis } from "./lib/redis";
 import { cleanExpiredCache } from "./services/cache.service";
 
 const app = createApp();
@@ -32,8 +33,12 @@ function gracefulShutdown(signal: string) {
   logger.info(`${signal} received, shutting down gracefully`);
   clearInterval(cacheCleanupInterval);
   server.close(() => {
-    logger.info("All in-flight requests completed, exiting");
-    process.exit(0);
+    closeRedis()
+      .catch(() => {}) // ignore — may already be disconnected
+      .finally(() => {
+        logger.info("All in-flight requests completed, exiting");
+        process.exit(0);
+      });
   });
 
   // Force exit if in-flight requests don't finish within 30s

@@ -59,6 +59,12 @@ export async function serverFetch<T>(
     return { data: null, error };
   }
 
-  const json = await res.json();
-  return { data: json.data as T, error: null };
+  let json: unknown;
+  try {
+    json = await res.json();
+  } catch {
+    return { data: null, error: "server-error" };
+  }
+
+  return { data: (json as Record<string, unknown>).data as T, error: null };
 }

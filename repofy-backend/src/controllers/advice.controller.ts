@@ -10,6 +10,7 @@ import { logTokenUsage, type TokenUsage } from "../lib/usage-logger";
 import { USERNAME_RE } from "../lib/validators";
 import { sendError, sendSuccess } from "../lib/response";
 import { handleControllerError } from "../lib/controller-utils";
+import { advisoryLock } from "../lib/distributed-lock";
 import type { AuthenticatedRequest, AdviceV2 } from "../types";
 
 interface AdviceEngineResponse {
@@ -17,29 +18,13 @@ interface AdviceEngineResponse {
   tokenUsage?: { endpoint: string; model: string; usage: TokenUsage }[];
 }
 
-/**
- * Track in-flight advice requests per user to prevent concurrent expensive calls.
- *
- * NOTE: This is per-process only. In a horizontally-scaled deployment (multiple
- * replicas), each instance tracks state independently. Migrate to a shared store
- * (e.g. Redis SETNX with TTL) when scaling beyond a single process.
- *
- * Safety: entries are removed in the `finally` block of adviseUser. As a belt-
- * and-suspenders measure, a periodic sweep removes any entry older than
- * ADVICE_LOCK_TTL_MS in case a request somehow exits without cleanup.
- */
-const ADVICE_LOCK_TTL_MS = 10 * 60 * 1000; // 10 minutes (max realistic advice duration)
-const activeAdviceRequests = new Map<string, number>(); // userId -> timestamp
+/** TTL for the distributed advice lock (seconds). */
+const ADVICE_LOCK_TTL_SECS = 10 * 60; // 10 minutes (max realistic advice duration)
 
-// Safety sweep: remove stale locks that survived past ADVICE_LOCK_TTL_MS.
-// Unref'd so it won't prevent graceful shutdown.
-const adviceLockSweepInterval = setInterval(() => {
-  const now = Date.now();
-  for (const [userId, startedAt] of activeAdviceRequests) {
-    if (now - startedAt > ADVICE_LOCK_TTL_MS) activeAdviceRequests.delete(userId);
-  }
-}, 60_000); // check every minute
-adviceLockSweepInterval.unref();
+/** Build a consistent lock key for a user's advice request. */
+function adviceLockKey(userId: string): string {
+  return `advice:${userId}`;
+}
 
 export const adviseUser: RequestHandler = async (req, res) => {
   const username = req.params.username as string;
@@ -50,14 +35,15 @@ export const adviseUser: RequestHandler = async (req, res) => {
   }
 
   const { userId } = req as AuthenticatedRequest;
+  const lockKey = adviceLockKey(userId);
 
-  if (activeAdviceRequests.has(userId)) {
+  const acquired = await advisoryLock.acquire(lockKey, ADVICE_LOCK_TTL_SECS);
+  if (!acquired) {
     sendError(res, 429, "An advice request is already in progress. Please wait.");
     return;
   }
 
   const requestId = crypto.randomUUID();
-  activeAdviceRequests.set(userId, Date.now());
 
   try {
     if (env.mockAi) {
@@ -111,6 +97,6 @@ export const adviseUser: RequestHandler = async (req, res) => {
   } catch (err) {
     handleControllerError(err, req, res, "Advice", "Advice generation failed. Please try again.");
   } finally {
-    activeAdviceRequests.delete(userId);
+    await advisoryLock.release(lockKey);
   }
 };

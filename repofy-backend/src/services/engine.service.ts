@@ -20,10 +20,8 @@ export async function callEngine<T>(
   const parsed = validateSafeUrl(fullUrl, `Engine ${path}`);
 
   // 3. DNS-resolution check: ensure the hostname doesn't resolve to a private IP
-  //    (protects against DNS rebinding attacks). Skip in dev for localhost convenience.
-  if (env.isProduction) {
-    await assertHostNotPrivate(parsed.hostname, `Engine ${path}`);
-  }
+  //    (protects against DNS rebinding attacks).
+  await assertHostNotPrivate(parsed.hostname, `Engine ${path}`);
 
   const res = await fetchWithRetry(
     parsed.href,

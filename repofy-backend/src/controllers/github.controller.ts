@@ -65,8 +65,14 @@ function ghCacheSet(key: string, data: GitHubUserData): void {
 }
 
 export const searchGitHub: RequestHandler = async (req, res) => {
-  const rawQ = req.query.q;
-  const q = (Array.isArray(rawQ) ? rawQ[0] : rawQ || "").toString().trim().slice(0, 256);
+  const rawQ = Array.isArray(req.query.q) ? req.query.q[0] : req.query.q;
+
+  if (typeof rawQ !== "string") {
+    sendError(res, 400, "Missing or invalid query parameter: q must be a string");
+    return;
+  }
+
+  const q = rawQ.trim().slice(0, 256);
 
   if (!q) {
     sendSuccess(res, []);

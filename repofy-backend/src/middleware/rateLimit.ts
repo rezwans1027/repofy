@@ -95,11 +95,11 @@ export const readRateLimit = createLimiter({ max: 60, keyGenerator: userKeyGener
 
 /**
  * Global IP-based rate limiter applied to ALL routes.
- * 100 requests per 15-minute window per IP.
+ * 300 requests per 15-minute window per IP.
  * Acts as a safety net above the per-route limiters.
  */
 export const globalRateLimit = createLimiter({
-  max: 100,
+  max: 300,
   windowMs: 15 * 60_000,
   message: "Too many requests from this IP. Please try again later.",
 });

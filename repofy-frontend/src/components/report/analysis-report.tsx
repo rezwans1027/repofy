@@ -1,13 +1,18 @@
 "use client";
 
 import { lazy, Suspense, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { reportData as staticReportData } from "@/lib/demo-data";
 import type { ReportData } from "@shared/types/report";
 
 import { TopBanner } from "./sections/top-banner";
 import { Summary } from "./sections/summary";
 import { ExportBar } from "./sections/export-bar";
-import { AnalysisReportPdfLayout } from "./pdf-layout";
+
+const AnalysisReportPdfLayout = dynamic(
+  () => import("./pdf-layout").then((m) => ({ default: m.AnalysisReportPdfLayout })),
+  { ssr: false }
+);
 
 const RadarSection = lazy(() => import("./sections/radar-section").then(m => ({ default: m.RadarSection })));
 const StatsOverview = lazy(() => import("./sections/stats-overview").then(m => ({ default: m.StatsOverview })));

@@ -1,4 +1,6 @@
 // ── AdviceData – shared interface for advice reports ────────────────
+// SYNC: This file is duplicated in repofy-backend/src/types/shared/advice.ts
+//       If you update this file, update the backend copy too.
 
 export type GenerationWarning =
   | "repo_improvements_unavailable"

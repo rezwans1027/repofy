@@ -28,6 +28,37 @@ describe("searchGitHub controller", () => {
     vi.clearAllMocks();
   });
 
+  it("returns 400 when q param is missing", async () => {
+    const { req, res, next } = createControllerMocks({}, {});
+
+    await searchGitHub(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      error: "Missing or invalid query parameter: q must be a string",
+    });
+    expect(mockSearchGitHubUsers).not.toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 when q param is not a string", async () => {
+    const { req, res, next } = createControllerMocks(
+      {},
+      { q: {} } as unknown as Record<string, string>,
+    );
+
+    await searchGitHub(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      error: "Missing or invalid query parameter: q must be a string",
+    });
+    expect(mockSearchGitHubUsers).not.toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
+  });
+
   it("returns empty array for empty query", async () => {
     const { req, res, next } = createControllerMocks({}, { q: "" });
 
