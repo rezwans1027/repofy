@@ -59,15 +59,14 @@ describe("GET /api/github/search", () => {
     expect(res.body.data).toEqual([]);
   });
 
-  it("returns empty array when no q param", async () => {
+  it("returns 400 when no q param", async () => {
     const app = getApp();
     const res = await request(app)
       .get("/api/github/search")
       .set("Authorization", "Bearer valid-token");
 
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data).toEqual([]);
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
   });
 
   it("returns 429 when GitHub API rate limit is hit", async () => {
