@@ -1,7 +1,11 @@
 import "@testing-library/jest-dom/vitest";
-import { afterEach } from "vitest";
+import * as axeMatchers from "vitest-axe/matchers";
+import { afterEach, expect } from "vitest";
 import { cleanup } from "@testing-library/react";
 import { vi } from "vitest";
+
+// Extend Vitest with axe accessibility matchers (toHaveNoViolations)
+expect.extend(axeMatchers);
 import { navModule } from "./helpers/mock-navigation";
 
 // Ensure DOM cleanup between tests (vitest doesn't auto-cleanup like jest)
