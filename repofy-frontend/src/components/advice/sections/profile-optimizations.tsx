@@ -2,14 +2,14 @@
 
 import { motion } from "framer-motion";
 import { Target } from "lucide-react";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { AdviceEmptyState } from "./advice-empty-state";
 import {
   staggerContainer,
   staggerItemScale,
   contentFade,
 } from "@/lib/animation-variants";
+import { ADVISOR_ACCENT, ADVISOR_HOVER_BORDER } from "@/lib/styles";
 import type { AdviceData } from "@shared/types/advice";
 
 interface ProfileOptimizationsProps {
@@ -28,9 +28,7 @@ export function ProfileOptimizations({ optimizations }: ProfileOptimizationsProp
   }
 
   return (
-    <AnimateOnView delay={0.16}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader title="Profile Optimizations" />
+    <SectionCard delay={0.16} title="Profile Optimizations">
 
         <motion.div
           className="space-y-3"
@@ -45,10 +43,10 @@ export function ProfileOptimizations({ optimizations }: ProfileOptimizationsProp
               variants={staggerItemScale}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
               whileHover={{ scale: 1.02, y: -2 }}
-              className="rounded-md border border-border bg-background p-3 space-y-2 hover:border-emerald-500/20 cursor-default"
+              className={`rounded-md border border-border bg-background p-3 space-y-2 ${ADVISOR_HOVER_BORDER} cursor-default`}
             >
               <div className="flex items-center gap-2">
-                <Target className="size-3.5 shrink-0 text-emerald-400" />
+                <Target className={`size-3.5 shrink-0 ${ADVISOR_ACCENT}`} />
                 <span className="font-mono text-xs font-bold">{opt.area}</span>
               </div>
               <motion.div className="space-y-2" variants={contentFade}>
@@ -60,7 +58,7 @@ export function ProfileOptimizations({ optimizations }: ProfileOptimizationsProp
                     <p className="mt-0.5 text-muted-foreground">{opt.current}</p>
                   </div>
                   <div>
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
+                    <span className={`font-mono text-[10px] uppercase tracking-wider ${ADVISOR_ACCENT}`}>
                       Suggestion
                     </span>
                     <p className="mt-0.5">{opt.suggestion}</p>
@@ -84,7 +82,6 @@ export function ProfileOptimizations({ optimizations }: ProfileOptimizationsProp
             </motion.div>
           ))}
         </motion.div>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }

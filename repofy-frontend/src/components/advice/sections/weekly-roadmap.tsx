@@ -3,8 +3,7 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Calendar, CheckCircle2 } from "lucide-react";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { Badge } from "@/components/ui/badge";
 import { EASE_OUT_EXPO } from "@/lib/animation-variants";
 import type { Variants } from "framer-motion";
@@ -110,12 +109,9 @@ export function WeeklyRoadmap({ weeks, builds }: WeeklyRoadmapProps) {
 
   if (weeks.length === 0) {
     return (
-      <AnimateOnView delay={0.08}>
-        <div className="rounded-lg border border-border bg-card p-5">
-          <SectionHeader title="12-Week Roadmap" />
+      <SectionCard delay={0.08} title="12-Week Roadmap">
           <p className="text-xs text-muted-foreground">No weekly roadmap available.</p>
-        </div>
-      </AnimateOnView>
+      </SectionCard>
     );
   }
 
@@ -130,12 +126,7 @@ export function WeeklyRoadmap({ weeks, builds }: WeeklyRoadmapProps) {
   }
 
   return (
-    <AnimateOnView delay={0.08}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader
-          title="12-Week Roadmap"
-          subtitle="Your week-by-week execution plan"
-        />
+    <SectionCard delay={0.08} title="12-Week Roadmap" subtitle="Your week-by-week execution plan">
 
         <div ref={timelineRef} className="relative">
           {/* ── Scroll-driven timeline spine ──────────────────── */}
@@ -266,7 +257,6 @@ export function WeeklyRoadmap({ weeks, builds }: WeeklyRoadmapProps) {
             })}
           </div>
         </div>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }

@@ -1,11 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { AdviceEmptyState } from "./advice-empty-state";
 import { Badge } from "@/components/ui/badge";
-import { DEMAND_STYLES } from "@/lib/styles";
+import { DEMAND_STYLES, TIMELINE_STYLES, ADVISOR_ACCENT, ADVISOR_HOVER_BORDER, ADVISOR_SIDEBAR } from "@/lib/styles";
 import {
   staggerContainer,
   staggerItemScale,
@@ -15,12 +14,6 @@ import {
   borderGrow,
 } from "@/lib/animation-variants";
 import type { AdviceData } from "@shared/types/advice";
-
-const PRIORITY_STYLES = {
-  Now: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-  Next: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
-  Later: "bg-blue-500/15 text-blue-400 border-blue-500/30",
-} as const satisfies Record<string, string>;
 
 interface SkillRoadmapProps {
   skills: AdviceData["skillRoadmap"];
@@ -38,12 +31,7 @@ export function SkillRoadmap({ skills }: SkillRoadmapProps) {
   }
 
   return (
-    <AnimateOnView delay={0.08}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader
-          title="Skill Roadmap"
-          subtitle="Based on your stack and market demand"
-        />
+    <SectionCard delay={0.08} title="Skill Roadmap" subtitle="Based on your stack and market demand">
 
         <motion.div
           className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
@@ -58,7 +46,7 @@ export function SkillRoadmap({ skills }: SkillRoadmapProps) {
               variants={staggerItemScale}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
               whileHover={{ scale: 1.02, y: -2 }}
-              className="rounded-md border border-border bg-background p-4 space-y-2 hover:border-emerald-500/20 cursor-default"
+              className={`rounded-md border border-border bg-background p-4 space-y-2 ${ADVISOR_HOVER_BORDER} cursor-default`}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-mono text-sm font-bold min-w-0">{skill.skill}</h3>
@@ -67,7 +55,7 @@ export function SkillRoadmap({ skills }: SkillRoadmapProps) {
                   variants={staggerContainerFast}
                 >
                   <motion.div variants={badgePop}>
-                    <Badge className={`border text-[9px] ${PRIORITY_STYLES[skill.priority] ?? ""}`}>
+                    <Badge className={`border text-[9px] ${TIMELINE_STYLES[skill.priority] ?? ""}`}>
                       {skill.priority}
                     </Badge>
                   </motion.div>
@@ -83,22 +71,21 @@ export function SkillRoadmap({ skills }: SkillRoadmapProps) {
                   {skill.reason}
                 </p>
                 <p className="text-[11px] text-muted-foreground">
-                  <span className="text-emerald-400">Related to:</span> {skill.relatedTo}
+                  <span className={ADVISOR_ACCENT}>Related to:</span> {skill.relatedTo}
                 </p>
                 <div className="relative pl-2">
                   <motion.div
-                    className="absolute left-0 top-0 w-px rounded-full bg-emerald-400/20"
+                    className={`absolute left-0 top-0 w-px rounded-full ${ADVISOR_SIDEBAR}`}
                     variants={borderGrow}
                   />
                   <p className="text-[11px] text-muted-foreground">
-                    <span className="text-emerald-400">Proof:</span> {skill.proofOfLearning}
+                    <span className={ADVISOR_ACCENT}>Proof:</span> {skill.proofOfLearning}
                   </p>
                 </div>
               </motion.div>
             </motion.div>
           ))}
         </motion.div>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }

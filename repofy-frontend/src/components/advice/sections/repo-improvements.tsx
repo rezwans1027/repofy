@@ -3,11 +3,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Wrench, Star } from "lucide-react";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { AdviceEmptyState } from "./advice-empty-state";
 import { Badge } from "@/components/ui/badge";
-import { PRIORITY_STYLES } from "@/lib/styles";
+import { PRIORITY_STYLES, ADVISOR_ACCENT, ADVISOR_HOVER_BORDER } from "@/lib/styles";
 import {
   staggerContainer,
   staggerItem,
@@ -34,12 +33,7 @@ export function RepoImprovements({ repoImprovements, expandAll = false }: RepoIm
   }
 
   return (
-    <AnimateOnView delay={0.06}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader
-          title="Repository Improvements"
-          subtitle="Specific upgrades for your existing repos"
-        />
+    <SectionCard delay={0.06} title="Repository Improvements" subtitle="Specific upgrades for your existing repos">
 
         <motion.div
           className="space-y-3"
@@ -54,7 +48,7 @@ export function RepoImprovements({ repoImprovements, expandAll = false }: RepoIm
               variants={staggerItem}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
               whileHover={{ scale: 1.01, y: -1 }}
-              className="rounded-md border border-border bg-background overflow-hidden hover:border-emerald-500/20 cursor-default"
+              className={`rounded-md border border-border bg-background overflow-hidden ${ADVISOR_HOVER_BORDER} cursor-default`}
             >
               <button
                 onClick={() =>
@@ -63,7 +57,7 @@ export function RepoImprovements({ repoImprovements, expandAll = false }: RepoIm
                 className="flex w-full items-center justify-between p-3 text-left hover:bg-secondary/30"
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <Wrench className="size-3.5 shrink-0 text-emerald-400" />
+                  <Wrench className={`size-3.5 shrink-0 ${ADVISOR_ACCENT}`} />
                   <span className="font-mono text-sm font-bold truncate">
                     {repo.repoName}
                   </span>
@@ -120,7 +114,7 @@ export function RepoImprovements({ repoImprovements, expandAll = false }: RepoIm
                             </p>
                             {imp.expectedOutcome && (
                               <p className="text-[11px] text-muted-foreground">
-                                <span className="text-emerald-400">Outcome:</span> {imp.expectedOutcome}
+                                <span className={ADVISOR_ACCENT}>Outcome:</span> {imp.expectedOutcome}
                               </p>
                             )}
                           </div>
@@ -133,7 +127,6 @@ export function RepoImprovements({ repoImprovements, expandAll = false }: RepoIm
             </motion.div>
           ))}
         </motion.div>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }

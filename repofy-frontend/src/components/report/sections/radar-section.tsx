@@ -1,5 +1,4 @@
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { RadarChart } from "@/components/ui/radar-chart";
 import type { ReportData } from "@shared/types/report";
 
@@ -10,12 +9,7 @@ interface RadarSectionProps {
 
 export function RadarSection({ radarAxes, radarBreakdown }: RadarSectionProps) {
   return (
-    <AnimateOnView delay={0.12}>
-      <div data-testid="report-radar" className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader
-          title="Developer DNA"
-          subtitle="6-axis capability assessment"
-        />
+    <SectionCard delay={0.12} title="Developer DNA" subtitle="6-axis capability assessment" data-testid="report-radar">
         <div className="grid gap-6 lg:grid-cols-2">
           <RadarChart data={radarAxes} size={300} />
           <div className="space-y-3">
@@ -32,7 +26,6 @@ export function RadarSection({ radarAxes, radarBreakdown }: RadarSectionProps) {
             ))}
           </div>
         </div>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }

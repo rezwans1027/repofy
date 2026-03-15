@@ -6,7 +6,7 @@ type Phase = "typing" | "pausing" | "deleting";
 
 export function useTypewriter(words: string[]) {
   const [placeholder, setPlaceholder] = useState("");
-  const [, tick] = useReducer((c: number) => c + 1, 0);
+  const [tickCount, tick] = useReducer((c: number) => c + 1, 0);
 
   const wordIdx = useRef(0);
   const charIdx = useRef(0);
@@ -47,7 +47,7 @@ export function useTypewriter(words: string[]) {
 
     const timeout = setTimeout(step, delay);
     return () => clearTimeout(timeout);
-  });
+  }, [placeholder, tickCount, step]);
 
   return placeholder;
 }

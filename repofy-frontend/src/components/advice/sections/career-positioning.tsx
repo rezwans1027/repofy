@@ -2,8 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Briefcase, Star } from "lucide-react";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { Badge } from "@/components/ui/badge";
 import {
   staggerContainer,
@@ -11,6 +10,7 @@ import {
   badgePop,
   EASE_OUT_EXPO,
 } from "@/lib/animation-variants";
+import { ADVISOR_ACCENT, ADVISOR_SIDEBAR_STRONG } from "@/lib/styles";
 import type { AdviceData } from "@shared/types/advice";
 
 interface CareerPositioningProps {
@@ -22,27 +22,19 @@ export function CareerPositioning({ data }: CareerPositioningProps) {
 
   if (empty) {
     return (
-      <AnimateOnView delay={0.16}>
-        <div className="rounded-lg border border-border bg-card p-5">
-          <SectionHeader title="Career Positioning" />
+      <SectionCard delay={0.16} title="Career Positioning">
           <p className="text-xs text-muted-foreground">No career positioning available.</p>
-        </div>
-      </AnimateOnView>
+      </SectionCard>
     );
   }
 
   return (
-    <AnimateOnView delay={0.16}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader
-          title="Career Positioning"
-          subtitle="How to frame yourself for job applications"
-        />
+    <SectionCard delay={0.16} title="Career Positioning" subtitle="How to frame yourself for job applications">
         <div className="space-y-4">
           {/* Positioning narrative with animated border */}
           <div className="relative pl-3">
             <motion.div
-              className="absolute left-0 top-0 w-0.5 rounded-full bg-emerald-400/30"
+              className={`absolute left-0 top-0 w-0.5 rounded-full ${ADVISOR_SIDEBAR_STRONG}`}
               initial={{ height: 0 }}
               whileInView={{ height: "100%" }}
               viewport={{ once: true }}
@@ -62,7 +54,7 @@ export function CareerPositioning({ data }: CareerPositioningProps) {
           {/* Fitting roles — badges pop in with stagger */}
           {data.roles.length > 0 && (
             <div className="space-y-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
+              <span className={`font-mono text-[10px] uppercase tracking-wider ${ADVISOR_ACCENT}`}>
                 Fitting Roles
               </span>
               <motion.div
@@ -75,7 +67,7 @@ export function CareerPositioning({ data }: CareerPositioningProps) {
                 {data.roles.map((role) => (
                   <motion.div key={role} variants={badgePop}>
                     <Badge
-                      className="border bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[11px]"
+                      className={`border bg-emerald-500/10 ${ADVISOR_ACCENT} border-emerald-500/30 text-[11px]`}
                     >
                       <Briefcase className="size-3 mr-1.5" />
                       {role}
@@ -89,7 +81,7 @@ export function CareerPositioning({ data }: CareerPositioningProps) {
           {/* Differentiators — staggered slide-in */}
           {data.differentiators.length > 0 && (
             <div className="space-y-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
+              <span className={`font-mono text-[10px] uppercase tracking-wider ${ADVISOR_ACCENT}`}>
                 What Sets You Apart
               </span>
               <motion.div
@@ -117,7 +109,6 @@ export function CareerPositioning({ data }: CareerPositioningProps) {
             </div>
           )}
         </div>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }

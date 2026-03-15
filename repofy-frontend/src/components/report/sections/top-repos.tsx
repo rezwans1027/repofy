@@ -3,10 +3,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown, Award, Star, GitFork } from "lucide-react";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { Badge } from "@/components/ui/badge";
-import { codeQualityColor, testingColor, cicdColor, verdictColor } from "@/lib/styles";
+import { codeQualityColor, testingColor, cicdColor, verdictBadgeStyle } from "@/lib/styles";
 import type { ReportData } from "@shared/types/report";
 
 interface TopReposProps {
@@ -18,12 +17,7 @@ export function TopRepos({ topRepos, expandAll }: TopReposProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   return (
-    <AnimateOnView delay={0.36}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader
-          title="Top Repositories"
-          subtitle="Deep dive into signature projects"
-        />
+    <SectionCard delay={0.36} title="Top Repositories" subtitle="Deep dive into signature projects">
         <div className="space-y-3">
           {topRepos.map((repo) => (
             <div
@@ -129,18 +123,6 @@ export function TopRepos({ topRepos, expandAll }: TopReposProps) {
             </div>
           ))}
         </div>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
-}
-
-function verdictBadgeStyle(verdict: string): string {
-  switch (verdict) {
-    case "Standout": return "bg-amber-500/15 text-amber-400 border-amber-500/30";
-    case "Strong": return "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
-    case "Solid": return "bg-cyan/15 text-cyan border-cyan/30";
-    case "Needs Work": return "bg-orange-500/15 text-orange-400 border-orange-500/30";
-    case "Risky": return "bg-red-500/15 text-red-400 border-red-500/30";
-    default: return "bg-secondary text-muted-foreground border-border";
-  }
 }

@@ -86,3 +86,43 @@ export const DEMAND_STYLES = {
   Medium: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
   Growing: "bg-purple-500/15 text-purple-400 border-purple-500/30",
 } as const satisfies Record<string, string>;
+
+/** Skill roadmap timeline priority -> badge classes */
+export const TIMELINE_STYLES = {
+  Now: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  Next: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
+  Later: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+} as const satisfies Record<string, string>;
+
+/** Trajectory confidence -> badge classes */
+export const CONFIDENCE_STYLES = {
+  High: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  Medium: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
+  Low: "bg-red-500/15 text-red-400 border-red-500/30",
+} as const satisfies Record<string, string>;
+
+/** Career level -> text color class */
+export const LEVEL_STYLES = {
+  Junior: "text-blue-400",
+  "Mid-Level": "text-cyan",
+  Senior: "text-emerald-400",
+  Staff: "text-amber-400",
+} as const satisfies Record<string, string>;
+
+/** Verdict -> badge classes (bg + text + border) */
+export function verdictBadgeStyle(verdict: string): string {
+  switch (verdict) {
+    case "Standout": return "bg-amber-500/15 text-amber-400 border-amber-500/30";
+    case "Strong": return "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
+    case "Solid": return "bg-cyan/15 text-cyan border-cyan/30";
+    case "Needs Work": return "bg-orange-500/15 text-orange-400 border-orange-500/30";
+    case "Risky": return "bg-red-500/15 text-red-400 border-red-500/30";
+    default: return "bg-secondary text-muted-foreground border-border";
+  }
+}
+
+/** Advisor accent color — used for icons, labels, and highlights in advice sections */
+export const ADVISOR_ACCENT = "text-emerald-400";
+export const ADVISOR_HOVER_BORDER = "hover:border-emerald-500/20";
+export const ADVISOR_SIDEBAR = "bg-emerald-400/20";
+export const ADVISOR_SIDEBAR_STRONG = "bg-emerald-400/30";

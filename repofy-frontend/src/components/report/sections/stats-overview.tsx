@@ -1,6 +1,5 @@
 import { useMemo } from "react";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { CountUp } from "@/components/ui/count-up";
 import type { ReportData } from "@shared/types/report";
 
@@ -31,9 +30,7 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
   );
 
   return (
-    <AnimateOnView delay={0.18}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader title="Stats Overview" />
+    <SectionCard delay={0.18} title="Stats Overview">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {statItems.map((s) => (
             <div
@@ -67,7 +64,6 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
         <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
           {stats.interpretation}
         </p>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }

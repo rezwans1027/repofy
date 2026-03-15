@@ -2,28 +2,15 @@
 
 import { motion } from "framer-motion";
 import { Compass } from "lucide-react";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { Badge } from "@/components/ui/badge";
+import { CONFIDENCE_STYLES, LEVEL_STYLES, ADVISOR_ACCENT, ADVISOR_SIDEBAR_STRONG } from "@/lib/styles";
 import {
   staggerContainer,
   staggerItem,
   EASE_OUT_EXPO,
 } from "@/lib/animation-variants";
 import type { AdviceData } from "@shared/types/advice";
-
-const CONFIDENCE_STYLES = {
-  High: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-  Medium: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
-  Low: "bg-red-500/15 text-red-400 border-red-500/30",
-} as const satisfies Record<string, string>;
-
-const LEVEL_STYLES = {
-  Junior: "text-blue-400",
-  "Mid-Level": "text-cyan",
-  Senior: "text-emerald-400",
-  Staff: "text-amber-400",
-} as const satisfies Record<string, string>;
 
 interface TrajectoryProps {
   trajectory: AdviceData["trajectory"];
@@ -39,12 +26,7 @@ export function TrajectorySection({ trajectory }: TrajectoryProps) {
   ];
 
   return (
-    <AnimateOnView delay={0.08}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader
-          title="Career Trajectory"
-          subtitle="Estimated level and growth path"
-        />
+    <SectionCard delay={0.08} title="Career Trajectory" subtitle="Estimated level and growth path">
         <div className="space-y-4">
           {/* Level badges with animated arrow */}
           <motion.div
@@ -61,7 +43,7 @@ export function TrajectorySection({ trajectory }: TrajectoryProps) {
                 viewport={{ once: true }}
                 transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
               >
-                <Compass className="size-4 text-emerald-400" />
+                <Compass className={`size-4 ${ADVISOR_ACCENT}`} />
               </motion.div>
               <span className="font-mono text-xs text-muted-foreground">Current:</span>
               <span className={`font-mono text-sm font-bold ${LEVEL_STYLES[trajectory.currentEstimate] ?? "text-foreground"}`}>
@@ -71,7 +53,7 @@ export function TrajectorySection({ trajectory }: TrajectoryProps) {
 
             {/* Animated arrow */}
             <motion.span
-              className="text-emerald-400 font-bold"
+              className={`${ADVISOR_ACCENT} font-bold`}
               initial={{ opacity: 0, x: -8 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -108,7 +90,7 @@ export function TrajectorySection({ trajectory }: TrajectoryProps) {
           {/* Rationale with animated border */}
           <div className="relative pl-3">
             <motion.div
-              className="absolute left-0 top-0 w-0.5 rounded-full bg-emerald-400/30"
+              className={`absolute left-0 top-0 w-0.5 rounded-full ${ADVISOR_SIDEBAR_STRONG}`}
               initial={{ height: 0 }}
               whileInView={{ height: "100%" }}
               viewport={{ once: true }}
@@ -141,9 +123,9 @@ export function TrajectorySection({ trajectory }: TrajectoryProps) {
                   scale: 1.02,
                   transition: { type: "spring", stiffness: 400, damping: 30 },
                 }}
-                className="rounded-md border border-border bg-background p-3 hover:border-emerald-500/30"
+                className={`rounded-md border border-border bg-background p-3 hover:border-emerald-500/30`}
               >
-                <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
+                <span className={`font-mono text-[10px] uppercase tracking-wider ${ADVISOR_ACCENT}`}>
                   {entry.label}
                 </span>
                 <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
@@ -153,7 +135,6 @@ export function TrajectorySection({ trajectory }: TrajectoryProps) {
             ))}
           </motion.div>
         </div>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }

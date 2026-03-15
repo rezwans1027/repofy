@@ -1,5 +1,4 @@
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { stripMarkdown } from "@/lib/format";
 
 interface SummaryProps {
@@ -13,17 +12,14 @@ export function Summary({ narrativeReport }: SummaryProps) {
     .filter((p) => p.length > 0);
 
   return (
-    <AnimateOnView delay={0.06}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader title="Executive Summary" />
-        <div className="border-l-2 border-cyan/40 pl-4 space-y-3">
-          {paragraphs.map((paragraph, i) => (
-            <p key={i} className="text-sm leading-relaxed text-muted-foreground">
-              {paragraph}
-            </p>
-          ))}
-        </div>
+    <SectionCard delay={0.06} title="Executive Summary">
+      <div className="border-l-2 border-cyan/40 pl-4 space-y-3">
+        {paragraphs.map((paragraph, i) => (
+          <p key={i} className="text-sm leading-relaxed text-muted-foreground">
+            {paragraph}
+          </p>
+        ))}
       </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }

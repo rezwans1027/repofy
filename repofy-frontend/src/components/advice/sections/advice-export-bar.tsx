@@ -8,6 +8,7 @@ import { StickyBottomBar } from "@/components/ui/sticky-bottom-bar";
 import { ExportPdfButton } from "@/components/ui/export-pdf-button";
 import { CreditConfirmDialog } from "@/components/ui/credit-confirm-dialog";
 import { NoCreditsDialog } from "@/components/ui/no-credits-dialog";
+import { ADVISOR_ACCENT } from "@/lib/styles";
 import { useCreditBalance } from "@/hooks/use-credits";
 import { useExportPdf } from "@/hooks/use-export-pdf";
 
@@ -46,7 +47,7 @@ export function AdviceExportBar({ username, adviceRef, onBeforeExport, onAfterEx
       <StickyBottomBar delay="0.4s">
         <p className="hidden font-mono text-xs text-muted-foreground sm:block">
           Advice for{" "}
-          <span className="text-emerald-400">@{username}</span>
+          <span className={ADVISOR_ACCENT}>@{username}</span>
         </p>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Button

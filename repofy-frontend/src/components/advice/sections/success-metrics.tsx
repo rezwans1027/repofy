@@ -2,8 +2,8 @@
 
 import { motion } from "framer-motion";
 import { Target } from "lucide-react";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
+import { ADVISOR_ACCENT } from "@/lib/styles";
 import { staggerContainer, staggerItem } from "@/lib/animation-variants";
 
 interface SuccessMetricsProps {
@@ -13,22 +13,14 @@ interface SuccessMetricsProps {
 export function SuccessMetrics({ metrics }: SuccessMetricsProps) {
   if (metrics.length === 0) {
     return (
-      <AnimateOnView delay={0.12}>
-        <div className="rounded-lg border border-border bg-card p-5">
-          <SectionHeader title="Success Metrics" />
+      <SectionCard delay={0.12} title="Success Metrics">
           <p className="text-xs text-muted-foreground">No success metrics available.</p>
-        </div>
-      </AnimateOnView>
+      </SectionCard>
     );
   }
 
   return (
-    <AnimateOnView delay={0.12}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader
-          title="Success Metrics"
-          subtitle="Measurable checkpoints for your 12-week plan"
-        />
+    <SectionCard delay={0.12} title="Success Metrics" subtitle="Measurable checkpoints for your 12-week plan">
 
         <motion.div
           className="space-y-2"
@@ -45,14 +37,13 @@ export function SuccessMetrics({ metrics }: SuccessMetricsProps) {
                 x: 4,
                 transition: { type: "spring", stiffness: 400, damping: 30 },
               }}
-              className="flex gap-3 rounded-md border border-border bg-background p-3 hover:border-emerald-500/30 cursor-default"
+              className={`flex gap-3 rounded-md border border-border bg-background p-3 hover:border-emerald-500/30 cursor-default`}
             >
-              <Target className="size-4 shrink-0 text-emerald-400 mt-0.5" />
+              <Target className={`size-4 shrink-0 ${ADVISOR_ACCENT} mt-0.5`} />
               <p className="text-xs leading-relaxed">{metric}</p>
             </motion.div>
           ))}
         </motion.div>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }
