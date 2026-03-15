@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import { sendError, sendSuccess } from "../lib/response";
 import { handleControllerError } from "../lib/controller-utils";
-import { MAX_DELETE_IDS } from "../lib/validators";
+import { MAX_DELETE_IDS, UUID_RE } from "../lib/validators";
 import type { AuthenticatedRequest } from "../types";
 
 interface CrudServiceMethods {
@@ -72,6 +72,10 @@ export function createCrudController(config: CrudControllerConfig): CrudControll
       }
       if (ids.length > MAX_DELETE_IDS) {
         sendError(res, 400, `Cannot delete more than ${MAX_DELETE_IDS} items at once`);
+        return;
+      }
+      if (!ids.every((id: string) => UUID_RE.test(id))) {
+        sendError(res, 400, "Each id must be a valid UUID");
         return;
       }
       try {

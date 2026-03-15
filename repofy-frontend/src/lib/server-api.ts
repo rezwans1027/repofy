@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
 
 export type ServerError = "unauthenticated" | "forbidden" | "not-found" | "server-error";
 
@@ -17,7 +18,7 @@ function getBaseUrl() {
 
 export async function serverFetch<T>(
   path: string,
-  options?: { revalidate?: number | false },
+  options?: { revalidate?: number | false; schema?: z.ZodType<T> },
 ): Promise<ServerResult<T>> {
   const supabase = await createClient();
 
@@ -45,10 +46,22 @@ export async function serverFetch<T>(
       ? { next: { revalidate: options.revalidate } }
       : { cache: "no-store" };
 
-  const res = await fetch(`${getBaseUrl()}${path}`, {
-    headers: { Authorization: `Bearer ${session.access_token}` },
-    ...cacheStrategy,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${getBaseUrl()}${path}`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+      signal: AbortSignal.timeout(10_000),
+      ...cacheStrategy,
+    });
+  } catch (err) {
+    if (
+      err instanceof DOMException && (err.name === "AbortError" || err.name === "TimeoutError")
+    ) {
+      console.error(`[serverFetch] Request to ${path} timed out after 10 s`);
+      return { data: null, error: "server-error" };
+    }
+    throw err;
+  }
 
   if (!res.ok) {
     const error: ServerError =
@@ -66,5 +79,16 @@ export async function serverFetch<T>(
     return { data: null, error: "server-error" };
   }
 
-  return { data: (json as Record<string, unknown>).data as T, error: null };
+  const raw = (json as Record<string, unknown>).data;
+
+  if (options?.schema) {
+    const parsed = options.schema.safeParse(raw);
+    if (!parsed.success) {
+      console.error(`[serverFetch] Zod validation failed for ${path}:`, parsed.error.issues);
+      return { data: null, error: "server-error" };
+    }
+    return { data: parsed.data, error: null };
+  }
+
+  return { data: raw as T, error: null };
 }

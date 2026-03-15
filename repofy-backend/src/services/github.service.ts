@@ -301,7 +301,7 @@ function buildLanguageBreakdown(repos: GitHubApiRepo[]): LanguageBreakdown[] {
   return Array.from(langMap.entries())
     .map(([name, repoCount]) => ({
       name,
-      color: LANGUAGE_COLORS[name] || DEFAULT_COLOR,
+      color: (LANGUAGE_COLORS as Record<string, string>)[name] || DEFAULT_COLOR,
       percentage: Math.round((repoCount / total) * 1000) / 10,
       repoCount,
     }))
@@ -957,6 +957,29 @@ function computeAggregateMetrics(snapshots: RepoSnapshot[]): AggregateMetrics {
   return { medianLatestPushDaysAgo, hasCode };
 }
 
+// ── Service-level user data cache ─────────────────────────────────────
+//
+// Deduplicates GitHub API calls when the same user is fetched by
+// multiple controllers (analyze, advice, github) within a short window.
+// The controller-level cache in github.controller.ts is coarser (5 min,
+// 128 entries); this one is tighter (3 min, 64 entries) and sits closer
+// to the network boundary so *all* callers benefit.
+
+const USER_DATA_CACHE_TTL = 3 * 60 * 1000; // 3 minutes
+const USER_DATA_CACHE_MAX = 64;
+
+interface UserDataCacheEntry {
+  data: GitHubUserData;
+  timestamp: number;
+}
+
+const userDataCache = new Map<string, UserDataCacheEntry>();
+
+/** Clear the service-level user data cache. Exposed for test isolation. */
+export function clearUserDataCache(): void {
+  userDataCache.clear();
+}
+
 // ── Public entry point ────────────────────────────────────────────────
 
 export async function searchGitHubUsers(
@@ -992,6 +1015,32 @@ export async function searchGitHubUsers(
 }
 
 export async function fetchGitHubUserData(
+  username: string,
+  signal?: AbortSignal,
+): Promise<GitHubUserData> {
+  const cacheKey = username.toLowerCase();
+
+  // Check cache
+  const cached = userDataCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < USER_DATA_CACHE_TTL) {
+    return cached.data;
+  }
+  // Remove stale entry
+  if (cached) userDataCache.delete(cacheKey);
+
+  const data = await fetchGitHubUserDataUncached(username, signal);
+
+  // Evict oldest entry when cache is full
+  if (userDataCache.size >= USER_DATA_CACHE_MAX) {
+    const oldest = userDataCache.keys().next().value;
+    if (oldest !== undefined) userDataCache.delete(oldest);
+  }
+  userDataCache.set(cacheKey, { data, timestamp: Date.now() });
+
+  return data;
+}
+
+async function fetchGitHubUserDataUncached(
   username: string,
   signal?: AbortSignal,
 ): Promise<GitHubUserData> {

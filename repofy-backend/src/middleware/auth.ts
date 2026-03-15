@@ -39,6 +39,11 @@ export function clearTokenCache(): void {
   tokenCache.clear();
 }
 
+/** Remove a specific token from the cache (used on logout). */
+export function invalidateToken(token: string): void {
+  tokenCache.delete(token);
+}
+
 export const requireAuth: RequestHandler = async (req, res, next) => {
   try {
     if (res.headersSent) return;
@@ -52,9 +57,11 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
 
-    // Check cache first
+    // Check cache first (LRU: delete + re-set moves entry to end)
     const cached = tokenCache.get(token);
     if (cached && Date.now() < cached.expiresAt) {
+      tokenCache.delete(token);
+      tokenCache.set(token, cached);
       req.userId = cached.userId;
       req.userEmail = cached.email;
       next();

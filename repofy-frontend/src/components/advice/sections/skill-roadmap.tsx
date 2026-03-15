@@ -16,11 +16,11 @@ import {
 } from "@/lib/animation-variants";
 import type { AdviceData } from "@shared/types/advice";
 
-const PRIORITY_STYLES: Record<string, string> = {
+const PRIORITY_STYLES = {
   Now: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
   Next: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
   Later: "bg-blue-500/15 text-blue-400 border-blue-500/30",
-};
+} as const satisfies Record<string, string>;
 
 interface SkillRoadmapProps {
   skills: AdviceData["skillRoadmap"];

@@ -7,3 +7,4 @@ coverage/
 .env.staging
 .env.*.local
 supabase/.temp/
+.next/

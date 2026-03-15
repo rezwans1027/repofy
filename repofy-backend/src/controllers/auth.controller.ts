@@ -2,6 +2,9 @@ import { RequestHandler } from "express";
 import { sendSuccess, sendError } from "../lib/response";
 import { handleControllerError } from "../lib/controller-utils";
 import { initiateSignup, verifySignup, resendOtp } from "../services/auth.service";
+import { invalidateToken } from "../middleware/auth";
+import { getSupabaseAdmin } from "../config/supabase";
+import type { AuthenticatedRequest } from "../types";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_EMAIL_LEN = 254;
@@ -53,6 +56,19 @@ export const handleVerifySignup: RequestHandler = async (req, res) => {
     sendSuccess(res, result);
   } catch (err) {
     handleControllerError(err, req, res, "Auth Verify", "An unexpected error occurred.");
+  }
+};
+
+export const handleLogout: RequestHandler = async (req, res) => {
+  const { userId } = req as AuthenticatedRequest;
+  const token = req.headers.authorization?.split(" ")[1];
+
+  try {
+    if (token) invalidateToken(token);
+    await getSupabaseAdmin().auth.admin.signOut(userId);
+    sendSuccess(res, { message: "Logged out successfully." });
+  } catch (err) {
+    handleControllerError(err, req, res, "Auth Logout", "Failed to log out.");
   }
 };
 

@@ -14,11 +14,12 @@ const fetchMock = vi.fn();
 vi.stubGlobal("fetch", fetchMock);
 
 // Import after stubbing fetch
-import { searchGitHubUsers, fetchGitHubUserData, GitHubError, detectSignals } from "../../../src/services/github.service";
+import { searchGitHubUsers, fetchGitHubUserData, GitHubError, detectSignals, clearUserDataCache } from "../../../src/services/github.service";
 
 describe("github.service", () => {
   beforeEach(() => {
     fetchMock.mockReset();
+    clearUserDataCache();
   });
 
   describe("searchGitHubUsers", () => {

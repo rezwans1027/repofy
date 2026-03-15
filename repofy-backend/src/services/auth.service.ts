@@ -89,9 +89,12 @@ export async function initiateSignup(
     throw new AuthError("Failed to initiate signup", 500);
   }
 
-  sendOtpEmail(email, otp, displayName).catch((err) => {
+  try {
+    await sendOtpEmail(email, otp, displayName);
+  } catch (err) {
     logger.error("Failed to send OTP email during signup", { email: maskEmail(email), error: err });
-  });
+    throw new AuthError("Failed to send verification email. Please try again.", 500);
+  }
 
   return { message: "A verification code has been sent to your email." };
 }
@@ -178,7 +181,7 @@ export async function resendOtp(email: string): Promise<{ message: string }> {
 
   const { data: updated, error: updateError } = await supabase
     .from("pending_signups")
-    .update({ otp_code: hashOtp(otp), otp_expires_at: expiresAt, attempts: 0 })
+    .update({ otp_code: hashOtp(otp), otp_expires_at: expiresAt })
     .eq("email", email)
     .select("email")
     .maybeSingle();
@@ -188,9 +191,12 @@ export async function resendOtp(email: string): Promise<{ message: string }> {
     throw new AuthError("Failed to resend code. Please try again.", 500);
   }
 
-  sendOtpEmail(email, otp, pending.display_name).catch((err) => {
+  try {
+    await sendOtpEmail(email, otp, pending.display_name);
+  } catch (err) {
     logger.error("Failed to send OTP email during resend", { email: maskEmail(email), error: err });
-  });
+    throw new AuthError("Failed to send verification email. Please try again.", 500);
+  }
 
   return { message: "If a pending signup exists, a new code has been sent." };
 }

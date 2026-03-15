@@ -13,7 +13,14 @@ const adviceRowSchema = z.object({
   id: z.string(),
   analyzed_username: z.string(),
   user_id: z.string(),
-  advice_data: z.record(z.string(), z.unknown()),
+  advice_data: z.object({
+    schemaVersion: z.literal("v2"),
+    summary: z.string(),
+    trajectory: z.object({ currentEstimate: z.string(), targetEstimate: z.string(), confidence: z.string() }).passthrough(),
+    buildRoadmap: z.array(z.object({ title: z.string() }).passthrough()),
+    skillRoadmap: z.array(z.object({ skill: z.string() }).passthrough()),
+    repoImprovements: z.array(z.object({ repoName: z.string() }).passthrough()),
+  }).passthrough(),
 });
 
 export type AdviceListItem = z.infer<typeof adviceListItemSchema>;

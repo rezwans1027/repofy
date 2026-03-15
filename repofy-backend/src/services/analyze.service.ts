@@ -58,7 +58,7 @@ export function buildReportData(
       description: ghRepo?.description || null,
       language: ghRepo?.language || null,
       languageColor: ghRepo?.language
-        ? LANGUAGE_COLORS[ghRepo.language] || DEFAULT_COLOR
+        ? (LANGUAGE_COLORS as Record<string, string>)[ghRepo.language] || DEFAULT_COLOR
         : DEFAULT_COLOR,
       stars: ghRepo?.stars ?? 0,
       forks: ghRepo?.forks ?? 0,

@@ -1,41 +1,53 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useReducer, useCallback } from "react";
+
+type Phase = "typing" | "pausing" | "deleting";
 
 export function useTypewriter(words: string[]) {
   const [placeholder, setPlaceholder] = useState("");
-  const [usernameIndex, setUsernameIndex] = useState(0);
-  const [charIndex, setCharIndex] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [, tick] = useReducer((c: number) => c + 1, 0);
+
+  const wordIdx = useRef(0);
+  const charIdx = useRef(0);
+  const phase = useRef<Phase>("typing");
+
+  const step = useCallback(() => {
+    const word = words[wordIdx.current];
+
+    switch (phase.current) {
+      case "typing": {
+        charIdx.current++;
+        setPlaceholder(word.slice(0, charIdx.current));
+        if (charIdx.current === word.length) {
+          phase.current = "pausing";
+        }
+        break;
+      }
+      case "pausing": {
+        phase.current = "deleting";
+        tick();
+        break;
+      }
+      case "deleting": {
+        charIdx.current--;
+        setPlaceholder(word.slice(0, charIdx.current));
+        if (charIdx.current === 0) {
+          wordIdx.current = (wordIdx.current + 1) % words.length;
+          phase.current = "typing";
+        }
+        break;
+      }
+    }
+  }, [words, tick]);
 
   useEffect(() => {
-    const currentName = words[usernameIndex];
+    const delay =
+      phase.current === "pausing" ? 1500 : phase.current === "deleting" ? 50 : 60;
 
-    const timeout = setTimeout(
-      () => {
-        if (!isDeleting) {
-          setPlaceholder(currentName.slice(0, charIndex + 1));
-          setCharIndex((c) => c + 1);
-
-          if (charIndex + 1 === currentName.length) {
-            setTimeout(() => setIsDeleting(true), 1500);
-          }
-        } else {
-          setPlaceholder(currentName.slice(0, charIndex - 1));
-          setCharIndex((c) => c - 1);
-
-          if (charIndex <= 1) {
-            setIsDeleting(false);
-            setUsernameIndex((i) => (i + 1) % words.length);
-            setCharIndex(0);
-          }
-        }
-      },
-      isDeleting ? 50 : 120
-    );
-
+    const timeout = setTimeout(step, delay);
     return () => clearTimeout(timeout);
-  }, [charIndex, isDeleting, usernameIndex, words]);
+  });
 
   return placeholder;
 }

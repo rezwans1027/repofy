@@ -12,18 +12,18 @@ import {
 } from "@/lib/animation-variants";
 import type { AdviceData } from "@shared/types/advice";
 
-const CONFIDENCE_STYLES: Record<string, string> = {
+const CONFIDENCE_STYLES = {
   High: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
   Medium: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
   Low: "bg-red-500/15 text-red-400 border-red-500/30",
-};
+} as const satisfies Record<string, string>;
 
-const LEVEL_STYLES: Record<string, string> = {
+const LEVEL_STYLES = {
   Junior: "text-blue-400",
   "Mid-Level": "text-cyan",
   Senior: "text-emerald-400",
   Staff: "text-amber-400",
-};
+} as const satisfies Record<string, string>;
 
 interface TrajectoryProps {
   trajectory: AdviceData["trajectory"];

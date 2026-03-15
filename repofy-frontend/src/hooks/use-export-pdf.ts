@@ -6,6 +6,7 @@ import { exportToPdf } from "@/lib/export-pdf";
 interface UseExportPdfOptions {
   onBeforeExport?: () => void;
   onAfterExport?: () => void;
+  onError?: (error: Error) => void;
 }
 
 export function useExportPdf(
@@ -33,6 +34,9 @@ export function useExportPdf(
       await exportToPdf(ref.current, `${filenamePrefix}-${date}.pdf`);
     } catch (err) {
       console.error("PDF export failed:", err);
+      const error =
+        err instanceof Error ? err : new Error(String(err));
+      optionsRef.current?.onError?.(error);
     } finally {
       optionsRef.current?.onAfterExport?.();
       setIsExporting(false);

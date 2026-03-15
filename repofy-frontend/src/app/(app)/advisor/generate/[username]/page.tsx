@@ -56,10 +56,17 @@ export default function GenerateAdvicePage({
 
   const handleComplete = useCallback(
     (data: unknown) => {
-      const { adviceId } = data as { adviceId: string };
+      const result =
+        typeof data === "object" && data !== null && "adviceId" in data
+          ? (data as { adviceId: string })
+          : null;
+      if (!result) {
+        setError("Unexpected response from server.");
+        return;
+      }
       queryClient.invalidateQueries({ queryKey: ["advice"] });
       queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
-      router.replace(`/advisor/${adviceId}?from=profile`);
+      router.replace(`/advisor/${result.adviceId}?from=profile`);
     },
     [router, queryClient],
   );

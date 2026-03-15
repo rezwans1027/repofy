@@ -1,6 +1,6 @@
 // ── Language colors ───────────────────────────────────────────────────
 
-export const LANGUAGE_COLORS: Record<string, string> = {
+export const LANGUAGE_COLORS = {
   JavaScript: "#f1e05a",
   TypeScript: "#3178c6",
   Python: "#3572A5",
@@ -30,6 +30,6 @@ export const LANGUAGE_COLORS: Record<string, string> = {
   Zig: "#ec915c",
   Nix: "#7e7eff",
   OCaml: "#3be133",
-};
+} as const satisfies Record<string, string>;
 
 export const DEFAULT_COLOR = "#8b949e";

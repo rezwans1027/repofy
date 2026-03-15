@@ -7,10 +7,10 @@ import { motion } from "framer-motion";
 import { EASE_OUT_EXPO } from "@/lib/animation-variants";
 import { AuthTransitionContext } from "./auth-transition";
 
-const SUFFIX_MAP: Record<string, string> = {
+const SUFFIX_MAP = {
   "/login": "login",
   "/signup": "signup",
-};
+} as const satisfies Record<string, string>;
 
 export default function AuthLayout({
   children,
@@ -19,7 +19,7 @@ export default function AuthLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [suffix, setSuffix] = useState(SUFFIX_MAP[pathname] ?? "");
+  const [suffix, setSuffix] = useState((SUFFIX_MAP as Record<string, string>)[pathname] ?? "");
   const [contentVisible, setContentVisible] = useState(true);
   const [showCursor, setShowCursor] = useState(false);
   const animatingRef = useRef(false);
@@ -27,7 +27,7 @@ export default function AuthLayout({
   // Sync suffix if pathname changes externally (browser back/forward)
   useEffect(() => {
     if (!animatingRef.current) {
-      setSuffix(SUFFIX_MAP[pathname] ?? "");
+      setSuffix((SUFFIX_MAP as Record<string, string>)[pathname] ?? "");
     }
   }, [pathname]);
 
@@ -36,8 +36,8 @@ export default function AuthLayout({
       if (animatingRef.current || path === pathname) return;
       animatingRef.current = true;
 
-      const oldSuffix = SUFFIX_MAP[pathname] ?? "";
-      const newSuffix = SUFFIX_MAP[path] ?? "";
+      const oldSuffix = (SUFFIX_MAP as Record<string, string>)[pathname] ?? "";
+      const newSuffix = (SUFFIX_MAP as Record<string, string>)[path] ?? "";
 
       // Collapse content and start backspace simultaneously
       setShowCursor(true);

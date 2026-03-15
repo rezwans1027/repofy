@@ -111,6 +111,17 @@ describe("initiateSignup", () => {
     await expect(initiateSignup("a@b.com", "Alice")).rejects.toThrow(AuthError);
     await expect(initiateSignup("a@b.com", "Alice")).rejects.toThrow("Failed to initiate signup");
   });
+
+  it("throws 500 when email send fails", async () => {
+    const client = createMockSupabase();
+    client.rpc.mockResolvedValue({ data: false, error: null });
+    mockSendOtpEmail.mockRejectedValue(new Error("SMTP connection refused"));
+
+    await expect(initiateSignup("a@b.com", "Alice")).rejects.toThrow(AuthError);
+    await expect(initiateSignup("a@b.com", "Alice")).rejects.toThrow(
+      "Failed to send verification email. Please try again.",
+    );
+  });
 });
 
 describe("verifySignup", () => {
@@ -228,7 +239,7 @@ describe("resendOtp", () => {
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
           maybeSingle: vi.fn().mockResolvedValue({
-            data: { email: "a@b.com", display_name: "Alice" },
+            data: { email: "a@b.com", display_name: "Alice", attempts: 2 },
             error: null,
           }),
         }),
@@ -253,6 +264,65 @@ describe("resendOtp", () => {
 
     expect(result.message).toContain("pending signup");
     expect(mockSendOtpEmail).toHaveBeenCalled();
+  });
+
+  it("does not reset attempts on resend", async () => {
+    const client = createMockSupabase();
+    const mockUpdateFn = vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: { email: "a@b.com" },
+            error: null,
+          }),
+        }),
+      }),
+    });
+    client.from.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: { email: "a@b.com", display_name: "Alice", attempts: 3 },
+            error: null,
+          }),
+        }),
+      }),
+      update: mockUpdateFn,
+      delete: vi.fn().mockReturnValue({
+        lt: vi.fn().mockResolvedValue({ error: null }),
+      }),
+    });
+    mockSendOtpEmail.mockResolvedValue(undefined);
+
+    await resendOtp("a@b.com");
+
+    // The update call should NOT include attempts
+    const updateArg = mockUpdateFn.mock.calls[0][0];
+    expect(updateArg).not.toHaveProperty("attempts");
+    expect(updateArg).toHaveProperty("otp_code");
+    expect(updateArg).toHaveProperty("otp_expires_at");
+  });
+
+  it("does not resend when attempts are exhausted", async () => {
+    const client = createMockSupabase();
+    client.from.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: { email: "a@b.com", display_name: "Alice", attempts: 5 },
+            error: null,
+          }),
+        }),
+      }),
+      delete: vi.fn().mockReturnValue({
+        lt: vi.fn().mockResolvedValue({ error: null }),
+      }),
+    });
+
+    const result = await resendOtp("a@b.com");
+
+    expect(result.message).toContain("pending signup");
+    expect(mockSendOtpEmail).not.toHaveBeenCalled();
   });
 
   it("returns generic message when no pending signup", async () => {
@@ -281,7 +351,7 @@ describe("resendOtp", () => {
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
           maybeSingle: vi.fn().mockResolvedValue({
-            data: { email: "a@b.com", display_name: "Alice" },
+            data: { email: "a@b.com", display_name: "Alice", attempts: 0 },
             error: null,
           }),
         }),
@@ -302,5 +372,38 @@ describe("resendOtp", () => {
     });
 
     await expect(resendOtp("a@b.com")).rejects.toThrow("Failed to resend code");
+  });
+
+  it("throws 500 when email send fails on resend", async () => {
+    const client = createMockSupabase();
+    client.from.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: { email: "a@b.com", display_name: "Alice", attempts: 1 },
+            error: null,
+          }),
+        }),
+      }),
+      update: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            maybeSingle: vi.fn().mockResolvedValue({
+              data: { email: "a@b.com" },
+              error: null,
+            }),
+          }),
+        }),
+      }),
+      delete: vi.fn().mockReturnValue({
+        lt: vi.fn().mockResolvedValue({ error: null }),
+      }),
+    });
+    mockSendOtpEmail.mockRejectedValue(new Error("SMTP timeout"));
+
+    await expect(resendOtp("a@b.com")).rejects.toThrow(AuthError);
+    await expect(resendOtp("a@b.com")).rejects.toThrow(
+      "Failed to send verification email. Please try again.",
+    );
   });
 });

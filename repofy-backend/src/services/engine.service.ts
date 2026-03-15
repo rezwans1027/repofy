@@ -1,6 +1,6 @@
 import { env } from "../config/env";
 import { fetchWithRetry } from "../lib/retry";
-import { validateSafeUrl, assertHostNotPrivate } from "../lib/validators";
+import { validateSafeUrl } from "../lib/validators";
 
 /** Hardcoded set of allowed engine API paths (defense-in-depth). */
 const ALLOWED_ENGINE_PATHS = new Set(["/analyze", "/advice"]);
@@ -19,9 +19,9 @@ export async function callEngine<T>(
   const fullUrl = `${env.engineUrl}${path}`;
   const parsed = validateSafeUrl(fullUrl, `Engine ${path}`);
 
-  // 3. DNS-resolution check: ensure the hostname doesn't resolve to a private IP
-  //    (protects against DNS rebinding attacks).
-  await assertHostNotPrivate(parsed.hostname, `Engine ${path}`);
+  // NOTE: No DNS-rebinding check here. The engine URL is operator-configured
+  // (env var), not user-supplied, so SSRF via DNS rebinding is not a concern.
+  // The engine commonly runs on localhost / private IPs in dev and staging.
 
   const res = await fetchWithRetry(
     parsed.href,

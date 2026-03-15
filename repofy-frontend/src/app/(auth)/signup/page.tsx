@@ -6,24 +6,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { api, ApiError } from "@/lib/api-client";
 import { useAuthTransition } from "../auth-transition";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-  InputOTPSeparator,
-} from "@/components/ui/input-otp";
-import {
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  User,
-  Loader2,
-  ArrowLeft,
-} from "lucide-react";
+import { useFlagTypewriter } from "@/hooks/use-flag-typewriter";
 import { EASE_OUT_EXPO } from "@/lib/animation-variants";
+import { FormPhase } from "./form-phase";
+import { OtpPhase } from "./otp-phase";
 
 type Phase = "form" | "otp" | "success";
 
@@ -65,6 +51,12 @@ export default function SignupPage() {
     const timer = setTimeout(() => setCooldown((c) => c - 1), 1000);
     return () => clearTimeout(timer);
   }, [cooldown]);
+
+  // ── Typewriter for --verify flag ──
+  const { text: displayedFlag, showCursor: showFlagCursor } = useFlagTypewriter(
+    " --verify",
+    phase === "otp",
+  );
 
   // ── Phase 1: Initiate ──
   function validateForm() {
@@ -185,43 +177,6 @@ export default function SignupPage() {
     return () => ro.disconnect();
   }, []);
 
-  // ── Typewriter for --verify flag ──
-  const [displayedFlag, setDisplayedFlag] = useState("");
-  const [showFlagCursor, setShowFlagCursor] = useState(false);
-  const verifyFlag = " --verify";
-  const displayedFlagRef = useRef(displayedFlag);
-  displayedFlagRef.current = displayedFlag;
-
-  useEffect(() => {
-    if (phase === "otp" && displayedFlagRef.current !== verifyFlag) {
-      setShowFlagCursor(true);
-      let i = 0;
-      const typeChar = () => {
-        i++;
-        setDisplayedFlag(verifyFlag.slice(0, i));
-        if (i < verifyFlag.length) {
-          setTimeout(typeChar, 60);
-        } else {
-          setTimeout(() => setShowFlagCursor(false), 300);
-        }
-      };
-      typeChar();
-    } else if (phase === "form" && displayedFlagRef.current !== "") {
-      setShowFlagCursor(true);
-      let text = displayedFlagRef.current;
-      const backspace = () => {
-        text = text.slice(0, -1);
-        setDisplayedFlag(text);
-        if (text.length > 0) {
-          setTimeout(backspace, 40);
-        } else {
-          setTimeout(() => setShowFlagCursor(false), 300);
-        }
-      };
-      backspace();
-    }
-  }, [phase]);
-
   return (
     <div className="space-y-6">
       <div>
@@ -270,278 +225,60 @@ export default function SignupPage() {
 
         {/* ── Phase 1: Email + Display Name ── */}
         {phase === "form" && (
-          <motion.div
-            key="form"
-            variants={phaseVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-          >
-            <form onSubmit={handleInitiate} noValidate className="space-y-4">
-              <div className="space-y-2">
-                <label
-                  htmlFor="displayName"
-                  className="font-mono text-xs text-muted-foreground"
-                >
-                  display name
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                  <Input
-                    id="displayName"
-                    type="text"
-                    placeholder="Jane Doe"
-                    value={displayName}
-                    onChange={(e) => {
-                      setDisplayName(e.target.value);
-                      if (errors.displayName)
-                        setErrors((p) => ({ ...p, displayName: undefined }));
-                    }}
-                    aria-invalid={!!errors.displayName}
-                    aria-describedby={errors.displayName ? "displayName-error" : undefined}
-                    className="pl-10 font-mono text-sm"
-                  />
-                </div>
-                {errors.displayName && (
-                  <p id="displayName-error" className="font-mono text-xs text-destructive">
-                    <span className="font-bold">error:</span>{" "}
-                    {errors.displayName}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="email"
-                  className="font-mono text-xs text-muted-foreground"
-                >
-                  email
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (errors.email)
-                        setErrors((p) => ({ ...p, email: undefined }));
-                    }}
-                    aria-invalid={!!errors.email}
-                    aria-describedby={errors.email ? "signup-email-error" : undefined}
-                    className="pl-10 font-mono text-sm"
-                  />
-                </div>
-                {errors.email && (
-                  <p id="signup-email-error" className="font-mono text-xs text-destructive">
-                    <span className="font-bold">error:</span> {errors.email}
-                  </p>
-                )}
-              </div>
-
-              {errors.form && (
-                <motion.p
-                  className="font-mono text-sm text-destructive"
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <span className="font-bold">error:</span> {errors.form}
-                </motion.p>
-              )}
-
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-cyan text-background hover:bg-cyan/90 font-mono text-sm"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" />
-                    Sending code...
-                  </>
-                ) : (
-                  "Continue"
-                )}
-              </Button>
-            </form>
-          </motion.div>
+          <FormPhase
+            displayName={displayName}
+            email={email}
+            errors={errors}
+            isLoading={isLoading}
+            onDisplayNameChange={(value) => {
+              setDisplayName(value);
+              if (errors.displayName)
+                setErrors((p) => ({ ...p, displayName: undefined }));
+            }}
+            onEmailChange={(value) => {
+              setEmail(value);
+              if (errors.email)
+                setErrors((p) => ({ ...p, email: undefined }));
+            }}
+            onSubmit={handleInitiate}
+          />
         )}
 
         {/* ── Phase 2: OTP + Password ── */}
         {phase === "otp" && (
-          <motion.div
-            key="otp"
-            className="space-y-4"
-            variants={phaseVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-          >
-            <button
-              type="button"
-              onClick={() => {
-                setPhase("form");
-                setOtp("");
-                setPassword("");
-                setConfirmPassword("");
-                setErrors({});
-              }}
-              className="flex items-center gap-1 font-mono text-xs text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="size-3" />
-              Back
-            </button>
-
-            <p className="font-mono text-sm text-muted-foreground">
-              Verification code sent to{" "}
-              <span className="text-cyan">{email}</span>
-            </p>
-
-            <form onSubmit={handleVerify} noValidate className="space-y-4">
-              <div className="space-y-2">
-                <label className="font-mono text-xs text-muted-foreground">
-                  verification code
-                </label>
-                <div className="flex justify-center">
-                  <InputOTP
-                    maxLength={6}
-                    value={otp}
-                    onChange={(value) => {
-                      setOtp(value);
-                      if (errors.otp)
-                        setErrors((p) => ({ ...p, otp: undefined }));
-                    }}
-                    aria-describedby={errors.otp ? "otp-error" : undefined}
-                  >
-                    <InputOTPGroup>
-                      <InputOTPSlot index={0} />
-                      <InputOTPSlot index={1} />
-                      <InputOTPSlot index={2} />
-                    </InputOTPGroup>
-                    <InputOTPSeparator />
-                    <InputOTPGroup>
-                      <InputOTPSlot index={3} />
-                      <InputOTPSlot index={4} />
-                      <InputOTPSlot index={5} />
-                    </InputOTPGroup>
-                  </InputOTP>
-                </div>
-                {errors.otp && (
-                  <p id="otp-error" className="font-mono text-xs text-destructive text-center">
-                    <span className="font-bold">error:</span> {errors.otp}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="password"
-                  className="font-mono text-xs text-muted-foreground"
-                >
-                  password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      if (errors.password)
-                        setErrors((p) => ({ ...p, password: undefined }));
-                    }}
-                    aria-invalid={!!errors.password}
-                    aria-describedby={errors.password ? "signup-password-error" : undefined}
-                    className="pl-10 pr-10 font-mono text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="size-4" />
-                    ) : (
-                      <Eye className="size-4" />
-                    )}
-                  </button>
-                </div>
-                {errors.password && (
-                  <p id="signup-password-error" className="font-mono text-xs text-destructive">
-                    <span className="font-bold">error:</span>{" "}
-                    {errors.password}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="confirmPassword"
-                  className="font-mono text-xs text-muted-foreground"
-                >
-                  confirm password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                  <Input
-                    id="confirmPassword"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => {
-                      setConfirmPassword(e.target.value);
-                      if (errors.confirmPassword)
-                        setErrors((p) => ({
-                          ...p,
-                          confirmPassword: undefined,
-                        }));
-                    }}
-                    aria-invalid={!!errors.confirmPassword}
-                    aria-describedby={errors.confirmPassword ? "confirmPassword-error" : undefined}
-                    className="pl-10 font-mono text-sm"
-                  />
-                </div>
-                {errors.confirmPassword && (
-                  <p id="confirmPassword-error" className="font-mono text-xs text-destructive">
-                    <span className="font-bold">error:</span>{" "}
-                    {errors.confirmPassword}
-                  </p>
-                )}
-              </div>
-
-              {errors.form && (
-                <motion.p
-                  className="font-mono text-sm text-destructive"
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <span className="font-bold">error:</span> {errors.form}
-                </motion.p>
-              )}
-
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-cyan text-background hover:bg-cyan/90 font-mono text-sm"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" />
-                    Verifying...
-                  </>
-                ) : (
-                  "Create Account"
-                )}
-              </Button>
-            </form>
-          </motion.div>
+          <OtpPhase
+            email={email}
+            otp={otp}
+            password={password}
+            confirmPassword={confirmPassword}
+            showPassword={showPassword}
+            errors={errors}
+            isLoading={isLoading}
+            onOtpChange={(value) => {
+              setOtp(value);
+              if (errors.otp)
+                setErrors((p) => ({ ...p, otp: undefined }));
+            }}
+            onPasswordChange={(value) => {
+              setPassword(value);
+              if (errors.password)
+                setErrors((p) => ({ ...p, password: undefined }));
+            }}
+            onConfirmPasswordChange={(value) => {
+              setConfirmPassword(value);
+              if (errors.confirmPassword)
+                setErrors((p) => ({ ...p, confirmPassword: undefined }));
+            }}
+            onTogglePassword={() => setShowPassword(!showPassword)}
+            onBack={() => {
+              setPhase("form");
+              setOtp("");
+              setPassword("");
+              setConfirmPassword("");
+              setErrors({});
+            }}
+            onSubmit={handleVerify}
+          />
         )}
       </AnimatePresence>
       </div>

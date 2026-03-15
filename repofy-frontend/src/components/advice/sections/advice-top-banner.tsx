@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { Badge } from "@/components/ui/badge";
@@ -32,9 +33,11 @@ export function AdviceTopBanner({ username, avatarUrl }: AdviceTopBannerProps) {
             <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-emerald-400/25 via-cyan/20 to-emerald-400/25 animate-glow-pulse blur-[3px]" />
 
             {avatarUrl ? (
-              <img
+              <Image
                 src={avatarUrl}
                 alt={username}
+                width={64}
+                height={64}
                 className="relative h-16 w-16 rounded-full border-2 border-emerald-400/40"
               />
             ) : (

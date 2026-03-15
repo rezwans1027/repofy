@@ -152,12 +152,12 @@ export function createProfileFixture(overrides: Record<string, unknown> = {}) {
 export function createAdviceFixture(overrides: Record<string, unknown> = {}) {
   return {
     schemaVersion: "v2" as const,
-    generationWarnings: [] as import("@/types/advice").GenerationWarning[],
+    generationWarnings: [] as import("@/shared/types/advice").GenerationWarning[],
     summary: "Focus on testing and open-source contributions to strengthen your profile.",
     trajectory: {
-      currentEstimate: "Junior",
-      targetEstimate: "Mid-Level",
-      confidence: "Medium",
+      currentEstimate: "Junior" as const,
+      targetEstimate: "Mid-Level" as const,
+      confidence: "Medium" as const,
       rationale: "Repos show clean fundamentals but lack tests. Complexity is moderate. Breadth limited to JS ecosystem. Collaboration is single-contributor. Engineering practices are weak with no CI. Consistency is good with recent pushes.",
       calibration: {
         complexity: "Moderate complexity projects.",

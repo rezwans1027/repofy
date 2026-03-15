@@ -271,6 +271,19 @@ export const GENERATION_WARNINGS = {
   CAREER_POSITIONING_REDUCED: "career_positioning_reduced",
 } as const satisfies Record<string, GenerationWarning>;
 
+/**
+ * Raw AI-generated advice output — the shape returned directly by the LLM.
+ *
+ * This type contains only AI-produced fields. It does NOT include enrichment
+ * data (repo URLs, language colors, star counts) that come from GitHub.
+ *
+ * After generation, `buildAdviceData()` in `advice-builder.service.ts` merges
+ * an `AdviceV2` with `GitHubUserData` to produce the enriched `AdviceData`
+ * (defined in `types/shared/advice.ts`) that is sent to the frontend.
+ *
+ * @see AdviceData  — the enriched, frontend-ready shape
+ * @see buildAdviceData — the function that performs the AdviceV2 → AdviceData transform
+ */
 export interface AdviceV2 {
   schemaVersion: "v2";
   generationWarnings: GenerationWarning[];

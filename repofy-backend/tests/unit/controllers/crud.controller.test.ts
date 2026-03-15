@@ -8,6 +8,10 @@ vi.mock("../../../src/lib/logger", () => ({
 import { createCrudController } from "../../../src/controllers/crud.controller";
 import { MAX_DELETE_IDS } from "../../../src/lib/validators";
 
+const UUID1 = "a0000000-0000-0000-0000-000000000001";
+const UUID2 = "a0000000-0000-0000-0000-000000000002";
+const UUID3 = "a0000000-0000-0000-0000-000000000003";
+
 function createMockService() {
   return {
     list: vi.fn(),
@@ -34,14 +38,14 @@ describe("deleteBatch validation", () => {
     mockService.deleteBatch.mockResolvedValue(undefined);
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
-    (req as any).body = { ids: ["id-1", "id-2", "id-3"] };
+    (req as any).body = { ids: [UUID1, UUID2, UUID3] };
 
     await controller.deleteBatch(req, res, next);
 
     expect(mockService.deleteBatch).toHaveBeenCalledWith("user-123", [
-      "id-1",
-      "id-2",
-      "id-3",
+      UUID1,
+      UUID2,
+      UUID3,
     ]);
     expect(res.json).toHaveBeenCalledWith({ success: true, data: null });
   });
@@ -50,11 +54,11 @@ describe("deleteBatch validation", () => {
     mockService.deleteBatch.mockResolvedValue(undefined);
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
-    (req as any).body = { ids: ["id-1"] };
+    (req as any).body = { ids: [UUID1] };
 
     await controller.deleteBatch(req, res, next);
 
-    expect(mockService.deleteBatch).toHaveBeenCalledWith("user-123", ["id-1"]);
+    expect(mockService.deleteBatch).toHaveBeenCalledWith("user-123", [UUID1]);
     expect(res.json).toHaveBeenCalledWith({ success: true, data: null });
   });
 
@@ -151,7 +155,7 @@ describe("deleteBatch validation", () => {
   it("rejects array with mixed types (strings and numbers)", async () => {
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
-    (req as any).body = { ids: ["id-1", 2, "id-3"] };
+    (req as any).body = { ids: [UUID1, 2, UUID3] };
 
     await controller.deleteBatch(req, res, next);
 
@@ -166,7 +170,7 @@ describe("deleteBatch validation", () => {
   it("rejects array containing null elements", async () => {
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
-    (req as any).body = { ids: ["id-1", null, "id-3"] };
+    (req as any).body = { ids: [UUID1, null, UUID3] };
 
     await controller.deleteBatch(req, res, next);
 
@@ -178,10 +182,40 @@ describe("deleteBatch validation", () => {
     expect(mockService.deleteBatch).not.toHaveBeenCalled();
   });
 
+  it("rejects non-UUID strings", async () => {
+    const { req, res, next } = createControllerMocks();
+    (req as any).userId = "user-123";
+    (req as any).body = { ids: ["not-a-uuid", "also-bad"] };
+
+    await controller.deleteBatch(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      error: "Each id must be a valid UUID",
+    });
+    expect(mockService.deleteBatch).not.toHaveBeenCalled();
+  });
+
+  it("rejects mix of valid UUIDs and non-UUID strings", async () => {
+    const { req, res, next } = createControllerMocks();
+    (req as any).userId = "user-123";
+    (req as any).body = { ids: [UUID1, "not-a-uuid"] };
+
+    await controller.deleteBatch(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      error: "Each id must be a valid UUID",
+    });
+    expect(mockService.deleteBatch).not.toHaveBeenCalled();
+  });
+
   it(`rejects array exceeding MAX_DELETE_IDS (${MAX_DELETE_IDS})`, async () => {
     const oversizedIds = Array.from(
       { length: MAX_DELETE_IDS + 1 },
-      (_, i) => `id-${i}`,
+      (_, i) => `a0000000-0000-0000-0000-${String(i).padStart(12, "0")}`,
     );
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
@@ -201,7 +235,7 @@ describe("deleteBatch validation", () => {
     mockService.deleteBatch.mockResolvedValue(undefined);
     const exactIds = Array.from(
       { length: MAX_DELETE_IDS },
-      (_, i) => `id-${i}`,
+      (_, i) => `a0000000-0000-0000-0000-${String(i).padStart(12, "0")}`,
     );
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
@@ -217,7 +251,7 @@ describe("deleteBatch validation", () => {
     mockService.deleteBatch.mockRejectedValue(new Error("DB connection lost"));
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
-    (req as any).body = { ids: ["id-1"] };
+    (req as any).body = { ids: [UUID1] };
 
     await controller.deleteBatch(req, res, next);
 
@@ -232,7 +266,7 @@ describe("deleteBatch validation", () => {
     mockService.deleteBatch.mockRejectedValue(new Error("aborted"));
     const { req, res, next, abortController } = createControllerMocks();
     (req as any).userId = "user-123";
-    (req as any).body = { ids: ["id-1"] };
+    (req as any).body = { ids: [UUID1] };
     abortController.abort();
 
     await controller.deleteBatch(req, res, next);
@@ -249,7 +283,7 @@ describe("deleteBatch validation", () => {
     mockService.deleteBatch.mockRejectedValue(new Error("fail"));
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
-    (req as any).body = { ids: ["id-1"] };
+    (req as any).body = { ids: [UUID1] };
 
     await adviceController.deleteBatch(req, res, next);
 
