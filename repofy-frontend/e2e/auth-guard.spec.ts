@@ -41,7 +41,7 @@ test.describe("Auth guard", () => {
     await page.goto("/login");
     // The login page has a terminal-styled form with email/password fields
     await expect(page.getByLabel(/email/i)).toBeVisible();
-    await expect(page.getByLabel(/password/i)).toBeVisible();
+    await expect(page.getByLabel("password", { exact: true })).toBeVisible();
     await expect(
       page.getByRole("button", { name: /sign in/i }),
     ).toBeVisible();

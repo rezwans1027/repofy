@@ -16,7 +16,7 @@ setup("authenticate", async ({ page }) => {
   // The login form uses <label> elements with text "email" and "password"
   // and a submit button with text "Sign In"
   await page.getByLabel(/email/i).fill(email);
-  await page.getByLabel(/password/i).fill(password);
+  await page.getByLabel("password", { exact: true }).fill(password);
   await page.getByRole("button", { name: /sign in/i }).click();
 
   // Wait for redirect to dashboard after successful login
