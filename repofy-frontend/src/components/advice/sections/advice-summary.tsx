@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { SectionCard } from "@/components/ui/section-card";
-import { ADVISOR_ACCENT } from "@/lib/styles";
 import { EASE_OUT_EXPO } from "@/lib/animation-variants";
 
 interface AdviceSummaryProps {

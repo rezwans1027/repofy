@@ -2,6 +2,14 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { PROTECTED_ROUTES } from "@/lib/constants";
 
+function getApiOrigin(apiUrl: string): string {
+  try {
+    return new URL(apiUrl).origin;
+  } catch {
+    return apiUrl;
+  }
+}
+
 export async function middleware(request: NextRequest) {
   // Generate a per-request nonce for CSP
   const nonce = crypto.randomUUID();
@@ -77,7 +85,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Build nonce-based Content-Security-Policy
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
+  const apiOrigin = getApiOrigin(apiUrl);
   const csp = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}'`,
@@ -106,7 +115,7 @@ export async function middleware(request: NextRequest) {
 
     "img-src 'self' avatars.githubusercontent.com data: blob:", // data:/blob: needed for html2canvas-pro + jspdf
     "font-src 'self'",
-    `connect-src 'self' ${supabaseUrl} ${apiUrl}`,
+    `connect-src 'self' ${supabaseUrl} ${apiOrigin}`,
     "worker-src 'self' blob:",   // jsPDF may use blob workers for PDF generation
     "object-src 'none'",
     "base-uri 'self'",           // prevent <base> tag injection attacks

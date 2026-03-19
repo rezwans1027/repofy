@@ -7,8 +7,10 @@ import { navState, navModule, resetNavState } from "@/__tests__/helpers/mock-nav
 
 vi.mock("next/navigation", () => navModule);
 
+type MockUser = { id: string } | null;
+
 const authState = {
-  user: { id: "user-123" } as any,
+  user: { id: "user-123" } as MockUser,
   isLoading: false,
 };
 vi.mock("@/components/providers/auth-provider", () => ({
@@ -32,14 +34,20 @@ vi.mock("@/lib/api-client", () => {
 });
 
 // Mock AnalysisLoading to expose fetchReport for direct invocation
+interface AnalysisLoadingMockProps {
+  onComplete: (data: unknown) => void;
+  onError: (message: string) => void;
+  fetchReport: () => Promise<unknown>;
+}
+
 vi.mock("@/components/report/analysis-loading", () => ({
-  AnalysisLoading: ({ onComplete, onError, fetchReport }: any) => (
+  AnalysisLoading: ({ onComplete, onError, fetchReport }: AnalysisLoadingMockProps) => (
     <div data-testid="analysis-loading">
       <button
         data-testid="fetch-btn"
         onClick={() =>
           fetchReport()
-            .then((data: any) => onComplete(data))
+            .then((data) => onComplete(data))
             .catch((e: Error) => onError(e.message))
         }
       >

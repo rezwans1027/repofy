@@ -6,10 +6,12 @@ import { createProfileFixture } from "@/__tests__/fixtures";
 
 vi.mock("next/navigation", () => navModule);
 
+type ProfileFixture = ReturnType<typeof createProfileFixture>;
+
 const profileState = {
-  data: null as any,
+  data: null as ProfileFixture | null,
   isLoading: false,
-  error: null as any,
+  error: null as { message: string } | null,
 };
 vi.mock("@/hooks/use-github", () => ({
   useGitHubProfile: () => ({
@@ -21,7 +23,7 @@ vi.mock("@/hooks/use-github", () => ({
 
 // StickyCTABar imports Supabase hooks so keep it mocked
 vi.mock("@/components/profile/sticky-cta-bar", () => ({
-  StickyCTABar: ({ username }: any) => (
+  StickyCTABar: ({ username }: { username: string }) => (
     <div data-testid="sticky-cta-bar">{username}</div>
   ),
 }));

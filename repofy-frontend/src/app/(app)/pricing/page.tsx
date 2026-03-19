@@ -4,7 +4,6 @@ import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useCreditBalance, useAwaitCreditUpdate } from "@/hooks/use-credits";
 import { api } from "@/lib/api-client";
@@ -84,7 +83,7 @@ function PricingContent() {
         queryClient.setQueryData(["credits", "balance"], current);
       }
     }
-  }, [success, creditsReceived, polledBalance, balance, queryClient]);
+  }, [success, creditsReceived, balanceAtCheckout, polledBalance, balance, queryClient]);
 
   async function handleCheckout() {
     setLoading(true);

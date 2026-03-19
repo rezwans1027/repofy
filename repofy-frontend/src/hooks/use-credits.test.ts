@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { TestProviders } from "@/__tests__/helpers/test-providers";
 
-const mockUser = vi.hoisted(() => ({ current: { id: "user-123" } as any }));
+type MockUser = { id: string } | null;
+
+const mockUser = vi.hoisted(() => ({ current: { id: "user-123" } as MockUser }));
 
 vi.mock("@/components/providers/auth-provider", () => ({
   useAuth: () => ({ user: mockUser.current, isLoading: false }),

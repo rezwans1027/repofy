@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function OverlayScrollbar() {
-  const thumbRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
-  // Only thumbHeight=0 vs >0 matters for React rendering (conditional return).
-  // All other scroll values live in refs and update the DOM directly to avoid
-  // 3 state updates (~60/sec) on every scroll frame.
-  const scrollValues = useRef({ thumbHeight: 0, thumbTop: 0, scrollPercent: 0 });
+  const [thumb, setThumb] = useState({
+    height: 0,
+    top: 0,
+    percent: 0,
+  });
   const [showTrack, setShowTrack] = useState(false);
   const [visible, setVisible] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -21,10 +21,12 @@ export function OverlayScrollbar() {
   const update = useCallback(() => {
     const { scrollHeight, clientHeight, scrollTop } = document.documentElement;
     if (scrollHeight <= clientHeight) {
-      if (scrollValues.current.thumbHeight !== 0) {
-        scrollValues.current.thumbHeight = 0;
-        setShowTrack(false);
-      }
+      setThumb((current) => (
+        current.height === 0
+          ? current
+          : { height: 0, top: 0, percent: 0 }
+      ));
+      setShowTrack(false);
       return;
     }
     const ratio = clientHeight / scrollHeight;
@@ -32,21 +34,8 @@ export function OverlayScrollbar() {
     const maxTop = clientHeight - height;
     const top = (scrollTop / (scrollHeight - clientHeight)) * maxTop;
     const percent = Math.round((scrollTop / (scrollHeight - clientHeight)) * 100);
-
-    const wasZero = scrollValues.current.thumbHeight === 0;
-    scrollValues.current.thumbHeight = height;
-    scrollValues.current.thumbTop = top;
-    scrollValues.current.scrollPercent = percent;
-
-    if (wasZero) setShowTrack(true);
-
-    // Direct DOM updates — no React re-renders
-    const el = thumbRef.current;
-    if (el) {
-      el.style.height = `${height}px`;
-      el.style.top = `${top}px`;
-      el.setAttribute("aria-valuenow", String(percent));
-    }
+    setThumb({ height, top, percent });
+    setShowTrack(true);
   }, []);
 
   const showTemporarily = useCallback(() => {
@@ -58,7 +47,7 @@ export function OverlayScrollbar() {
   }, [dragging, hovering]);
 
   useEffect(() => {
-    update();
+    const frameId = requestAnimationFrame(update);
     const onScroll = () => {
       cancelAnimationFrame(rafId.current);
       rafId.current = requestAnimationFrame(() => {
@@ -69,7 +58,9 @@ export function OverlayScrollbar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", update, { passive: true });
     return () => {
+      cancelAnimationFrame(frameId);
       cancelAnimationFrame(rafId.current);
+      if (hideTimer.current) clearTimeout(hideTimer.current);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", update);
     };
@@ -90,12 +81,12 @@ export function OverlayScrollbar() {
     (e: React.PointerEvent) => {
       if (!dragging) return;
       const { scrollHeight, clientHeight } = document.documentElement;
-      const maxTop = clientHeight - scrollValues.current.thumbHeight;
+      const maxTop = clientHeight - thumb.height;
       const delta = e.clientY - dragStartY.current;
       const scrollDelta = (delta / maxTop) * (scrollHeight - clientHeight);
       window.scrollTo(0, dragStartScroll.current + scrollDelta);
     },
-    [dragging]
+    [dragging, thumb.height]
   );
 
   const onPointerUp = useCallback(() => {
@@ -173,19 +164,18 @@ export function OverlayScrollbar() {
       }}
     >
       <div
-        ref={thumbRef}
         role="scrollbar"
         aria-controls="overlay-scrollbar-target"
         aria-orientation="vertical"
-        aria-valuenow={0}
+        aria-valuenow={thumb.percent}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-label="Page scroll"
         tabIndex={0}
         className="absolute right-0.5 w-1.5 rounded-full transition-opacity duration-300"
         style={{
-          height: scrollValues.current.thumbHeight,
-          top: scrollValues.current.thumbTop,
+          height: thumb.height,
+          top: thumb.top,
           opacity: visible || dragging ? 1 : 0,
           background: "color-mix(in srgb, var(--muted-foreground) 40%, transparent)",
         }}

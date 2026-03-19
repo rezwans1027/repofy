@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { createCrudHooks } from "./use-crud";
-import type { AdviceData } from "@shared/types/advice";
 
 const adviceListItemSchema = z.object({
   id: z.string(),
@@ -24,8 +23,6 @@ const adviceRowSchema = z.object({
 });
 
 export type AdviceListItem = z.infer<typeof adviceListItemSchema>;
-
-type AdviceRow = z.infer<typeof adviceRowSchema> & { advice_data: AdviceData };
 
 const crud = createCrudHooks<AdviceListItem>({
   queryKey: "advice",

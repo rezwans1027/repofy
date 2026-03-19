@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 
@@ -24,13 +24,7 @@ function getSupabaseClient(): SupabaseClient {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const supabaseRef = useRef<SupabaseClient | null>(null);
-
-  // Stable reference: create the client once per component lifetime (browser only).
-  if (!supabaseRef.current) {
-    supabaseRef.current = getSupabaseClient();
-  }
-  const supabase = supabaseRef.current;
+  const [supabase] = useState<SupabaseClient>(() => getSupabaseClient());
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 
 /**
  * Typewriter hook for a single flag string (e.g. " --verify").
@@ -9,34 +9,25 @@ import { useState, useEffect, useRef } from "react";
  */
 export function useFlagTypewriter(flag: string, active: boolean) {
   const [text, setText] = useState("");
-  const [showCursor, setShowCursor] = useState(false);
-  const indexRef = useRef(0);
 
   useEffect(() => {
-    if (active && indexRef.current < flag.length) {
-      setShowCursor(true);
+    if (active && text.length < flag.length) {
       const id = setInterval(() => {
-        indexRef.current++;
-        setText(flag.slice(0, indexRef.current));
-        if (indexRef.current >= flag.length) {
-          clearInterval(id);
-          setTimeout(() => setShowCursor(false), 300);
-        }
+        setText((current) => flag.slice(0, current.length + 1));
       }, 60);
       return () => clearInterval(id);
-    } else if (!active && indexRef.current > 0) {
-      setShowCursor(true);
+    }
+
+    if (!active && text.length > 0) {
       const id = setInterval(() => {
-        indexRef.current--;
-        setText(flag.slice(0, indexRef.current));
-        if (indexRef.current <= 0) {
-          clearInterval(id);
-          setTimeout(() => setShowCursor(false), 300);
-        }
+        setText((current) => current.slice(0, -1));
       }, 40);
       return () => clearInterval(id);
     }
-  }, [active, flag]);
+  }, [active, flag, text.length]);
 
-  return { text, showCursor };
+  return {
+    text,
+    showCursor: active ? text.length < flag.length : text.length > 0,
+  };
 }

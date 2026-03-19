@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Terminal } from "lucide-react";
 
@@ -87,12 +87,9 @@ export function AnalysisLoading({
   const fetchStarted = useRef(false);
   const mountedRef = useRef(true);
   const logId = useRef(0);
-  const fetchReportRef = useRef(fetchReport);
-  const onCompleteRef = useRef(onComplete);
-  const onErrorRef = useRef(onError);
-  fetchReportRef.current = fetchReport;
-  onCompleteRef.current = onComplete;
-  onErrorRef.current = onError;
+  const fetchCurrentReport = useEffectEvent(fetchReport);
+  const handleComplete = useEffectEvent(onComplete);
+  const handleError = useEffectEvent(onError);
 
   const isAdvisor = accentColor?.includes("emerald");
   const hex = isAdvisor ? "#34d399" : "#22d3ee";
@@ -114,12 +111,15 @@ export function AnalysisLoading({
 
   /* Phase progression — spread evenly across 45 s */
   useEffect(() => {
-    setPhase(0);
+    const resetId = requestAnimationFrame(() => setPhase(0));
     const interval = 90000 / phases.length; // ~11.25 s per phase
     const t = phases.map((_, i) =>
       setTimeout(() => setPhase(i), i * interval + 800),
     );
-    return () => t.forEach(clearTimeout);
+    return () => {
+      cancelAnimationFrame(resetId);
+      t.forEach(clearTimeout);
+    };
   }, [phases]);
 
   /* Activity log — 3 messages per phase, spread within each phase window */
@@ -171,7 +171,7 @@ export function AnalysisLoading({
       const MIN = 3000;
       let res: { data?: unknown; error?: string } | null = null;
 
-      fetchReportRef.current()
+      fetchCurrentReport()
         .then((d) => {
           res = { data: d };
         })
@@ -186,13 +186,13 @@ export function AnalysisLoading({
           setTimeout(() => {
             if (!mountedRef.current) return;
             if (res?.error) {
-              onErrorRef.current(res.error);
+              handleError(res.error);
               return;
             }
             setPhase(phases.length);
             setTimeout(() => setFading(true), 400);
             setTimeout(() => {
-              if (mountedRef.current) onCompleteRef.current(res!.data);
+              if (mountedRef.current) handleComplete(res!.data);
             }, 800);
           }, wait);
         });

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TestProviders } from "@/__tests__/helpers/test-providers";
 import { createSearchResultFixture } from "@/__tests__/fixtures";
@@ -121,8 +121,10 @@ describe("DashboardPage", () => {
     );
 
     // Click the search result card
-    await user.click(screen.getByTestId("search-result-alice"));
+    fireEvent.click(screen.getByTestId("search-result-alice"));
 
-    expect(navState.push).toHaveBeenCalledWith("/profile/alice");
+    await waitFor(() => {
+      expect(navState.push).toHaveBeenCalledWith("/profile/alice");
+    });
   });
 });

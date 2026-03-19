@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import * as axeMatchers from "vitest-axe/matchers";
+import type { ElementType, PropsWithChildren } from "react";
 import { afterEach, expect } from "vitest";
 import { cleanup } from "@testing-library/react";
 import { vi } from "vitest";
@@ -23,7 +24,7 @@ vi.mock("next/navigation", () => navModule);
 // Mock next-themes
 vi.mock("next-themes", () => ({
   useTheme: () => ({ theme: "dark", setTheme: vi.fn() }),
-  ThemeProvider: ({ children }: any) => children,
+  ThemeProvider: ({ children }: PropsWithChildren) => children,
 }));
 
 // Mock framer-motion globally. Individual test files can opt out with
@@ -31,22 +32,51 @@ vi.mock("next-themes", () => ({
 vi.mock("framer-motion", async () => {
   const React = await import("react");
 
+  interface MockMotionProps extends React.HTMLAttributes<HTMLElement> {
+    children?: React.ReactNode;
+    initial?: unknown;
+    animate?: unknown;
+    exit?: unknown;
+    variants?: unknown;
+    transition?: unknown;
+    whileHover?: unknown;
+    whileInView?: unknown;
+    whileTap?: unknown;
+    viewport?: unknown;
+    layout?: unknown;
+    layoutId?: string;
+  }
+
   const handler: ProxyHandler<Record<string, unknown>> = {
     get(_target, prop: string) {
-      return React.forwardRef((props: any, ref: any) => {
+      const MockMotionComponent = React.forwardRef<HTMLElement, MockMotionProps>(function MockMotionComponent(
+        props,
+        ref,
+      ) {
         const {
-          initial, animate, exit, variants, transition,
-          whileHover, whileInView, whileTap, viewport,
+          initial: _initial,
+          animate: _animate,
+          exit: _exit,
+          variants: _variants,
+          transition: _transition,
+          whileHover: _whileHover,
+          whileInView: _whileInView,
+          whileTap: _whileTap,
+          viewport: _viewport,
+          layout: _layout,
+          layoutId: _layoutId,
           ...rest
         } = props;
-        return React.createElement(prop, { ...rest, ref });
+        return React.createElement(prop as ElementType, { ...rest, ref });
       });
+      MockMotionComponent.displayName = `MockMotion(${prop})`;
+      return MockMotionComponent;
     },
   };
 
   return {
     motion: new Proxy({}, handler),
-    AnimatePresence: ({ children }: any) =>
+    AnimatePresence: ({ children }: PropsWithChildren) =>
       React.createElement(React.Fragment, null, children),
     useAnimation: () => ({ start: vi.fn(), stop: vi.fn() }),
     useInView: () => true,
@@ -60,17 +90,23 @@ vi.mock("framer-motion", async () => {
       scrollXProgress: { get: () => 0 },
     }),
     useReducedMotion: () => false,
-    MotionConfig: ({ children }: any) => children,
+    MotionConfig: ({ children }: PropsWithChildren) => children,
   };
 });
 
 // Mock react-type-animation
-vi.mock("react-type-animation", () => ({
-  TypeAnimation: (props: any) => {
-    const React = require("react");
-    return React.createElement(props.wrapper || "span", {}, "mocked-type-animation");
-  },
-}));
+vi.mock("react-type-animation", async () => {
+  const React = await import("react");
+
+  interface TypeAnimationProps {
+    wrapper?: ElementType;
+  }
+
+  return {
+    TypeAnimation: ({ wrapper: Wrapper = "span" }: TypeAnimationProps) =>
+      React.createElement(Wrapper, {}, "mocked-type-animation"),
+  };
+});
 
 // Stub IntersectionObserver
 class MockIntersectionObserver {

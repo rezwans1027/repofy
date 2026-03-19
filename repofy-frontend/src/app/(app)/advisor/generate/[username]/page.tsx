@@ -4,7 +4,6 @@ import { use, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AnalysisLoading } from "@/components/report/analysis-loading";
-import { useAuth } from "@/components/providers/auth-provider";
 import { api, ApiError } from "@/lib/api-client";
 import { useCreditBalance } from "@/hooks/use-credits";
 import { useQueryClient } from "@tanstack/react-query";
@@ -32,7 +31,6 @@ export default function GenerateAdvicePage({
 }) {
   const { username } = use(params);
   const router = useRouter();
-  const { user } = useAuth();
   const queryClient = useQueryClient();
   const { data: balance, isLoading: balanceLoading } = useCreditBalance();
   const [error, setError] = useState<string | null>(null);

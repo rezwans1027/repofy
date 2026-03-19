@@ -26,7 +26,8 @@ export function SmoothCaretInput({
   }, []);
 
   useEffect(() => {
-    updateCaretPosition();
+    const frame = requestAnimationFrame(updateCaretPosition);
+    return () => cancelAnimationFrame(frame);
   }, [value, updateCaretPosition]);
 
   useEffect(() => {

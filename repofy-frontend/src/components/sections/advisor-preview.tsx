@@ -9,7 +9,6 @@ import {
   GraduationCap,
   Target,
   ArrowUpRight,
-  TrendingUp,
 } from "lucide-react";
 
 const projectIdeas = [

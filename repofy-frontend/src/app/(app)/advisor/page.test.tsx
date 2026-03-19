@@ -3,10 +3,11 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { authMockFactory } from "@/__tests__/helpers/mock-auth";
 import { createAdviceListItemSet } from "@/__tests__/fixtures";
+import type { AdviceListItem } from "@/hooks/use-advice";
 
 vi.mock("@/components/providers/auth-provider", () => authMockFactory());
 
-let mockAdviceItems: any[] = [];
+let mockAdviceItems: AdviceListItem[] = [];
 let mockAdviceLoading = false;
 const mockDeleteMutateAsync = vi.fn().mockResolvedValue(undefined);
 vi.mock("@/hooks/use-advice", () => ({

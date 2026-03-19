@@ -74,6 +74,9 @@ const MOCK_NARRATIVE = "This developer shows clean, consistent code style across
 export function buildMockSearchResults(query: string): GitHubSearchResult[] {
   if (!query.trim()) return [];
   const username = query.trim().toLowerCase();
+  if (username.includes("nonexistent") || username.startsWith("zzz_")) {
+    return [];
+  }
   return [
     {
       username,

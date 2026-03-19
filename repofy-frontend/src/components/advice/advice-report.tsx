@@ -64,15 +64,15 @@ interface AdviceReportProps {
 
 export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
   const pdfRef = useRef<HTMLDivElement>(null);
-  const hasInteracted = useRef(false);
   const [exporting, setExporting] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>("career");
   const [direction, setDirection] = useState(0);
 
   const warnings = data.generationWarnings ?? [];
 
   const handleTabChange = (tab: TabKey) => {
-    hasInteracted.current = true;
+    setHasInteracted(true);
     const d = TAB_INDEX[tab] - TAB_INDEX[activeTab];
     setDirection(d > 0 ? 1 : -1);
     setActiveTab(tab);
@@ -136,11 +136,11 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
         </motion.div>
 
         {/* Tab content with directional slide + crossfade */}
-        <AnimatePresence mode="wait" custom={hasInteracted.current ? direction : null}>
+        <AnimatePresence mode="wait" custom={hasInteracted ? direction : null}>
           {activeTab === "career" && (
             <motion.div
               key="career"
-              custom={hasInteracted.current ? direction : null}
+              custom={hasInteracted ? direction : null}
               variants={tabContentVariants}
               initial="enter"
               animate="center"
@@ -158,7 +158,7 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
           {activeTab === "build" && (
             <motion.div
               key="build"
-              custom={hasInteracted.current ? direction : null}
+              custom={hasInteracted ? direction : null}
               variants={tabContentVariants}
               initial="enter"
               animate="center"
@@ -175,7 +175,7 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
           {activeTab === "improve" && (
             <motion.div
               key="improve"
-              custom={hasInteracted.current ? direction : null}
+              custom={hasInteracted ? direction : null}
               variants={tabContentVariants}
               initial="enter"
               animate="center"

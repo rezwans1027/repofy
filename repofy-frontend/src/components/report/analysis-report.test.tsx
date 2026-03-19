@@ -2,7 +2,6 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { AnalysisReport } from "./analysis-report";
 import { createReportFixture } from "@/__tests__/fixtures";
-import { reportData as staticReportData } from "@/lib/demo-data";
 
 vi.mock("@/lib/export-pdf", () => ({
   exportToPdf: vi.fn().mockResolvedValue(undefined),

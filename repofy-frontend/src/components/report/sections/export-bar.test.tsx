@@ -40,7 +40,6 @@ describe("ExportBar", () => {
   });
 
   it("calls exportToPdf when Export PDF is clicked", async () => {
-    const { exportToPdf } = await import("@/lib/export-pdf");
     const div = document.createElement("div");
     const divRef = { current: div };
     const onBefore = vi.fn();
