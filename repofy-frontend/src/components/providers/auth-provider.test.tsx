@@ -4,7 +4,9 @@ import { createUserFixture } from "@/__tests__/fixtures";
 
 // The auth-provider calls createClient() at module scope,
 // so we need stable function references that survive mockReset.
-let getUserImpl = vi.fn().mockResolvedValue({ data: { user: null } });
+let getSessionImpl = vi.fn().mockResolvedValue({
+  data: { session: null },
+});
 let onAuthStateChangeImpl = vi.fn().mockReturnValue({
   data: { subscription: { unsubscribe: vi.fn() } },
 });
@@ -13,12 +15,16 @@ vi.mock("@/lib/supabase/client", () => {
   return {
     createClient: () => ({
       auth: {
-        getUser: (...args: any[]) => getUserImpl(...args),
+        getSession: (...args: any[]) => getSessionImpl(...args),
         onAuthStateChange: (...args: any[]) => onAuthStateChangeImpl(...args),
       },
     }),
   };
 });
+
+vi.mock("@/lib/auth-token", () => ({
+  setAccessToken: vi.fn(),
+}));
 
 // Import after mock setup
 const { AuthProvider, useAuth } = await import("./auth-provider");
@@ -35,7 +41,9 @@ function TestConsumer() {
 
 describe("AuthProvider", () => {
   beforeEach(() => {
-    getUserImpl = vi.fn().mockResolvedValue({ data: { user: null } });
+    getSessionImpl = vi.fn().mockResolvedValue({
+      data: { session: null },
+    });
     onAuthStateChangeImpl = vi.fn().mockReturnValue({
       data: { subscription: { unsubscribe: vi.fn() } },
     });
@@ -54,9 +62,11 @@ describe("AuthProvider", () => {
     expect(screen.getByTestId("user").textContent).toBe("null");
   });
 
-  it("provides user when getUser returns a user", async () => {
+  it("provides user when getSession returns a session", async () => {
     const user = createUserFixture();
-    getUserImpl = vi.fn().mockResolvedValue({ data: { user } });
+    getSessionImpl = vi.fn().mockResolvedValue({
+      data: { session: { access_token: "test-token", user } },
+    });
 
     render(
       <AuthProvider>

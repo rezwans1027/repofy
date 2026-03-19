@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { setAccessToken } from "@/lib/auth-token";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 
 interface AuthContextType {
@@ -11,8 +12,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// Lazy singleton: only created on first call, which happens inside the
-// component (i.e. in the browser), never at module-evaluation time during SSR.
 let cachedClient: SupabaseClient | null = null;
 function getSupabaseClient(): SupabaseClient {
   if (!cachedClient) {
@@ -27,17 +26,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [supabase] = useState<SupabaseClient>(() => getSupabaseClient());
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
+    // Hydrate initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAccessToken(session?.access_token ?? null);
+      setUser(session?.user ?? null);
       setIsLoading(false);
-    }).catch((err) => {
-      console.error("Failed to get user:", err);
+    }).catch(() => {
       setIsLoading(false);
     });
 
+    // Keep token in sync on auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAccessToken(session?.access_token ?? null);
       setUser(session?.user ?? null);
       setIsLoading(false);
     });

@@ -1,20 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-
-// Shared mock functions so the singleton inside api-client uses the same refs
-const mockGetSession = vi.fn().mockResolvedValue({
-  data: { session: { access_token: "test-token", expires_at: Date.now() / 1000 + 3600 } },
-});
-const mockRefreshSession = vi.fn();
-
-// Mock the supabase client module before api-client imports it
-vi.mock("@/lib/supabase/client", () => ({
-  createClient: () => ({
-    auth: {
-      getSession: mockGetSession,
-      refreshSession: mockRefreshSession,
-    },
-  }),
-}));
+import { setAccessToken } from "@/lib/auth-token";
 
 import { api, ApiError } from "./api-client";
 
@@ -32,6 +17,7 @@ describe("ApiError", () => {
 describe("api.get", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    setAccessToken(null);
   });
 
   it("makes GET request and returns data", async () => {
@@ -77,7 +63,9 @@ describe("api.get", () => {
     await expect(api.get("/bad")).rejects.toThrow("Server returned non-JSON response");
   });
 
-  it("includes auth header when auth option is true", async () => {
+  it("includes auth header when token is set", async () => {
+    setAccessToken("test-token");
+
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ success: true, data: {} }), {
         status: 200,
@@ -96,10 +84,8 @@ describe("api.get", () => {
     );
   });
 
-  it("does not include auth header when session is null", async () => {
-    mockGetSession.mockResolvedValueOnce({
-      data: { session: null },
-    });
+  it("does not include auth header when token is null", async () => {
+    setAccessToken(null);
 
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ success: true, data: {} }), {

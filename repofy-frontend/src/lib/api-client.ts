@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/client";
+import { getAccessToken } from "@/lib/auth-token";
 
 function getBaseUrl() {
   const url = process.env.NEXT_PUBLIC_API_URL;
@@ -26,14 +26,6 @@ interface RequestOptions extends Omit<RequestInit, "body"> {
   schema?: z.ZodType;
 }
 
-// Lazy singleton — defers client creation until first use,
-// safe if this module is ever evaluated in a server context.
-let _supabase: ReturnType<typeof createClient> | null = null;
-function getSupabase() {
-  if (!_supabase) _supabase = createClient();
-  return _supabase;
-}
-
 async function request<T>(
   method: string,
   path: string,
@@ -42,25 +34,13 @@ async function request<T>(
   const { auth, body, signal, headers: callerHeaders, ...rest } = opts;
   const headers: Record<string, string> = {};
 
+  // Read the cached access token synchronously — no getSession() call,
+  // no Web Locks, no async blocking. The auth provider keeps this in
+  // sync via onAuthStateChange.
   if (auth) {
-    const supabase = getSupabase();
-
-    // The browser client auto-refreshes expired tokens internally, so
-    // getSession() returns a valid (possibly just-refreshed) session.
-    // We still guard against near-expiry tokens (< 60 s) by explicitly
-    // calling refreshSession(), which is idempotent if the token is fresh.
-    let { data: { session } } = await supabase.auth.getSession();
-
-    if (
-      !session?.access_token ||
-      (session.expires_at && session.expires_at * 1000 - Date.now() < 60_000)
-    ) {
-      const result = await supabase.auth.refreshSession();
-      session = result?.data?.session ?? null;
-    }
-
-    if (session?.access_token) {
-      headers["Authorization"] = `Bearer ${session.access_token}`;
+    const token = getAccessToken();
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
     }
   }
 

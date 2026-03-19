@@ -155,6 +155,7 @@ jobs:
       ENGINE_INTERNAL_KEY: test-engine-key
       MOCK_AI: "true"
       NODE_ENV: development
+      NEXT_PUBLIC_DISABLE_SUPABASE_LOCKS: "true"
       NEXT_TELEMETRY_DISABLED: 1
     steps:
       - name: Checkout
