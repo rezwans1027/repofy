@@ -153,8 +153,7 @@ jobs:
       CORS_ORIGIN: http://localhost:3000
       FRONTEND_URL: http://localhost:3000
       ENGINE_INTERNAL_KEY: test-engine-key
-      MOCK_AI: "true"
-      NODE_ENV: development
+      NODE_ENV: test
       NEXT_PUBLIC_DISABLE_SUPABASE_LOCKS: "true"
       NEXT_TELEMETRY_DISABLED: 1
     steps:
