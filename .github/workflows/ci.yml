@@ -136,14 +136,14 @@ jobs:
       }}
     timeout-minutes: 25
     env:
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY }}
       NEXT_PUBLIC_API_URL: http://localhost:3001/api
       E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
       E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
-      SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      GITHUB_TOKEN: fake-github-token
+      SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: fake-service-role-key
+      GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}
       OPENAI_API_KEY: fake-openai-key
       ADMIN_SECRET: test-admin-secret
       STRIPE_SECRET_KEY: sk_test_fake_key
@@ -175,9 +175,9 @@ jobs:
           required=(
             NEXT_PUBLIC_SUPABASE_URL
             NEXT_PUBLIC_SUPABASE_ANON_KEY
-            SUPABASE_SERVICE_ROLE_KEY
             E2E_TEST_EMAIL
             E2E_TEST_PASSWORD
+            GITHUB_TOKEN
           )
 
           for name in "${required[@]}"; do
