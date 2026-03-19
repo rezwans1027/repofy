@@ -95,7 +95,7 @@ function PricingContent() {
       );
       const { url } = await api.post<{ url: string }>(
         "/stripe/create-checkout-session",
-        { auth: true },
+        {},
       );
       if (!url.startsWith("https://checkout.stripe.com/")) {
         throw new Error("Invalid checkout URL");

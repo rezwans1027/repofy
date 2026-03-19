@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 import { z } from "zod";
 
 export type ServerError = "unauthenticated" | "forbidden" | "not-found" | "server-error";
@@ -8,10 +8,10 @@ export type ServerResult<T> =
   | { data: null; error: ServerError };
 
 function getBaseUrl() {
-  const url = process.env.NEXT_PUBLIC_API_URL;
+  const url = process.env.API_BACKEND_URL;
   if (url) return url;
   if (process.env.NODE_ENV === "production") {
-    throw new Error("NEXT_PUBLIC_API_URL must be set in production");
+    throw new Error("API_BACKEND_URL must be set in production");
   }
   return "http://localhost:3001/api";
 }
@@ -20,26 +20,11 @@ export async function serverFetch<T>(
   path: string,
   options?: { revalidate?: number | false; schema?: z.ZodType<T> },
 ): Promise<ServerResult<T>> {
-  const supabase = await createClient();
+  // Forward request cookies to the backend (includes access_token + refresh_token)
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.getAll().map((c) => `${c.name}=${c.value}`).join("; ");
 
-  // getUser() validates the JWT server-side (signature + expiry). If the
-  // token was rotated it also refreshes the session and writes the new
-  // cookies on this SSR client instance.
-  //
-  // getSession() is then called on the *same* client — so the access_token
-  // is guaranteed to come from the post-refresh cookie store.  We must call
-  // getUser() *before* getSession() (never parallel, never reversed) because
-  // getSession() only reads from storage without verification.
-  //
-  // As a defence-in-depth measure we also assert that the session belongs to
-  // the verified user, catching any cookie-level mismatch.
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { data: null, error: "unauthenticated" };
-
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.access_token || session.user.id !== user.id) {
-    return { data: null, error: "unauthenticated" };
-  }
+  if (!cookieHeader) return { data: null, error: "unauthenticated" };
 
   const cacheStrategy: RequestInit =
     options?.revalidate !== undefined && options.revalidate !== false
@@ -49,7 +34,7 @@ export async function serverFetch<T>(
   let res: Response;
   try {
     res = await fetch(`${getBaseUrl()}${path}`, {
-      headers: { Authorization: `Bearer ${session.access_token}` },
+      headers: { Cookie: cookieHeader },
       signal: AbortSignal.timeout(10_000),
       ...cacheStrategy,
     });
@@ -62,6 +47,12 @@ export async function serverFetch<T>(
     }
     throw err;
   }
+
+  // TODO(auth): SSR cookie staleness — backend auto-refreshes from refresh_token
+  // so the data request succeeds, but Server Components cannot reliably forward
+  // Set-Cookie headers back to the browser. The browser's access_token cookie
+  // may stay stale until the next client-side API call refreshes it via the
+  // rewrite proxy.
 
   if (!res.ok) {
     const error: ServerError =

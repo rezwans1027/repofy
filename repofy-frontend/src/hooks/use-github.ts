@@ -66,7 +66,7 @@ export function useGitHubSearch(debouncedQuery: string) {
     queryFn: ({ signal }) =>
       api.get<SearchResult[]>(
         `/github/search?q=${encodeURIComponent(debouncedQuery)}`,
-        { signal, auth: true, schema: z.array(searchResultSchema) },
+        { signal, schema: z.array(searchResultSchema) },
       ),
     // Wait for auth to load so the cached access token is available
     enabled: !isLoading && debouncedQuery.trim().length > 0,
@@ -81,7 +81,7 @@ export function useGitHubProfile(username: string) {
     queryFn: ({ signal }) =>
       api.get<GitHubProfileRaw>(
         `/github/${encodeURIComponent(username)}`,
-        { signal, auth: true, schema: gitHubProfileSchema },
+        { signal, schema: gitHubProfileSchema },
       ),
     // Wait for auth to load so the cached access token is available
     enabled: !isLoading && !!username,

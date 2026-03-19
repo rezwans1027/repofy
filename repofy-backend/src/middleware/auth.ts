@@ -1,6 +1,8 @@
 import { RequestHandler } from "express";
 import { getSupabaseAdmin } from "../config/supabase";
 import { sendError } from "../lib/response";
+import { extractAccessToken, extractRefreshToken, setAuthCookies, clearAuthCookies } from "../lib/cookie-utils";
+import { refreshSession } from "../services/auth.service";
 
 /**
  * Short-lived cache to avoid a Supabase HTTP roundtrip on every request.
@@ -9,9 +11,6 @@ import { sendError } from "../lib/response";
  * This is per-process only. In a multi-replica deployment each instance
  * maintains its own token cache, which is fine — worst case is an extra
  * Supabase call, not a security issue.
- *
- * TODO(scaling): If Supabase auth latency becomes a bottleneck across
- * replicas, consider a shared Redis cache for verified tokens.
  */
 const TOKEN_CACHE_TTL = 60 * 1000; // 60 seconds
 const TOKEN_CACHE_MAX = 256;
@@ -48,14 +47,12 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
   try {
     if (res.headersSent) return;
 
-    const authHeader = req.headers.authorization;
+    const token = extractAccessToken(req);
 
-    if (!authHeader?.startsWith("Bearer ")) {
-      if (!res.headersSent) sendError(res, 401, "Missing or invalid authorization header");
+    if (!token) {
+      if (!res.headersSent) sendError(res, 401, "Missing or invalid authorization");
       return;
     }
-
-    const token = authHeader.split(" ")[1];
 
     // Check cache first (LRU: delete + re-set moves entry to end)
     const cached = tokenCache.get(token);
@@ -75,6 +72,39 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
     if (error || !data.user) {
       // Remove stale cache entry if present
       tokenCache.delete(token);
+
+      // Auto-refresh: try refresh token if available
+      const refreshToken = extractRefreshToken(req);
+      if (refreshToken) {
+        try {
+          const result = await refreshSession(refreshToken);
+          // Set new cookies on the response
+          setAuthCookies(res, result.session.access_token, result.session.refresh_token);
+
+          // Cache the new token
+          const newToken = result.session.access_token;
+          if (tokenCache.size >= TOKEN_CACHE_MAX) {
+            const oldest = tokenCache.keys().next().value;
+            if (oldest !== undefined) tokenCache.delete(oldest);
+          }
+          tokenCache.set(newToken, {
+            userId: result.user.id,
+            email: result.user.email,
+            expiresAt: Date.now() + TOKEN_CACHE_TTL,
+          });
+
+          req.userId = result.user.id;
+          req.userEmail = result.user.email;
+          next();
+          return;
+        } catch {
+          // Refresh failed — clear stale cookies and return 401
+          clearAuthCookies(res);
+          if (!res.headersSent) sendError(res, 401, "Invalid or expired token");
+          return;
+        }
+      }
+
       sendError(res, 401, "Invalid or expired token");
       return;
     }

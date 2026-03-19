@@ -37,7 +37,7 @@ describe("useCreditBalance", () => {
     expect(result.current.data).toEqual(balance);
     expect(mockApi.get).toHaveBeenCalledWith(
       "/credits/balance",
-      expect.objectContaining({ auth: true }),
+      expect.objectContaining({ signal: expect.anything() }),
     );
   });
 
@@ -103,7 +103,7 @@ describe("useAwaitCreditUpdate", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(mockApi.get).toHaveBeenCalledWith(
       "/credits/balance",
-      expect.objectContaining({ auth: true }),
+      expect.objectContaining({ signal: expect.anything() }),
     );
   });
 });

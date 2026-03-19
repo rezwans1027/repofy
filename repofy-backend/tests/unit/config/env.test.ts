@@ -8,6 +8,7 @@ vi.mock("dotenv", () => ({
 const ENV_KEYS = [
   "SUPABASE_URL",
   "SUPABASE_SERVICE_ROLE_KEY",
+  "SUPABASE_ANON_KEY",
   "GITHUB_TOKEN",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",

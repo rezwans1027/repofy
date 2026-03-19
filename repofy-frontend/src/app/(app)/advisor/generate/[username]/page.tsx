@@ -41,7 +41,7 @@ export default function GenerateAdvicePage({
     try {
       const data = await api.post<{ adviceId: string }>(
         `/advice/${encodeURIComponent(username)}`,
-        { auth: true, signal: AbortSignal.timeout(300_000) },
+        { signal: AbortSignal.timeout(300_000) },
       );
       return data;
     } catch (err) {

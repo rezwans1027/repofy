@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { createClient } from "@/lib/supabase/client";
 import { api, ApiError } from "@/lib/api-client";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useAuthTransition } from "../auth-transition";
 import { useFlagTypewriter } from "@/hooks/use-flag-typewriter";
 import { EASE_OUT_EXPO } from "@/lib/animation-variants";
@@ -27,6 +27,7 @@ const phaseVariants = {
 
 export default function SignupPage() {
   const router = useRouter();
+  const { refresh } = useAuth();
   const { navigateTo } = useAuthTransition();
 
   // Phase 1 fields
@@ -129,18 +130,9 @@ export default function SignupPage() {
         body: { email: email.trim(), otp, password },
       });
 
-      // Auto sign-in after account creation
-      const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
-
-      if (signInError) {
-        setPhase("success");
-      } else {
-        router.push("/dashboard");
-      }
+      // Backend sets cookies on verify — refresh auth context and redirect
+      await refresh();
+      router.push("/dashboard");
     } catch (err) {
       setErrors({
         form: err instanceof ApiError ? err.message : "Something went wrong.",

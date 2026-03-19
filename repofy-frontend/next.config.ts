@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  experimental: {
+    proxyTimeout: 360_000, // 6 minutes — advice generation can take up to 5 min
+  },
   images: {
     remotePatterns: [
       {
@@ -9,6 +12,10 @@ const nextConfig: NextConfig = {
         hostname: "avatars.githubusercontent.com",
       },
     ],
+  },
+  async rewrites() {
+    const backendUrl = process.env.API_BACKEND_URL || "http://localhost:3001/api";
+    return [{ source: "/api/:path*", destination: `${backendUrl}/:path*` }];
   },
   async headers() {
     return [

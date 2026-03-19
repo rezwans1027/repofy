@@ -15,7 +15,7 @@ export function useCreditBalance() {
   return useQuery({
     queryKey: ["credits", "balance"],
     queryFn: ({ signal }) =>
-      api.get<CreditBalance>("/credits/balance", { signal, auth: true, schema: creditBalanceSchema }),
+      api.get<CreditBalance>("/credits/balance", { signal, schema: creditBalanceSchema }),
     enabled: !!user,
   });
 }
@@ -32,7 +32,7 @@ export function useAwaitCreditUpdate(
   return useQuery({
     queryKey: ["credits", "balance", "poll"],
     queryFn: ({ signal }) =>
-      api.get<CreditBalance>("/credits/balance", { signal, auth: true, schema: creditBalanceSchema }),
+      api.get<CreditBalance>("/credits/balance", { signal, schema: creditBalanceSchema }),
     enabled: enabled && !!user && initialBalance !== undefined,
     refetchInterval: (query) => {
       const data = query.state.data;

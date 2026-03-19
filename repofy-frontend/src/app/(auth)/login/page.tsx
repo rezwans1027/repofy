@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { createClient } from "@/lib/supabase/client";
+import { api, ApiError } from "@/lib/api-client";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useAuthTransition } from "../auth-transition";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { refresh } = useAuth();
   const { navigateTo } = useAuthTransition();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,20 +43,15 @@ export default function LoginPage() {
     setErrors({});
     setIsLoading(true);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setErrors({ form: error.message });
+    try {
+      await api.post("/auth/login", { body: { email, password } });
+      await refresh();
+      router.push("/dashboard");
+      router.refresh();
+    } catch (err) {
+      setErrors({ form: err instanceof ApiError ? err.message : "Something went wrong." });
       setIsLoading(false);
-      return;
     }
-
-    router.push("/dashboard");
-    router.refresh();
   }
 
   return (

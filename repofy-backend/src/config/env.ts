@@ -37,6 +37,7 @@ export const env = {
   mockAi: _mockAi,
   supabaseUrl: requireEnv("SUPABASE_URL"),
   supabaseServiceRoleKey: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
+  supabaseAnonKey: requireEnv("SUPABASE_ANON_KEY"),
   githubToken: requireEnvUnlessMockAi("GITHUB_TOKEN"),
   openaiModel: process.env.OPENAI_MODEL || "gpt-5.1",
   adminSecret: requireEnv("ADMIN_SECRET"),

@@ -99,7 +99,7 @@ describe("useDeleteReports", () => {
     await result.current.mutateAsync(["report-1", "report-2"]);
     expect(mockApi.delete).toHaveBeenCalledWith(
       "/reports",
-      expect.objectContaining({ auth: true, body: { ids: ["report-1", "report-2"] } }),
+      expect.objectContaining({ body: { ids: ["report-1", "report-2"] } }),
     );
   });
 

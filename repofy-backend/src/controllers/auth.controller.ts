@@ -1,9 +1,10 @@
 import { RequestHandler } from "express";
 import { sendSuccess, sendError } from "../lib/response";
 import { handleControllerError } from "../lib/controller-utils";
-import { initiateSignup, verifySignup, resendOtp } from "../services/auth.service";
+import { initiateSignup, verifySignup, resendOtp, loginWithPassword, refreshSession } from "../services/auth.service";
 import { invalidateToken } from "../middleware/auth";
 import { getSupabaseAdmin } from "../config/supabase";
+import { setAuthCookies, clearAuthCookies, extractAccessToken, extractRefreshToken } from "../lib/cookie-utils";
 import type { AuthenticatedRequest } from "../types";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -53,23 +54,87 @@ export const handleVerifySignup: RequestHandler = async (req, res) => {
 
   try {
     const result = await verifySignup(email.toLowerCase().trim(), otp, password);
-    sendSuccess(res, result);
+
+    // Set cookies if auto-login succeeded
+    if (result.session) {
+      setAuthCookies(res, result.session.access_token, result.session.refresh_token);
+    }
+
+    sendSuccess(res, { user: result.user });
   } catch (err) {
     handleControllerError(err, req, res, "Auth Verify", "An unexpected error occurred.");
   }
 };
 
-export const handleLogout: RequestHandler = async (req, res) => {
-  const { userId } = req as AuthenticatedRequest;
-  const token = req.headers.authorization?.split(" ")[1];
+export const handleLogin: RequestHandler = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || typeof email !== "string" || email.length > MAX_EMAIL_LEN || !EMAIL_RE.test(email)) {
+    sendError(res, 400, "A valid email is required.");
+    return;
+  }
+  if (!password || typeof password !== "string") {
+    sendError(res, 400, "Password is required.");
+    return;
+  }
 
   try {
-    if (token) invalidateToken(token);
-    await getSupabaseAdmin().auth.admin.signOut(userId);
-    sendSuccess(res, { message: "Logged out successfully." });
+    const result = await loginWithPassword(email.toLowerCase().trim(), password);
+    setAuthCookies(res, result.session.access_token, result.session.refresh_token);
+    sendSuccess(res, { user: result.user });
   } catch (err) {
-    handleControllerError(err, req, res, "Auth Logout", "Failed to log out.");
+    handleControllerError(err, req, res, "Auth Login", "An unexpected error occurred.");
   }
+};
+
+export const handleRefresh: RequestHandler = async (req, res) => {
+  const refreshToken = extractRefreshToken(req);
+
+  if (!refreshToken) {
+    sendError(res, 401, "No refresh token");
+    return;
+  }
+
+  try {
+    const result = await refreshSession(refreshToken);
+    setAuthCookies(res, result.session.access_token, result.session.refresh_token);
+    sendSuccess(res, { user: result.user });
+  } catch (err) {
+    clearAuthCookies(res);
+    handleControllerError(err, req, res, "Auth Refresh", "Session expired.");
+  }
+};
+
+export const handleMe: RequestHandler = async (req, res) => {
+  const { userId, userEmail } = req as AuthenticatedRequest;
+  sendSuccess(res, { user: { id: userId, email: userEmail } });
+};
+
+export const handleLogout: RequestHandler = async (req, res) => {
+  const token = extractAccessToken(req);
+
+  try {
+    // Best-effort: invalidate token cache if present
+    if (token) invalidateToken(token);
+
+    // Best-effort: sign out via Supabase admin if we can resolve the user
+    if (token) {
+      try {
+        const { data } = await getSupabaseAdmin().auth.getUser(token);
+        if (data.user) {
+          await getSupabaseAdmin().auth.admin.signOut(data.user.id);
+        }
+      } catch {
+        // Ignore — token may be expired, user may not exist
+      }
+    }
+  } catch {
+    // Ignore errors — always clear cookies
+  }
+
+  // Always clear cookies regardless of token validity
+  clearAuthCookies(res);
+  sendSuccess(res, { message: "Logged out successfully." });
 };
 
 export const handleResendOtp: RequestHandler = async (req, res) => {

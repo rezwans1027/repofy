@@ -1,66 +1,22 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { PROTECTED_ROUTES } from "@/lib/constants";
-
-function getApiOrigin(apiUrl: string): string {
-  try {
-    return new URL(apiUrl).origin;
-  } catch {
-    return apiUrl;
-  }
-}
 
 export async function middleware(request: NextRequest) {
   // Generate a per-request nonce for CSP
   const nonce = crypto.randomUUID();
   request.headers.set("x-nonce", nonce);
 
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY env vars",
-    );
-    return new NextResponse("Internal Server Error", { status: 500 });
-  }
-
-  const supabase = createServerClient(
-    supabaseUrl,
-    supabaseAnonKey,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  // Refresh the auth session
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const response = NextResponse.next({ request });
 
   const pathname = request.nextUrl.pathname;
 
+  // Read access_token HttpOnly cookie directly (server-side middleware CAN read HttpOnly cookies)
+  const token = request.cookies.get("access_token")?.value?.trim();
+  const isAuthenticated = !!token && token.length > 0;
+
   // Redirect authenticated users away from auth pages → /dashboard
   const isAuthPage = pathname === "/login" || pathname === "/signup";
-  if (user && isAuthPage) {
+  if (isAuthenticated && isAuthPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
@@ -70,7 +26,7 @@ export async function middleware(request: NextRequest) {
   const isProtected = PROTECTED_ROUTES.some((route) =>
     pathname.startsWith(route),
   );
-  if (!user && isProtected) {
+  if (!isAuthenticated && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
@@ -85,8 +41,6 @@ export async function middleware(request: NextRequest) {
   }
 
   // Build nonce-based Content-Security-Policy
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
-  const apiOrigin = getApiOrigin(apiUrl);
   const csp = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}'`,
@@ -115,7 +69,7 @@ export async function middleware(request: NextRequest) {
 
     "img-src 'self' avatars.githubusercontent.com data: blob:", // data:/blob: needed for html2canvas-pro + jspdf
     "font-src 'self'",
-    `connect-src 'self' ${supabaseUrl} ${apiOrigin}`,
+    "connect-src 'self'",
     "worker-src 'self' blob:",   // jsPDF may use blob workers for PDF generation
     "object-src 'none'",
     "base-uri 'self'",           // prevent <base> tag injection attacks
@@ -125,13 +79,13 @@ export async function middleware(request: NextRequest) {
     // Only upgrade insecure requests in production — in dev, localhost is HTTP
     ...(process.env.NODE_ENV === "production" ? ["upgrade-insecure-requests"] : []),
   ].join("; ");
-  supabaseResponse.headers.set("Content-Security-Policy", csp);
+  response.headers.set("Content-Security-Policy", csp);
 
-  return supabaseResponse;
+  return response;
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

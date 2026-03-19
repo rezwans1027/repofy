@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { getSupabaseAdmin } from "../config/supabase";
+import { getSupabaseAuth } from "../config/supabase-auth";
 import { sendOtpEmail } from "./email.service";
 import { env } from "../config/env";
 import { logger, maskEmail } from "../lib/logger";
@@ -99,11 +100,57 @@ export async function initiateSignup(
   return { message: "A verification code has been sent to your email." };
 }
 
+export async function loginWithPassword(
+  email: string,
+  password: string,
+): Promise<{ session: { access_token: string; refresh_token: string }; user: { id: string; email: string; display_name?: string } }> {
+  const { data, error } = await getSupabaseAuth().auth.signInWithPassword({ email, password });
+
+  if (error || !data.session) {
+    logger.warn("Login failed", { email: maskEmail(email), error: error?.message });
+    throw new AuthError(error?.message || "Invalid email or password", 401);
+  }
+
+  return {
+    session: {
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+    },
+    user: {
+      id: data.user.id,
+      email: data.user.email ?? email,
+      display_name: data.user.user_metadata?.display_name,
+    },
+  };
+}
+
+export async function refreshSession(
+  refreshToken: string,
+): Promise<{ session: { access_token: string; refresh_token: string }; user: { id: string; email: string; display_name?: string } }> {
+  const { data, error } = await getSupabaseAuth().auth.refreshSession({ refresh_token: refreshToken });
+
+  if (error || !data.session) {
+    throw new AuthError("Session expired", 401);
+  }
+
+  return {
+    session: {
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+    },
+    user: {
+      id: data.user!.id,
+      email: data.user!.email ?? "",
+      display_name: data.user!.user_metadata?.display_name,
+    },
+  };
+}
+
 export async function verifySignup(
   email: string,
   otp: string,
   password: string,
-): Promise<{ user: { id: string; email: string } }> {
+): Promise<{ user: { id: string; email: string }; session?: { access_token: string; refresh_token: string } }> {
   const UNIFIED_ERROR = "Invalid or expired verification code. Please try again.";
   const supabase = getSupabaseAdmin();
 
@@ -153,7 +200,17 @@ export async function verifySignup(
 
   logger.info("User created via OTP signup", { email: maskEmail(email), userId: userData.user.id });
 
-  return { user: { id: userData.user.id, email: userData.user.email ?? email } };
+  // Auto-login after signup to set cookies
+  try {
+    const loginResult = await loginWithPassword(email, password);
+    return {
+      user: { id: userData.user.id, email: userData.user.email ?? email },
+      session: loginResult.session,
+    };
+  } catch {
+    // Login failed after signup — user can still log in manually
+    return { user: { id: userData.user.id, email: userData.user.email ?? email } };
+  }
 }
 
 export async function resendOtp(email: string): Promise<{ message: string }> {

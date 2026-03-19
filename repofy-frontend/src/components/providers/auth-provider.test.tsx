@@ -1,29 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
-import { createUserFixture } from "@/__tests__/fixtures";
 
-// The auth-provider calls createClient() at module scope,
-// so we need stable function references that survive mockReset.
-let getSessionImpl = vi.fn().mockResolvedValue({
-  data: { session: null },
-});
-let onAuthStateChangeImpl = vi.fn().mockReturnValue({
-  data: { subscription: { unsubscribe: vi.fn() } },
-});
+// Mock api-client: stable mock reference that can be reconfigured per test
+let getMeImpl = vi.fn().mockRejectedValue(new Error("Not authenticated"));
 
-vi.mock("@/lib/supabase/client", () => {
-  return {
-    createClient: () => ({
-      auth: {
-        getSession: (...args: any[]) => getSessionImpl(...args),
-        onAuthStateChange: (...args: any[]) => onAuthStateChangeImpl(...args),
-      },
-    }),
-  };
-});
-
-vi.mock("@/lib/auth-token", () => ({
-  setAccessToken: vi.fn(),
+vi.mock("@/lib/api-client", () => ({
+  api: {
+    get: (...args: any[]) => getMeImpl(...args),
+    post: vi.fn(),
+    delete: vi.fn(),
+  },
+  ApiError: Error,
 }));
 
 // Import after mock setup
@@ -41,12 +28,7 @@ function TestConsumer() {
 
 describe("AuthProvider", () => {
   beforeEach(() => {
-    getSessionImpl = vi.fn().mockResolvedValue({
-      data: { session: null },
-    });
-    onAuthStateChangeImpl = vi.fn().mockReturnValue({
-      data: { subscription: { unsubscribe: vi.fn() } },
-    });
+    getMeImpl = vi.fn().mockRejectedValue(new Error("Not authenticated"));
   });
 
   it("shows loading then resolves to null user", async () => {
@@ -62,10 +44,9 @@ describe("AuthProvider", () => {
     expect(screen.getByTestId("user").textContent).toBe("null");
   });
 
-  it("provides user when getSession returns a session", async () => {
-    const user = createUserFixture();
-    getSessionImpl = vi.fn().mockResolvedValue({
-      data: { session: { access_token: "test-token", user } },
+  it("provides user when /auth/me returns a user", async () => {
+    getMeImpl = vi.fn().mockResolvedValue({
+      user: { id: "user-123", email: "test@example.com" },
     });
 
     render(
@@ -79,7 +60,7 @@ describe("AuthProvider", () => {
     );
   });
 
-  it("sets up onAuthStateChange listener", async () => {
+  it("calls /auth/me on mount", async () => {
     render(
       <AuthProvider>
         <TestConsumer />
@@ -89,26 +70,7 @@ describe("AuthProvider", () => {
     await waitFor(() =>
       expect(screen.getByTestId("loading").textContent).toBe("false"),
     );
-    expect(onAuthStateChangeImpl).toHaveBeenCalledWith(expect.any(Function));
-  });
-
-  it("cleans up subscription on unmount", async () => {
-    const unsubscribe = vi.fn();
-    onAuthStateChangeImpl = vi.fn().mockReturnValue({
-      data: { subscription: { unsubscribe } },
-    });
-
-    const { unmount } = render(
-      <AuthProvider>
-        <TestConsumer />
-      </AuthProvider>,
-    );
-
-    await waitFor(() =>
-      expect(screen.getByTestId("loading").textContent).toBe("false"),
-    );
-    unmount();
-    expect(unsubscribe).toHaveBeenCalled();
+    expect(getMeImpl).toHaveBeenCalledWith("/auth/me");
   });
 
   it("throws when useAuth is used outside provider", () => {

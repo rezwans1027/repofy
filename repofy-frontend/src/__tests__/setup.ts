@@ -14,10 +14,6 @@ afterEach(() => {
   cleanup();
 });
 
-// Set Supabase env vars before any module loads
-process.env.NEXT_PUBLIC_SUPABASE_URL = "http://localhost:54321";
-process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "fake-anon-key";
-
 // Mock next/navigation globally
 vi.mock("next/navigation", () => navModule);
 

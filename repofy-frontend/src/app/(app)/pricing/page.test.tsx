@@ -183,7 +183,7 @@ describe("PricingPage", () => {
     await user.click(screen.getByRole("button", { name: /Get Started/i }));
 
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith("/stripe/create-checkout-session", { auth: true });
+      expect(api.post).toHaveBeenCalledWith("/stripe/create-checkout-session", {});
     });
 
     await waitFor(() => {

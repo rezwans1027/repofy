@@ -1,8 +1,10 @@
 import compression from "compression";
+import cookieParser from "cookie-parser";
 import express from "express";
 import helmet from "helmet";
 import { env } from "./config/env";
 import { corsMiddleware } from "./middleware/cors";
+import { csrfProtection } from "./middleware/csrf";
 import { errorHandler } from "./middleware/errorHandler";
 import { notFound } from "./middleware/notFound";
 import { handleWebhook } from "./controllers/stripe.controller";
@@ -73,7 +75,9 @@ export function createApp() {
   );
 
   app.use(corsMiddleware);
+  app.use(cookieParser());
   app.use(express.json({ limit: "100kb" }));
+  app.use(csrfProtection);
 
   app.use("/api", routes);
 
