@@ -22,8 +22,8 @@ export function createClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return createBrowserClient(url, anonKey, disableLocks ? {
     auth: { lock: noOpLock },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any : undefined);
 }
