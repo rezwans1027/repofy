@@ -21,6 +21,11 @@ import { navState, navModule, resetNavState } from "@/__tests__/helpers/mock-nav
 navState.pathname = "/dashboard";
 vi.mock("next/navigation", () => navModule);
 
+// Mock auth provider — useGitHubSearch depends on useAuth for enabled gating
+vi.mock("@/components/providers/auth-provider", () => ({
+  useAuth: () => ({ user: { id: "test-user" }, isLoading: false }),
+}));
+
 import DashboardPage from "./page";
 import { api } from "@/lib/api-client";
 
