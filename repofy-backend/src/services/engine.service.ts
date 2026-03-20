@@ -17,7 +17,8 @@ export async function callEngine<T>(
 
   // 2. Parse and validate the full URL (scheme + IP-literal check)
   const fullUrl = `${env.engineUrl}${path}`;
-  const parsed = validateSafeUrl(fullUrl, `Engine ${path}`);
+  // Allow http for Railway internal service-to-service networking
+  const parsed = validateSafeUrl(fullUrl, `Engine ${path}`, { allowedSchemes: ["http", "https"] });
 
   // NOTE: No DNS-rebinding check here. The engine URL is operator-configured
   // (env var), not user-supplied, so SSRF via DNS rebinding is not a concern.
