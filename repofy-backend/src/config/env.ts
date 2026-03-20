@@ -55,7 +55,8 @@ export const env = {
     // and the hostname must not be a private IP literal.
     const isDevDefault = !process.env.ENGINE_URL && !_isProduction;
     if (!isDevDefault) {
-      validateSafeUrl(raw, "ENGINE_URL");
+      // Allow http for Railway internal service-to-service networking
+      validateSafeUrl(raw, "ENGINE_URL", { allowedSchemes: ["http", "https"] });
     }
     return raw;
   })(),
