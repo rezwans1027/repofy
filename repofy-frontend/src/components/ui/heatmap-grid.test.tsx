@@ -21,8 +21,10 @@ describe("HeatmapGrid", () => {
     ];
     const { container } = render(<HeatmapGrid data={data} />);
     const grid = container.querySelector(".grid");
-    // 3 rows x 2 cols = 6 cells
-    expect(grid!.children).toHaveLength(6);
+    // 2 week columns, each with 3 day cells
+    expect(grid!.children).toHaveLength(2);
+    const allCells = grid!.querySelectorAll(".aspect-square");
+    expect(allCells).toHaveLength(6);
   });
 
   it("grid template columns match data width", () => {
@@ -41,15 +43,20 @@ describe("HeatmapGrid", () => {
       [1, 2, 3],
     ];
     const { container } = render(<HeatmapGrid data={data} />);
-    const grid = container.querySelector(".grid") as HTMLElement;
-    expect(grid.style.gridTemplateRows).toBe("repeat(7, 1fr)");
+    const weekColumns = Array.from(
+      container.querySelectorAll("[role='img'] > div"),
+    ) as HTMLElement[];
+    weekColumns.forEach((col) => {
+      expect(col.style.gridTemplateRows).toBe("repeat(7, 1fr)");
+    });
   });
 
   it("applies correct background colors per value", () => {
     const data = [[0, 1, 2, 3, 4]];
     const { container } = render(<HeatmapGrid data={data} />);
-    const grid = container.querySelector(".grid")!;
-    const cells = Array.from(grid.children) as HTMLElement[];
+    const cells = Array.from(
+      container.querySelectorAll(".aspect-square"),
+    ) as HTMLElement[];
 
     expect(cells).toHaveLength(5);
     cells.forEach((cell, i) => {
@@ -61,6 +68,6 @@ describe("HeatmapGrid", () => {
     const data = [[]];
     const { container } = render(<HeatmapGrid data={data} />);
     const grid = container.querySelector(".grid")!;
-    expect(grid.children).toHaveLength(0);
+    expect(grid.querySelectorAll(".aspect-square")).toHaveLength(0);
   });
 });

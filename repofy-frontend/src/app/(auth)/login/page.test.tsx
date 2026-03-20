@@ -2,14 +2,24 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-// Mock supabase client
-const mockSignIn = vi.fn();
-vi.mock("@/lib/supabase/client", () => ({
-  createClient: () => ({
-    auth: {
-      signInWithPassword: mockSignIn,
-    },
-  }),
+// Mock api-client
+const mockPost = vi.hoisted(() => vi.fn());
+const mockRefresh = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+
+vi.mock("@/lib/api-client", () => ({
+  api: { get: vi.fn(), post: mockPost, delete: vi.fn() },
+  ApiError: class ApiError extends Error {
+    status: number;
+    constructor(message: string, status: number) {
+      super(message);
+      this.status = status;
+      this.name = "ApiError";
+    }
+  },
+}));
+
+vi.mock("@/components/providers/auth-provider", () => ({
+  useAuth: () => ({ user: null, isLoading: false, refresh: mockRefresh }),
 }));
 
 import { navState, navModule, resetNavState } from "@/__tests__/helpers/mock-navigation";
@@ -72,8 +82,8 @@ describe("LoginPage", () => {
     expect(screen.getByText("Password is required")).toBeInTheDocument();
   });
 
-  it("calls signInWithPassword and redirects on success", async () => {
-    mockSignIn.mockResolvedValue({ error: null });
+  it("calls api.post /auth/login and redirects on success", async () => {
+    mockPost.mockResolvedValue({ user: { id: "1", email: "test@example.com" } });
     const user = userEvent.setup();
     render(<LoginPage />);
 
@@ -81,16 +91,17 @@ describe("LoginPage", () => {
     await user.type(screen.getByPlaceholderText("••••••••"), "password123");
     await user.click(getSubmitButton());
 
-    expect(mockSignIn).toHaveBeenCalledWith({
-      email: "test@example.com",
-      password: "password123",
+    expect(mockPost).toHaveBeenCalledWith("/auth/login", {
+      body: { email: "test@example.com", password: "password123" },
     });
+    expect(mockRefresh).toHaveBeenCalled();
     expect(navState.push).toHaveBeenCalledWith("/dashboard");
     expect(navState.refresh).toHaveBeenCalled();
   });
 
   it("shows error message on authentication failure", async () => {
-    mockSignIn.mockResolvedValue({ error: { message: "Invalid credentials" } });
+    const { ApiError } = await import("@/lib/api-client");
+    mockPost.mockRejectedValue(new ApiError("Invalid credentials", 401));
     const user = userEvent.setup();
     render(<LoginPage />);
 

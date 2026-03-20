@@ -25,28 +25,6 @@ describe("MOCK_AI mode", () => {
     fetchMock.mockReset();
   });
 
-  it("POST /api/analyze/:username returns mock analysis without calling engine", async () => {
-    await setupAuthMock(true);
-
-    const app = getApp();
-    const res = await request(app)
-      .post("/api/analyze/octocat")
-      .set("Authorization", "Bearer valid-token");
-
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.analyzedName).toBe("Mock User (octocat)");
-    const report = res.body.data.report;
-    expect(report.candidateLevel).toBeDefined();
-    expect(report.overallScore).toBeDefined();
-    expect(report.recommendation).toBeDefined();
-    expect(report.radarAxes).toHaveLength(6);
-    expect(report.narrativeReport).toBeDefined();
-
-    // Mock AI path uses buildMockGitHubData — no real GitHub or engine fetch calls
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
   it("POST /api/advice/:username returns mock v2 advice without calling engine", async () => {
     await setupAuthMock(true);
 

@@ -21,7 +21,7 @@ export function SectionNav() {
               <button
                 onClick={() => scrollTo(id)}
                 className={cn(
-                  "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors",
+                  "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm",
                   activeSection === id
                     ? "text-cyan bg-cyan/5"
                     : "text-muted-foreground hover:text-foreground"
@@ -48,7 +48,7 @@ export function SectionNav() {
               key={id}
               onClick={() => scrollTo(id)}
               className={cn(
-                "whitespace-nowrap px-3 py-1 font-mono text-xs transition-colors",
+                "whitespace-nowrap px-3 py-1 font-mono text-xs",
                 activeSection === id
                   ? "text-cyan"
                   : "text-muted-foreground"

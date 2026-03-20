@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { createGitHubUserData } from "../../fixtures/github";
 import { createAdviceV2Response } from "../../fixtures/ai";
 import type { GitHubRepo } from "../../../src/types";
-import { LANGUAGE_COLORS, DEFAULT_COLOR } from "../../../src/services/github.service";
+import { LANGUAGE_COLORS, DEFAULT_COLOR } from "../../../src/lib/language-colors";
 import { buildAdviceData } from "../../../src/services/advice-builder.service";
 
 describe("buildAdviceData", () => {

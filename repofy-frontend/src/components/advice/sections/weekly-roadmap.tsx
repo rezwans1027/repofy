@@ -3,8 +3,7 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Calendar, CheckCircle2 } from "lucide-react";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { Badge } from "@/components/ui/badge";
 import { EASE_OUT_EXPO } from "@/lib/animation-variants";
 import type { Variants } from "framer-motion";
@@ -73,21 +72,11 @@ const connectorLine: Variants = {
 };
 
 const cardSlide: Variants = {
-  hidden: { opacity: 0, x: 24, filter: "blur(6px)" },
+  hidden: { opacity: 0, x: 24 },
   visible: {
     opacity: 1,
     x: 0,
-    filter: "blur(0px)",
     transition: { duration: 0.55, ease: EASE_OUT_EXPO },
-  },
-};
-
-const cardContent: Variants = {
-  hidden: { opacity: 0, y: 8 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: EASE_OUT_EXPO },
   },
 };
 
@@ -120,12 +109,9 @@ export function WeeklyRoadmap({ weeks, builds }: WeeklyRoadmapProps) {
 
   if (weeks.length === 0) {
     return (
-      <AnimateOnView delay={0.08}>
-        <div className="rounded-lg border border-border bg-card p-5">
-          <SectionHeader title="12-Week Roadmap" />
+      <SectionCard delay={0.08} title="12-Week Roadmap">
           <p className="text-xs text-muted-foreground">No weekly roadmap available.</p>
-        </div>
-      </AnimateOnView>
+      </SectionCard>
     );
   }
 
@@ -140,12 +126,7 @@ export function WeeklyRoadmap({ weeks, builds }: WeeklyRoadmapProps) {
   }
 
   return (
-    <AnimateOnView delay={0.08}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader
-          title="12-Week Roadmap"
-          subtitle="Your week-by-week execution plan"
-        />
+    <SectionCard delay={0.08} title="12-Week Roadmap" subtitle="Your week-by-week execution plan">
 
         <div ref={timelineRef} className="relative">
           {/* ── Scroll-driven timeline spine ──────────────────── */}
@@ -210,19 +191,10 @@ export function WeeklyRoadmap({ weeks, builds }: WeeklyRoadmapProps) {
                     {/* Card */}
                     <motion.div
                       variants={cardSlide}
-                      whileHover={{ scale: 1.01, y: -2 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 25,
-                      }}
-                      className={`flex-1 rounded-md border ${color.border} ${color.bg} ${color.hoverBorder} ${color.hoverGlow} p-3 space-y-2 cursor-default transition-shadow`}
+                      className={`flex-1 rounded-md border ${color.border} ${color.bg} ${color.hoverBorder} ${color.hoverGlow} p-3 space-y-2 cursor-default transition-[box-shadow,transform] duration-200 hover:scale-[1.01] hover:-translate-y-0.5`}
                     >
                       {/* Header */}
-                      <motion.div
-                        className="flex items-center justify-between gap-2"
-                        variants={cardContent}
-                      >
+                      <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
                           <Calendar className={`size-3.5 shrink-0 ${color.text}`} />
                           <span className={`font-mono text-xs font-bold ${color.text}`}>
@@ -232,21 +204,15 @@ export function WeeklyRoadmap({ weeks, builds }: WeeklyRoadmapProps) {
                             {week.activeBuildTitle}
                           </Badge>
                         </div>
-                      </motion.div>
+                      </div>
 
                       {/* Focus */}
-                      <motion.p
-                        className="text-xs font-medium"
-                        variants={cardContent}
-                      >
+                      <p className="text-xs font-medium">
                         {week.focus}
-                      </motion.p>
+                      </p>
 
                       {/* Details grid */}
-                      <motion.div
-                        className="grid gap-2 sm:grid-cols-2"
-                        variants={cardContent}
-                      >
+                      <div className="grid gap-2 sm:grid-cols-2">
                         <div>
                           <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
                             Tasks
@@ -283,7 +249,7 @@ export function WeeklyRoadmap({ weeks, builds }: WeeklyRoadmapProps) {
                             </p>
                           </div>
                         </div>
-                      </motion.div>
+                      </div>
                     </motion.div>
                   </motion.div>
                 </div>
@@ -291,7 +257,6 @@ export function WeeklyRoadmap({ weeks, builds }: WeeklyRoadmapProps) {
             })}
           </div>
         </div>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }

@@ -1,7 +1,8 @@
 import { getSupabaseAdmin } from "../config/supabase";
 import { throwIfDbError, DatabaseError } from "../lib/errors";
-import { deductGrowthCredit } from "./credit.service";
+import { deductGrowthCredit, refundGrowthCredit } from "./credit.service";
 import { createCrudService } from "./crud.service";
+import type { AdviceData } from "../types/shared/advice";
 
 export class InsufficientCreditsError extends Error {
   constructor() {
@@ -14,7 +15,7 @@ const crud = createCrudService({
   table: "advice",
   entityName: "advice",
   listSelect: "id, analyzed_username, analyzed_name, generated_at",
-  detailSelect: "id, analyzed_username, user_id, advice_data",
+  detailSelect: "id, analyzed_username, advice_data",
   existsColumn: "analyzed_username",
 });
 
@@ -29,7 +30,7 @@ export async function deductAndPersist(
   requestId: string,
   analyzedUsername: string,
   analyzedName: string | null,
-  adviceData: Record<string, unknown>,
+  adviceData: AdviceData,
 ): Promise<string> {
   // 1. Atomic deduct — fails if balance is 0
   const deducted = await deductGrowthCredit(userId, requestId, {
@@ -38,19 +39,26 @@ export async function deductAndPersist(
   });
   if (!deducted) throw new InsufficientCreditsError();
 
-  // 2. Persist — if this fails the credit is lost, but this is a simple DB write
-  //    with near-zero failure rate vs. a 60s+ AI call
+  // 2. Persist — if this fails, refund the credit (compensating transaction)
   const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("advice")
-    .upsert(
-      { user_id: userId, analyzed_username: analyzedUsername, analyzed_name: analyzedName, advice_data: adviceData },
-      { onConflict: "user_id,analyzed_username" },
-    )
-    .select("id")
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from("advice")
+      .upsert(
+        { user_id: userId, analyzed_username: analyzedUsername, analyzed_name: analyzedName, advice_data: adviceData },
+        { onConflict: "user_id,analyzed_username" },
+      )
+      .select("id")
+      .single();
 
-  throwIfDbError(error, "persist advice");
-  if (!data?.id) throw new DatabaseError("persist advice returned no id", null);
-  return data.id as string;
+    throwIfDbError(error, "persist advice");
+    if (!data?.id) throw new DatabaseError("persist advice returned no id", null);
+    return data.id as string;
+  } catch (err) {
+    await refundGrowthCredit(userId, requestId, {
+      reason: "persist_failed",
+      username: analyzedUsername,
+    });
+    throw err;
+  }
 }

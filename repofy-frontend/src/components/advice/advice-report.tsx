@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 
@@ -17,9 +18,13 @@ import { ProfileOptimizations } from "./sections/profile-optimizations";
 import { StrengthsAndGaps } from "./sections/strengths-and-gaps";
 import { CareerPositioning } from "./sections/career-positioning";
 import { AdviceExportBar } from "./sections/advice-export-bar";
-import { AdviceReportPdfLayout } from "./advice-pdf-layout";
 import { tabContentVariants, EASE_OUT_EXPO } from "@/lib/animation-variants";
 import type { AdviceData, GenerationWarning } from "@shared/types/advice";
+
+const AdviceReportPdfLayout = dynamic(
+  () => import("./advice-pdf-layout").then((m) => ({ default: m.AdviceReportPdfLayout })),
+  { ssr: false }
+);
 
 export type { AdviceData, GenerationWarning };
 
@@ -59,15 +64,15 @@ interface AdviceReportProps {
 
 export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
   const pdfRef = useRef<HTMLDivElement>(null);
-  const hasInteracted = useRef(false);
   const [exporting, setExporting] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>("career");
   const [direction, setDirection] = useState(0);
 
   const warnings = data.generationWarnings ?? [];
 
   const handleTabChange = (tab: TabKey) => {
-    hasInteracted.current = true;
+    setHasInteracted(true);
     const d = TAB_INDEX[tab] - TAB_INDEX[activeTab];
     setDirection(d > 0 ? 1 : -1);
     setActiveTab(tab);
@@ -81,8 +86,8 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
         {/* Warning banner */}
         {warnings.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: -8, filter: "blur(4px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3, ease: EASE_OUT_EXPO }}
             className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4"
           >
@@ -111,7 +116,7 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
               <button
                 key={tab.key}
                 onClick={() => handleTabChange(tab.key)}
-                className={`relative shrink-0 rounded-md px-4 py-2 font-mono text-xs font-medium transition-colors ${
+                className={`relative shrink-0 rounded-md px-4 py-2 font-mono text-xs font-medium ${
                   activeTab === tab.key
                     ? "text-emerald-400"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
@@ -131,11 +136,11 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
         </motion.div>
 
         {/* Tab content with directional slide + crossfade */}
-        <AnimatePresence mode="wait" custom={hasInteracted.current ? direction : null}>
+        <AnimatePresence mode="wait" custom={hasInteracted ? direction : null}>
           {activeTab === "career" && (
             <motion.div
               key="career"
-              custom={hasInteracted.current ? direction : null}
+              custom={hasInteracted ? direction : null}
               variants={tabContentVariants}
               initial="enter"
               animate="center"
@@ -153,7 +158,7 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
           {activeTab === "build" && (
             <motion.div
               key="build"
-              custom={hasInteracted.current ? direction : null}
+              custom={hasInteracted ? direction : null}
               variants={tabContentVariants}
               initial="enter"
               animate="center"
@@ -170,7 +175,7 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
           {activeTab === "improve" && (
             <motion.div
               key="improve"
-              custom={hasInteracted.current ? direction : null}
+              custom={hasInteracted ? direction : null}
               variants={tabContentVariants}
               initial="enter"
               animate="center"

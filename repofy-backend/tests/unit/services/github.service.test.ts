@@ -14,11 +14,12 @@ const fetchMock = vi.fn();
 vi.stubGlobal("fetch", fetchMock);
 
 // Import after stubbing fetch
-import { searchGitHubUsers, fetchGitHubUserData, GitHubError, detectSignals } from "../../../src/services/github.service";
+import { searchGitHubUsers, fetchGitHubUserData, GitHubError, detectSignals, clearUserDataCache } from "../../../src/services/github.service";
 
 describe("github.service", () => {
   beforeEach(() => {
     fetchMock.mockReset();
+    clearUserDataCache();
   });
 
   describe("searchGitHubUsers", () => {
@@ -222,9 +223,13 @@ describe("github.service", () => {
     });
 
     it("passes through status for other errors", async () => {
-      fetchMock.mockReturnValueOnce(
-        Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve({}) }),
-      );
+      // Provide enough responses for retry attempts (fetchWithRetry retries 500s)
+      const error500 = () =>
+        Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve({}) });
+      fetchMock
+        .mockReturnValueOnce(error500())
+        .mockReturnValueOnce(error500())
+        .mockReturnValueOnce(error500());
 
       await expect(searchGitHubUsers("test")).rejects.toMatchObject({
         statusCode: 500,
@@ -544,7 +549,17 @@ describe("github.service", () => {
         if (urlStr.includes("/graphql")) return mockFetchJson(contributions);
         if (urlStr.includes("/users/octocat/repos")) {
           if (urlStr.includes("page=2")) return mockFetchJson(partialBatch);
-          return mockFetchJson(fullBatch);
+          // First page returns Link header so parallel fetcher knows total pages
+          const headers = new Headers();
+          headers.set("link", '<https://api.github.com/users/octocat/repos?page=2>; rel="last"');
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(fullBatch),
+            text: () => Promise.resolve(JSON.stringify(fullBatch)),
+            headers,
+            statusText: "OK",
+          });
         }
         if (urlStr.includes("/users/octocat/events")) return mockFetchJson(events);
         if (urlStr.includes("/users/octocat")) return mockFetchJson(user);

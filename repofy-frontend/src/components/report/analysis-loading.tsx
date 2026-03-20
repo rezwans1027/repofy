@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Terminal } from "lucide-react";
 
@@ -81,18 +81,26 @@ export function AnalysisLoading({
 }: AnalysisLoadingProps) {
   const phases = phasesProp ?? DEFAULT_PHASES;
   const [phase, setPhase] = useState(0);
-  const [progress, setProgress] = useState(0);
   const [fading, setFading] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const fetchStarted = useRef(false);
+  const mountedRef = useRef(true);
   const logId = useRef(0);
+  const fetchCurrentReport = useEffectEvent(fetchReport);
+  const handleComplete = useEffectEvent(onComplete);
+  const handleError = useEffectEvent(onError);
 
   const isAdvisor = accentColor?.includes("emerald");
   const hex = isAdvisor ? "#34d399" : "#22d3ee";
   const accentCls = isAdvisor ? "text-emerald-400" : "text-cyan";
   const logPool = isAdvisor ? ADVISOR_LOG : REPORT_LOG;
   const complete = phase >= phases.length;
+  const displayProgress = complete
+    ? 100
+    : elapsed < 90
+      ? (elapsed / 90) * 94
+      : 94 + Math.min(((elapsed - 90) / 30) * 4, 4);
 
   /* Elapsed timer — ticks every 100 ms */
   useEffect(() => {
@@ -103,12 +111,15 @@ export function AnalysisLoading({
 
   /* Phase progression — spread evenly across 45 s */
   useEffect(() => {
-    setPhase(0);
+    const resetId = requestAnimationFrame(() => setPhase(0));
     const interval = 90000 / phases.length; // ~11.25 s per phase
     const t = phases.map((_, i) =>
       setTimeout(() => setPhase(i), i * interval + 800),
     );
-    return () => t.forEach(clearTimeout);
+    return () => {
+      cancelAnimationFrame(resetId);
+      t.forEach(clearTimeout);
+    };
   }, [phases]);
 
   /* Activity log — 3 messages per phase, spread within each phase window */
@@ -135,60 +146,62 @@ export function AnalysisLoading({
     return () => timers.forEach(clearTimeout);
   }, [phase, phases.length, logPool]);
 
-  /* Fetch + progress bar */
+  /* Fetch + progress bar
+   *
+   * mountedRef tracks whether the component is currently mounted.
+   * fetchStarted prevents duplicate API calls (important: advisor deducts credits).
+   *
+   * In React Strict Mode the effect sequence is:
+   *   mount-1 → cleanup → mount-2
+   * Refs survive across this cycle, so fetchStarted stays true and only one
+   * fetch fires. mountedRef is reset to true on every mount, so the fetch
+   * completion handler (from mount-1's closure) still sees mountedRef.current
+   * === true after mount-2 runs, allowing it to finish normally.
+   *
+   * A closure-local `dead` flag would be set to true by cleanup and never
+   * cleared, silently swallowing the response — that was the original bug.
+   */
   useEffect(() => {
-    if (fetchStarted.current) return;
-    fetchStarted.current = true;
+    mountedRef.current = true;
 
-    const t0 = Date.now();
-    const MIN = 3000;
-    let res: { data?: unknown; error?: string } | null = null;
-    let dead = false;
+    if (!fetchStarted.current) {
+      fetchStarted.current = true;
 
-    const tick = () => {
-      if (dead) return;
-      const e = Date.now() - t0;
-      // 0 → 94% smoothly over 90s, then slow crawl toward 98%
-      const v =
-        e < 90000
-          ? (e / 90000) * 94
-          : 94 + Math.min(((e - 90000) / 30000) * 4, 4);
-      setProgress(v);
-      requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
+      const t0 = Date.now();
+      const MIN = 3000;
+      let res: { data?: unknown; error?: string } | null = null;
 
-    fetchReport()
-      .then((d) => {
-        res = { data: d };
-      })
-      .catch((err) => {
-        res = {
-          error: err instanceof Error ? err.message : "Analysis failed",
-        };
-      })
-      .finally(() => {
-        if (dead) return;
-        const wait = Math.max(MIN - (Date.now() - t0), 0);
-        setTimeout(() => {
-          if (dead) return;
-          dead = true;
-          if (res?.error) {
-            onError(res.error);
-            return;
-          }
-          setProgress(100);
-          setPhase(phases.length);
-          setTimeout(() => setFading(true), 400);
-          setTimeout(() => onComplete(res!.data), 800);
-        }, wait);
-      });
+      fetchCurrentReport()
+        .then((d) => {
+          res = { data: d };
+        })
+        .catch((err) => {
+          res = {
+            error: err instanceof Error ? err.message : "Analysis failed",
+          };
+        })
+        .finally(() => {
+          if (!mountedRef.current) return;
+          const wait = Math.max(MIN - (Date.now() - t0), 0);
+          setTimeout(() => {
+            if (!mountedRef.current) return;
+            if (res?.error) {
+              handleError(res.error);
+              return;
+            }
+            setPhase(phases.length);
+            setTimeout(() => setFading(true), 400);
+            setTimeout(() => {
+              if (mountedRef.current) handleComplete(res!.data);
+            }, 800);
+          }, wait);
+        });
+    }
 
     return () => {
-      dead = true;
+      mountedRef.current = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [phases.length]);
 
   /* Only show the last 4 log entries */
   const visibleLogs = logs.slice(-4);
@@ -200,15 +213,15 @@ export function AnalysisLoading({
           className="flex min-h-[60vh] items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 0.97, filter: "blur(10px)" }}
+          exit={{ opacity: 0, scale: 0.97 }}
           transition={{ duration: 0.5, ease: EASE }}
         >
           <div className="relative w-full max-w-xl">
             {/* ── Terminal card ────────────────────────────────── */}
             <motion.div
               className="relative overflow-hidden rounded-xl border border-border bg-card"
-              initial={{ y: 20, opacity: 0, filter: "blur(8px)" }}
-              animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5, ease: EASE, delay: 0.1 }}
             >
               {/* Title bar */}
@@ -222,7 +235,7 @@ export function AnalysisLoading({
                     {elapsed.toFixed(1)}s
                   </span>
                   <span className="font-mono text-[10px] tabular-nums text-muted-foreground/50">
-                    {Math.round(progress)}%
+                    {Math.round(displayProgress)}%
                   </span>
                 </div>
               </div>
@@ -251,13 +264,13 @@ export function AnalysisLoading({
                           backgroundColor: complete
                             ? "rgba(52,211,153,0.35)"
                             : `${hex}60`,
+                          transition: complete
+                            ? "background-color 0.4s ease, transform 0.6s ease-out"
+                            : "background-color 0.4s ease",
+                          transform: complete ? "scaleY(0.1)" : undefined,
                           animation: complete
                             ? "none"
-                            : `wave-bar 1.8s ease-in-out ${i * 50}ms infinite`,
-                          transform: complete ? "scaleY(0.1)" : undefined,
-                          transition: complete
-                            ? "transform 0.6s ease, background-color 0.4s ease"
-                            : "background-color 0.4s ease",
+                            : `waveform-bar 1.8s ease-in-out ${i * 0.05}s infinite`,
                         }}
                       />
                     ))}
@@ -275,11 +288,11 @@ export function AnalysisLoading({
                       <motion.div
                         key={text}
                         className="flex items-center gap-3 font-mono text-sm"
-                        initial={{ opacity: 0, x: -10, filter: "blur(4px)" }}
+                        initial={{ opacity: 0, x: -10 }}
                         animate={
                           visible
-                            ? { opacity: 1, x: 0, filter: "blur(0px)" }
-                            : { opacity: 0, x: -10, filter: "blur(4px)" }
+                            ? { opacity: 1, x: 0 }
+                            : { opacity: 0, x: -10 }
                         }
                         transition={{ duration: 0.35, ease: EASE }}
                       >
@@ -345,8 +358,8 @@ export function AnalysisLoading({
                       {visibleLogs.map((entry) => (
                         <motion.div
                           key={entry.id}
-                          initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
-                          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.3, ease: EASE }}
                           className="flex items-center gap-3 py-0.5"
@@ -372,9 +385,11 @@ export function AnalysisLoading({
                     <div
                       className="absolute inset-y-0 left-0 rounded-full"
                       style={{
-                        width: `${Math.max(progress, 2)}%`,
+                        width: `${Math.max(displayProgress, 2)}%`,
                         backgroundColor: "#34d399",
-                        transition: "width 0.1s linear",
+                        transition: complete
+                          ? "width 0.3s ease-out"
+                          : "width 0.15s linear",
                       }}
                     />
                   </div>

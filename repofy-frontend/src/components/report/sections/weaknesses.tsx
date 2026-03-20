@@ -1,6 +1,5 @@
 import { AlertTriangle } from "lucide-react";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { EvidenceList } from "@/components/ui/evidence-list";
 import type { ReportData } from "@shared/types/report";
 
@@ -10,11 +9,8 @@ interface WeaknessesProps {
 
 export function Weaknesses({ weaknesses }: WeaknessesProps) {
   return (
-    <AnimateOnView delay={0.42} className="h-full">
-      <div className="rounded-lg border border-border bg-card p-5 h-full">
-        <SectionHeader title="Areas for Improvement" />
-        <EvidenceList items={weaknesses} icon={AlertTriangle} iconColor="text-yellow-400" />
-      </div>
-    </AnimateOnView>
+    <SectionCard delay={0.42} className="h-full" cardClassName="h-full" title="Areas for Improvement">
+      <EvidenceList items={weaknesses} icon={AlertTriangle} iconColor="text-yellow-400" />
+    </SectionCard>
   );
 }

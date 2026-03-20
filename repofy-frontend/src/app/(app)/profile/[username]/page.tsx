@@ -92,7 +92,7 @@ export default function ProfilePage({
       <div className="flex items-center justify-between">
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-cyan transition-colors"
+          className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-cyan"
         >
           <ArrowLeft className="size-3" />
           back to search
@@ -101,7 +101,7 @@ export default function ProfilePage({
           href={`https://github.com/${username}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-cyan transition-colors"
+          className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-cyan"
         >
           View on GitHub
           <ExternalLink className="size-3" />
@@ -203,7 +203,7 @@ export default function ProfilePage({
           </p>
           <button
             onClick={() => router.refresh()}
-            className="font-mono text-xs text-muted-foreground hover:text-cyan transition-colors underline underline-offset-2"
+            className="font-mono text-xs text-muted-foreground hover:text-cyan underline underline-offset-2"
           >
             retry
           </button>

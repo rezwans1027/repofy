@@ -4,8 +4,13 @@ import { InsufficientCreditsError } from "../services/advice-persistence.service
 import { sendError } from "./response";
 import { logger } from "./logger";
 
+/** Duck-type check for errors with a numeric status (e.g. AuthError). */
+function hasStatus(err: unknown): err is Error & { status: number } {
+  return err instanceof Error && "status" in err && typeof err.status === "number";
+}
+
 /**
- * Shared error handler for AI-powered controller endpoints (analyze, advice).
+ * Shared error handler for controller endpoints.
  * Handles the error by sending a response. Returns early if the response was already sent.
  */
 export function handleControllerError(
@@ -24,6 +29,11 @@ export function handleControllerError(
 
   if (err instanceof GitHubError) {
     sendError(res, err.statusCode, err.message);
+    return;
+  }
+
+  if (hasStatus(err)) {
+    sendError(res, err.status, err.message);
     return;
   }
 

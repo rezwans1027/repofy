@@ -71,7 +71,7 @@ describe("credit.service", () => {
         }),
       });
 
-      await expect(getCreditBalance("user-1")).rejects.toThrow("DB down");
+      await expect(getCreditBalance("user-1")).rejects.toThrow("Database operation failed: fetch credit balance");
     });
   });
 
@@ -115,7 +115,7 @@ describe("credit.service", () => {
       const client = mockSupabase();
       client.rpc.mockResolvedValue({ data: null, error: new Error("RPC fail") });
 
-      await expect(grantGrowthCredits("user-1", 2, "pi_123")).rejects.toThrow("RPC fail");
+      await expect(grantGrowthCredits("user-1", 2, "pi_123")).rejects.toThrow("Database operation failed: grant growth credits");
     });
   });
 
@@ -145,7 +145,7 @@ describe("credit.service", () => {
       const client = mockSupabase();
       client.rpc.mockResolvedValue({ data: null, error: new Error("RPC fail") });
 
-      await expect(deductGrowthCredit("user-1", "req-abc")).rejects.toThrow("RPC fail");
+      await expect(deductGrowthCredit("user-1", "req-abc")).rejects.toThrow("Database operation failed: deduct growth credit");
     });
   });
 

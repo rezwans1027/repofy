@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { TypeAnimation } from "react-type-animation";
+import Image from "next/image";
 import { TerminalWindow } from "@/components/ui/terminal-window";
 import {
   MapPin,
@@ -12,6 +12,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useTypewriter } from "@/hooks/use-typewriter";
 import { useGitHubSearch } from "@/hooks/use-github";
 import { SmoothCaretInput } from "@/components/ui/smooth-caret-input";
 
@@ -22,34 +23,12 @@ export default function DashboardPage() {
   const { data: results = [], isFetching: isSearching } =
     useGitHubSearch(debouncedQuery);
 
-  // Preload all avatars so cards render with images ready
-  const [avatarsReady, setAvatarsReady] = useState(false);
-  const avatarUrls = useMemo(
-    () => results.map((u) => u.avatarUrl).join(","),
-    [results],
-  );
-  useEffect(() => {
-    if (results.length === 0) {
-      setAvatarsReady(false);
-      return;
-    }
-    let cancelled = false;
-    const promises = results.map(
-      (u) =>
-        new Promise<void>((resolve) => {
-          const img = new window.Image();
-          img.onload = () => resolve();
-          img.onerror = () => resolve();
-          img.src = u.avatarUrl;
-        }),
-    );
-    Promise.all(promises).then(() => {
-      if (!cancelled) setAvatarsReady(true);
-    });
-    return () => { cancelled = true; };
-  }, [avatarUrls, results]);
-
-  const searchSettled = !isSearching && debouncedQuery === query.trim() && (results.length === 0 || avatarsReady);
+  const searchSettled = !isSearching && debouncedQuery === query.trim();
+  const headline = useTypewriter([
+    "Discover a developer's DNA.",
+    "Evaluate any engineer.",
+    "Analyze any GitHub profile.",
+  ]);
 
   return (
     <div className="flex flex-col items-center pt-[25vh]">
@@ -59,21 +38,7 @@ export default function DashboardPage() {
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="mb-6 h-8 font-mono text-xl font-bold tracking-tight text-foreground"
       >
-        <TypeAnimation
-          sequence={[
-            "Discover a developer's DNA.",
-            2000,
-            "Evaluate any engineer.",
-            2000,
-            "Analyze any GitHub profile.",
-            2000,
-          ]}
-          wrapper="h1"
-          speed={40}
-          deletionSpeed={60}
-          repeat={Infinity}
-          cursor={true}
-        />
+        <h1>{headline}<span className="animate-blink ml-px">|</span></h1>
       </motion.div>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -146,17 +111,24 @@ export default function DashboardPage() {
                 <motion.div
                   key={user.username}
                   data-testid={`search-result-${user.username}`}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => router.push(`/profile/${user.username}`)}
+                  onKeyDown={(e: React.KeyboardEvent) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      router.push(`/profile/${user.username}`);
+                    }
+                  }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8, filter: "blur(4px)", transition: { duration: 0.2 } }}
+                  exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
                   transition={{ delay: i * 0.05 }}
                   layout
-                  className="cursor-pointer rounded-lg border border-border bg-card p-4 transition-colors hover:border-cyan/50"
+                  className="cursor-pointer rounded-lg border border-border bg-card p-4 hover:border-cyan/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/50"
                 >
                   <div className="flex items-center gap-4">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={user.avatarUrl}
                       alt={user.username}
                       width={48}

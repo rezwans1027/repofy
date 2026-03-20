@@ -56,3 +56,20 @@ export async function deductGrowthCredit(
   return data === true;
 }
 
+export async function refundGrowthCredit(
+  userId: string,
+  requestId: string,
+  metadata?: Record<string, unknown>,
+): Promise<boolean> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.rpc("refund_growth_credit", {
+    p_user_id: userId,
+    p_request_id: requestId,
+    p_metadata: metadata ?? null,
+  });
+
+  throwIfDbError(error, "refund growth credit");
+
+  return data === true;
+}
+

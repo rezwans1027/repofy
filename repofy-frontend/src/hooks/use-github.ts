@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { api } from "@/lib/api-client";
+import { useAuth } from "@/components/providers/auth-provider";
 import { STALE_SHORT, STALE_MEDIUM } from "@/lib/query-client";
 
 const searchResultSchema = z.object({
@@ -59,27 +60,31 @@ type SearchResult = z.infer<typeof searchResultSchema>;
 type GitHubProfileRaw = z.infer<typeof gitHubProfileSchema>;
 
 export function useGitHubSearch(debouncedQuery: string) {
+  const { isLoading } = useAuth();
   return useQuery({
     queryKey: ["github", "search", debouncedQuery],
     queryFn: ({ signal }) =>
       api.get<SearchResult[]>(
         `/github/search?q=${encodeURIComponent(debouncedQuery)}`,
-        { signal, auth: true, schema: z.array(searchResultSchema) },
+        { signal, schema: z.array(searchResultSchema) },
       ),
-    enabled: debouncedQuery.trim().length > 0,
+    // Wait for auth to load so the cached access token is available
+    enabled: !isLoading && debouncedQuery.trim().length > 0,
     staleTime: STALE_SHORT,
   });
 }
 
 export function useGitHubProfile(username: string) {
+  const { isLoading } = useAuth();
   return useQuery({
     queryKey: ["github", "profile", username],
     queryFn: ({ signal }) =>
       api.get<GitHubProfileRaw>(
         `/github/${encodeURIComponent(username)}`,
-        { signal, auth: true, schema: gitHubProfileSchema },
+        { signal, schema: gitHubProfileSchema },
       ),
-    enabled: !!username,
+    // Wait for auth to load so the cached access token is available
+    enabled: !isLoading && !!username,
     staleTime: STALE_MEDIUM,
   });
 }

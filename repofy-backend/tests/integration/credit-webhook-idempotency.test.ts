@@ -107,7 +107,7 @@ describe("credit webhook idempotency (integration)", () => {
     (req as any).headers = { "stripe-signature": "sig_valid" };
     (req as any).body = Buffer.from("{}");
     await handleWebhook(req, res, next);
-    expect(res.json).toHaveBeenCalledWith({ received: true });
+    expect(res.json).toHaveBeenCalledWith({ success: true, data: { received: true } });
   }
 
   it("same event.id replayed twice — second grant is idempotent skip", async () => {

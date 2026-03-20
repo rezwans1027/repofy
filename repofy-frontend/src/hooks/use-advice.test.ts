@@ -126,7 +126,7 @@ describe("useDeleteAdvice", () => {
     await result.current.mutateAsync(["adv-1"]);
     expect(mockApi.delete).toHaveBeenCalledWith(
       "/advice",
-      expect.objectContaining({ auth: true, body: { ids: ["adv-1"] } }),
+      expect.objectContaining({ body: { ids: ["adv-1"] } }),
     );
   });
 

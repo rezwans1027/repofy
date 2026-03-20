@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { SectionHeader } from "@/components/ui/section-header";
 import { AnimateOnView } from "@/components/ui/animate-on-view";

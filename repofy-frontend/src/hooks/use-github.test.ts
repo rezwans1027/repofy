@@ -4,6 +4,11 @@ import { useGitHubSearch, useGitHubProfile } from "./use-github";
 import { TestProviders } from "@/__tests__/helpers/test-providers";
 import { createSearchResultFixture, createProfileFixture } from "@/__tests__/fixtures";
 
+// Mock auth provider — hooks now depend on useAuth for enabled gating
+vi.mock("@/components/providers/auth-provider", () => ({
+  useAuth: () => ({ user: { id: "test-user" }, isLoading: false }),
+}));
+
 vi.mock("@/lib/api-client", () => ({
   api: {
     get: vi.fn(),

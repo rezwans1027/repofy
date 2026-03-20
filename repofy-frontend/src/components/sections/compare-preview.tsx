@@ -3,6 +3,7 @@
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
 import { GitCompareArrows, Radar, BarChart3, Languages, FileDown } from "lucide-react";
 
 const plannedFeatures = [
@@ -56,20 +57,30 @@ export function ComparePreview() {
             </p>
           </div>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <motion.div
+            className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-40px" }}
+            variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
+          >
             {plannedFeatures.map((feature) => (
-              <div
+              <motion.div
                 key={feature.label}
                 className="rounded-md border border-border bg-background/50 p-4"
+                variants={{
+                  hidden: { opacity: 0, y: 16 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+                }}
               >
                 <feature.icon className="h-4 w-4 text-violet-400" />
                 <p className="mt-2 font-mono text-xs font-bold">{feature.label}</p>
                 <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">
                   {feature.description}
                 </p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </AnimateOnView>
     </section>

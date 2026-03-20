@@ -1,8 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { EASE_OUT_EXPO } from "@/lib/animation-variants";
 
 interface AdviceSummaryProps {
@@ -11,9 +10,7 @@ interface AdviceSummaryProps {
 
 export function AdviceSummary({ summary }: AdviceSummaryProps) {
   return (
-    <AnimateOnView delay={0.06}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader title="Summary" />
+    <SectionCard delay={0.06} title="Summary">
         <div className="relative pl-4">
           {/* Animated left border that grows from top to bottom */}
           <motion.div
@@ -33,7 +30,6 @@ export function AdviceSummary({ summary }: AdviceSummaryProps) {
             {summary}
           </motion.p>
         </div>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }

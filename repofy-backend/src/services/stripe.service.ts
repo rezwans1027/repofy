@@ -30,8 +30,8 @@ export async function createCheckoutSession(
         quantity: 1,
       },
     ],
-    success_url: `${FRONTEND_URL}/pricing?success=true`,
-    cancel_url: `${FRONTEND_URL}/pricing?canceled=true`,
+    success_url: `${FRONTEND_URL}/checkout-complete`,
+    cancel_url: `${FRONTEND_URL}/checkout-complete?canceled=true`,
   });
 
   if (!session.url) {

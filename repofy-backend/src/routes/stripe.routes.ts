@@ -7,6 +7,6 @@ import { timeout } from "../middleware/timeout";
 
 const router = Router();
 
-router.post("/stripe/create-checkout-session", requireAuth, stripeRateLimit, timeout(30_000), asyncHandler(createCheckout));
+router.post("/stripe/create-checkout-session", stripeRateLimit, requireAuth, timeout(30_000), asyncHandler(createCheckout));
 
 export default router;

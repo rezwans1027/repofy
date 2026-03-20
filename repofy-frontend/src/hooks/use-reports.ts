@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { createCrudHooks } from "./use-crud";
-import type { ReportData } from "@shared/types/report";
 
 const reportListItemSchema = z.object({
   id: z.string(),
@@ -18,8 +17,6 @@ const reportRowSchema = z.object({
 });
 
 export type ReportListItem = z.infer<typeof reportListItemSchema>;
-
-type ReportRow = z.infer<typeof reportRowSchema> & { report_data: ReportData };
 
 const crud = createCrudHooks<ReportListItem>({
   queryKey: "reports",

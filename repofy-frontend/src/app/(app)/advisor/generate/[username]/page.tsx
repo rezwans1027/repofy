@@ -4,7 +4,6 @@ import { use, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AnalysisLoading } from "@/components/report/analysis-loading";
-import { useAuth } from "@/components/providers/auth-provider";
 import { api, ApiError } from "@/lib/api-client";
 import { useCreditBalance } from "@/hooks/use-credits";
 import { useQueryClient } from "@tanstack/react-query";
@@ -32,7 +31,6 @@ export default function GenerateAdvicePage({
 }) {
   const { username } = use(params);
   const router = useRouter();
-  const { user } = useAuth();
   const queryClient = useQueryClient();
   const { data: balance, isLoading: balanceLoading } = useCreditBalance();
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +41,7 @@ export default function GenerateAdvicePage({
     try {
       const data = await api.post<{ adviceId: string }>(
         `/advice/${encodeURIComponent(username)}`,
-        { auth: true, signal: AbortSignal.timeout(300_000) },
+        { signal: AbortSignal.timeout(300_000) },
       );
       return data;
     } catch (err) {
@@ -56,10 +54,17 @@ export default function GenerateAdvicePage({
 
   const handleComplete = useCallback(
     (data: unknown) => {
-      const { adviceId } = data as { adviceId: string };
+      const result =
+        typeof data === "object" && data !== null && "adviceId" in data
+          ? (data as { adviceId: string })
+          : null;
+      if (!result) {
+        setError("Unexpected response from server.");
+        return;
+      }
       queryClient.invalidateQueries({ queryKey: ["advice"] });
       queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
-      router.replace(`/advisor/${adviceId}?from=profile`);
+      router.replace(`/advisor/${result.adviceId}?from=profile`);
     },
     [router, queryClient],
   );

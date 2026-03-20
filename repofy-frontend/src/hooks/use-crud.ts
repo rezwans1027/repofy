@@ -18,7 +18,7 @@ export function createCrudHooks<TListItem extends { id: string }>(config: CrudHo
     const { user } = useAuth();
     return useQuery({
       queryKey: [queryKey, "list"],
-      queryFn: () => api.get<TListItem[]>(endpoint, { auth: true, schema: listSchema }),
+      queryFn: () => api.get<TListItem[]>(endpoint, { schema: listSchema }),
       enabled: !!user,
       staleTime: STALE_LONG,
     });
@@ -28,7 +28,7 @@ export function createCrudHooks<TListItem extends { id: string }>(config: CrudHo
     const { user } = useAuth();
     return useQuery({
       queryKey: [queryKey, "detail", id],
-      queryFn: () => api.get(`${endpoint}/${id}`, { auth: true, schema: detailSchema }),
+      queryFn: () => api.get(`${endpoint}/${id}`, { schema: detailSchema }),
       enabled: !!user && !!id,
     });
   }
@@ -37,7 +37,7 @@ export function createCrudHooks<TListItem extends { id: string }>(config: CrudHo
     const { user } = useAuth();
     return useQuery({
       queryKey: [queryKey, "exists", username.toLowerCase()],
-      queryFn: () => api.get<boolean>(`${endpoint}/exists/${encodeURIComponent(username)}`, { auth: true, schema: z.boolean() }),
+      queryFn: () => api.get<boolean>(`${endpoint}/exists/${encodeURIComponent(username)}`, { schema: z.boolean() }),
       enabled: !!user,
     });
   }
@@ -45,7 +45,7 @@ export function createCrudHooks<TListItem extends { id: string }>(config: CrudHo
   function useDelete() {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: async (ids: string[]) => { await api.delete(endpoint, { auth: true, body: { ids } }); },
+      mutationFn: async (ids: string[]) => { await api.delete(endpoint, { body: { ids } }); },
       onMutate: async (ids) => {
         await queryClient.cancelQueries({ queryKey: [queryKey, "list"] });
         const previous = queryClient.getQueryData<TListItem[]>([queryKey, "list"]);

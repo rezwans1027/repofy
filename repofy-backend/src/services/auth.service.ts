@@ -1,8 +1,9 @@
 import crypto from "crypto";
 import { getSupabaseAdmin } from "../config/supabase";
+import { getSupabaseAuth } from "../config/supabase-auth";
 import { sendOtpEmail } from "./email.service";
 import { env } from "../config/env";
-import { logger } from "../lib/logger";
+import { logger, maskEmail } from "../lib/logger";
 import { expiresInMinutes } from "../lib/date-utils";
 
 const OTP_EXPIRY_MINUTES = 10;
@@ -27,7 +28,10 @@ function hashOtp(otp: string): string {
 }
 
 function safeEqual(a: string, b: string): boolean {
-  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
 }
 
 async function cleanupExpiredSignups(): Promise<void> {
@@ -56,12 +60,14 @@ export async function initiateSignup(
   // Check if email already exists in auth.users (O(1) indexed lookup)
   const { data: emailTaken, error: rpcError } = await supabase.rpc("email_exists_in_auth", { p_email: email });
   if (rpcError) {
-    logger.error("email_exists_in_auth RPC failed", { email, error: rpcError });
+    logger.error("email_exists_in_auth RPC failed", { email: maskEmail(email), error: rpcError });
     throw new AuthError("Failed to initiate signup", 500);
   }
 
   if (emailTaken) {
-    throw new AuthError("An account with this email already exists.", 409);
+    // Return the same success message to prevent account enumeration.
+    // The existing user won't receive an OTP, so no action is taken.
+    return { message: "A verification code has been sent to your email." };
   }
 
   const otp = generateOtp();
@@ -80,22 +86,71 @@ export async function initiateSignup(
   );
 
   if (upsertError) {
-    logger.error("Failed to upsert pending signup", { email, error: upsertError });
+    logger.error("Failed to upsert pending signup", { email: maskEmail(email), error: upsertError });
     throw new AuthError("Failed to initiate signup", 500);
   }
 
-  sendOtpEmail(email, otp, displayName).catch((err) => {
-    logger.error("Failed to send OTP email during signup", { email, error: err });
-  });
+  try {
+    await sendOtpEmail(email, otp, displayName);
+  } catch (err) {
+    logger.error("Failed to send OTP email during signup", { email: maskEmail(email), error: err });
+    throw new AuthError("Failed to send verification email. Please try again.", 500);
+  }
 
   return { message: "A verification code has been sent to your email." };
+}
+
+export async function loginWithPassword(
+  email: string,
+  password: string,
+): Promise<{ session: { access_token: string; refresh_token: string }; user: { id: string; email: string; display_name?: string } }> {
+  const { data, error } = await getSupabaseAuth().auth.signInWithPassword({ email, password });
+
+  if (error || !data.session) {
+    logger.warn("Login failed", { email: maskEmail(email), error: error?.message });
+    throw new AuthError(error?.message || "Invalid email or password", 401);
+  }
+
+  return {
+    session: {
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+    },
+    user: {
+      id: data.user.id,
+      email: data.user.email ?? email,
+      display_name: data.user.user_metadata?.display_name,
+    },
+  };
+}
+
+export async function refreshSession(
+  refreshToken: string,
+): Promise<{ session: { access_token: string; refresh_token: string }; user: { id: string; email: string; display_name?: string } }> {
+  const { data, error } = await getSupabaseAuth().auth.refreshSession({ refresh_token: refreshToken });
+
+  if (error || !data.session) {
+    throw new AuthError("Session expired", 401);
+  }
+
+  return {
+    session: {
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+    },
+    user: {
+      id: data.user!.id,
+      email: data.user!.email ?? "",
+      display_name: data.user!.user_metadata?.display_name,
+    },
+  };
 }
 
 export async function verifySignup(
   email: string,
   otp: string,
   password: string,
-): Promise<{ user: { id: string; email: string } }> {
+): Promise<{ user: { id: string; email: string }; session?: { access_token: string; refresh_token: string } }> {
   const UNIFIED_ERROR = "Invalid or expired verification code. Please try again.";
   const supabase = getSupabaseAdmin();
 
@@ -107,7 +162,7 @@ export async function verifySignup(
   });
 
   if (rpcError) {
-    logger.error("increment_otp_attempt RPC failed", { email, error: rpcError });
+    logger.error("increment_otp_attempt RPC failed", { email: maskEmail(email), error: rpcError });
     throw new AuthError("Failed to verify signup", 500);
   }
 
@@ -133,7 +188,7 @@ export async function verifySignup(
   });
 
   if (createError) {
-    logger.error("Failed to create user", { email, error: createError });
+    logger.error("Failed to create user", { email: maskEmail(email), error: createError });
     if (createError.message?.includes("already been registered")) {
       throw new AuthError("An account with this email already exists.", 409);
     }
@@ -143,9 +198,19 @@ export async function verifySignup(
   // Clean up pending signup
   await supabase.from("pending_signups").delete().eq("email", email);
 
-  logger.info("User created via OTP signup", { email, userId: userData.user.id });
+  logger.info("User created via OTP signup", { email: maskEmail(email), userId: userData.user.id });
 
-  return { user: { id: userData.user.id, email: userData.user.email! } };
+  // Auto-login after signup to set cookies
+  try {
+    const loginResult = await loginWithPassword(email, password);
+    return {
+      user: { id: userData.user.id, email: userData.user.email ?? email },
+      session: loginResult.session,
+    };
+  } catch {
+    // Login failed after signup — user can still log in manually
+    return { user: { id: userData.user.id, email: userData.user.email ?? email } };
+  }
 }
 
 export async function resendOtp(email: string): Promise<{ message: string }> {
@@ -153,12 +218,18 @@ export async function resendOtp(email: string): Promise<{ message: string }> {
 
   const { data: pending, error } = await supabase
     .from("pending_signups")
-    .select("*")
+    .select("email, display_name, attempts")
     .eq("email", email)
     .maybeSingle();
 
   if (error || !pending) {
     // Same generic message to prevent enumeration
+    return { message: "If a pending signup exists, a new code has been sent." };
+  }
+
+  // Don't resend if the user has exhausted their OTP attempts — the new code
+  // would be unusable since increment_otp_attempt rejects locked-out rows.
+  if (pending.attempts >= OTP_MAX_ATTEMPTS) {
     return { message: "If a pending signup exists, a new code has been sent." };
   }
 
@@ -173,13 +244,16 @@ export async function resendOtp(email: string): Promise<{ message: string }> {
     .maybeSingle();
 
   if (updateError || !updated) {
-    logger.error("Failed to update OTP for resend", { email, error: updateError });
+    logger.error("Failed to update OTP for resend", { email: maskEmail(email), error: updateError });
     throw new AuthError("Failed to resend code. Please try again.", 500);
   }
 
-  sendOtpEmail(email, otp, pending.display_name).catch((err) => {
-    logger.error("Failed to send OTP email during resend", { email, error: err });
-  });
+  try {
+    await sendOtpEmail(email, otp, pending.display_name);
+  } catch (err) {
+    logger.error("Failed to send OTP email during resend", { email: maskEmail(email), error: err });
+    throw new AuthError("Failed to send verification email. Please try again.", 500);
+  }
 
   return { message: "If a pending signup exists, a new code has been sent." };
 }

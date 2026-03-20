@@ -93,18 +93,15 @@ export const tabContentVariants: Variants = {
   enter: (direction: number | null) => ({
     x: direction == null ? 0 : direction > 0 ? 30 : -30,
     opacity: 0,
-    filter: "blur(4px)",
   }),
   center: {
     x: 0,
     opacity: 1,
-    filter: "blur(0px)",
     transition: { duration: 0.35, ease: EASE_OUT_EXPO },
   },
   exit: (direction: number | null) => ({
     x: direction != null && direction > 0 ? -30 : 30,
     opacity: 0,
-    filter: "blur(4px)",
     transition: { duration: 0.2 },
   }),
 };

@@ -1,10 +1,27 @@
-import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SignOutButton } from "@/components/settings/sign-out-button";
 
+async function getUser() {
+  const backendUrl = process.env.API_BACKEND_URL || "http://localhost:3001/api";
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.getAll().map((c) => `${c.name}=${c.value}`).join("; ");
+
+  try {
+    const res = await fetch(`${backendUrl}/auth/me`, {
+      headers: { Cookie: cookieHeader },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data?.user as { id: string; email: string; display_name?: string } | null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function SettingsPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
 
   return (
     <div className="space-y-10">
@@ -36,21 +53,7 @@ export default async function SettingsPage() {
                 Display Name
               </span>
               <span className="font-mono text-xs text-foreground">
-                {user?.user_metadata?.display_name || "—"}
-              </span>
-            </div>
-            <div className="border-t border-border" />
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs text-muted-foreground">
-                Member Since
-              </span>
-              <span className="font-mono text-xs text-foreground">
-                {user?.created_at
-                  ? new Date(user.created_at).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                    })
-                  : "—"}
+                {user?.display_name || "—"}
               </span>
             </div>
           </div>

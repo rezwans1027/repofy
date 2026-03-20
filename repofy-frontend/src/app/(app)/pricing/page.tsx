@@ -1,10 +1,8 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useCreditBalance, useAwaitCreditUpdate } from "@/hooks/use-credits";
 import { api } from "@/lib/api-client";
@@ -13,7 +11,6 @@ import {
   CreditCard,
   Loader2,
   Users,
-  X,
   Coins,
   Zap,
   Shield,
@@ -38,9 +35,6 @@ const RECRUITER_FEATURES = [
 ];
 
 function PricingContent() {
-  const searchParams = useSearchParams();
-  const success = searchParams.get("success") === "true";
-  const canceled = searchParams.get("canceled") === "true";
   const queryClient = useQueryClient();
   const { isLoading: authLoading } = useAuth();
   const { data: balance, isLoading: balanceLoading } = useCreditBalance();
@@ -53,55 +47,48 @@ function PricingContent() {
     number | undefined
   >(undefined);
   const [creditsReceived, setCreditsReceived] = useState(false);
+  const [waitingForCredits, setWaitingForCredits] = useState(false);
 
+  // Timeout: stop polling after 30 seconds and show success anyway
   useEffect(() => {
-    if (success && balanceAtCheckout === undefined) {
-      const stored = sessionStorage.getItem("pre_checkout_balance");
-      if (stored !== null) {
-        setBalanceAtCheckout(Number(stored));
-        sessionStorage.removeItem("pre_checkout_balance");
-      } else {
-        if (balance) {
-          setBalanceAtCheckout(balance.growth_balance);
-        }
-      }
-    }
-  }, [success, balance, balanceAtCheckout]);
-
-  useEffect(() => {
-    if (!success || creditsReceived) return;
+    if (!waitingForCredits || creditsReceived) return;
     const timer = setTimeout(() => setCreditsReceived(true), 30_000);
     return () => clearTimeout(timer);
-  }, [success, creditsReceived]);
+  }, [waitingForCredits, creditsReceived]);
 
   const { data: polledBalance } = useAwaitCreditUpdate(
-    success && !creditsReceived,
+    waitingForCredits && !creditsReceived,
     balanceAtCheckout,
   );
 
   useEffect(() => {
-    if (success && !creditsReceived && balanceAtCheckout !== undefined) {
+    if (waitingForCredits && !creditsReceived && balanceAtCheckout !== undefined) {
       const current = polledBalance ?? balance;
       if (current && current.growth_balance > balanceAtCheckout) {
         setCreditsReceived(true);
+        setWaitingForCredits(false);
+        setLoading(false);
         queryClient.setQueryData(["credits", "balance"], current);
       }
     }
-  }, [success, creditsReceived, polledBalance, balance, queryClient]);
+  }, [waitingForCredits, creditsReceived, balanceAtCheckout, polledBalance, balance, queryClient]);
 
   async function handleCheckout() {
     setLoading(true);
     setError(null);
     try {
-      sessionStorage.setItem(
-        "pre_checkout_balance",
-        String(balance?.growth_balance ?? 0),
-      );
+      const preBalance = balance?.growth_balance ?? 0;
       const { url } = await api.post<{ url: string }>(
         "/stripe/create-checkout-session",
-        { auth: true },
+        {},
       );
-      window.location.href = url;
+      if (!url.startsWith("https://checkout.stripe.com/")) {
+        throw new Error("Invalid checkout URL");
+      }
+      setBalanceAtCheckout(preBalance);
+      setCreditsReceived(false);
+      setWaitingForCredits(true);
+      window.open(url, "_blank", "noopener,noreferrer");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);
@@ -159,8 +146,8 @@ function PricingContent() {
       </AnimateOnView>
 
       {/* Status banners */}
-      {success && (
-        <AnimateOnView delay={0.05} variant="scaleIn">
+      {(waitingForCredits || creditsReceived) && (
+        <AnimateOnView delay={0.05}>
           {creditsReceived ? (
             <div className="flex items-center gap-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
               <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
@@ -182,32 +169,15 @@ function PricingContent() {
               </div>
               <div>
                 <p className="font-mono text-xs font-semibold text-emerald-400">
-                  Processing...
+                  Checkout in progress...
                 </p>
                 <p className="text-[11px] text-emerald-400/70">
-                  Payment received, adding credits to your account.
+                  Complete payment in the new tab. Credits will appear here
+                  automatically.
                 </p>
               </div>
             </div>
           )}
-        </AnimateOnView>
-      )}
-
-      {canceled && (
-        <AnimateOnView delay={0.05} variant="scaleIn">
-          <div className="flex items-center gap-3 rounded-lg border border-yellow-500/20 bg-yellow-500/5 px-4 py-3">
-            <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-yellow-500/10">
-              <X className="size-3.5 text-yellow-400" />
-            </div>
-            <div>
-              <p className="font-mono text-xs font-semibold text-yellow-400">
-                Payment canceled
-              </p>
-              <p className="text-[11px] text-yellow-400/70">
-                No charges were made to your account.
-              </p>
-            </div>
-          </div>
         </AnimateOnView>
       )}
 
@@ -217,7 +187,7 @@ function PricingContent() {
         <AnimateOnView delay={0.1}>
           <div className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-emerald-500/20 bg-card">
             {/* Subtle top glow */}
-            <div className="pointer-events-none absolute -top-20 left-1/2 h-40 w-64 -translate-x-1/2 rounded-full bg-emerald-500/6 blur-3xl transition-all duration-500 group-hover:bg-emerald-500/10" />
+            <div className="pointer-events-none absolute -top-20 left-1/2 h-40 w-64 -translate-x-1/2 rounded-full bg-emerald-500/6 blur-3xl transition-[background-color] duration-500 group-hover:bg-emerald-500/10" />
 
             <div className="relative flex flex-1 flex-col p-6">
               {/* Card header */}
@@ -285,12 +255,12 @@ function PricingContent() {
               <button
                 onClick={handleCheckout}
                 disabled={loading}
-                className="group/btn flex w-full items-center justify-center gap-2 rounded-md bg-emerald-500 px-4 py-2.5 font-mono text-xs font-semibold text-white shadow-sm shadow-emerald-500/20 transition-all hover:shadow-md hover:shadow-emerald-500/25 hover:brightness-110 disabled:opacity-50"
+                className="group/btn flex w-full items-center justify-center gap-2 rounded-md bg-emerald-500 px-4 py-2.5 font-mono text-xs font-semibold text-white shadow-sm shadow-emerald-500/20 transition-[box-shadow,filter] hover:shadow-md hover:shadow-emerald-500/25 hover:brightness-110 disabled:opacity-50"
               >
                 {loading ? (
                   <>
                     <Loader2 className="size-3.5 animate-spin" />
-                    Redirecting to checkout...
+                    Opening checkout...
                   </>
                 ) : (
                   <>
@@ -388,9 +358,5 @@ function PricingContent() {
 }
 
 export default function PricingPage() {
-  return (
-    <Suspense>
-      <PricingContent />
-    </Suspense>
-  );
+  return <PricingContent />;
 }

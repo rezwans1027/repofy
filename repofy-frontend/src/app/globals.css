@@ -158,88 +158,105 @@ body[data-scroll-locked] {
 }
 
 
-/* Typewriter cursor blink */
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
+@layer base {
+  /* Typewriter cursor blink */
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  /* Smooth caret blink (VS Code style) */
+  @keyframes smooth-caret-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* Slide up from bottom */
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* ── Advisor report ambient animations ───────────────────────── */
+  @keyframes glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.25), 0 0 24px rgba(16, 185, 129, 0.08);
+    }
+    50% {
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.45), 0 0 48px rgba(16, 185, 129, 0.15);
+    }
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-3px); }
+  }
+
+  @keyframes shimmer {
+    100% { transform: translateX(100%); }
+  }
+
+  /* Waveform bar pulse */
+  @keyframes waveform-bar {
+    0%, 100% { transform: scaleY(0.25); }
+    50% { transform: scaleY(1); }
+  }
+
+  /* Heatmap cell fade-in */
+  @keyframes heatmapFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 }
+
 .animate-blink {
   animation: blink 1s step-end infinite;
-}
-
-
-/* Smooth caret blink (VS Code style) */
-@keyframes smooth-caret-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
 }
 .animate-smooth-caret-blink {
   animation: smooth-caret-blink 1s ease-in-out infinite;
 }
-
-/* Slide up from bottom */
-@keyframes slide-up {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
 .animate-slide-up {
   animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-
-/* ── Analysis loading waveform ──────────────────────────────────── */
-
-@keyframes wave-bar {
-  0%, 100% { transform: scaleY(0.25); }
-  50% { transform: scaleY(1); }
-}
-
-/* ── Advisor report ambient animations ─────────────────────────── */
-
-@keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 0 0 8px rgba(16, 185, 129, 0.25), 0 0 24px rgba(16, 185, 129, 0.08);
-  }
-  50% {
-    box-shadow: 0 0 16px rgba(16, 185, 129, 0.45), 0 0 48px rgba(16, 185, 129, 0.15);
-  }
-}
 .animate-glow-pulse {
   animation: glow-pulse 3s ease-in-out infinite;
-}
-
-@keyframes gradient-shift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
 }
 .animate-gradient-shift {
   background-size: 200% 200%;
   animation: gradient-shift 4s ease-in-out infinite;
 }
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-3px); }
-}
 .animate-float {
   animation: float 4s ease-in-out infinite;
 }
-
-@keyframes shimmer {
-  100% { transform: translateX(100%); }
-}
-
-/* Heatmap cell fade-in */
-@keyframes heatmapFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
 .heatmap-cell-animate {
   animation: heatmapFadeIn 0.15s ease both;
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
 }
 

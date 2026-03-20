@@ -1,4 +1,6 @@
 // ── AdviceData – shared interface for advice reports ────────────────
+// SYNC: This file is duplicated in repofy-backend/src/types/shared/advice.ts
+//       If you update this file, update the backend copy too.
 
 export type GenerationWarning =
   | "repo_improvements_unavailable"
@@ -11,6 +13,22 @@ export type GenerationWarning =
   | "strengths_and_gaps_reduced"
   | "career_positioning_reduced";
 
+/**
+ * Enriched advice payload sent to the frontend.
+ *
+ * Extends the raw AI output (`AdviceV2` on the backend) with GitHub
+ * metadata added by `buildAdviceData()`: repo URLs, language colors, and
+ * star counts on `repoImprovements` entries.
+ *
+ * The key structural difference from `AdviceV2`:
+ *  - `repoImprovements[].repoUrl`       — added by enrichment
+ *  - `repoImprovements[].language`       — added by enrichment
+ *  - `repoImprovements[].languageColor`  — added by enrichment
+ *  - `repoImprovements[].stars`          — added by enrichment
+ *
+ * @see AdviceV2        — the raw AI output shape (backend-only)
+ * @see buildAdviceData — the AdviceV2 → AdviceData transform
+ */
 export interface AdviceData {
   schemaVersion: "v2";
   generationWarnings: GenerationWarning[];

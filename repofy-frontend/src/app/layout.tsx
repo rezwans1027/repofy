@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { MotionProvider } from "@/components/providers/motion-provider";
 import { OverlayScrollbar } from "@/components/ui/overlay-scrollbar";
 import "./globals.css";
 
@@ -34,14 +35,17 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
+        id="overlay-scrollbar-target"
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
         <ThemeProvider nonce={nonce}>
-          <AuthProvider>
-              <OverlayScrollbar />
-              {children}
-          </AuthProvider>
+          <MotionProvider>
+            <AuthProvider>
+                <OverlayScrollbar />
+                {children}
+            </AuthProvider>
+          </MotionProvider>
         </ThemeProvider>
       </body>
     </html>

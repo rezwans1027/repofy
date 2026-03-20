@@ -13,7 +13,7 @@ vi.mock("../../../src/lib/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
-import { searchGitHub, getGitHubUser } from "../../../src/controllers/github.controller";
+import { searchGitHub, getGitHubUser, clearGhCache } from "../../../src/controllers/github.controller";
 import {
   searchGitHubUsers,
   fetchGitHubUserData,
@@ -26,6 +26,37 @@ const mockFetchGitHubUserData = fetchGitHubUserData as ReturnType<typeof vi.fn>;
 describe("searchGitHub controller", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("returns 400 when q param is missing", async () => {
+    const { req, res, next } = createControllerMocks({}, {});
+
+    await searchGitHub(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      error: "Missing or invalid query parameter: q must be a string",
+    });
+    expect(mockSearchGitHubUsers).not.toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 when q param is not a string", async () => {
+    const { req, res, next } = createControllerMocks(
+      {},
+      { q: {} } as unknown as Record<string, string>,
+    );
+
+    await searchGitHub(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      error: "Missing or invalid query parameter: q must be a string",
+    });
+    expect(mockSearchGitHubUsers).not.toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
   });
 
   it("returns empty array for empty query", async () => {
@@ -109,6 +140,7 @@ describe("searchGitHub controller", () => {
 describe("getGitHubUser controller", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    clearGhCache();
   });
 
   it("returns 400 for invalid username", async () => {

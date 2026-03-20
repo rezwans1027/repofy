@@ -82,7 +82,7 @@ function findPageBreaks(
 }
 
 /** Dark-mode hardcoded hex → light-mode equivalents */
-const SVG_COLOR_MAP: Record<string, string> = {
+const SVG_COLOR_MAP = {
   "#22D3EE": "#0891B2",
   "#22d3ee": "#0891B2",
   "#A78BFA": "#7C3AED",
@@ -93,7 +93,7 @@ const SVG_COLOR_MAP: Record<string, string> = {
   "#fbbf24": "#D97706",
   "#F472B6": "#DB2777",
   "#f472b6": "#DB2777",
-};
+} as const satisfies Record<string, string>;
 
 /** CSS custom property overrides for the clean PDF light theme */
 const PDF_THEME_CSS = `
@@ -140,10 +140,14 @@ export async function exportToPdf(
   const sectionBreaks = collectSectionBreaks(element, scale);
 
   // Capture full element as a single high-res canvas
+  // useCORS fetches cross-origin images (GitHub avatars) with CORS headers,
+  // keeping the canvas untainted so toDataURL() works reliably.
+  // allowTaint is explicitly false to prevent silent taint that would break
+  // canvas export in some browsers.
   const canvas = await html2canvas(element, {
     scale,
     useCORS: true,
-    allowTaint: true,
+    allowTaint: false,
     backgroundColor: pdfBg,
     onclone: (_doc, clonedEl) => {
       // ── 1. Switch to light PDF theme ──
@@ -187,16 +191,17 @@ export async function exportToPdf(
       });
 
       // ── 5. Remap hardcoded dark-mode SVG colors ──
+      const colorMap = SVG_COLOR_MAP as Record<string, string>;
       clonedEl.querySelectorAll("svg *").forEach((el) => {
         for (const attr of ["fill", "stroke"]) {
           const val = el.getAttribute(attr);
-          if (val && SVG_COLOR_MAP[val]) {
-            el.setAttribute(attr, SVG_COLOR_MAP[val]);
+          if (val && colorMap[val]) {
+            el.setAttribute(attr, colorMap[val]);
           }
         }
         const s = (el as HTMLElement).style;
-        if (s.stroke && SVG_COLOR_MAP[s.stroke]) s.stroke = SVG_COLOR_MAP[s.stroke];
-        if (s.fill && SVG_COLOR_MAP[s.fill]) s.fill = SVG_COLOR_MAP[s.fill];
+        if (s.stroke && colorMap[s.stroke]) s.stroke = colorMap[s.stroke];
+        if (s.fill && colorMap[s.fill]) s.fill = colorMap[s.fill];
       });
     },
   });

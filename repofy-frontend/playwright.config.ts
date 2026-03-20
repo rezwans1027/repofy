@@ -1,4 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
+import dotenv from "dotenv";
+import path from "path";
+
+dotenv.config({ path: path.resolve(__dirname, ".env.local") });
 
 export default defineConfig({
   testDir: "e2e",
@@ -37,7 +41,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: "cd ../repofy-backend && MOCK_AI=true npm run dev",
+      command: "cd ../repofy-backend && npm run dev",
       port: 3001,
       timeout: 30000,
       reuseExistingServer: !process.env.CI,

@@ -14,6 +14,8 @@
  */
 import { env } from "../config/env";
 import { logger } from "../lib/logger";
+import { LANGUAGE_COLORS, DEFAULT_COLOR } from "../lib/language-colors";
+import { fetchWithRetry } from "../lib/retry";
 import { daysAgo } from "../lib/date-utils";
 import type {
   GitHubApiUser,
@@ -37,6 +39,31 @@ import type {
 const MAX_README_SIZE_BYTES = 524_288;    // 512 KB
 const MAX_SNIPPET_SIZE_BYTES = 262_144;   // 256 KB
 
+// ── Path safety helpers ──────────────────────────────────────────────
+
+/**
+ * Normalize and validate a file path from the GitHub tree API before
+ * interpolating it into a URL.  Rejects path-traversal attempts (segments
+ * containing "..") and URI-encodes each segment so special characters
+ * (spaces, #, ?, etc.) don't break the request or escape the path.
+ *
+ * Returns the sanitized, URI-encoded path string or `null` if the path
+ * is unsafe.
+ */
+function safePath(raw: string): string | null {
+  // Normalize: collapse duplicate slashes, trim leading/trailing slashes
+  const normalized = raw.replace(/\/+/g, "/").replace(/^\/|\/$/g, "");
+  if (!normalized) return null;
+
+  const segments = normalized.split("/");
+
+  // Reject any ".." segment (path traversal)
+  if (segments.some((s) => s === "..")) return null;
+
+  // URI-encode each segment individually so "/" separators are preserved
+  return segments.map((s) => encodeURIComponent(s)).join("/");
+}
+
 // ── Error class ───────────────────────────────────────────────────────
 
 export class GitHubError extends Error {
@@ -48,42 +75,6 @@ export class GitHubError extends Error {
     this.name = "GitHubError";
   }
 }
-
-// ── Language colors ───────────────────────────────────────────────────
-
-export const LANGUAGE_COLORS: Record<string, string> = {
-  JavaScript: "#f1e05a",
-  TypeScript: "#3178c6",
-  Python: "#3572A5",
-  Java: "#b07219",
-  Go: "#00ADD8",
-  Rust: "#dea584",
-  "C++": "#f34b7d",
-  C: "#555555",
-  "C#": "#178600",
-  Ruby: "#701516",
-  PHP: "#4F5D95",
-  Swift: "#F05138",
-  Kotlin: "#A97BFF",
-  Dart: "#00B4AB",
-  Shell: "#89e051",
-  HTML: "#e34c26",
-  CSS: "#563d7c",
-  SCSS: "#c6538c",
-  Vue: "#41b883",
-  Svelte: "#ff3e00",
-  Lua: "#000080",
-  Haskell: "#5e5086",
-  Elixir: "#6e4a7e",
-  Scala: "#c22d40",
-  R: "#198CE7",
-  Jupyter: "#DA5B0B",
-  Zig: "#ec915c",
-  Nix: "#7e7eff",
-  OCaml: "#3be133",
-};
-
-export const DEFAULT_COLOR = "#8b949e";
 
 // ── GitHub API helpers ────────────────────────────────────────────────
 
@@ -101,7 +92,8 @@ function headers(): Record<string, string> {
 async function ghRequest(url: string, init: RequestInit, signal: AbortSignal | undefined, timeoutMessage: string): Promise<Response> {
   const signals: AbortSignal[] = [AbortSignal.timeout(GITHUB_TIMEOUT_MS)];
   if (signal) signals.push(signal);
-  return fetch(url, { ...init, signal: AbortSignal.any(signals) }).catch((err) => {
+  const combined = AbortSignal.any(signals);
+  return fetchWithRetry(url, { ...init, signal: combined }, { label: "GitHub", retryableStatuses: [500, 502, 503] }).catch((err) => {
     if (err instanceof DOMException && err.name === "TimeoutError") {
       throw new GitHubError(timeoutMessage, 504);
     }
@@ -163,7 +155,11 @@ async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>, 
     "GitHub GraphQL request timed out",
   );
   if (!res.ok) throw new GitHubError(`GitHub GraphQL error: ${res.status}`, res.status);
-  return res.json() as Promise<T>;
+  const json = await res.json() as T & { errors?: { message: string }[] };
+  if (json.errors?.length) {
+    throw new GitHubError(`GitHub GraphQL: ${json.errors[0].message}`, 422);
+  }
+  return json;
 }
 
 // ── Paginated repo fetch ──────────────────────────────────────────────
@@ -171,21 +167,42 @@ async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>, 
 const MAX_REPO_PAGES = 10; // Cap at 1000 repos max
 
 async function fetchAllRepos(username: string, signal?: AbortSignal): Promise<GitHubApiRepo[]> {
-  const repos: GitHubApiRepo[] = [];
-  let page = 1;
-  const perPage = 100;
-
-  while (page <= MAX_REPO_PAGES) {
-    const batch = await ghFetch<GitHubApiRepo[]>(
-      `/users/${username}/repos?per_page=${perPage}&page=${page}&sort=updated`,
-      signal,
-    );
-    repos.push(...batch);
-    if (batch.length < perPage) break;
-    page++;
+  // Fetch first page with headers to determine total page count
+  const firstRes = await ghFetchRaw(
+    `/users/${username}/repos?per_page=100&page=1&sort=updated`,
+    signal,
+  );
+  if (!firstRes.ok) {
+    if (firstRes.status === 404) throw new GitHubError("User not found", 404);
+    if (firstRes.status === 403 || firstRes.status === 429) {
+      throw new GitHubError("GitHub API rate limit exceeded. Try again later.", 429);
+    }
+    throw new GitHubError(`GitHub API error: ${firstRes.status}`, firstRes.status);
   }
 
-  return repos;
+  const firstBatch = await firstRes.json() as GitHubApiRepo[];
+  if (firstBatch.length < 100) return firstBatch;
+
+  // Determine remaining pages from Link header
+  const linkHeader = firstRes.headers.get("link");
+  let lastPage = MAX_REPO_PAGES;
+  if (linkHeader) {
+    const match = linkHeader.match(/[&?]page=(\d+)>;\s*rel="last"/);
+    if (match) lastPage = Math.min(parseInt(match[1], 10), MAX_REPO_PAGES);
+  }
+
+  // Fetch remaining pages in parallel
+  const pages = Array.from({ length: lastPage - 1 }, (_, i) => i + 2);
+  const batches = await Promise.all(
+    pages.map((page) =>
+      ghFetch<GitHubApiRepo[]>(
+        `/users/${username}/repos?per_page=100&page=${page}&sort=updated`,
+        signal,
+      ).catch(() => [] as GitHubApiRepo[]),
+    ),
+  );
+
+  return [...firstBatch, ...batches.flat()];
 }
 
 // ── Pinned repos (GraphQL) ────────────────────────────────────────────
@@ -284,7 +301,7 @@ function buildLanguageBreakdown(repos: GitHubApiRepo[]): LanguageBreakdown[] {
   return Array.from(langMap.entries())
     .map(([name, repoCount]) => ({
       name,
-      color: LANGUAGE_COLORS[name] || DEFAULT_COLOR,
+      color: (LANGUAGE_COLORS as Record<string, string>)[name] || DEFAULT_COLOR,
       percentage: Math.round((repoCount / total) * 1000) / 10,
       repoCount,
     }))
@@ -468,6 +485,29 @@ function selectTopRepos(
   return selected.slice(0, 6);
 }
 
+// ── Concurrency limiter ───────────────────────────────────────────
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let next = 0;
+
+  async function worker() {
+    while (next < items.length) {
+      const idx = next++;
+      results[idx] = await fn(items[idx]);
+    }
+  }
+
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, () => worker()),
+  );
+  return results;
+}
+
 // ── Repo snapshot fetching ────────────────────────────────────────────
 
 const SOURCE_EXTENSIONS = new Set([
@@ -526,10 +566,6 @@ function buildTreeString(entries: GitTreeEntry[], maxDepth: number): string {
     lines.push(`${indent}${name}${suffix}`);
   }
   return lines.slice(0, 100).join("\n"); // cap at 100 lines
-}
-
-function hasExtension(path: string, extensions: string[]): boolean {
-  return extensions.some((ext) => path.toLowerCase().endsWith(ext));
 }
 
 function isTestPath(p: string, filename: string, hasGitStyleTests: boolean): boolean {
@@ -744,19 +780,24 @@ async function fetchRepoSnapshot(
       if (readmeEntry.size !== undefined && readmeEntry.size > MAX_README_SIZE_BYTES) {
         readmeWordCount = 0; // README too large, skip
       } else {
-        try {
-          const readmeData = await ghFetch<{ content: string; encoding: string }>(
-            `/repos/${username}/${encodedRepoName}/contents/${readmeEntry.path}`,
-            signal,
-          );
-          if (readmeData.encoding === "base64") {
-            const text = Buffer.from(readmeData.content, "base64")
-              .toString("utf-8")
-              .slice(0, MAX_README_SIZE_BYTES);
-            readmeWordCount = text.split(/\s+/).filter(Boolean).length;
+        const safeReadmePath = safePath(readmeEntry.path);
+        if (!safeReadmePath) {
+          logger.warn(`Skipping README with unsafe path: ${readmeEntry.path}`);
+        } else {
+          try {
+            const readmeData = await ghFetch<{ content: string; encoding: string }>(
+              `/repos/${username}/${encodedRepoName}/contents/${safeReadmePath}`,
+              signal,
+            );
+            if (readmeData.encoding === "base64") {
+              const text = Buffer.from(readmeData.content, "base64")
+                .toString("utf-8")
+                .slice(0, MAX_README_SIZE_BYTES);
+              readmeWordCount = text.split(/\s+/).filter(Boolean).length;
+            }
+          } catch {
+            // Non-critical
           }
-        } catch {
-          // Non-critical
         }
       }
     }
@@ -869,10 +910,16 @@ async function fetchCodeSnippets(
   }
   if (testEntry) filesToFetch.push(testEntry.path);
 
-  for (const filePath of filesToFetch.slice(0, 2)) {
-    try {
+  const encodedRepo = encodeURIComponent(repoName);
+  const results = await Promise.allSettled(
+    filesToFetch.slice(0, 2).map(async (filePath) => {
+      const encodedPath = safePath(filePath);
+      if (!encodedPath) {
+        logger.warn(`Skipping snippet with unsafe path: ${filePath}`);
+        return null;
+      }
       const fileData = await ghFetch<{ content: string; encoding: string }>(
-        `/repos/${username}/${repoName}/contents/${filePath}`,
+        `/repos/${username}/${encodedRepo}/contents/${encodedPath}`,
         signal,
       );
       if (fileData.encoding === "base64") {
@@ -880,11 +927,13 @@ async function fetchCodeSnippets(
           .toString("utf-8")
           .slice(0, MAX_SNIPPET_SIZE_BYTES);
         const lines = text.split("\n").slice(0, MAX_SNIPPET_LINES);
-        snippets.push(`--- ${filePath} ---\n${lines.join("\n")}`);
+        return `--- ${filePath} ---\n${lines.join("\n")}`;
       }
-    } catch {
-      // Non-critical, skip
-    }
+      return null;
+    }),
+  );
+  for (const r of results) {
+    if (r.status === "fulfilled" && r.value) snippets.push(r.value);
   }
 
   return snippets;
@@ -906,6 +955,29 @@ function computeAggregateMetrics(snapshots: RepoSnapshot[]): AggregateMetrics {
   const hasCode = totalSourceFiles >= 3 || totalLOC >= 300;
 
   return { medianLatestPushDaysAgo, hasCode };
+}
+
+// ── Service-level user data cache ─────────────────────────────────────
+//
+// Deduplicates GitHub API calls when the same user is fetched by
+// multiple controllers (analyze, advice, github) within a short window.
+// The controller-level cache in github.controller.ts is coarser (5 min,
+// 128 entries); this one is tighter (3 min, 64 entries) and sits closer
+// to the network boundary so *all* callers benefit.
+
+const USER_DATA_CACHE_TTL = 3 * 60 * 1000; // 3 minutes
+const USER_DATA_CACHE_MAX = 64;
+
+interface UserDataCacheEntry {
+  data: GitHubUserData;
+  timestamp: number;
+}
+
+const userDataCache = new Map<string, UserDataCacheEntry>();
+
+/** Clear the service-level user data cache. Exposed for test isolation. */
+export function clearUserDataCache(): void {
+  userDataCache.clear();
 }
 
 // ── Public entry point ────────────────────────────────────────────────
@@ -946,6 +1018,32 @@ export async function fetchGitHubUserData(
   username: string,
   signal?: AbortSignal,
 ): Promise<GitHubUserData> {
+  const cacheKey = username.toLowerCase();
+
+  // Check cache
+  const cached = userDataCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < USER_DATA_CACHE_TTL) {
+    return cached.data;
+  }
+  // Remove stale entry
+  if (cached) userDataCache.delete(cacheKey);
+
+  const data = await fetchGitHubUserDataUncached(username, signal);
+
+  // Evict oldest entry when cache is full
+  if (userDataCache.size >= USER_DATA_CACHE_MAX) {
+    const oldest = userDataCache.keys().next().value;
+    if (oldest !== undefined) userDataCache.delete(oldest);
+  }
+  userDataCache.set(cacheKey, { data, timestamp: Date.now() });
+
+  return data;
+}
+
+async function fetchGitHubUserDataUncached(
+  username: string,
+  signal?: AbortSignal,
+): Promise<GitHubUserData> {
   const [user, rawRepos, events, contributions, pinnedNames] = await Promise.all([
     ghFetch<GitHubApiUser>(`/users/${username}`, signal),
     fetchAllRepos(username, signal),
@@ -965,10 +1063,10 @@ export async function fetchGitHubUserData(
   const topByStars = [...topRepositories].sort((a, b) => b.stars - a.stars);
   const top3Names = new Set(topByStars.slice(0, 3).map((r) => r.name));
 
-  const repoSnapshots = await Promise.all(
-    topRepositories.map((repo) =>
-      fetchRepoSnapshot(username, repo, top3Names.has(repo.name), signal),
-    ),
+  const repoSnapshots = await mapWithConcurrency(
+    topRepositories,
+    3,
+    (repo) => fetchRepoSnapshot(username, repo, top3Names.has(repo.name), signal),
   );
 
   const aggregateMetrics = computeAggregateMetrics(repoSnapshots);

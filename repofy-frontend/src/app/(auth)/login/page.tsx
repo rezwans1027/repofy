@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { createClient } from "@/lib/supabase/client";
+import { api, ApiError } from "@/lib/api-client";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useAuthTransition } from "../auth-transition";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { refresh } = useAuth();
   const { navigateTo } = useAuthTransition();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,20 +43,15 @@ export default function LoginPage() {
     setErrors({});
     setIsLoading(true);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setErrors({ form: error.message });
+    try {
+      await api.post("/auth/login", { body: { email, password } });
+      await refresh();
+      router.push("/dashboard");
+      router.refresh();
+    } catch (err) {
+      setErrors({ form: err instanceof ApiError ? err.message : "Something went wrong." });
       setIsLoading(false);
-      return;
     }
-
-    router.push("/dashboard");
-    router.refresh();
   }
 
   return (
@@ -82,11 +79,12 @@ export default function LoginPage() {
                 if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
               }}
               aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "email-error" : undefined}
               className="pl-10 font-mono text-sm"
             />
           </div>
           {errors.email && (
-            <p className="font-mono text-xs text-destructive">
+            <p id="email-error" className="font-mono text-xs text-destructive">
               <span className="font-bold">error:</span> {errors.email}
             </p>
           )}
@@ -108,18 +106,20 @@ export default function LoginPage() {
                 if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
               }}
               aria-invalid={!!errors.password}
+              aria-describedby={errors.password ? "password-error" : undefined}
               className="pl-10 pr-10 font-mono text-sm"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
           </div>
           {errors.password && (
-            <p className="font-mono text-xs text-destructive">
+            <p id="password-error" className="font-mono text-xs text-destructive">
               <span className="font-bold">error:</span> {errors.password}
             </p>
           )}

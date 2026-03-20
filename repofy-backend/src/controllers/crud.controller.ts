@@ -1,11 +1,11 @@
 import { RequestHandler } from "express";
 import { sendError, sendSuccess } from "../lib/response";
 import { handleControllerError } from "../lib/controller-utils";
-import { MAX_DELETE_IDS } from "../lib/validators";
+import { MAX_DELETE_IDS, UUID_RE } from "../lib/validators";
 import type { AuthenticatedRequest } from "../types";
 
 interface CrudServiceMethods {
-  list: (userId: string) => Promise<unknown>;
+  list: (userId: string, limit?: number, offset?: number) => Promise<unknown>;
   getById: (userId: string, id: string) => Promise<unknown>;
   exists: (userId: string, value: string) => Promise<boolean>;
   deleteBatch: (userId: string, ids: string[]) => Promise<void>;
@@ -30,8 +30,12 @@ export function createCrudController(config: CrudControllerConfig): CrudControll
   return {
     list: async (req, res) => {
       const { userId } = req as AuthenticatedRequest;
+      const rawLimit = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined;
+      const rawOffset = req.query.offset ? parseInt(String(req.query.offset), 10) : undefined;
+      const limit = rawLimit !== undefined && !Number.isNaN(rawLimit) ? rawLimit : undefined;
+      const offset = rawOffset !== undefined && !Number.isNaN(rawOffset) ? rawOffset : undefined;
       try {
-        const data = await service.list(userId);
+        const data = await service.list(userId, limit, offset);
         sendSuccess(res, data);
       } catch (err) {
         handleControllerError(err, req, res, `List ${capName}`, `Failed to fetch ${entityName}s`);
@@ -68,6 +72,10 @@ export function createCrudController(config: CrudControllerConfig): CrudControll
       }
       if (ids.length > MAX_DELETE_IDS) {
         sendError(res, 400, `Cannot delete more than ${MAX_DELETE_IDS} items at once`);
+        return;
+      }
+      if (!ids.every((id: string) => UUID_RE.test(id))) {
+        sendError(res, 400, "Each id must be a valid UUID");
         return;
       }
       try {

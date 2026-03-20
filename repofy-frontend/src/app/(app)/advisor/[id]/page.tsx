@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { AdviceReport } from "@/components/advice/advice-report";
 import { serverFetch } from "@/lib/server-api";
 import { BackLink } from "@/components/ui/back-link";
@@ -10,6 +11,12 @@ interface AdviceRow {
   advice_data: AdviceData;
 }
 
+const errorMessages = {
+  "not-found": { message: "Advice not found", detail: "This advice may have been deleted.", variant: "neutral" as const },
+  "forbidden": { message: "Access denied", detail: "You don't have permission to view this advice.", variant: "error" as const },
+  "server-error": { message: "Something went wrong", detail: "Please try again later.", variant: "error" as const },
+};
+
 export default async function AdvicePage({
   params,
   searchParams,
@@ -21,17 +28,16 @@ export default async function AdvicePage({
   const { from } = await searchParams;
   const fromProfile = from === "profile";
 
-  const advice = await serverFetch<AdviceRow>(`/advice/${id}`);
+  const { data: advice, error } = await serverFetch<AdviceRow>(`/advice/${id}`, { revalidate: 3600 });
 
-  if (!advice) {
+  if (error === "unauthenticated") redirect("/login");
+
+  if (error) {
+    const { message, detail, variant } = errorMessages[error];
     return (
       <div>
         <BackLink href="/advisor" label="back to advisor" hoverColor="hover:text-emerald-400" />
-        <ErrorCard
-          message="Advice not found"
-          detail="This advice may have been deleted or you don't have access to it."
-          variant="neutral"
-        />
+        <ErrorCard message={message} detail={detail} variant={variant} />
       </div>
     );
   }

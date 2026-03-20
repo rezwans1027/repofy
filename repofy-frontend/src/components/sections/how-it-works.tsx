@@ -64,7 +64,7 @@ export function HowItWorks() {
             </div>
             <div>
               <p className="text-cyan mb-3 font-mono text-xs">The Repofy way</p>
-              <DiffBlock lines={diffLines.new} delay={0.6} />
+              <DiffBlock lines={diffLines.new} delay={0.35} />
             </div>
           </div>
         </TerminalWindow>

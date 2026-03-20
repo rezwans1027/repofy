@@ -2,13 +2,13 @@
 
 import { motion } from "framer-motion";
 import { Check, AlertTriangle } from "lucide-react";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
 import {
   staggerContainer,
   staggerItemLeft,
   staggerItemRight,
 } from "@/lib/animation-variants";
+import { ADVISOR_ACCENT } from "@/lib/styles";
 import type { AdviceData } from "@shared/types/advice";
 
 interface StrengthsAndGapsProps {
@@ -20,22 +20,14 @@ export function StrengthsAndGaps({ data }: StrengthsAndGapsProps) {
 
   if (empty) {
     return (
-      <AnimateOnView delay={0.12}>
-        <div className="rounded-lg border border-border bg-card p-5">
-          <SectionHeader title="Strengths & Gaps" />
+      <SectionCard delay={0.12} title="Strengths & Gaps">
           <p className="text-xs text-muted-foreground">No strengths and gaps analysis available.</p>
-        </div>
-      </AnimateOnView>
+      </SectionCard>
     );
   }
 
   return (
-    <AnimateOnView delay={0.12}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader
-          title="Strengths & Gaps"
-          subtitle="What your profile demonstrates vs what's missing"
-        />
+    <SectionCard delay={0.12} title="Strengths & Gaps" subtitle="What your profile demonstrates vs what's missing">
         <div className="grid gap-4 sm:grid-cols-2">
           {/* Strengths — cascade from left */}
           <motion.div
@@ -45,7 +37,7 @@ export function StrengthsAndGaps({ data }: StrengthsAndGapsProps) {
             whileInView="visible"
             viewport={{ once: true }}
           >
-            <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
+            <span className={`font-mono text-[10px] uppercase tracking-wider ${ADVISOR_ACCENT}`}>
               Strengths
             </span>
             {data.strengths.map((s) => (
@@ -56,9 +48,9 @@ export function StrengthsAndGaps({ data }: StrengthsAndGapsProps) {
                   x: 4,
                   transition: { type: "spring", stiffness: 400, damping: 30 },
                 }}
-                className="flex gap-3 rounded-md border border-border bg-background p-3 transition-colors hover:border-emerald-500/30 cursor-default"
+                className="flex gap-3 rounded-md border border-border bg-background p-3 hover:border-emerald-500/30 cursor-default"
               >
-                <Check className="size-4 shrink-0 text-emerald-400 mt-0.5" />
+                <Check className={`size-4 shrink-0 ${ADVISOR_ACCENT} mt-0.5`} />
                 <div>
                   <p className="text-xs font-medium">{s.area}</p>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">{s.detail}</p>
@@ -86,7 +78,7 @@ export function StrengthsAndGaps({ data }: StrengthsAndGapsProps) {
                   x: -4,
                   transition: { type: "spring", stiffness: 400, damping: 30 },
                 }}
-                className="flex gap-3 rounded-md border border-border bg-background p-3 transition-colors hover:border-orange-500/30 cursor-default"
+                className="flex gap-3 rounded-md border border-border bg-background p-3 hover:border-orange-500/30 cursor-default"
               >
                 <AlertTriangle className="size-4 shrink-0 text-orange-400 mt-0.5" />
                 <div>
@@ -97,7 +89,6 @@ export function StrengthsAndGaps({ data }: StrengthsAndGapsProps) {
             ))}
           </motion.div>
         </div>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }

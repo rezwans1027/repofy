@@ -8,15 +8,19 @@ vi.mock("dotenv", () => ({
 const ENV_KEYS = [
   "SUPABASE_URL",
   "SUPABASE_SERVICE_ROLE_KEY",
+  "SUPABASE_ANON_KEY",
   "GITHUB_TOKEN",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
   "RESEND_API_KEY",
   "OTP_HMAC_SECRET",
   "ADMIN_SECRET",
+  "ENGINE_INTERNAL_KEY",
+  "ENGINE_URL",
   "MOCK_AI",
   "NODE_ENV",
   "PORT",
+  "CORS_ORIGIN",
 ] as const;
 
 describe("env config", () => {
@@ -35,6 +39,8 @@ describe("env config", () => {
       if (val === undefined) delete process.env[key];
       else process.env[key] = val;
     }
+    // ENGINE_INTERNAL_KEY is required when MOCK_AI is off
+    process.env.ENGINE_INTERNAL_KEY ??= "test-engine-key";
     vi.resetModules();
   });
 
@@ -57,6 +63,8 @@ describe("env config", () => {
   it("disables MOCK_AI in production even when set", async () => {
     process.env.MOCK_AI = "true";
     process.env.NODE_ENV = "production";
+    process.env.CORS_ORIGIN = "https://example.com";
+    process.env.ENGINE_URL = "https://engine.example.com";
 
     const { env } = await import("../../../src/config/env");
 

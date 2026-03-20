@@ -30,7 +30,8 @@ export function RadarChart({ data, size = 280 }: RadarChartProps) {
     .join(" ") + " Z";
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} className="mx-auto w-full max-w-[280px]" style={{ overflow: "visible" }}>
+    <svg viewBox={`0 0 ${size} ${size}`} className="mx-auto w-full max-w-[280px]" style={{ overflow: "visible" }} role="img" aria-label={`Radar chart showing developer skill metrics across ${data.length} axes: ${data.map((d) => `${d.axis} ${Math.round(d.value * 100)}%`).join(", ")}`}>
+      <title>Developer skill radar chart</title>
       {/* Grid levels */}
       {levels.map((level) => {
         const levelPoints = data.map((_, i) => {

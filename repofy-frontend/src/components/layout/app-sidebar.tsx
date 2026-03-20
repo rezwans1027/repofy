@@ -33,7 +33,7 @@ export function AppSidebar() {
       {/* Desktop: left rail */}
       <nav className="fixed left-0 top-14 hidden h-[calc(100vh-3.5rem)] w-48 flex-col justify-center border-r border-border px-4 lg:flex">
         <ul className="space-y-1">
-          {NAV_ITEMS.map(({ href, label, icon: Icon, number, comingSoon }) => {
+          {NAV_ITEMS.map(({ href, label, icon: Icon, number }) => {
             const isActive = isItemActive(href, pathname);
 
             return (
@@ -55,7 +55,7 @@ export function AppSidebar() {
                   href={href}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "relative flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors duration-200",
+                    "relative flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm",
                     isActive
                       ? "text-cyan"
                       : "text-muted-foreground hover:text-foreground"
@@ -103,7 +103,7 @@ export function AppSidebar() {
       {/* Mobile: horizontal sticky bar */}
       <nav className="fixed top-14 left-0 right-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm lg:hidden">
         <div className="relative flex justify-center px-4 py-1.5 gap-6 sm:gap-2">
-          {NAV_ITEMS.map(({ href, label, icon: Icon, comingSoon }) => {
+          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = isItemActive(href, pathname);
 
             return (
@@ -112,7 +112,7 @@ export function AppSidebar() {
                 href={href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "relative flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 font-mono text-xs transition-colors",
+                  "relative flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 font-mono text-xs",
                   isActive ? "text-cyan" : "text-muted-foreground"
                 )}
               >

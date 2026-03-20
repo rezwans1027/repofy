@@ -26,7 +26,8 @@ export function SmoothCaretInput({
   }, []);
 
   useEffect(() => {
-    updateCaretPosition();
+    const frame = requestAnimationFrame(updateCaretPosition);
+    return () => cancelAnimationFrame(frame);
   }, [value, updateCaretPosition]);
 
   useEffect(() => {
@@ -69,7 +70,7 @@ export function SmoothCaretInput({
       />
       {focused && (
         <span
-          className="pointer-events-none absolute top-1/2 h-[1.1em] w-[1.5px] -translate-y-1/2 bg-white animate-smooth-caret-blink"
+          className="pointer-events-none absolute top-1/2 h-[1.1em] w-[1.5px] -translate-y-1/2 bg-foreground animate-smooth-caret-blink"
           style={{
             left: caretLeft,
             transition: "left 80ms cubic-bezier(0.16, 1, 0.3, 1)",

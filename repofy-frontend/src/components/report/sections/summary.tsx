@@ -1,19 +1,8 @@
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
+import { stripMarkdown } from "@/lib/format";
 
 interface SummaryProps {
   narrativeReport: string;
-}
-
-/** Strip markdown formatting that shouldn't appear in plain prose */
-function stripMarkdown(text: string): string {
-  return text
-    .replace(/^#{1,6}\s+/gm, "")   // remove markdown headers
-    .replace(/\*\*(.+?)\*\*/g, "$1") // remove bold
-    .replace(/\*(.+?)\*/g, "$1")     // remove italic
-    .replace(/^[-*]\s+/gm, "")      // remove bullet points
-    .replace(/^\d+\.\s+/gm, "")     // remove numbered lists
-    .trim();
 }
 
 export function Summary({ narrativeReport }: SummaryProps) {
@@ -23,17 +12,14 @@ export function Summary({ narrativeReport }: SummaryProps) {
     .filter((p) => p.length > 0);
 
   return (
-    <AnimateOnView delay={0.06}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader title="Executive Summary" />
-        <div className="border-l-2 border-cyan/40 pl-4 space-y-3">
-          {paragraphs.map((paragraph, i) => (
-            <p key={i} className="text-sm leading-relaxed text-muted-foreground">
-              {paragraph}
-            </p>
-          ))}
-        </div>
+    <SectionCard delay={0.06} title="Executive Summary">
+      <div className="border-l-2 border-cyan/40 pl-4 space-y-3">
+        {paragraphs.map((paragraph, i) => (
+          <p key={i} className="text-sm leading-relaxed text-muted-foreground">
+            {paragraph}
+          </p>
+        ))}
       </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }
