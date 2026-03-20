@@ -119,63 +119,16 @@ describe("PricingPage", () => {
     expect(screen.getByText("credit")).toBeInTheDocument();
   });
 
-  it("shows success banner with credit message when ?success=true", async () => {
-    navState.searchParams = new URLSearchParams("success=true");
-
-    // Simulate pre-checkout balance stored before redirect
-    sessionStorage.setItem("pre_checkout_balance", "0");
-
-    // useCreditBalance returns current balance (after webhook)
-    mockUseCreditBalance.mockReturnValue({
-      data: { growth_balance: 2, eval_balance: 0 },
-      isLoading: false,
-    });
-
-    // Polling starts loading, then returns increased balance.
-    // The polledBalance changing from undefined → data triggers the effect
-    // that detects the credit increase and sets creditsReceived = true.
-    mockUseAwaitCreditUpdate
-      .mockReturnValueOnce({ data: undefined, isLoading: true })
-      .mockReturnValue({
-        data: { growth_balance: 2, eval_balance: 0 },
-        isLoading: false,
-      });
-
-    renderPricing();
-
-    await waitFor(() => {
-      expect(screen.getByText(/Credits added/i)).toBeInTheDocument();
-    });
-  });
-
-  it("shows canceled banner when ?canceled=true", () => {
-    navState.searchParams = new URLSearchParams("canceled=true");
-
-    renderPricing();
-
-    expect(screen.getByText(/Payment canceled/i)).toBeInTheDocument();
-  });
-
   it("does not show banners by default", () => {
     renderPricing();
 
     expect(screen.queryByText(/Credits added/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Payment canceled/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Checkout in progress/i)).not.toBeInTheDocument();
   });
 
-  it("calls API and redirects on checkout button click", async () => {
+  it("calls API and opens Stripe in new tab on checkout", async () => {
     vi.mocked(api.post).mockResolvedValue({ url: "https://checkout.stripe.com/session-123" });
-
-    // Mock window.location.href assignment
-    const hrefSetter = vi.fn();
-    Object.defineProperty(window, "location", {
-      value: { href: "" },
-      writable: true,
-    });
-    Object.defineProperty(window.location, "href", {
-      set: hrefSetter,
-      get: () => "",
-    });
+    const openSpy = vi.spyOn(window, "open").mockReturnValue(null);
 
     const user = userEvent.setup();
     renderPricing();
@@ -187,8 +140,17 @@ describe("PricingPage", () => {
     });
 
     await waitFor(() => {
-      expect(hrefSetter).toHaveBeenCalledWith("https://checkout.stripe.com/session-123");
+      expect(openSpy).toHaveBeenCalledWith(
+        "https://checkout.stripe.com/session-123",
+        "_blank",
+        "noopener,noreferrer",
+      );
     });
+
+    // Should show "Checkout in progress" banner
+    expect(screen.getByText(/Checkout in progress/i)).toBeInTheDocument();
+
+    openSpy.mockRestore();
   });
 
   it("shows error message when checkout fails", async () => {
@@ -201,20 +163,6 @@ describe("PricingPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Network error")).toBeInTheDocument();
-    });
-  });
-
-  it("shows loading state during checkout", async () => {
-    // Never-resolving promise to keep loading state
-    vi.mocked(api.post).mockReturnValue(new Promise(() => {}));
-
-    const user = userEvent.setup();
-    renderPricing();
-
-    await user.click(screen.getByRole("button", { name: /Get Started/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText(/Redirecting to checkout/i)).toBeInTheDocument();
     });
   });
 });
