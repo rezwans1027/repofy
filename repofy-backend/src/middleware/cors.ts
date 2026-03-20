@@ -15,6 +15,12 @@ export const corsMiddleware = cors({
     // Exact match against CORS_ORIGIN list
     if (allowedOrigins.includes(origin)) return callback(null, true);
 
+    // Allow Vercel preview deployments (unique URLs per deploy)
+    if (allowedOrigins.some((o) => o.includes(".vercel.app")) &&
+        /^https:\/\/[\w-]+-rezwan-sheikhs-projects-dc71e171\.vercel\.app$/.test(origin)) {
+      return callback(null, true);
+    }
+
     callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
