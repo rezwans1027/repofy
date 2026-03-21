@@ -10,6 +10,8 @@ import { CreditConfirmDialog } from "@/components/ui/credit-confirm-dialog";
 import { NoCreditsDialog } from "@/components/ui/no-credits-dialog";
 import { ADVISOR_ACCENT } from "@/lib/styles";
 import { useCreditBalance } from "@/hooks/use-credits";
+import { useActiveAdviceJob } from "@/hooks/use-advice-job";
+import { ActiveJobDialog } from "@/components/ui/active-job-dialog";
 import { useExportPdf } from "@/hooks/use-export-pdf";
 
 interface AdviceExportBarProps {
@@ -22,7 +24,8 @@ interface AdviceExportBarProps {
 export function AdviceExportBar({ username, adviceRef, onBeforeExport, onAfterExport }: AdviceExportBarProps) {
   const router = useRouter();
   const { data: balance } = useCreditBalance();
-  const [dialogOpen, setDialogOpen] = useState<"confirm_credit" | "no_credits" | null>(null);
+  const { data: activeJob } = useActiveAdviceJob();
+  const [dialogOpen, setDialogOpen] = useState<"confirm_credit" | "no_credits" | "active_job" | null>(null);
 
   const { isExporting, handleExportPDF } = useExportPdf(
     adviceRef,
@@ -31,7 +34,9 @@ export function AdviceExportBar({ username, adviceRef, onBeforeExport, onAfterEx
   );
 
   const handleRunAgain = () => {
-    if (balance && balance.growth_balance === 0) {
+    if (activeJob) {
+      setDialogOpen("active_job");
+    } else if (balance && balance.growth_balance === 0) {
       setDialogOpen("no_credits");
     } else {
       setDialogOpen("confirm_credit");
@@ -82,6 +87,12 @@ export function AdviceExportBar({ username, adviceRef, onBeforeExport, onAfterEx
           setDialogOpen(null);
           router.push(`/advisor/generate/${username}`);
         }}
+      />
+
+      <ActiveJobDialog
+        open={dialogOpen === "active_job"}
+        onOpenChange={closeDialog}
+        activeJob={activeJob ?? null}
       />
     </>
   );

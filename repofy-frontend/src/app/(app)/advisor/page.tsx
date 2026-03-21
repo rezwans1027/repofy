@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Lightbulb,
@@ -16,6 +17,7 @@ import {
   Calendar,
   User,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -42,7 +44,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useAdviceList, useDeleteAdvice, type AdviceListItem } from "@/hooks/use-advice";
+import { useActiveAdviceJob } from "@/hooks/use-advice-job";
 import { useSelectableList } from "@/hooks/use-selectable-list";
+import { calculateAdviceProgress } from "@/lib/progress";
 import { relativeDate } from "@/lib/format";
 
 const itemVariants = {
@@ -52,12 +56,38 @@ const itemVariants = {
 
 export default function AdvisorPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { isLoading: authLoading } = useAuth();
   const { data: items = [], isLoading: queryLoading } = useAdviceList();
   const loading = authLoading || queryLoading;
   const deleteAdvice = useDeleteAdvice();
+  const { data: activeJob } = useActiveAdviceJob();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [jobProgress, setJobProgress] = useState(0);
+  const prevActiveJobId = useRef<string | null>(null);
+
+  // When an active job disappears (completed/failed), refresh the advice list
+  useEffect(() => {
+    const currentId = activeJob?.id ?? null;
+    if (prevActiveJobId.current && !currentId) {
+      queryClient.invalidateQueries({ queryKey: ["advice"] });
+      queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
+    }
+    prevActiveJobId.current = currentId;
+  }, [activeJob?.id, queryClient]);
+
+  // Live progress tick for active job card
+  useEffect(() => {
+    if (!activeJob?.created_at) {
+      setJobProgress(0);
+      return;
+    }
+    const tick = () => setJobProgress(calculateAdviceProgress(activeJob.created_at).progress);
+    tick();
+    const id = setInterval(tick, 100);
+    return () => clearInterval(id);
+  }, [activeJob?.created_at]);
   const {
     selected,
     selectMode,
@@ -134,7 +164,7 @@ export default function AdvisorPage() {
     );
   }
 
-  if (items.length === 0) {
+  if (items.length === 0 && !activeJob) {
     return (
       <motion.div
         initial="hidden"
@@ -266,6 +296,58 @@ export default function AdvisorPage() {
         </Button>
       </motion.div>
 
+      {/* Active job card */}
+      {activeJob && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          role="button"
+          tabIndex={0}
+          className="group relative flex items-center gap-4 rounded-xl border border-emerald-500/30 bg-card p-4 cursor-pointer overflow-hidden hover:border-emerald-500/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
+          onClick={() => router.push(`/advisor/generate/${activeJob.analyzed_username}?jobId=${activeJob.id}`)}
+          onKeyDown={(e: React.KeyboardEvent) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              router.push(`/advisor/generate/${activeJob.analyzed_username}?jobId=${activeJob.id}`);
+            }
+          }}
+        >
+          {/* Shimmer overlay */}
+          <div className="pointer-events-none absolute inset-0 -translate-x-full" style={{ animation: "shimmer 2s infinite", background: "linear-gradient(90deg, transparent, rgba(52,211,153,0.06), transparent)" }} />
+
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+            <Loader2 className="size-4 animate-spin" />
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="truncate font-mono text-sm font-semibold text-foreground group-hover:text-emerald-400">
+                @{activeJob.analyzed_username}
+              </span>
+              <span className="shrink-0 rounded bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-400">
+                Generating...
+              </span>
+            </div>
+            {/* Progress bar */}
+            <div className="mt-2 flex items-center gap-2">
+              <div className="relative h-1 flex-1 overflow-hidden rounded-full bg-secondary">
+                <div
+                  className="absolute inset-y-0 left-0 rounded-full bg-emerald-400"
+                  style={{ width: `${Math.max(jobProgress, 2)}%`, transition: "width 0.15s linear" }}
+                />
+              </div>
+              <span className="shrink-0 font-mono text-[10px] tabular-nums text-emerald-400">
+                {Math.round(jobProgress)}%
+              </span>
+            </div>
+          </div>
+
+          <ChevronRight className="size-4 shrink-0 text-muted-foreground/30 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-emerald-400" />
+        </motion.div>
+      )}
+
       {/* Card list */}
       <motion.div
         initial="hidden"
@@ -274,7 +356,7 @@ export default function AdvisorPage() {
         className="space-y-2"
       >
         <AnimatePresence mode="popLayout">
-          {filteredItems.length === 0 ? (
+          {filteredItems.length === 0 && !activeJob ? (
             <motion.div
               key="no-results"
               initial={{ opacity: 0, y: 10 }}
@@ -299,6 +381,8 @@ export default function AdvisorPage() {
               return (
                 <motion.div
                   key={item.id}
+                  initial="hidden"
+                  animate="visible"
                   variants={itemVariants}
                   exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}

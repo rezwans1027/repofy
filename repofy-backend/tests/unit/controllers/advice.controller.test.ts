@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createControllerMocks } from "../../helpers/controller-mocks";
-import { sharedControllerBehaviorTests } from "../../helpers/shared-controller-tests";
 
 vi.mock("../../../src/services/github.service", async (importOriginal) => {
   const original = await importOriginal<typeof import("../../../src/services/github.service")>();
@@ -18,6 +17,13 @@ vi.mock("../../../src/services/advice-builder.service", () => ({
 vi.mock("../../../src/services/credit.service", () => ({
   getCreditBalance: vi.fn(),
   deductGrowthCredit: vi.fn(),
+  refundGrowthCredit: vi.fn().mockResolvedValue(true),
+}));
+vi.mock("../../../src/services/advice-job.service", () => ({
+  createJob: vi.fn(),
+  getActiveJob: vi.fn(),
+  completeJob: vi.fn().mockResolvedValue(undefined),
+  failJob: vi.fn().mockResolvedValue(undefined),
 }));
 const mockSupabaseInsert = vi.fn();
 vi.mock("../../../src/config/supabase", () => ({
@@ -50,16 +56,33 @@ vi.mock("../../../src/config/env", () => ({
 }));
 
 import { adviseUser } from "../../../src/controllers/advice.controller";
-import { fetchGitHubUserData, GitHubError } from "../../../src/services/github.service";
-import { callEngine } from "../../../src/services/engine.service";
+import { getCreditBalance, deductGrowthCredit, refundGrowthCredit } from "../../../src/services/credit.service";
+import { createJob, getActiveJob, completeJob, failJob } from "../../../src/services/advice-job.service";
 import { buildAdviceData } from "../../../src/services/advice-builder.service";
-import { getCreditBalance, deductGrowthCredit } from "../../../src/services/credit.service";
+import { fetchGitHubUserData } from "../../../src/services/github.service";
+import { callEngine } from "../../../src/services/engine.service";
 
-const mockFetchGitHubUserData = fetchGitHubUserData as ReturnType<typeof vi.fn>;
-const mockCallEngine = callEngine as ReturnType<typeof vi.fn>;
-const mockBuildAdviceData = buildAdviceData as ReturnType<typeof vi.fn>;
 const mockGetCreditBalance = getCreditBalance as ReturnType<typeof vi.fn>;
 const mockDeductGrowthCredit = deductGrowthCredit as ReturnType<typeof vi.fn>;
+const mockRefundGrowthCredit = refundGrowthCredit as ReturnType<typeof vi.fn>;
+const mockCreateJob = createJob as ReturnType<typeof vi.fn>;
+const mockGetActiveJob = getActiveJob as ReturnType<typeof vi.fn>;
+const mockCompleteJob = completeJob as ReturnType<typeof vi.fn>;
+const mockFailJob = failJob as ReturnType<typeof vi.fn>;
+const mockBuildAdviceData = buildAdviceData as ReturnType<typeof vi.fn>;
+const mockFetchGitHubUserData = fetchGitHubUserData as ReturnType<typeof vi.fn>;
+const mockCallEngine = callEngine as ReturnType<typeof vi.fn>;
+
+const MOCK_JOB = {
+  id: "job-1",
+  user_id: "user-123",
+  analyzed_username: "octocat",
+  status: "processing",
+  advice_id: null,
+  error: null,
+  created_at: "2026-03-21T10:00:00Z",
+  updated_at: "2026-03-21T10:00:00Z",
+};
 
 describe("adviseUser controller", () => {
   beforeEach(() => {
@@ -67,24 +90,40 @@ describe("adviseUser controller", () => {
     mockEnv.mockAi = false;
     mockGetCreditBalance.mockResolvedValue({ growth_balance: 5, eval_balance: 0 });
     mockDeductGrowthCredit.mockResolvedValue(true);
+    mockRefundGrowthCredit.mockResolvedValue(true);
+    mockGetActiveJob.mockResolvedValue(null);
+    mockCreateJob.mockResolvedValue(MOCK_JOB);
+    mockCompleteJob.mockResolvedValue(undefined);
+    mockFailJob.mockResolvedValue(undefined);
     mockSupabaseInsert.mockReturnValue({ data: { id: "advice-row-1" }, error: null });
+    // Background processing mocks — prevent unhandled rejections
+    mockFetchGitHubUserData.mockResolvedValue({ profile: { name: "Octocat" } });
+    mockCallEngine.mockResolvedValue({ advice: { schemaVersion: "v2", summary: "Good" }, tokenUsage: [] });
+    mockBuildAdviceData.mockReturnValue({ schemaVersion: "v2", summary: "Good" });
   });
 
-  sharedControllerBehaviorTests({
-    handler: adviseUser,
-    mockFetchGitHubUserData,
-    mockEnv,
-    GitHubError,
+  it("returns 400 for invalid username", async () => {
+    const { req, res, next } = createControllerMocks({ username: "-invalid" });
+
+    await adviseUser(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      error: "Invalid GitHub username format",
+    });
   });
 
-  it("returns adviceId on happy path (engine succeeds, then deduct + persist)", async () => {
-    const githubData = { profile: { name: "Octocat" } };
-    const engineResponse = { advice: { schemaVersion: "v2", summary: "Good profile" }, tokenUsage: [] };
-    const advice = { schemaVersion: "v2", summary: "Good profile" };
-    mockFetchGitHubUserData.mockResolvedValue(githubData);
-    mockCallEngine.mockResolvedValue(engineResponse);
-    mockBuildAdviceData.mockReturnValue(advice);
+  it("returns 403 when githubToken is missing", async () => {
+    const { req, res, next } = createControllerMocks();
+    (req as any).userId = "user-123";
 
+    await adviseUser(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+  });
+
+  it("returns 202 with jobId on happy path", async () => {
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
     (req as any).githubToken = "fake-token";
@@ -96,31 +135,28 @@ describe("adviseUser controller", () => {
       expect.any(String),
       { username: "octocat", endpoint: "/advice" },
     );
+    expect(mockCreateJob).toHaveBeenCalledWith("user-123", "octocat");
+    expect(res.status).toHaveBeenCalledWith(202);
     expect(res.json).toHaveBeenCalledWith({
       success: true,
-      data: { adviceId: "advice-row-1" },
+      data: { jobId: "job-1", createdAt: "2026-03-21T10:00:00Z" },
     });
     expect(next).not.toHaveBeenCalled();
   });
 
-  it("pre-checks balance, then GitHub, then engine, then deducts (verifies order)", async () => {
+  it("deducts credit upfront before creating job (verifies order)", async () => {
     const callOrder: string[] = [];
     mockGetCreditBalance.mockImplementation(async () => {
       callOrder.push("precheck");
       return { growth_balance: 1, eval_balance: 0 };
     });
-    mockFetchGitHubUserData.mockImplementation(async () => {
-      callOrder.push("github");
-      return { profile: { name: "Octocat" } };
-    });
-    mockCallEngine.mockImplementation(async () => {
-      callOrder.push("engine");
-      return { advice: { summary: "result" }, tokenUsage: [] };
-    });
-    mockBuildAdviceData.mockReturnValue({ summary: "result" });
     mockDeductGrowthCredit.mockImplementation(async () => {
       callOrder.push("deduct");
       return true;
+    });
+    mockCreateJob.mockImplementation(async () => {
+      callOrder.push("createJob");
+      return MOCK_JOB;
     });
 
     const { req, res, next } = createControllerMocks();
@@ -129,7 +165,7 @@ describe("adviseUser controller", () => {
 
     await adviseUser(req, res, next);
 
-    expect(callOrder).toEqual(["precheck", "github", "engine", "deduct"]);
+    expect(callOrder).toEqual(["precheck", "deduct", "createJob"]);
   });
 
   it("returns 402 early when pre-check shows zero balance (no GitHub call)", async () => {
@@ -142,15 +178,11 @@ describe("adviseUser controller", () => {
     await adviseUser(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(402);
-    expect(mockFetchGitHubUserData).not.toHaveBeenCalled();
     expect(mockDeductGrowthCredit).not.toHaveBeenCalled();
-    expect(mockCallEngine).not.toHaveBeenCalled();
+    expect(mockCreateJob).not.toHaveBeenCalled();
   });
 
   it("returns 402 when atomic deduct returns false (race condition)", async () => {
-    mockFetchGitHubUserData.mockResolvedValue({ profile: { name: "Octocat" } });
-    mockCallEngine.mockResolvedValue({ advice: { summary: "Good" }, tokenUsage: [] });
-    mockBuildAdviceData.mockReturnValue({ summary: "Good" });
     mockDeductGrowthCredit.mockResolvedValue(false);
 
     const { req, res, next } = createControllerMocks();
@@ -164,11 +196,11 @@ describe("adviseUser controller", () => {
       success: false,
       error: "Insufficient growth credits",
     });
+    expect(mockCreateJob).not.toHaveBeenCalled();
   });
 
-  it("does NOT deduct credit when engine fails", async () => {
-    mockFetchGitHubUserData.mockResolvedValue({ profile: { name: "Octocat" } });
-    mockCallEngine.mockRejectedValue(new Error("Engine service down"));
+  it("returns existing active job idempotently", async () => {
+    mockGetActiveJob.mockResolvedValue(MOCK_JOB);
 
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
@@ -176,62 +208,37 @@ describe("adviseUser controller", () => {
 
     await adviseUser(req, res, next);
 
-    expect(mockDeductGrowthCredit).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(500);
-  });
-
-  it("does NOT deduct credit when buildAdviceData throws", async () => {
-    mockFetchGitHubUserData.mockResolvedValue({ profile: { name: "Octocat" } });
-    mockCallEngine.mockResolvedValue({ advice: { summary: "Good" }, tokenUsage: [] });
-    mockBuildAdviceData.mockImplementation(() => {
-      throw new Error("Build failed");
+    expect(res.status).toHaveBeenCalledWith(202);
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      data: { jobId: "job-1", createdAt: "2026-03-21T10:00:00Z" },
     });
-
-    const { req, res, next } = createControllerMocks();
-    (req as any).userId = "user-123";
-    (req as any).githubToken = "fake-token";
-
-    await adviseUser(req, res, next);
-
     expect(mockDeductGrowthCredit).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(500);
+    expect(mockCreateJob).not.toHaveBeenCalled();
   });
 
-  it("does NOT deduct credit on timeout/abort", async () => {
-    const ac = new AbortController();
-    mockFetchGitHubUserData.mockImplementation(async () => {
-      ac.abort();
-      throw new DOMException("Aborted", "AbortError");
-    });
-
-    const { req, res, next } = createControllerMocks();
-    (req as any).userId = "user-123";
-    (req as any).githubToken = "fake-token";
-    (req as any).signal = ac.signal;
-
-    await adviseUser(req, res, next);
-
-    expect(mockDeductGrowthCredit).not.toHaveBeenCalled();
-  });
-
-  it("skips credit deduction in mockAi mode but still persists and returns adviceId", async () => {
+  it("returns 202 in mockAi mode with credit deduction", async () => {
     mockEnv.mockAi = true;
     mockBuildAdviceData.mockReturnValue({ mock: true });
 
     const { req, res, next } = createControllerMocks();
+    (req as any).userId = "user-123";
 
     await adviseUser(req, res, next);
 
     expect(mockDeductGrowthCredit).toHaveBeenCalled();
+    expect(mockCreateJob).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(202);
     expect(res.json).toHaveBeenCalledWith({
       success: true,
-      data: { adviceId: "advice-row-1" },
+      data: { jobId: "job-1", createdAt: "2026-03-21T10:00:00Z" },
     });
   });
 
   it("handles generic error with 500", async () => {
-    mockFetchGitHubUserData.mockRejectedValue(new Error("boom"));
+    mockGetCreditBalance.mockRejectedValue(new Error("boom"));
     const { req, res, next } = createControllerMocks();
+    (req as any).userId = "user-123";
     (req as any).githubToken = "fake-token";
 
     await adviseUser(req, res, next);

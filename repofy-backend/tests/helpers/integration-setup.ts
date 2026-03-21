@@ -42,7 +42,7 @@ export function setupGitHubMocks(fetchMock: ReturnType<typeof vi.fn>, username =
 function createSupabaseChainMock() {
   const creditData = { data: { id: "mock-id", growth_balance: 5, eval_balance: 0 }, error: null };
   const githubTokenData = { data: { github_token: "fake-github-token" }, error: null };
-  const upsertData = { data: { id: "advice-row-1" }, error: null };
+  const upsertData = { data: { id: "advice-row-1", created_at: "2026-03-21T10:00:00Z", updated_at: "2026-03-21T10:00:00Z" }, error: null };
   const empty = { data: null, error: null };
 
   // Create table-aware mock chains
@@ -52,19 +52,31 @@ function createSupabaseChainMock() {
     // maybeSingle returns different data depending on the table
     if (tableName === "github_tokens") {
       chain.maybeSingle = vi.fn().mockResolvedValue(githubTokenData);
+    } else if (tableName === "advice_jobs") {
+      chain.maybeSingle = vi.fn().mockResolvedValue(empty); // no active job by default
     } else {
       chain.maybeSingle = vi.fn().mockResolvedValue(creditData);
     }
-    chain.eq = vi.fn().mockReturnValue({ single: chain.single, maybeSingle: chain.maybeSingle });
+    // Make eq/order/limit/in chainable — each returns the full query chain
+    // Use mockImplementation with lazy access so circular refs work
+    const queryResult = () => ({
+      eq: chain.eq, single: chain.single, maybeSingle: chain.maybeSingle,
+      order: chain.order, limit: chain.limit, in: chain.in,
+    });
+    chain.eq = vi.fn().mockImplementation(() => queryResult());
+    chain.order = vi.fn().mockImplementation(() => queryResult());
+    chain.limit = vi.fn().mockImplementation(() => queryResult());
+    chain.in = vi.fn().mockImplementation(() => queryResult());
     chain.lt = vi.fn().mockResolvedValue(empty);
-    chain.select = vi.fn().mockReturnValue({ eq: chain.eq, single: chain.single });
+    chain.select = vi.fn().mockImplementation(() => ({ eq: chain.eq, single: chain.single, order: chain.order }));
     const insertSingle = vi.fn().mockResolvedValue(upsertData);
     const insertSelect = vi.fn().mockReturnValue({ single: insertSingle });
     chain.insert = vi.fn().mockReturnValue({ select: insertSelect });
     const upsertSingle = vi.fn().mockResolvedValue(upsertData);
     const upsertSelect = vi.fn().mockReturnValue({ single: upsertSingle });
     chain.upsert = vi.fn().mockReturnValue({ select: upsertSelect });
-    chain.delete = vi.fn().mockReturnValue({ lt: chain.lt });
+    chain.update = vi.fn().mockImplementation(() => ({ eq: vi.fn().mockResolvedValue(empty) }));
+    chain.delete = vi.fn().mockImplementation(() => ({ lt: chain.lt, in: chain.in, eq: chain.eq }));
     return chain;
   }
 

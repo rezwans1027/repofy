@@ -51,6 +51,10 @@ interface AnalysisLoadingProps {
   phases?: string[];
   accentColor?: string;
   title?: string;
+  /** Seconds to fast-forward elapsed timer (for resume mode). */
+  initialElapsed?: number;
+  /** Externally signal job completion (triggers phase completion + fade). */
+  completed?: boolean;
 }
 
 interface LogEntry {
@@ -78,15 +82,21 @@ export function AnalysisLoading({
   phases: phasesProp,
   accentColor,
   title,
+  initialElapsed = 0,
+  completed: completedProp,
 }: AnalysisLoadingProps) {
   const phases = phasesProp ?? DEFAULT_PHASES;
-  const [phase, setPhase] = useState(0);
+  const initPhase = initialElapsed > 0
+    ? Math.min(Math.floor(initialElapsed / (90 / phases.length)), phases.length - 1)
+    : 0;
+  const [phase, setPhase] = useState(initPhase);
   const [fading, setFading] = useState(false);
-  const [elapsed, setElapsed] = useState(0);
+  const [elapsed, setElapsed] = useState(initialElapsed);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const fetchStarted = useRef(false);
   const mountedRef = useRef(true);
   const logId = useRef(0);
+  const completionHandled = useRef(false);
   const fetchCurrentReport = useEffectEvent(fetchReport);
   const handleComplete = useEffectEvent(onComplete);
   const handleError = useEffectEvent(onError);
@@ -102,25 +112,31 @@ export function AnalysisLoading({
       ? (elapsed / 90) * 94
       : 94 + Math.min(((elapsed - 90) / 30) * 4, 4);
 
-  /* Elapsed timer — ticks every 100 ms */
+  /* Elapsed timer — ticks every 100 ms, offset by initialElapsed */
   useEffect(() => {
-    const t0 = Date.now();
+    const t0 = Date.now() - initialElapsed * 1000;
     const id = setInterval(() => setElapsed((Date.now() - t0) / 1000), 100);
     return () => clearInterval(id);
-  }, []);
+  }, [initialElapsed]);
 
-  /* Phase progression — spread evenly across 45 s */
+  /* Phase progression — spread evenly across 90 s, fast-forward if resuming */
   useEffect(() => {
-    const resetId = requestAnimationFrame(() => setPhase(0));
     const interval = 90000 / phases.length; // ~11.25 s per phase
-    const t = phases.map((_, i) =>
-      setTimeout(() => setPhase(i), i * interval + 800),
-    );
+    const offsetMs = initialElapsed * 1000;
+    const resetId = requestAnimationFrame(() => setPhase(initPhase));
+    const t = phases
+      .map((_, i) => {
+        const targetMs = i * interval + 800;
+        const delay = targetMs - offsetMs;
+        if (delay <= 0) return null; // already past this phase
+        return setTimeout(() => setPhase(i), delay);
+      })
+      .filter(Boolean) as ReturnType<typeof setTimeout>[];
     return () => {
       cancelAnimationFrame(resetId);
       t.forEach(clearTimeout);
     };
-  }, [phases]);
+  }, [phases, initialElapsed, initPhase]);
 
   /* Activity log — 3 messages per phase, spread within each phase window */
   useEffect(() => {
@@ -202,6 +218,17 @@ export function AnalysisLoading({
       mountedRef.current = false;
     };
   }, [phases.length]);
+
+  /* External completion signal — triggered when completedProp flips to true */
+  useEffect(() => {
+    if (!completedProp || completionHandled.current) return;
+    completionHandled.current = true;
+    setPhase(phases.length);
+    setTimeout(() => setFading(true), 400);
+    setTimeout(() => {
+      if (mountedRef.current) handleComplete(null);
+    }, 800);
+  }, [completedProp, phases.length, handleComplete]);
 
   /* Only show the last 4 log entries */
   const visibleLogs = logs.slice(-4);

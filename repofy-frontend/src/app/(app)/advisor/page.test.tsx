@@ -2,6 +2,7 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { authMockFactory } from "@/__tests__/helpers/mock-auth";
+import { TestProviders } from "@/__tests__/helpers/test-providers";
 import { createAdviceListItemSet } from "@/__tests__/fixtures";
 import type { AdviceListItem } from "@/hooks/use-advice";
 
@@ -20,6 +21,9 @@ vi.mock("@/hooks/use-advice", () => ({
     isPending: false,
   }),
 }));
+vi.mock("@/hooks/use-advice-job", () => ({
+  useActiveAdviceJob: () => ({ data: null }),
+}));
 
 import AdvisorPage from "./page";
 
@@ -33,7 +37,7 @@ describe("AdvisorPage", () => {
   it("shows loading state when isLoading is true", () => {
     mockAdviceLoading = true;
 
-    const { container } = render(<AdvisorPage />);
+    const { container } = render(<TestProviders><AdvisorPage /></TestProviders>);
 
     // Skeleton components render with data-slot="skeleton"
     const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
@@ -43,7 +47,7 @@ describe("AdvisorPage", () => {
   it("shows empty state when items is empty array", () => {
     mockAdviceItems = [];
 
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorPage /></TestProviders>);
 
     expect(screen.getByText("No advice generated yet")).toBeInTheDocument();
   });
@@ -64,7 +68,7 @@ describe("AdvisorPage", () => {
       },
     ];
 
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorPage /></TestProviders>);
 
     expect(screen.getByText("@alice")).toBeInTheDocument();
     expect(screen.getByText("@bob")).toBeInTheDocument();
@@ -87,7 +91,7 @@ describe("AdvisorPage", () => {
     ];
 
     const user = userEvent.setup();
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorPage /></TestProviders>);
 
     await user.type(screen.getByPlaceholderText("Search by username or name…"), "alice");
 
@@ -105,7 +109,7 @@ describe("AdvisorPage", () => {
       },
     ];
 
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorPage /></TestProviders>);
 
     expect(screen.getByText("Newest first")).toBeInTheDocument();
   });
@@ -121,7 +125,7 @@ describe("AdvisorPage", () => {
     ];
 
     const user = userEvent.setup();
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorPage /></TestProviders>);
 
     expect(screen.getByText("Select")).toBeInTheDocument();
 
@@ -139,7 +143,7 @@ describe("AdvisorPage", () => {
       },
     ];
 
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorPage /></TestProviders>);
 
     expect(screen.getByText("Advisor")).toBeInTheDocument();
   });
@@ -148,7 +152,7 @@ describe("AdvisorPage", () => {
     mockAdviceItems = createAdviceListItemSet();
     const user = userEvent.setup();
 
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorPage /></TestProviders>);
 
     // Open the sort dropdown
     await user.click(screen.getByText("Newest first"));
@@ -165,7 +169,7 @@ describe("AdvisorPage", () => {
     mockAdviceItems = createAdviceListItemSet();
     const user = userEvent.setup();
 
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorPage /></TestProviders>);
 
     await user.type(screen.getByPlaceholderText("Search by username or name…"), "Bob Coder");
 
@@ -178,7 +182,7 @@ describe("AdvisorPage", () => {
     mockAdviceItems = createAdviceListItemSet();
     const user = userEvent.setup();
 
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorPage /></TestProviders>);
 
     await user.type(screen.getByPlaceholderText("Search by username or name…"), "zzz");
 
@@ -189,7 +193,7 @@ describe("AdvisorPage", () => {
     mockAdviceItems = createAdviceListItemSet();
     const user = userEvent.setup();
 
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorPage /></TestProviders>);
 
     await user.type(screen.getByPlaceholderText("Search by username or name…"), "zzz");
 
@@ -205,7 +209,7 @@ describe("AdvisorPage", () => {
   it("delete flow calls mutateAsync with selected IDs", async () => {
     mockAdviceItems = createAdviceListItemSet();
     const user = userEvent.setup();
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorPage /></TestProviders>);
 
     // Enter select mode
     await user.click(screen.getByText("Select"));

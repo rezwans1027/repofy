@@ -15,12 +15,14 @@ import { CreditConfirmDialog } from "@/components/ui/credit-confirm-dialog";
 import { NoCreditsDialog } from "@/components/ui/no-credits-dialog";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useCreditBalance } from "@/hooks/use-credits";
+import { useActiveAdviceJob } from "@/hooks/use-advice-job";
+import { ActiveJobDialog } from "@/components/ui/active-job-dialog";
 
 interface StickyCTABarProps {
   username: string;
 }
 
-type DialogType = "no_credits" | "confirm_credit" | null;
+type DialogType = "no_credits" | "confirm_credit" | "active_job" | null;
 
 export function StickyCTABar({ username }: StickyCTABarProps) {
   const router = useRouter();
@@ -28,14 +30,19 @@ export function StickyCTABar({ username }: StickyCTABarProps) {
   const [dialogOpen, setDialogOpen] = useState<DialogType>(null);
 
   const { data: balance, isLoading: balanceLoading } = useCreditBalance();
+  const { data: activeJob } = useActiveAdviceJob();
 
   const handleAdviceClick = useCallback(() => {
+    if (activeJob) {
+      setDialogOpen("active_job");
+      return;
+    }
     if (balance && balance.growth_balance === 0) {
       setDialogOpen("no_credits");
       return;
     }
     setDialogOpen("confirm_credit");
-  }, [balance]);
+  }, [balance, activeJob]);
 
   const closeDialog = useCallback((open: boolean) => {
     if (!open) setDialogOpen(null);
@@ -101,6 +108,12 @@ export function StickyCTABar({ username }: StickyCTABarProps) {
       <NoCreditsDialog
         open={dialogOpen === "no_credits"}
         onOpenChange={closeDialog}
+      />
+
+      <ActiveJobDialog
+        open={dialogOpen === "active_job"}
+        onOpenChange={closeDialog}
+        activeJob={activeJob ?? null}
       />
     </>
   );

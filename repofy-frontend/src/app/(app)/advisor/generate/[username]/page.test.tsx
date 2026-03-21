@@ -33,15 +33,22 @@ vi.mock("@/lib/api-client", () => {
   };
 });
 
+let mockJobData: { status: string; advice_id: string | null } | undefined = undefined;
+vi.mock("@/hooks/use-advice-job", () => ({
+  useAdviceJob: () => ({ data: mockJobData }),
+}));
+
 // Mock AnalysisLoading to expose fetchReport for direct invocation
+// and respond to the `completed` prop
 interface AnalysisLoadingMockProps {
   onComplete: (data: unknown) => void;
   onError: (message: string) => void;
   fetchReport: () => Promise<unknown>;
+  completed?: boolean;
 }
 
 vi.mock("@/components/report/analysis-loading", () => ({
-  AnalysisLoading: ({ onComplete, onError, fetchReport }: AnalysisLoadingMockProps) => (
+  AnalysisLoading: ({ onComplete, onError, fetchReport, completed }: AnalysisLoadingMockProps) => (
     <div data-testid="analysis-loading">
       <button
         data-testid="fetch-btn"
@@ -53,6 +60,14 @@ vi.mock("@/components/report/analysis-loading", () => ({
       >
         fetch
       </button>
+      {completed && (
+        <button
+          data-testid="completed-btn"
+          onClick={() => onComplete(null)}
+        >
+          completed
+        </button>
+      )}
     </div>
   ),
 }));
@@ -80,6 +95,7 @@ describe("GenerateAdvicePage", () => {
     resetNavState();
     authState.user = { id: "user-123" };
     authState.isLoading = false;
+    mockJobData = undefined;
   });
 
   it("renders back link to /profile/{username}", async () => {
@@ -95,13 +111,24 @@ describe("GenerateAdvicePage", () => {
     expect(screen.getByTestId("analysis-loading")).toBeInTheDocument();
   });
 
-  it("navigates to advisor page using adviceId from backend", async () => {
-    vi.mocked(api.post).mockResolvedValue({ adviceId: "adv-42" });
+  it("navigates to advisor page when job completes with advice_id", async () => {
+    // Mock POST returning job info
+    vi.mocked(api.post).mockResolvedValue({ jobId: "job-42", createdAt: "2026-03-21T10:00:00Z" });
+
+    // Set up job data to be "completed" with advice_id
+    mockJobData = { status: "completed", advice_id: "adv-42" };
 
     const user = userEvent.setup();
     await renderPage();
 
+    // Click fetch to trigger the POST (returns a never-resolving promise)
     await user.click(screen.getByTestId("fetch-btn"));
+
+    // The completed prop should render a completed button
+    // Simulate the completion callback
+    if (screen.queryByTestId("completed-btn")) {
+      await user.click(screen.getByTestId("completed-btn"));
+    }
 
     await vi.waitFor(() => {
       expect(navState.replace).toHaveBeenCalledWith("/advisor/adv-42?from=profile");
@@ -148,12 +175,17 @@ describe("GenerateAdvicePage", () => {
   });
 
   it("invalidates credit balance on successful advice generation", async () => {
-    vi.mocked(api.post).mockResolvedValue({ adviceId: "adv-99" });
+    vi.mocked(api.post).mockResolvedValue({ jobId: "job-99", createdAt: "2026-03-21T10:00:00Z" });
+    mockJobData = { status: "completed", advice_id: "adv-99" };
 
     const user = userEvent.setup();
     await renderPage();
 
     await user.click(screen.getByTestId("fetch-btn"));
+
+    if (screen.queryByTestId("completed-btn")) {
+      await user.click(screen.getByTestId("completed-btn"));
+    }
 
     await vi.waitFor(() => {
       expect(navState.replace).toHaveBeenCalled();

@@ -12,6 +12,9 @@ vi.mock("@/components/providers/auth-provider", () => ({
 vi.mock("@/hooks/use-credits", () => ({
   useCreditBalance: () => ({ data: { growth_balance: 2, eval_balance: 0 }, isLoading: false }),
 }));
+vi.mock("@/hooks/use-advice-job", () => ({
+  useActiveAdviceJob: () => ({ data: null }),
+}));
 
 describe("AdviceExportBar", () => {
   const ref = createRef<HTMLDivElement>();

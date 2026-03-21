@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { TestProviders } from "@/__tests__/helpers/test-providers";
 import { AdviceReport } from "./advice-report";
 import { createAdviceFixture } from "@/__tests__/fixtures";
 
@@ -11,6 +12,9 @@ vi.mock("@/components/providers/auth-provider", () => ({
 }));
 vi.mock("@/hooks/use-credits", () => ({
   useCreditBalance: () => ({ data: { growth_balance: 2, eval_balance: 0 }, isLoading: false }),
+}));
+vi.mock("@/hooks/use-advice-job", () => ({
+  useActiveAdviceJob: () => ({ data: null }),
 }));
 
 describe("AdviceReport", () => {

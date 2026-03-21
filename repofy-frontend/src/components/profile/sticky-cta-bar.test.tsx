@@ -33,6 +33,10 @@ vi.mock("@/hooks/use-credits", () => ({
   }),
 }));
 
+vi.mock("@/hooks/use-advice-job", () => ({
+  useActiveAdviceJob: () => ({ data: null }),
+}));
+
 // --- Import component after mocks -----------------------------------------
 
 import { StickyCTABar } from "./sticky-cta-bar";

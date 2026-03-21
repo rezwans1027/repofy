@@ -25,7 +25,7 @@ describe("MOCK_AI mode", () => {
     fetchMock.mockReset();
   });
 
-  it("POST /api/advice/:username returns mock v2 advice without calling engine", async () => {
+  it("POST /api/advice/:username returns 202 with job in mock mode without calling engine", async () => {
     await setupAuthMock(true);
 
     const app = getApp();
@@ -33,9 +33,10 @@ describe("MOCK_AI mode", () => {
       .post("/api/advice/octocat")
       .set("Authorization", "Bearer valid-token");
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(202);
     expect(res.body.success).toBe(true);
-    expect(res.body.data.adviceId).toBeDefined();
+    expect(res.body.data.jobId).toBeDefined();
+    expect(res.body.data.createdAt).toBeDefined();
 
     // Mock AI path uses buildMockGitHubData — no real GitHub or engine fetch calls
     expect(fetchMock).not.toHaveBeenCalled();

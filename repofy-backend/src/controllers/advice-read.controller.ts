@@ -1,5 +1,9 @@
+import { RequestHandler } from "express";
 import { createCrudController } from "./crud.controller";
 import { listAdvice, getAdviceById, adviceCount, deleteAdvice } from "../services/advice-persistence.service";
+import { getActiveJob, getJobById } from "../services/advice-job.service";
+import { sendSuccess, sendError } from "../lib/response";
+import type { AuthenticatedRequest } from "../types";
 
 const crud = createCrudController({
   service: { list: listAdvice, getById: getAdviceById, count: adviceCount, deleteBatch: deleteAdvice },
@@ -10,3 +14,20 @@ export const getAdviceList = crud.list;
 export const getAdviceDetail = crud.getById;
 export const checkAdviceCount = crud.count;
 export const removeAdvice = crud.deleteBatch;
+
+export const getActiveAdviceJob: RequestHandler = async (req, res) => {
+  const { userId } = req as AuthenticatedRequest;
+  const job = await getActiveJob(userId);
+  sendSuccess(res, job);
+};
+
+export const getAdviceJobStatus: RequestHandler = async (req, res) => {
+  const { userId } = req as AuthenticatedRequest;
+  const jobId = req.params.jobId as string;
+  const job = await getJobById(jobId, userId);
+  if (!job) {
+    sendError(res, 404, "Job not found");
+    return;
+  }
+  sendSuccess(res, job);
+};

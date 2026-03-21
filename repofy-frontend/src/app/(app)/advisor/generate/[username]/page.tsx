@@ -1,11 +1,12 @@
 "use client";
 
-import { use, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { use, useState, useCallback, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AnalysisLoading } from "@/components/report/analysis-loading";
 import { api, ApiError } from "@/lib/api-client";
 import { useCreditBalance } from "@/hooks/use-credits";
+import { useAdviceJob } from "@/hooks/use-advice-job";
 import { useQueryClient } from "@tanstack/react-query";
 import { BackLink } from "@/components/ui/back-link";
 import { ErrorCard } from "@/components/ui/error-card";
@@ -24,6 +25,9 @@ const ADVICE_PHASES = [
   "Generating growth plan...",
 ];
 
+/** Never-resolving promise — used in resume mode where fetchReport is a no-op. */
+const neverResolves = () => new Promise<unknown>(() => {});
+
 export default function GenerateAdvicePage({
   params,
 }: {
@@ -31,19 +35,48 @@ export default function GenerateAdvicePage({
 }) {
   const { username } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const { data: balance, isLoading: balanceLoading } = useCreditBalance();
   const [error, setError] = useState<string | null>(null);
+  const [jobId, setJobId] = useState<string | null>(searchParams.get("jobId"));
+  const [jobCreatedAt, setJobCreatedAt] = useState<string | null>(null);
+  const redirectedRef = useRef(false);
 
+  const isResumeMode = !!searchParams.get("jobId");
   const hasNoCredits = !balanceLoading && balance && balance.growth_balance <= 0;
 
+  const backHref = isResumeMode ? "/advisor" : `/profile/${username}`;
+  const backLabel = isResumeMode ? "back to advisor" : "back to profile";
+
+  // Poll the job status
+  const { data: jobData } = useAdviceJob(jobId);
+
+  // Handle job completion — redirect to the advice page
+  const jobCompleted = jobData?.status === "completed" && !!jobData.advice_id;
+  const jobFailed = jobData?.status === "failed";
+
+  // In resume mode, compute initialElapsed from job creation time
+  const initialElapsed = isResumeMode && jobData?.created_at
+    ? (Date.now() - new Date(jobData.created_at).getTime()) / 1000
+    : jobCreatedAt
+      ? (Date.now() - new Date(jobCreatedAt).getTime()) / 1000
+      : 0;
+
+  // Start mode: POST to create the job, then return a never-resolving promise
+  // (completion is signaled via the `completed` prop from polling)
   const fetchAdvice = useCallback(async () => {
     try {
-      const data = await api.post<{ adviceId: string }>(
+      const data = await api.post<{ jobId: string; createdAt: string }>(
         `/advice/${encodeURIComponent(username)}`,
         { signal: AbortSignal.timeout(300_000) },
       );
-      return data;
+      setJobId(data.jobId);
+      setJobCreatedAt(data.createdAt);
+      // Invalidate active job cache so /advisor page picks up the new job immediately
+      queryClient.invalidateQueries({ queryKey: ["advice", "jobs", "active"] });
+      // Return a never-resolving promise — completion is driven by polling
+      return new Promise<unknown>(() => {});
     } catch (err) {
       if (err instanceof ApiError && err.status === 402) {
         throw new Error(NO_CREDITS_SENTINEL);
@@ -54,29 +87,61 @@ export default function GenerateAdvicePage({
 
   const handleComplete = useCallback(
     (data: unknown) => {
-      const result =
-        typeof data === "object" && data !== null && "adviceId" in data
-          ? (data as { adviceId: string })
-          : null;
-      if (!result) {
+      if (redirectedRef.current) return;
+      // If called by external completion (data is null), use jobData for adviceId
+      const adviceId = jobData?.advice_id
+        ?? (typeof data === "object" && data !== null && "adviceId" in data
+          ? (data as { adviceId: string }).adviceId
+          : null);
+      if (!adviceId) {
         setError("Unexpected response from server.");
         return;
       }
+      redirectedRef.current = true;
       queryClient.invalidateQueries({ queryKey: ["advice"] });
       queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
-      router.replace(`/advisor/${result.adviceId}?from=profile`);
+      router.replace(`/advisor/${adviceId}?from=profile`);
     },
-    [router, queryClient],
+    [router, queryClient, jobData?.advice_id],
   );
 
   const handleError = useCallback((message: string) => {
     setError(message);
   }, []);
 
+  // Resume mode: if already completed, redirect immediately
+  if (isResumeMode && jobCompleted && !redirectedRef.current) {
+    redirectedRef.current = true;
+    queryClient.invalidateQueries({ queryKey: ["advice"] });
+    queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
+    router.replace(`/advisor/${jobData.advice_id}?from=profile`);
+    return null;
+  }
+
+  // Resume mode: if job failed, show error
+  if (isResumeMode && jobFailed) {
+    return (
+      <div>
+        <BackLink href={backHref} label={backLabel} hoverColor="hover:text-emerald-400" />
+        <ErrorCard message={jobData?.error ?? "Advice generation failed."}>
+          <button
+            onClick={() => {
+              setError(null);
+              router.push(`/advisor/generate/${username}`);
+            }}
+            className="mt-4 font-mono text-xs text-emerald-400 hover:underline"
+          >
+            Try again
+          </button>
+        </ErrorCard>
+      </div>
+    );
+  }
+
   if (hasNoCredits || (error && error === NO_CREDITS_SENTINEL)) {
     return (
       <div>
-        <BackLink href={`/profile/${username}`} label="back to profile" hoverColor="hover:text-emerald-400" />
+        <BackLink href={backHref} label={backLabel} hoverColor="hover:text-emerald-400" />
         <ErrorCard message="You don't have any growth credits. Purchase credits to get personalized advice.">
           <div className="mt-4 flex items-center gap-3">
             <Coins className="size-4 text-cyan" />
@@ -95,7 +160,7 @@ export default function GenerateAdvicePage({
   if (error) {
     return (
       <div>
-        <BackLink href={`/profile/${username}`} label="back to profile" hoverColor="hover:text-emerald-400" />
+        <BackLink href={backHref} label={backLabel} hoverColor="hover:text-emerald-400" />
         <ErrorCard message={error}>
           <button
             onClick={() => {
@@ -113,14 +178,16 @@ export default function GenerateAdvicePage({
 
   return (
     <div>
-      <BackLink href={`/profile/${username}`} label="back to profile" hoverColor="hover:text-emerald-400" />
+      <BackLink href={backHref} label={backLabel} hoverColor="hover:text-emerald-400" />
       <AnalysisLoading
-        fetchReport={fetchAdvice}
+        fetchReport={isResumeMode ? neverResolves : fetchAdvice}
         onComplete={handleComplete}
         onError={handleError}
         phases={ADVICE_PHASES}
         accentColor="text-emerald-400"
         title="repofy — advisor engine"
+        initialElapsed={isResumeMode ? initialElapsed : 0}
+        completed={jobCompleted}
       />
     </div>
   );
