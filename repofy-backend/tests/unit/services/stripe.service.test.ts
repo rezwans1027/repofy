@@ -56,8 +56,8 @@ describe("stripe.service", () => {
             quantity: 1,
           },
         ],
-        success_url: "http://localhost:3000/pricing?success=true",
-        cancel_url: "http://localhost:3000/pricing?canceled=true",
+        success_url: "http://localhost:3000/checkout-complete",
+        cancel_url: "http://localhost:3000/checkout-complete?canceled=true",
       });
     });
 
@@ -104,10 +104,10 @@ describe("stripe.service", () => {
 
       const args = createFn.mock.calls[0][0];
       expect(args.success_url).toBe(
-        "http://localhost:3000/pricing?success=true",
+        "http://localhost:3000/checkout-complete",
       );
       expect(args.cancel_url).toBe(
-        "http://localhost:3000/pricing?canceled=true",
+        "http://localhost:3000/checkout-complete?canceled=true",
       );
     });
   });

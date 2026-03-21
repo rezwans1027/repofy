@@ -44,8 +44,9 @@ describe("setAuthCookies", () => {
       "access-tok",
       expect.objectContaining({
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "strict",
         path: "/",
+        maxAge: 2 * 60 * 60 * 1000,
       }),
     );
     expect(res.cookie).toHaveBeenCalledWith(
@@ -53,8 +54,9 @@ describe("setAuthCookies", () => {
       "refresh-tok",
       expect.objectContaining({
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "strict",
         path: "/",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
       }),
     );
   });

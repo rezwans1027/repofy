@@ -90,6 +90,7 @@ describe("engine.service — callEngine", () => {
       expect(mockValidateSafeUrl).toHaveBeenCalledWith(
         "http://localhost:3002/analyze",
         "Engine /analyze",
+        { allowedSchemes: ["http", "https"] },
       );
 
       expect(mockFetchWithRetry).toHaveBeenCalledWith(
