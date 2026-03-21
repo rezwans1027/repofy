@@ -12,7 +12,7 @@ import { sendError, sendSuccess } from "../lib/response";
 import { handleControllerError } from "../lib/controller-utils";
 import { advisoryLock } from "../lib/distributed-lock";
 import { logger } from "../lib/logger";
-import { createJob, getActiveJob, completeJob, failJob } from "../services/advice-job.service";
+import { createJob, getActiveJob, completeJob, failJob, expireStaleJobs } from "../services/advice-job.service";
 import { getSupabaseAdmin } from "../config/supabase";
 import { throwIfDbError, DatabaseError } from "../lib/errors";
 import type { AuthenticatedRequest, AdviceV2 } from "../types";
@@ -120,6 +120,9 @@ export const adviseUser: RequestHandler = async (req, res) => {
   const requestId = crypto.randomUUID();
 
   try {
+    // Expire any stuck jobs before checking for active ones
+    await expireStaleJobs(userId);
+
     // Check for existing active job (idempotent)
     const existingJob = await getActiveJob(userId);
     if (existingJob) {
@@ -146,7 +149,16 @@ export const adviseUser: RequestHandler = async (req, res) => {
         throw new InsufficientCreditsError();
       }
 
-      const job = await createJob(userId, username);
+      let job;
+      try {
+        job = await createJob(userId, username);
+      } catch (err) {
+        await refundGrowthCredit(userId, requestId, {
+          reason: "job_creation_failed",
+          username: username.toLowerCase(),
+        }).catch((e) => logger.error("Failed to refund credit after job creation failure:", e));
+        throw err;
+      }
 
       // Return 202 immediately
       res.status(202).json({ success: true, data: { jobId: job.id, createdAt: job.created_at } });
@@ -196,8 +208,17 @@ export const adviseUser: RequestHandler = async (req, res) => {
       throw new InsufficientCreditsError();
     }
 
-    // Create job
-    const job = await createJob(userId, username);
+    // Create job — refund credit if this fails before background processing starts
+    let job;
+    try {
+      job = await createJob(userId, username);
+    } catch (err) {
+      await refundGrowthCredit(userId, requestId, {
+        reason: "job_creation_failed",
+        username: username.toLowerCase(),
+      }).catch((e) => logger.error("Failed to refund credit after job creation failure:", e));
+      throw err;
+    }
 
     // Return 202 immediately
     res.status(202).json({ success: true, data: { jobId: job.id, createdAt: job.created_at } });

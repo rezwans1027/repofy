@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import { createCrudController } from "./crud.controller";
 import { listAdvice, getAdviceById, adviceCount, deleteAdvice } from "../services/advice-persistence.service";
-import { getActiveJob, getJobById } from "../services/advice-job.service";
+import { getActiveJob, getJobById, expireStaleJobs } from "../services/advice-job.service";
 import { sendSuccess, sendError } from "../lib/response";
 import type { AuthenticatedRequest } from "../types";
 
@@ -17,6 +17,7 @@ export const removeAdvice = crud.deleteBatch;
 
 export const getActiveAdviceJob: RequestHandler = async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
+  await expireStaleJobs(userId);
   const job = await getActiveJob(userId);
   sendSuccess(res, job);
 };

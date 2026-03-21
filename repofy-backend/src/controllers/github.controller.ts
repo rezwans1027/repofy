@@ -118,14 +118,17 @@ export const getGitHubUser: RequestHandler = async (req, res) => {
       return;
     }
 
-    const cached = ghCacheGet(username.toLowerCase());
+    // Key includes a token suffix so different users' tokens produce separate
+    // cache entries — prevents leaking private GitHub data between users.
+    const cacheKey = `${username.toLowerCase()}:${req.githubToken.slice(-8)}`;
+    const cached = ghCacheGet(cacheKey);
     if (cached) {
       sendSuccess(res, cached);
       return;
     }
 
     const data = await fetchGitHubUserData(username, req.signal, req.githubToken);
-    ghCacheSet(username.toLowerCase(), data);
+    ghCacheSet(cacheKey, data);
     sendSuccess(res, data);
   } catch (err) {
     handleControllerError(err, req, res, "GitHub User", "Internal server error");

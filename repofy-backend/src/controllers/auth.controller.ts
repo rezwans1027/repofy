@@ -45,6 +45,16 @@ export const handleGitHubCallback: RequestHandler = async (req, res) => {
 
     const ghUser = await ghRes.json() as { login: string; avatar_url: string; name: string | null };
 
+    // 2b. Verify the provider_token belongs to the same GitHub account linked to this Supabase user
+    const githubIdentity = user.identities?.find((i: { provider: string }) => i.provider === "github");
+    if (
+      !githubIdentity ||
+      (githubIdentity.identity_data as Record<string, unknown>)?.user_name?.toString().toLowerCase() !== ghUser.login.toLowerCase()
+    ) {
+      sendError(res, 403, "GitHub token does not match your linked GitHub account.");
+      return;
+    }
+
     // 3. Upsert into github_tokens table
     const { error: upsertError } = await supabase.from("github_tokens").upsert({
       user_id: user.id,

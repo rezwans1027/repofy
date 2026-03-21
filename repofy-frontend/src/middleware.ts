@@ -83,8 +83,9 @@ export async function middleware(request: NextRequest) {
     // Risk mitigation:
     //  - script-src is nonce-locked (no 'unsafe-inline'), so style injection via
     //    XSS would require script execution first, which the nonce blocks.
-    //  - style-based attacks (CSS exfil) are low-severity and mitigated by the
-    //    restrictive connect-src limiting data exfiltration endpoints.
+    //  - style-based attacks (CSS exfil) are low-severity. connect-src allows
+    //    'self' plus the Supabase domain (for auth/DB), but no arbitrary
+    //    endpoints, so exfiltration surface remains limited.
     //  - All other directives are as restrictive as possible.
     "style-src 'self' 'unsafe-inline'",
 

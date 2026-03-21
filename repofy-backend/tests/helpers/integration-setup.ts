@@ -75,7 +75,15 @@ function createSupabaseChainMock() {
     const upsertSingle = vi.fn().mockResolvedValue(upsertData);
     const upsertSelect = vi.fn().mockReturnValue({ single: upsertSingle });
     chain.upsert = vi.fn().mockReturnValue({ select: upsertSelect });
-    chain.update = vi.fn().mockImplementation(() => ({ eq: vi.fn().mockResolvedValue(empty) }));
+    chain.update = vi.fn().mockImplementation(() => {
+      const updateChain: Record<string, ReturnType<typeof vi.fn>> = {};
+      const updateResult = (): Record<string, ReturnType<typeof vi.fn>> => ({
+        eq: updateChain.eq, lt: updateChain.lt,
+      });
+      updateChain.eq = vi.fn().mockImplementation(() => updateResult());
+      updateChain.lt = vi.fn().mockResolvedValue(empty);
+      return updateResult();
+    });
     chain.delete = vi.fn().mockImplementation(() => ({ lt: chain.lt, in: chain.in, eq: chain.eq }));
     return chain;
   }
@@ -86,6 +94,7 @@ function createSupabaseChainMock() {
       select: chain.select,
       insert: chain.insert,
       upsert: chain.upsert,
+      update: chain.update,
       delete: chain.delete,
     };
   });

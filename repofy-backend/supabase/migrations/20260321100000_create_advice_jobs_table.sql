@@ -1,6 +1,6 @@
 CREATE TABLE public.advice_jobs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   analyzed_username TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'processing',  -- processing | completed | failed
   advice_id UUID REFERENCES public.advice(id) ON DELETE SET NULL,

@@ -68,3 +68,27 @@ export async function failJob(jobId: string, errorMessage: string): Promise<void
     .eq("id", jobId);
   throwIfDbError(error, "fail advice job");
 }
+
+/** Max time a job can stay in "processing" before it's considered stuck. */
+const STALE_JOB_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+
+/**
+ * Mark any "processing" jobs older than the stale timeout as failed.
+ * Called before checking for active jobs so users aren't permanently blocked
+ * by jobs that died mid-flight (e.g. server crash or redeploy).
+ */
+export async function expireStaleJobs(userId: string): Promise<void> {
+  const cutoff = new Date(Date.now() - STALE_JOB_TIMEOUT_MS).toISOString();
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from("advice_jobs")
+    .update({
+      status: "failed",
+      error: "Job timed out (server may have restarted)",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", userId)
+    .eq("status", "processing")
+    .lt("created_at", cutoff);
+  throwIfDbError(error, "expire stale advice jobs");
+}

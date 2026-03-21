@@ -24,6 +24,7 @@ vi.mock("../../../src/services/advice-job.service", () => ({
   getActiveJob: vi.fn(),
   completeJob: vi.fn().mockResolvedValue(undefined),
   failJob: vi.fn().mockResolvedValue(undefined),
+  expireStaleJobs: vi.fn().mockResolvedValue(undefined),
 }));
 const mockSupabaseInsert = vi.fn();
 vi.mock("../../../src/config/supabase", () => ({

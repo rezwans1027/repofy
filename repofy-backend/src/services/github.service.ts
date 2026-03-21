@@ -1036,7 +1036,9 @@ export async function fetchGitHubUserData(
   signal: AbortSignal | undefined,
   token: string,
 ): Promise<GitHubUserData> {
-  const cacheKey = username.toLowerCase();
+  // Key includes a token suffix so different users' tokens produce separate
+  // cache entries — prevents leaking private GitHub data between users.
+  const cacheKey = `${username.toLowerCase()}:${token.slice(-8)}`;
 
   // Check cache
   const cached = userDataCache.get(cacheKey);
