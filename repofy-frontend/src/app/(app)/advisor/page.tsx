@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
+import { AnimateOnView } from "@/components/ui/animate-on-view";
 import {
   Lightbulb,
   ArrowRight,
@@ -48,11 +49,6 @@ import { useActiveAdviceJob } from "@/hooks/use-advice-job";
 import { useSelectableList } from "@/hooks/use-selectable-list";
 import { calculateAdviceProgress } from "@/lib/progress";
 import { relativeDate } from "@/lib/format";
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const } },
-};
 
 export default function AdvisorPage() {
   const router = useRouter();
@@ -166,24 +162,12 @@ export default function AdvisorPage() {
 
   if (items.length === 0 && !activeJob) {
     return (
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
-        className="space-y-4"
-      >
-        <motion.h1
-          variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="font-mono text-lg font-bold"
-        >
-          Advisor
-        </motion.h1>
-        <motion.div
-          variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="flex min-h-[50vh] items-center justify-center rounded-xl border border-border bg-card"
-        >
+      <div className="space-y-4">
+        <AnimateOnView>
+          <h1 className="font-mono text-lg font-bold">Advisor</h1>
+        </AnimateOnView>
+        <AnimateOnView delay={0.05}>
+          <div className="flex min-h-[50vh] items-center justify-center rounded-xl border border-border bg-card">
           <div className="flex max-w-xs flex-col items-center text-center px-6 py-12">
             <div className="relative">
               <div className="flex size-16 items-center justify-center rounded-2xl border border-cyan/20 bg-cyan/[0.06]">
@@ -211,35 +195,25 @@ export default function AdvisorPage() {
               1 credit per advisor session
             </p>
           </div>
-        </motion.div>
-      </motion.div>
+          </div>
+        </AnimateOnView>
+      </div>
     );
   }
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
-      className="space-y-5"
-    >
-      <motion.div
-        variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="flex items-baseline justify-between"
-      >
-        <h1 className="font-mono text-lg font-bold">Advisor</h1>
-        <span className="font-mono text-xs text-muted-foreground">
-          {items.length} {items.length === 1 ? "report" : "reports"}
-        </span>
-      </motion.div>
+    <div className="space-y-5">
+      <AnimateOnView>
+        <div className="flex items-baseline justify-between">
+          <h1 className="font-mono text-lg font-bold">Advisor</h1>
+          <span className="font-mono text-xs text-muted-foreground">
+            {items.length} {items.length === 1 ? "report" : "reports"}
+          </span>
+        </div>
+      </AnimateOnView>
 
       {/* Filter bar */}
-      <motion.div
-        variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="flex flex-wrap items-center gap-2"
-      >
+      <AnimateOnView delay={0.05} className="flex flex-wrap items-center gap-2">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -294,7 +268,7 @@ export default function AdvisorPage() {
             </motion.span>
           </AnimatePresence>
         </Button>
-      </motion.div>
+      </AnimateOnView>
 
       {/* Active job card */}
       {activeJob && (
@@ -349,12 +323,7 @@ export default function AdvisorPage() {
       )}
 
       {/* Card list */}
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.04, delayChildren: 0.1 } } }}
-        className="space-y-2"
-      >
+      <AnimateOnView delay={0.1} className="space-y-2">
         <AnimatePresence mode="popLayout">
           {filteredItems.length === 0 && !activeJob ? (
             <motion.div
@@ -381,11 +350,7 @@ export default function AdvisorPage() {
               return (
                 <motion.div
                   key={item.id}
-                  initial="hidden"
-                  animate="visible"
-                  variants={itemVariants}
                   exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
-                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   layout
                   role="button"
                   tabIndex={0}
@@ -457,7 +422,7 @@ export default function AdvisorPage() {
             })
           )}
         </AnimatePresence>
-      </motion.div>
+      </AnimateOnView>
 
       {/* Select-all row when in select mode */}
       <AnimatePresence>
@@ -530,6 +495,6 @@ export default function AdvisorPage() {
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }
