@@ -87,6 +87,7 @@ describe("adviseUser controller", () => {
 
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
+    (req as any).githubToken = "fake-token";
 
     await adviseUser(req, res, next);
 
@@ -124,6 +125,7 @@ describe("adviseUser controller", () => {
 
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
+    (req as any).githubToken = "fake-token";
 
     await adviseUser(req, res, next);
 
@@ -135,6 +137,7 @@ describe("adviseUser controller", () => {
 
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
+    (req as any).githubToken = "fake-token";
 
     await adviseUser(req, res, next);
 
@@ -152,6 +155,7 @@ describe("adviseUser controller", () => {
 
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
+    (req as any).githubToken = "fake-token";
 
     await adviseUser(req, res, next);
 
@@ -168,6 +172,7 @@ describe("adviseUser controller", () => {
 
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
+    (req as any).githubToken = "fake-token";
 
     await adviseUser(req, res, next);
 
@@ -184,6 +189,7 @@ describe("adviseUser controller", () => {
 
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
+    (req as any).githubToken = "fake-token";
 
     await adviseUser(req, res, next);
 
@@ -200,6 +206,7 @@ describe("adviseUser controller", () => {
 
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
+    (req as any).githubToken = "fake-token";
     (req as any).signal = ac.signal;
 
     await adviseUser(req, res, next);
@@ -225,6 +232,7 @@ describe("adviseUser controller", () => {
   it("handles generic error with 500", async () => {
     mockFetchGitHubUserData.mockRejectedValue(new Error("boom"));
     const { req, res, next } = createControllerMocks();
+    (req as any).githubToken = "fake-token";
 
     await adviseUser(req, res, next);
 

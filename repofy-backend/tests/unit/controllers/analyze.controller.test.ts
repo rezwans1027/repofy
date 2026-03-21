@@ -98,6 +98,7 @@ describe("analyzeUser controller", () => {
 
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "user-123";
+    (req as any).githubToken = "fake-token";
 
     await analyzeUser(req, res, next);
 
@@ -132,6 +133,7 @@ describe("analyzeUser controller", () => {
   it("handles generic error with 500", async () => {
     mockFetchGitHubUserData.mockRejectedValue(new Error("boom"));
     const { req, res, next } = createControllerMocks();
+    (req as any).githubToken = "fake-token";
 
     await analyzeUser(req, res, next);
 
@@ -166,6 +168,7 @@ describe("analyzeUser controller", () => {
 
       const { req, res, next } = createControllerMocks();
       (req as any).userId = "user-123";
+      (req as any).githubToken = "fake-token";
 
       await analyzeUser(req, res, next);
 
@@ -182,6 +185,7 @@ describe("analyzeUser controller", () => {
 
       const { req, res, next } = createControllerMocks();
       (req as any).userId = "user-123";
+      (req as any).githubToken = "fake-token";
 
       await analyzeUser(req, res, next);
 
@@ -193,6 +197,7 @@ describe("analyzeUser controller", () => {
 
       const { req, res, next } = createControllerMocks();
       (req as any).userId = "user-123";
+      (req as any).githubToken = "fake-token";
 
       await analyzeUser(req, res, next);
 
@@ -209,6 +214,7 @@ describe("analyzeUser controller", () => {
 
       const { req, res, next } = createControllerMocks();
       (req as any).userId = "user-123";
+      (req as any).githubToken = "fake-token";
 
       await analyzeUser(req, res, next);
 
@@ -222,10 +228,11 @@ describe("analyzeUser controller", () => {
 
       const { req, res, next } = createControllerMocks();
       (req as any).userId = "user-123";
+      (req as any).githubToken = "fake-token";
 
       await analyzeUser(req, res, next);
 
-      expect(mockFetchGitHubUserData).toHaveBeenCalledWith("octocat", req.signal);
+      expect(mockFetchGitHubUserData).toHaveBeenCalledWith("octocat", req.signal, "fake-token");
       expect(vi.mocked(computeSnapshotHash)).toHaveBeenCalledWith(githubData);
       expect(vi.mocked(buildCacheKey)).toHaveBeenCalledWith("gpt-5.1", "v1.1", "hash123");
       expect(vi.mocked(getCachedAnalysis)).toHaveBeenCalledWith("cachekey123");
@@ -237,6 +244,7 @@ describe("analyzeUser controller", () => {
 
       const { req, res, next } = createControllerMocks();
       (req as any).userId = "user-123";
+      (req as any).githubToken = "fake-token";
 
       await analyzeUser(req, res, next);
 

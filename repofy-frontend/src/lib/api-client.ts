@@ -29,7 +29,7 @@ interface RequestOptions extends Omit<RequestInit, "body"> {
 }
 
 // Paths that must never trigger auto-refresh (prevents recursion/deadlock)
-const REFRESH_EXEMPT_PATHS = ["/auth/refresh", "/auth/login", "/auth/logout", "/auth/me"];
+const REFRESH_EXEMPT_PATHS = ["/auth/refresh", "/auth/login", "/auth/logout", "/auth/me", "/auth/github-callback"];
 
 // Module-level refresh promise for race condition protection
 let refreshPromise: Promise<boolean> | null = null;

@@ -69,16 +69,27 @@ describe("searchGitHub controller", () => {
     expect(next).not.toHaveBeenCalled();
   });
 
+  it("returns 403 when githubToken is missing", async () => {
+    const { req, res, next } = createControllerMocks({}, { q: "octocat" });
+
+    await searchGitHub(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(mockSearchGitHubUsers).not.toHaveBeenCalled();
+  });
+
   it("trims whitespace from query", async () => {
     const results = [{ username: "octocat" }];
     mockSearchGitHubUsers.mockResolvedValue(results);
     const { req, res, next } = createControllerMocks({}, { q: "  octocat  " });
+    (req as any).githubToken = "fake-token";
 
     await searchGitHub(req, res, next);
 
     expect(mockSearchGitHubUsers).toHaveBeenCalledWith(
       "octocat",
       expect.any(AbortSignal),
+      "fake-token",
     );
     expect(next).not.toHaveBeenCalled();
   });
@@ -87,6 +98,7 @@ describe("searchGitHub controller", () => {
     const results = [{ username: "octocat" }];
     mockSearchGitHubUsers.mockResolvedValue(results);
     const { req, res, next } = createControllerMocks({}, { q: "octocat" });
+    (req as any).githubToken = "fake-token";
 
     await searchGitHub(req, res, next);
 
@@ -97,6 +109,7 @@ describe("searchGitHub controller", () => {
   it("returns nothing when signal is aborted", async () => {
     mockSearchGitHubUsers.mockRejectedValue(new Error("aborted"));
     const { req, res, next, abortController } = createControllerMocks({}, { q: "octocat" });
+    (req as any).githubToken = "fake-token";
     abortController.abort();
 
     await searchGitHub(req, res, next);
@@ -111,6 +124,7 @@ describe("searchGitHub controller", () => {
       new GitHubError("rate limit exceeded", 429),
     );
     const { req, res, next } = createControllerMocks({}, { q: "octocat" });
+    (req as any).githubToken = "fake-token";
 
     await searchGitHub(req, res, next);
 
@@ -125,6 +139,7 @@ describe("searchGitHub controller", () => {
   it("handles generic error with 500", async () => {
     mockSearchGitHubUsers.mockRejectedValue(new Error("boom"));
     const { req, res, next } = createControllerMocks({}, { q: "octocat" });
+    (req as any).githubToken = "fake-token";
 
     await searchGitHub(req, res, next);
 
@@ -156,10 +171,20 @@ describe("getGitHubUser controller", () => {
     expect(next).not.toHaveBeenCalled();
   });
 
+  it("returns 403 when githubToken is missing", async () => {
+    const { req, res, next } = createControllerMocks({ username: "octocat" });
+
+    await getGitHubUser(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(mockFetchGitHubUserData).not.toHaveBeenCalled();
+  });
+
   it("returns user data on happy path", async () => {
     const userData = { profile: { username: "octocat" } };
     mockFetchGitHubUserData.mockResolvedValue(userData);
     const { req, res, next } = createControllerMocks({ username: "octocat" });
+    (req as any).githubToken = "fake-token";
 
     await getGitHubUser(req, res, next);
 
@@ -170,6 +195,7 @@ describe("getGitHubUser controller", () => {
   it("returns nothing when signal is aborted", async () => {
     mockFetchGitHubUserData.mockRejectedValue(new Error("aborted"));
     const { req, res, next, abortController } = createControllerMocks({ username: "octocat" });
+    (req as any).githubToken = "fake-token";
     abortController.abort();
 
     await getGitHubUser(req, res, next);
@@ -184,6 +210,7 @@ describe("getGitHubUser controller", () => {
       new GitHubError("User not found", 404),
     );
     const { req, res, next } = createControllerMocks({ username: "octocat" });
+    (req as any).githubToken = "fake-token";
 
     await getGitHubUser(req, res, next);
 
@@ -198,6 +225,7 @@ describe("getGitHubUser controller", () => {
   it("handles generic error with 500", async () => {
     mockFetchGitHubUserData.mockRejectedValue(new Error("boom"));
     const { req, res, next } = createControllerMocks({ username: "octocat" });
+    (req as any).githubToken = "fake-token";
 
     await getGitHubUser(req, res, next);
 

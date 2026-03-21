@@ -1,89 +1,86 @@
 import { RequestHandler } from "express";
 import { sendSuccess, sendError } from "../lib/response";
 import { handleControllerError } from "../lib/controller-utils";
-import { initiateSignup, verifySignup, resendOtp, loginWithPassword, refreshSession } from "../services/auth.service";
+import { refreshSession } from "../services/auth.service";
 import { invalidateToken } from "../middleware/auth";
 import { getSupabaseAdmin } from "../config/supabase";
 import { setAuthCookies, clearAuthCookies, extractAccessToken, extractRefreshToken } from "../lib/cookie-utils";
+import { logger } from "../lib/logger";
 import type { AuthenticatedRequest } from "../types";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MAX_EMAIL_LEN = 254;
-const MAX_DISPLAY_NAME_LEN = 100;
-const MAX_PASSWORD_LEN = 128;
+export const handleGitHubCallback: RequestHandler = async (req, res) => {
+  const { access_token, refresh_token, provider_token } = req.body;
 
-export const handleInitiateSignup: RequestHandler = async (req, res) => {
-  const { email, displayName } = req.body;
-
-  if (!email || typeof email !== "string" || email.length > MAX_EMAIL_LEN || !EMAIL_RE.test(email)) {
-    sendError(res, 400, "A valid email is required.");
-    return;
-  }
-  if (!displayName || typeof displayName !== "string" || !displayName.trim() || displayName.length > MAX_DISPLAY_NAME_LEN) {
-    sendError(res, 400, "Display name is required (max 100 characters).");
+  if (!access_token || !refresh_token || !provider_token) {
+    sendError(res, 400, "Missing required tokens.");
     return;
   }
 
   try {
-    const result = await initiateSignup(email.toLowerCase().trim(), displayName.trim());
-    sendSuccess(res, result);
-  } catch (err) {
-    handleControllerError(err, req, res, "Auth Signup", "An unexpected error occurred.");
-  }
-};
+    const supabase = getSupabaseAdmin();
 
-export const handleVerifySignup: RequestHandler = async (req, res) => {
-  const { email, otp, password } = req.body;
-
-  if (!email || typeof email !== "string" || email.length > MAX_EMAIL_LEN || !EMAIL_RE.test(email)) {
-    sendError(res, 400, "A valid email is required.");
-    return;
-  }
-  if (!otp || typeof otp !== "string" || !/^\d{6}$/.test(otp)) {
-    sendError(res, 400, "A valid 6-digit verification code is required.");
-    return;
-  }
-  if (!password || typeof password !== "string" || password.length < 8 || password.length > MAX_PASSWORD_LEN) {
-    sendError(res, 400, "Password must be 8–128 characters.");
-    return;
-  }
-  if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
-    sendError(res, 400, "Password must include at least 1 lowercase letter, 1 uppercase letter, and 1 number.");
-    return;
-  }
-
-  try {
-    const result = await verifySignup(email.toLowerCase().trim(), otp, password);
-
-    // Set cookies if auto-login succeeded
-    if (result.session) {
-      setAuthCookies(res, result.session.access_token, result.session.refresh_token);
+    // 1. Verify the access token
+    const { data, error } = await supabase.auth.getUser(access_token);
+    if (error || !data.user) {
+      sendError(res, 401, "Invalid access token.");
+      return;
     }
 
-    sendSuccess(res, { user: result.user });
+    const user = data.user;
+
+    // 2. Call GitHub /user with provider_token to get canonical login & avatar
+    const ghRes = await fetch("https://api.github.com/user", {
+      headers: {
+        Authorization: `Bearer ${provider_token}`,
+        Accept: "application/vnd.github.v3+json",
+        "User-Agent": "Repofy",
+      },
+    });
+
+    if (!ghRes.ok) {
+      logger.error("GitHub /user call failed during callback", { status: ghRes.status });
+      sendError(res, 502, "Failed to verify GitHub token.");
+      return;
+    }
+
+    const ghUser = await ghRes.json() as { login: string; avatar_url: string; name: string | null };
+
+    // 3. Upsert into github_tokens table
+    const { error: upsertError } = await supabase.from("github_tokens").upsert({
+      user_id: user.id,
+      github_token: provider_token,
+      github_username: ghUser.login,
+      github_avatar_url: ghUser.avatar_url,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id" });
+
+    if (upsertError) {
+      logger.error("Failed to upsert github_tokens", { userId: user.id, error: upsertError });
+      sendError(res, 500, "Failed to store GitHub token.");
+      return;
+    }
+
+    // 4. Set display_name from GitHub's name field
+    const displayName = ghUser.name || ghUser.login;
+    await supabase.auth.admin.updateUserById(user.id, {
+      user_metadata: { display_name: displayName },
+    });
+
+    // 5. Set auth cookies
+    setAuthCookies(res, access_token, refresh_token);
+
+    // 6. Return user data
+    sendSuccess(res, {
+      user: {
+        id: user.id,
+        email: user.email,
+        display_name: displayName,
+        github_username: ghUser.login,
+        avatar_url: ghUser.avatar_url,
+      },
+    });
   } catch (err) {
-    handleControllerError(err, req, res, "Auth Verify", "An unexpected error occurred.");
-  }
-};
-
-export const handleLogin: RequestHandler = async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || typeof email !== "string" || email.length > MAX_EMAIL_LEN || !EMAIL_RE.test(email)) {
-    sendError(res, 400, "A valid email is required.");
-    return;
-  }
-  if (!password || typeof password !== "string") {
-    sendError(res, 400, "Password is required.");
-    return;
-  }
-
-  try {
-    const result = await loginWithPassword(email.toLowerCase().trim(), password);
-    setAuthCookies(res, result.session.access_token, result.session.refresh_token);
-    sendSuccess(res, { user: result.user });
-  } catch (err) {
-    handleControllerError(err, req, res, "Auth Login", "An unexpected error occurred.");
+    handleControllerError(err, req, res, "GitHub Callback", "An unexpected error occurred.");
   }
 };
 
@@ -107,7 +104,31 @@ export const handleRefresh: RequestHandler = async (req, res) => {
 
 export const handleMe: RequestHandler = async (req, res) => {
   const { userId, userEmail } = req as AuthenticatedRequest;
-  sendSuccess(res, { user: { id: userId, email: userEmail } });
+
+  try {
+    const { data: ghData } = await getSupabaseAdmin()
+      .from("github_tokens")
+      .select("github_username, github_avatar_url")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    // Get display_name from user metadata
+    const { data: userData } = await getSupabaseAdmin().auth.admin.getUserById(userId);
+    const displayName = userData?.user?.user_metadata?.display_name;
+
+    sendSuccess(res, {
+      user: {
+        id: userId,
+        email: userEmail,
+        display_name: displayName,
+        github_username: ghData?.github_username,
+        avatar_url: ghData?.github_avatar_url,
+      },
+    });
+  } catch {
+    // Fallback if DB query fails
+    sendSuccess(res, { user: { id: userId, email: userEmail } });
+  }
 };
 
 export const handleLogout: RequestHandler = async (req, res) => {
@@ -135,20 +156,4 @@ export const handleLogout: RequestHandler = async (req, res) => {
   // Always clear cookies regardless of token validity
   clearAuthCookies(res);
   sendSuccess(res, { message: "Logged out successfully." });
-};
-
-export const handleResendOtp: RequestHandler = async (req, res) => {
-  const { email } = req.body;
-
-  if (!email || typeof email !== "string" || email.length > MAX_EMAIL_LEN || !EMAIL_RE.test(email)) {
-    sendError(res, 400, "A valid email is required.");
-    return;
-  }
-
-  try {
-    const result = await resendOtp(email.toLowerCase().trim());
-    sendSuccess(res, result);
-  } catch (err) {
-    handleControllerError(err, req, res, "Auth Resend", "An unexpected error occurred.");
-  }
 };

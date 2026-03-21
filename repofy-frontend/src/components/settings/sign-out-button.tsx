@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api-client";
+import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 
@@ -10,6 +11,7 @@ export function SignOutButton() {
 
   async function handleSignOut() {
     await api.post("/auth/logout");
+    await getSupabase().auth.signOut();
     router.push("/");
     router.refresh();
   }

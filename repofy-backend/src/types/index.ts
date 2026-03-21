@@ -12,6 +12,7 @@ declare global {
     interface Request {
       userId?: string;
       userEmail?: string;
+      githubToken?: string;
       signal?: AbortSignal;
       requestId: string;
     }
@@ -22,6 +23,7 @@ declare global {
 export interface AuthenticatedRequest extends Request {
   userId: string;
   userEmail: string;
+  githubToken?: string;
 }
 
 export interface ApiResponse<T = unknown> {

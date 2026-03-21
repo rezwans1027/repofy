@@ -18,6 +18,7 @@ const TOKEN_CACHE_MAX = 256;
 interface TokenEntry {
   userId: string;
   email: string | undefined;
+  githubToken: string | undefined;
   expiresAt: number;
 }
 
@@ -43,6 +44,19 @@ export function invalidateToken(token: string): void {
   tokenCache.delete(token);
 }
 
+async function fetchGitHubToken(userId: string): Promise<string | undefined> {
+  try {
+    const { data } = await getSupabaseAdmin()
+      .from("github_tokens")
+      .select("github_token")
+      .eq("user_id", userId)
+      .maybeSingle();
+    return data?.github_token ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export const requireAuth: RequestHandler = async (req, res, next) => {
   try {
     if (res.headersSent) return;
@@ -61,6 +75,7 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
       tokenCache.set(token, cached);
       req.userId = cached.userId;
       req.userEmail = cached.email;
+      req.githubToken = cached.githubToken;
       next();
       return;
     }
@@ -81,6 +96,9 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
           // Set new cookies on the response
           setAuthCookies(res, result.session.access_token, result.session.refresh_token);
 
+          // Fetch GitHub token from DB
+          const githubToken = await fetchGitHubToken(result.user.id);
+
           // Cache the new token
           const newToken = result.session.access_token;
           if (tokenCache.size >= TOKEN_CACHE_MAX) {
@@ -90,11 +108,13 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
           tokenCache.set(newToken, {
             userId: result.user.id,
             email: result.user.email,
+            githubToken,
             expiresAt: Date.now() + TOKEN_CACHE_TTL,
           });
 
           req.userId = result.user.id;
           req.userEmail = result.user.email;
+          req.githubToken = githubToken;
           next();
           return;
         } catch {
@@ -109,6 +129,9 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
       return;
     }
 
+    // Fetch GitHub token from DB
+    const githubToken = await fetchGitHubToken(data.user.id);
+
     // Cache the verified token
     if (tokenCache.size >= TOKEN_CACHE_MAX) {
       const oldest = tokenCache.keys().next().value;
@@ -117,11 +140,13 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
     tokenCache.set(token, {
       userId: data.user.id,
       email: data.user.email,
+      githubToken,
       expiresAt: Date.now() + TOKEN_CACHE_TTL,
     });
 
     req.userId = data.user.id;
     req.userEmail = data.user.email;
+    req.githubToken = githubToken;
     next();
   } catch (err) {
     if (!res.headersSent) next(err);

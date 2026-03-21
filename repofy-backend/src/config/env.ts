@@ -38,7 +38,6 @@ export const env = {
   supabaseUrl: requireEnv("SUPABASE_URL"),
   supabaseServiceRoleKey: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
   supabaseAnonKey: requireEnv("SUPABASE_ANON_KEY"),
-  githubToken: requireEnvUnlessMockAi("GITHUB_TOKEN"),
   openaiModel: process.env.OPENAI_MODEL || "gpt-5.1",
   adminSecret: requireEnv("ADMIN_SECRET"),
   frontendUrl: _isProduction
@@ -47,7 +46,6 @@ export const env = {
   stripeSecretKey: requireEnv("STRIPE_SECRET_KEY"),
   stripeWebhookSecret: requireEnv("STRIPE_WEBHOOK_SECRET"),
   resendApiKey: requireEnv("RESEND_API_KEY"),
-  otpHmacSecret: requireEnv("OTP_HMAC_SECRET"),
   engineUrl: (() => {
     const raw = process.env.ENGINE_URL || "http://localhost:3002";
     // Validate URL scheme and block private IPs at startup (SSRF prevention).

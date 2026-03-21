@@ -41,27 +41,40 @@ export function setupGitHubMocks(fetchMock: ReturnType<typeof vi.fn>, username =
 /** Build a chainable Supabase mock for .from().select().eq().single() / .upsert() / .delete().lt() */
 function createSupabaseChainMock() {
   const creditData = { data: { id: "mock-id", growth_balance: 5, eval_balance: 0 }, error: null };
+  const githubTokenData = { data: { github_token: "fake-github-token" }, error: null };
   const upsertData = { data: { id: "advice-row-1" }, error: null };
   const empty = { data: null, error: null };
-  const chain: Record<string, ReturnType<typeof vi.fn>> = {};
-  // Terminal for select→eq→single (cache lookups): return empty (cache miss)
-  chain.single = vi.fn().mockResolvedValue(empty);
-  // Terminal for select→eq→maybeSingle (credit balance): return credit data
-  chain.maybeSingle = vi.fn().mockResolvedValue(creditData);
-  chain.eq = vi.fn().mockReturnValue({ single: chain.single, maybeSingle: chain.maybeSingle });
-  chain.lt = vi.fn().mockResolvedValue(empty);
-  chain.select = vi.fn().mockReturnValue({ eq: chain.eq, single: chain.single });
-  // upsert chain returns advice row id via its own single terminal
-  const upsertSingle = vi.fn().mockResolvedValue(upsertData);
-  const upsertSelect = vi.fn().mockReturnValue({ single: upsertSingle });
-  chain.upsert = vi.fn().mockReturnValue({ select: upsertSelect });
-  chain.delete = vi.fn().mockReturnValue({ lt: chain.lt });
-  chain.from = vi.fn().mockReturnValue({
-    select: chain.select,
-    upsert: chain.upsert,
-    delete: chain.delete,
+
+  // Create table-aware mock chains
+  function createTableChain(tableName: string) {
+    const chain: Record<string, ReturnType<typeof vi.fn>> = {};
+    chain.single = vi.fn().mockResolvedValue(empty);
+    // maybeSingle returns different data depending on the table
+    if (tableName === "github_tokens") {
+      chain.maybeSingle = vi.fn().mockResolvedValue(githubTokenData);
+    } else {
+      chain.maybeSingle = vi.fn().mockResolvedValue(creditData);
+    }
+    chain.eq = vi.fn().mockReturnValue({ single: chain.single, maybeSingle: chain.maybeSingle });
+    chain.lt = vi.fn().mockResolvedValue(empty);
+    chain.select = vi.fn().mockReturnValue({ eq: chain.eq, single: chain.single });
+    const upsertSingle = vi.fn().mockResolvedValue(upsertData);
+    const upsertSelect = vi.fn().mockReturnValue({ single: upsertSingle });
+    chain.upsert = vi.fn().mockReturnValue({ select: upsertSelect });
+    chain.delete = vi.fn().mockReturnValue({ lt: chain.lt });
+    return chain;
+  }
+
+  const fromMock = vi.fn().mockImplementation((tableName: string) => {
+    const chain = createTableChain(tableName);
+    return {
+      select: chain.select,
+      upsert: chain.upsert,
+      delete: chain.delete,
+    };
   });
-  return chain;
+
+  return { from: fromMock };
 }
 
 export async function setupAuthMock(valid = true) {
@@ -77,6 +90,10 @@ export async function setupAuthMock(valid = true) {
     rpc: vi.fn().mockResolvedValue({ data: true, error: null }),
     from: dbChain.from,
   });
+
+  // Clear the auth middleware token cache so fresh mocks take effect
+  const { clearTokenCache } = await import("../../src/middleware/auth");
+  clearTokenCache();
 }
 
 /**

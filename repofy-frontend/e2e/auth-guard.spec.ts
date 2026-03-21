@@ -37,23 +37,10 @@ test.describe("Auth guard", () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test("login page renders sign in form", async ({ page }) => {
+  test("login page shows Continue with GitHub button", async ({ page }) => {
     await page.goto("/login");
-    // The login page has a terminal-styled form with email/password fields
-    await expect(page.getByLabel(/email/i)).toBeVisible();
-    await expect(page.getByLabel("password", { exact: true })).toBeVisible();
     await expect(
-      page.getByRole("button", { name: /sign in/i }),
+      page.getByRole("button", { name: /continue with github/i }),
     ).toBeVisible();
-  });
-
-  test("login page shows validation errors for empty submit", async ({
-    page,
-  }) => {
-    await page.goto("/login");
-    await page.getByRole("button", { name: /sign in/i }).click();
-    // Validation errors display with "error:" prefix
-    await expect(page.getByText("Email is required")).toBeVisible();
-    await expect(page.getByText("Password is required")).toBeVisible();
   });
 });

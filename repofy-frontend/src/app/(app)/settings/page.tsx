@@ -14,7 +14,7 @@ async function getUser() {
     });
     if (!res.ok) return null;
     const json = await res.json();
-    return json.data?.user as { id: string; email: string; display_name?: string } | null;
+    return json.data?.user as { id: string; email: string; display_name?: string; github_username?: string; avatar_url?: string } | null;
   } catch {
     return null;
   }
@@ -53,7 +53,16 @@ export default async function SettingsPage() {
                 Display Name
               </span>
               <span className="font-mono text-xs text-foreground">
-                {user?.display_name || "—"}
+                {user?.display_name || user?.github_username || "—"}
+              </span>
+            </div>
+            <div className="border-t border-border" />
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs text-muted-foreground">
+                GitHub
+              </span>
+              <span className="font-mono text-xs text-foreground">
+                {user?.github_username ? `@${user.github_username}` : "—"}
               </span>
             </div>
           </div>

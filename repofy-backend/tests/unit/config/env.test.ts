@@ -9,11 +9,9 @@ const ENV_KEYS = [
   "SUPABASE_URL",
   "SUPABASE_SERVICE_ROLE_KEY",
   "SUPABASE_ANON_KEY",
-  "GITHUB_TOKEN",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
   "RESEND_API_KEY",
-  "OTP_HMAC_SECRET",
   "ADMIN_SECRET",
   "ENGINE_INTERNAL_KEY",
   "ENGINE_URL",
@@ -92,14 +90,6 @@ describe("env config", () => {
 
     await expect(import("../../../src/config/env")).rejects.toThrow(
       "Missing required environment variable: SUPABASE_SERVICE_ROLE_KEY",
-    );
-  });
-
-  it("throws when GITHUB_TOKEN is missing", async () => {
-    delete process.env.GITHUB_TOKEN;
-
-    await expect(import("../../../src/config/env")).rejects.toThrow(
-      "Missing required environment variable: GITHUB_TOKEN",
     );
   });
 

@@ -31,7 +31,7 @@ describe("github.service", () => {
         .mockReturnValueOnce(mockFetchJson(searchResp))       // search endpoint
         .mockReturnValueOnce(mockFetchJson(user));              // individual user fetch
 
-      const results = await searchGitHubUsers("octocat");
+      const results = await searchGitHubUsers("octocat", undefined, "fake-token");
 
       expect(results).toHaveLength(1);
       expect(results[0].username).toBe("octocat");
@@ -43,7 +43,7 @@ describe("github.service", () => {
     it("returns empty array for empty search results", async () => {
       fetchMock.mockReturnValueOnce(mockFetchJson(createSearchResponse([])));
 
-      const results = await searchGitHubUsers("nonexistent");
+      const results = await searchGitHubUsers("nonexistent", undefined, "fake-token");
 
       expect(results).toHaveLength(0);
     });
@@ -51,7 +51,7 @@ describe("github.service", () => {
     it("encodes special characters in search query", async () => {
       fetchMock.mockReturnValueOnce(mockFetchJson(createSearchResponse([])));
 
-      await searchGitHubUsers("john doe");
+      await searchGitHubUsers("john doe", undefined, "fake-token");
 
       expect(fetchMock).toHaveBeenCalledWith(
         expect.stringContaining("john%20doe"),
@@ -95,7 +95,7 @@ describe("github.service", () => {
     it("returns complete user data", async () => {
       setupFetchMocks();
 
-      const data = await fetchGitHubUserData("octocat");
+      const data = await fetchGitHubUserData("octocat", undefined, "fake-token");
 
       expect(data.profile.username).toBe("octocat");
       expect(data.repositories).toHaveLength(1);
@@ -119,7 +119,7 @@ describe("github.service", () => {
     it("maps profile fields correctly", async () => {
       setupFetchMocks();
 
-      const data = await fetchGitHubUserData("octocat");
+      const data = await fetchGitHubUserData("octocat", undefined, "fake-token");
 
       expect(data.profile).toEqual({
         username: "octocat",
@@ -143,7 +143,7 @@ describe("github.service", () => {
       ];
       setupFetchMocks(repos);
 
-      const data = await fetchGitHubUserData("octocat");
+      const data = await fetchGitHubUserData("octocat", undefined, "fake-token");
 
       const langNames = data.languages.map((l) => l.name);
       expect(langNames).toContain("TypeScript");
@@ -158,7 +158,7 @@ describe("github.service", () => {
       ];
       setupFetchMocks(repos);
 
-      const data = await fetchGitHubUserData("octocat");
+      const data = await fetchGitHubUserData("octocat", undefined, "fake-token");
 
       const tsLang = data.languages.find((l) => l.name === "TypeScript");
       const jsLang = data.languages.find((l) => l.name === "JavaScript");
@@ -171,7 +171,7 @@ describe("github.service", () => {
     it("counts event types correctly in activity summary", async () => {
       setupFetchMocks();
 
-      const data = await fetchGitHubUserData("octocat");
+      const data = await fetchGitHubUserData("octocat", undefined, "fake-token");
 
       expect(data.activity.totalEvents).toBe(4);
       expect(data.activity.pushEvents).toBe(1);
@@ -188,7 +188,7 @@ describe("github.service", () => {
       ];
       setupFetchMocks(repos);
 
-      const data = await fetchGitHubUserData("octocat");
+      const data = await fetchGitHubUserData("octocat", undefined, "fake-token");
 
       expect(data.stats.totalStars).toBe(15);
       expect(data.stats.totalForks).toBe(3);
@@ -203,7 +203,7 @@ describe("github.service", () => {
         Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({}) }),
       );
 
-      await expect(searchGitHubUsers("nonexistent")).rejects.toThrow("User not found");
+      await expect(searchGitHubUsers("nonexistent", undefined, "fake-token")).rejects.toThrow("User not found");
     });
 
     it("throws 'rate limit' on 403", async () => {
@@ -211,7 +211,7 @@ describe("github.service", () => {
         Promise.resolve({ ok: false, status: 403, json: () => Promise.resolve({}) }),
       );
 
-      await expect(searchGitHubUsers("test")).rejects.toThrow("rate limit");
+      await expect(searchGitHubUsers("test", undefined, "fake-token")).rejects.toThrow("rate limit");
     });
 
     it("throws 'rate limit' on 429", async () => {
@@ -219,7 +219,7 @@ describe("github.service", () => {
         Promise.resolve({ ok: false, status: 429, json: () => Promise.resolve({}) }),
       );
 
-      await expect(searchGitHubUsers("test")).rejects.toThrow("rate limit");
+      await expect(searchGitHubUsers("test", undefined, "fake-token")).rejects.toThrow("rate limit");
     });
 
     it("passes through status for other errors", async () => {
@@ -231,7 +231,7 @@ describe("github.service", () => {
         .mockReturnValueOnce(error500())
         .mockReturnValueOnce(error500());
 
-      await expect(searchGitHubUsers("test")).rejects.toMatchObject({
+      await expect(searchGitHubUsers("test", undefined, "fake-token")).rejects.toMatchObject({
         statusCode: 500,
       });
     });
@@ -527,7 +527,7 @@ describe("github.service", () => {
         return mockFetchJson({}, false, 404);
       });
 
-      const data = await fetchGitHubUserData("octocat");
+      const data = await fetchGitHubUserData("octocat", undefined, "fake-token");
 
       // Should only call repos listing once since batch < perPage
       const repoCalls = fetchMock.mock.calls.filter(
@@ -566,7 +566,7 @@ describe("github.service", () => {
         return mockFetchJson({}, false, 404);
       });
 
-      const data = await fetchGitHubUserData("octocat");
+      const data = await fetchGitHubUserData("octocat", undefined, "fake-token");
 
       const repoCalls = fetchMock.mock.calls.filter(
         (c) => c[0].toString().includes("/users/octocat/repos"),

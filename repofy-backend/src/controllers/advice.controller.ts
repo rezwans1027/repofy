@@ -61,6 +61,11 @@ export const adviseUser: RequestHandler = async (req, res) => {
       return;
     }
 
+    if (!req.githubToken) {
+      sendError(res, 403, "GitHub authentication required. Please sign in again.");
+      return;
+    }
+
     // Cheap pre-check: reject early if user has zero credits (avoids burning GitHub quota)
     const balance = await getCreditBalance(userId);
     if (balance.growth_balance <= 0) {
@@ -69,7 +74,7 @@ export const adviseUser: RequestHandler = async (req, res) => {
     }
 
     // Do ALL expensive work before touching credits
-    const githubData = await fetchGitHubUserData(username, req.signal);
+    const githubData = await fetchGitHubUserData(username, req.signal, req.githubToken);
 
     const { advice: aiAdvice, tokenUsage } =
       await callEngine<AdviceEngineResponse>("/advice", { githubData }, req.signal);

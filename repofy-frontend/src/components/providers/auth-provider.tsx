@@ -7,6 +7,8 @@ export interface AuthUser {
   id: string;
   email: string;
   display_name?: string;
+  github_username?: string;
+  avatar_url?: string;
 }
 
 interface AuthContextType {

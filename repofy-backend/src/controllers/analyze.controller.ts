@@ -44,8 +44,13 @@ export const analyzeUser: RequestHandler = async (req, res) => {
       return;
     }
 
+    if (!req.githubToken) {
+      sendError(res, 403, "GitHub authentication required. Please sign in again.");
+      return;
+    }
+
     // 1. Fetch GitHub data (with snapshots + aggregate metrics)
-    const githubData = await fetchGitHubUserData(username, req.signal);
+    const githubData = await fetchGitHubUserData(username, req.signal, req.githubToken);
 
     // 2. Compute snapshot hash → check cache
     const snapshotHash = computeSnapshotHash(githubData);

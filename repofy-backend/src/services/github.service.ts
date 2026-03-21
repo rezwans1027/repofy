@@ -12,7 +12,6 @@
  * handling, and type imports — the refactoring overhead outweighs the
  * benefit while the file remains internally well-structured.
  */
-import { env } from "../config/env";
 import { logger } from "../lib/logger";
 import { LANGUAGE_COLORS, DEFAULT_COLOR } from "../lib/language-colors";
 import { fetchWithRetry } from "../lib/retry";
@@ -81,11 +80,11 @@ export class GitHubError extends Error {
 const GITHUB_API = "https://api.github.com";
 const GITHUB_TIMEOUT_MS = 15_000;
 
-function headers(): Record<string, string> {
+function headers(token: string): Record<string, string> {
   return {
     Accept: "application/vnd.github.v3+json",
     "User-Agent": "Repofy",
-    Authorization: `Bearer ${env.githubToken}`,
+    Authorization: `Bearer ${token}`,
   };
 }
 
@@ -101,15 +100,18 @@ async function ghRequest(url: string, init: RequestInit, signal: AbortSignal | u
   });
 }
 
-async function ghFetch<T>(path: string, signal?: AbortSignal): Promise<T> {
+async function ghFetch<T>(path: string, signal: AbortSignal | undefined, token: string): Promise<T> {
   const res = await ghRequest(
     `${GITHUB_API}${path}`,
-    { headers: headers() },
+    { headers: headers(token) },
     signal,
     "GitHub API request timed out",
   );
 
   if (!res.ok) {
+    if (res.status === 401) {
+      throw new GitHubError("GitHub token is invalid or revoked. Please re-authenticate.", 401);
+    }
     if (res.status === 404) {
       throw new GitHubError("User not found", 404);
     }
@@ -126,10 +128,10 @@ async function ghFetch<T>(path: string, signal?: AbortSignal): Promise<T> {
 }
 
 /** Fetch with response object to inspect headers (e.g. Link header for pagination counts). */
-async function ghFetchRaw(path: string, signal?: AbortSignal): Promise<Response> {
+async function ghFetchRaw(path: string, signal: AbortSignal | undefined, token: string): Promise<Response> {
   return ghRequest(
     `${GITHUB_API}${path}`,
-    { headers: headers() },
+    { headers: headers(token) },
     signal,
     "GitHub API request timed out",
   );
@@ -139,14 +141,14 @@ async function ghFetchRaw(path: string, signal?: AbortSignal): Promise<Response>
 
 const GITHUB_GRAPHQL = "https://api.github.com/graphql";
 
-async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>, signal?: AbortSignal): Promise<T> {
+async function ghGraphQL<T>(query: string, variables: Record<string, unknown> | undefined, signal: AbortSignal | undefined, token: string): Promise<T> {
   const res = await ghRequest(
     GITHUB_GRAPHQL,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${env.githubToken}`,
+        Authorization: `Bearer ${token}`,
         "User-Agent": "Repofy",
       },
       body: JSON.stringify({ query, variables }),
@@ -166,11 +168,12 @@ async function ghGraphQL<T>(query: string, variables?: Record<string, unknown>, 
 
 const MAX_REPO_PAGES = 10; // Cap at 1000 repos max
 
-async function fetchAllRepos(username: string, signal?: AbortSignal): Promise<GitHubApiRepo[]> {
+async function fetchAllRepos(username: string, signal: AbortSignal | undefined, token: string): Promise<GitHubApiRepo[]> {
   // Fetch first page with headers to determine total page count
   const firstRes = await ghFetchRaw(
     `/users/${username}/repos?per_page=100&page=1&sort=updated`,
     signal,
+    token,
   );
   if (!firstRes.ok) {
     if (firstRes.status === 404) throw new GitHubError("User not found", 404);
@@ -198,6 +201,7 @@ async function fetchAllRepos(username: string, signal?: AbortSignal): Promise<Gi
       ghFetch<GitHubApiRepo[]>(
         `/users/${username}/repos?per_page=100&page=${page}&sort=updated`,
         signal,
+        token,
       ).catch(() => [] as GitHubApiRepo[]),
     ),
   );
@@ -231,12 +235,13 @@ interface GQLPinnedResponse {
   };
 }
 
-async function fetchPinnedRepoNames(username: string, signal?: AbortSignal): Promise<string[]> {
+async function fetchPinnedRepoNames(username: string, signal: AbortSignal | undefined, token: string): Promise<string[]> {
   try {
     const result = await ghGraphQL<GQLPinnedResponse>(
       PINNED_REPOS_QUERY,
       { username },
       signal,
+      token,
     );
     const nodes = result?.data?.user?.pinnedItems?.nodes;
     if (!Array.isArray(nodes)) return [];
@@ -434,13 +439,15 @@ function mapContributionsToHeatmap(weeks: GQLContributionWeek[]): number[][] {
 
 async function fetchContributionCalendar(
   username: string,
-  signal?: AbortSignal,
+  signal: AbortSignal | undefined,
+  token: string,
 ): Promise<ContributionCalendar | null> {
   try {
     const result = await ghGraphQL<GQLContributionResponse>(
       CONTRIBUTION_QUERY,
       { username },
       signal,
+      token,
     );
     const calendar = result.data.user.contributionsCollection.contributionCalendar;
     return {
@@ -735,7 +742,8 @@ async function fetchRepoSnapshot(
   username: string,
   repo: GitHubRepo,
   fetchSnippets: boolean,
-  signal?: AbortSignal,
+  signal: AbortSignal | undefined,
+  token: string,
 ): Promise<RepoSnapshot> {
   const defaultBranch = "HEAD"; // GitHub trees API resolves HEAD
 
@@ -747,21 +755,25 @@ async function fetchRepoSnapshot(
       ghFetch<GitTreeResponse>(
         `/repos/${username}/${encodedRepoName}/git/trees/${defaultBranch}?recursive=1`,
         signal,
+        token,
       ).catch(() => null),
       // 2. Releases
       ghFetch<{ tag_name: string; published_at: string }[]>(
         `/repos/${username}/${encodedRepoName}/releases?per_page=5`,
         signal,
+        token,
       ).catch(() => []),
       // 3. Contributors (just need count from Link header)
       ghFetchRaw(
         `/repos/${username}/${encodedRepoName}/contributors?per_page=1&anon=true`,
         signal,
+        token,
       ).catch(() => null),
       // 4. Pull requests count from Link header
       ghFetchRaw(
         `/repos/${username}/${encodedRepoName}/pulls?state=all&per_page=1`,
         signal,
+        token,
       ).catch(() => null),
     ]);
 
@@ -788,6 +800,7 @@ async function fetchRepoSnapshot(
             const readmeData = await ghFetch<{ content: string; encoding: string }>(
               `/repos/${username}/${encodedRepoName}/contents/${safeReadmePath}`,
               signal,
+              token,
             );
             if (readmeData.encoding === "base64") {
               const text = Buffer.from(readmeData.content, "base64")
@@ -818,7 +831,7 @@ async function fetchRepoSnapshot(
     // Code snippets (only for top repos)
     let codeSnippets: string[] | undefined;
     if (fetchSnippets && entries.length > 0) {
-      codeSnippets = await fetchCodeSnippets(username, repo.name, entries, signal);
+      codeSnippets = await fetchCodeSnippets(username, repo.name, entries, signal, token);
     }
 
     return {
@@ -875,7 +888,8 @@ async function fetchCodeSnippets(
   username: string,
   repoName: string,
   entries: GitTreeEntry[],
-  signal?: AbortSignal,
+  signal: AbortSignal | undefined,
+  token: string,
 ): Promise<string[]> {
   const snippets: string[] = [];
   const MAX_SNIPPET_LINES = 250;
@@ -921,6 +935,7 @@ async function fetchCodeSnippets(
       const fileData = await ghFetch<{ content: string; encoding: string }>(
         `/repos/${username}/${encodedRepo}/contents/${encodedPath}`,
         signal,
+        token,
       );
       if (fileData.encoding === "base64") {
         const text = Buffer.from(fileData.content, "base64")
@@ -984,11 +999,13 @@ export function clearUserDataCache(): void {
 
 export async function searchGitHubUsers(
   query: string,
-  signal?: AbortSignal,
+  signal: AbortSignal | undefined,
+  token: string,
 ): Promise<GitHubSearchResult[]> {
   const search = await ghFetch<GitHubApiSearchResponse>(
     `/search/users?q=${encodeURIComponent(query)}&per_page=5`,
     signal,
+    token,
   );
 
   if (search.items.length === 0) return [];
@@ -996,7 +1013,7 @@ export async function searchGitHubUsers(
   // Fetch full profiles in parallel for bio/location/company/followers/repos
   const profiles = await Promise.all(
     search.items.map((item) =>
-      ghFetch<GitHubApiUser>(`/users/${item.login}`, signal).catch(() => null),
+      ghFetch<GitHubApiUser>(`/users/${item.login}`, signal, token).catch(() => null),
     ),
   );
 
@@ -1016,7 +1033,8 @@ export async function searchGitHubUsers(
 
 export async function fetchGitHubUserData(
   username: string,
-  signal?: AbortSignal,
+  signal: AbortSignal | undefined,
+  token: string,
 ): Promise<GitHubUserData> {
   const cacheKey = username.toLowerCase();
 
@@ -1028,7 +1046,7 @@ export async function fetchGitHubUserData(
   // Remove stale entry
   if (cached) userDataCache.delete(cacheKey);
 
-  const data = await fetchGitHubUserDataUncached(username, signal);
+  const data = await fetchGitHubUserDataUncached(username, signal, token);
 
   // Evict oldest entry when cache is full
   if (userDataCache.size >= USER_DATA_CACHE_MAX) {
@@ -1042,17 +1060,19 @@ export async function fetchGitHubUserData(
 
 async function fetchGitHubUserDataUncached(
   username: string,
-  signal?: AbortSignal,
+  signal: AbortSignal | undefined,
+  token: string,
 ): Promise<GitHubUserData> {
   const [user, rawRepos, events, contributions, pinnedNames] = await Promise.all([
-    ghFetch<GitHubApiUser>(`/users/${username}`, signal),
-    fetchAllRepos(username, signal),
+    ghFetch<GitHubApiUser>(`/users/${username}`, signal, token),
+    fetchAllRepos(username, signal, token),
     ghFetch<GitHubApiEvent[]>(
       `/users/${username}/events/public?per_page=100`,
       signal,
+      token,
     ),
-    fetchContributionCalendar(username, signal),
-    fetchPinnedRepoNames(username, signal),
+    fetchContributionCalendar(username, signal, token),
+    fetchPinnedRepoNames(username, signal, token),
   ]);
 
   const truncated = rawRepos.length < user.public_repos;
@@ -1066,7 +1086,7 @@ async function fetchGitHubUserDataUncached(
   const repoSnapshots = await mapWithConcurrency(
     topRepositories,
     3,
-    (repo) => fetchRepoSnapshot(username, repo, top3Names.has(repo.name), signal),
+    (repo) => fetchRepoSnapshot(username, repo, top3Names.has(repo.name), signal, token),
   );
 
   const aggregateMetrics = computeAggregateMetrics(repoSnapshots);

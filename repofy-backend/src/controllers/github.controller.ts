@@ -86,7 +86,12 @@ export const searchGitHub: RequestHandler = async (req, res) => {
       return;
     }
 
-    const data = await searchGitHubUsers(q, req.signal);
+    if (!req.githubToken) {
+      sendError(res, 403, "GitHub authentication required. Please sign in again.");
+      return;
+    }
+
+    const data = await searchGitHubUsers(q, req.signal, req.githubToken);
     sendSuccess(res, data);
   } catch (err) {
     handleControllerError(err, req, res, "GitHub Search", "Internal server error");
@@ -108,13 +113,18 @@ export const getGitHubUser: RequestHandler = async (req, res) => {
       return;
     }
 
+    if (!req.githubToken) {
+      sendError(res, 403, "GitHub authentication required. Please sign in again.");
+      return;
+    }
+
     const cached = ghCacheGet(username.toLowerCase());
     if (cached) {
       sendSuccess(res, cached);
       return;
     }
 
-    const data = await fetchGitHubUserData(username, req.signal);
+    const data = await fetchGitHubUserData(username, req.signal, req.githubToken);
     ghCacheSet(username.toLowerCase(), data);
     sendSuccess(res, data);
   } catch (err) {

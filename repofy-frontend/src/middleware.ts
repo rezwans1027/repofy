@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 import { PROTECTED_ROUTES } from "@/lib/constants";
 
 export async function middleware(request: NextRequest) {
@@ -6,7 +7,26 @@ export async function middleware(request: NextRequest) {
   const nonce = crypto.randomUUID();
   request.headers.set("x-nonce", nonce);
 
-  const response = NextResponse.next({ request });
+  let response = NextResponse.next({ request });
+
+  // Forward Supabase cookies (required for PKCE code verifier to survive the OAuth redirect).
+  // createServerClient reads cookies from the request and writes them to the response.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (supabaseUrl && supabaseKey) {
+    createServerClient(supabaseUrl, supabaseKey, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          for (const { name, value, options } of cookiesToSet) {
+            response.cookies.set(name, value, options);
+          }
+        },
+      },
+    });
+  }
 
   const pathname = request.nextUrl.pathname;
 
@@ -15,7 +35,8 @@ export async function middleware(request: NextRequest) {
   const isAuthenticated = !!token && token.length > 0;
 
   // Redirect authenticated users away from auth pages → /dashboard
-  const isAuthPage = pathname === "/login" || pathname === "/signup";
+  // /callback is a route handler (not a page) — it handles its own redirects
+  const isAuthPage = pathname === "/login";
   if (isAuthenticated && isAuthPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
@@ -69,7 +90,7 @@ export async function middleware(request: NextRequest) {
 
     "img-src 'self' avatars.githubusercontent.com data: blob:", // data:/blob: needed for html2canvas-pro + jspdf
     "font-src 'self'",
-    "connect-src 'self'",
+    `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL || ""}`,
     "worker-src 'self' blob:",   // jsPDF may use blob workers for PDF generation
     "object-src 'none'",
     "base-uri 'self'",           // prevent <base> tag injection attacks
