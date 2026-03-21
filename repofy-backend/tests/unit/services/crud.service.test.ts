@@ -171,54 +171,67 @@ describe("crud.service", () => {
     });
   });
 
-  describe("exists", () => {
-    it("returns true when data has items", async () => {
-      const limitFn = vi.fn().mockResolvedValue({
-        data: [{ id: "1" }],
+  describe("count", () => {
+    it("returns count when reports exist", async () => {
+      const eqCol = vi.fn().mockResolvedValue({
+        count: 3,
         error: null,
       });
-      const eqCol = vi.fn().mockReturnValue({ limit: limitFn });
       const eqUser = vi.fn().mockReturnValue({ eq: eqCol });
       const selectFn = vi.fn().mockReturnValue({ eq: eqUser });
       const client = mockSupabase();
       client.from.mockReturnValue({ select: selectFn });
 
-      const result = await service.exists("user-1", "OctoCat");
+      const result = await service.count("user-1", "OctoCat");
 
+      expect(selectFn).toHaveBeenCalledWith("id", { count: "exact", head: true });
       expect(eqCol).toHaveBeenCalledWith("analyzed_username", "octocat");
-      expect(result).toBe(true);
+      expect(result).toBe(3);
     });
 
-    it("returns false when data is empty", async () => {
-      const limitFn = vi.fn().mockResolvedValue({
-        data: [],
+    it("returns 0 when no reports exist", async () => {
+      const eqCol = vi.fn().mockResolvedValue({
+        count: 0,
         error: null,
       });
-      const eqCol = vi.fn().mockReturnValue({ limit: limitFn });
       const eqUser = vi.fn().mockReturnValue({ eq: eqCol });
       const selectFn = vi.fn().mockReturnValue({ eq: eqUser });
       const client = mockSupabase();
       client.from.mockReturnValue({ select: selectFn });
 
-      const result = await service.exists("user-1", "ghost");
+      const result = await service.count("user-1", "ghost");
 
-      expect(result).toBe(false);
+      expect(result).toBe(0);
+    });
+
+    it("returns 0 when count is null", async () => {
+      const eqCol = vi.fn().mockResolvedValue({
+        count: null,
+        error: null,
+      });
+      const eqUser = vi.fn().mockReturnValue({ eq: eqCol });
+      const selectFn = vi.fn().mockReturnValue({ eq: eqUser });
+      const client = mockSupabase();
+      client.from.mockReturnValue({ select: selectFn });
+
+      const result = await service.count("user-1", "ghost");
+
+      expect(result).toBe(0);
     });
 
     it("calls throwIfDbError on error", async () => {
       const dbError = { message: "DB error" };
-      const limitFn = vi.fn().mockResolvedValue({
-        data: null,
+      const eqCol = vi.fn().mockResolvedValue({
+        count: null,
         error: dbError,
       });
-      const eqCol = vi.fn().mockReturnValue({ limit: limitFn });
       const eqUser = vi.fn().mockReturnValue({ eq: eqCol });
       const selectFn = vi.fn().mockReturnValue({ eq: eqUser });
       const client = mockSupabase();
       client.from.mockReturnValue({ select: selectFn });
 
-      await expect(service.exists("user-1", "ghost")).rejects.toThrow(
-        "Database operation failed: check report exists",
+      await expect(service.count("user-1", "ghost")).rejects.toThrow(
+        "Database operation failed: count report",
       );
     });
   });

@@ -27,5 +27,5 @@ const crud = createCrudHooks<ReportListItem>({
 
 export const useReports = crud.useList;
 export const useReport = crud.useDetail;
-export const useExistingReport = crud.useExists;
+export const useReportCount = crud.useCount;
 export const useDeleteReports = crud.useDelete;

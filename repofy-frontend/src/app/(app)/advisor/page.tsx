@@ -68,6 +68,22 @@ export default function AdvisorPage() {
     handleDelete,
   } = useSelectableList();
 
+  // Compute version numbers per username (V1 = oldest, V2 = next, etc.)
+  const versionMap = useMemo(() => {
+    const map = new Map<string, number>();
+    const byUsername = new Map<string, AdviceListItem[]>();
+    for (const item of items) {
+      const group = byUsername.get(item.analyzed_username) ?? [];
+      group.push(item);
+      byUsername.set(item.analyzed_username, group);
+    }
+    for (const group of byUsername.values()) {
+      group.sort((a, b) => new Date(a.generated_at).getTime() - new Date(b.generated_at).getTime());
+      group.forEach((item, i) => map.set(item.id, i + 1));
+    }
+    return map;
+  }, [items]);
+
   const filteredItems = useMemo(() => {
     const q = searchQuery.toLowerCase();
     const filtered = items.filter((r: AdviceListItem) => {
@@ -337,8 +353,13 @@ export default function AdvisorPage() {
                     )}
                   </div>
 
-                  {/* Date + Arrow */}
-                  <div className="flex shrink-0 items-center">
+                  {/* Version + Date + Arrow */}
+                  <div className="flex shrink-0 items-center gap-2.5">
+                    {(versionMap.get(item.id) ?? 1) > 1 && (
+                      <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-primary">
+                        V{versionMap.get(item.id)}
+                      </span>
+                    )}
                     <span className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
                       <Calendar className="size-3" />
                       {relativeDate(item.generated_at)}

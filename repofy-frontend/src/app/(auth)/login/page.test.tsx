@@ -2,24 +2,19 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-// Mock api-client
-const mockPost = vi.hoisted(() => vi.fn());
-const mockRefresh = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+// Mock Supabase client
+const mockSignInWithOAuth = vi.hoisted(() => vi.fn());
 
-vi.mock("@/lib/api-client", () => ({
-  api: { get: vi.fn(), post: mockPost, delete: vi.fn() },
-  ApiError: class ApiError extends Error {
-    status: number;
-    constructor(message: string, status: number) {
-      super(message);
-      this.status = status;
-      this.name = "ApiError";
-    }
-  },
+vi.mock("@/lib/supabase", () => ({
+  getSupabase: () => ({
+    auth: {
+      signInWithOAuth: mockSignInWithOAuth,
+    },
+  }),
 }));
 
 vi.mock("@/components/providers/auth-provider", () => ({
-  useAuth: () => ({ user: null, isLoading: false, refresh: mockRefresh }),
+  useAuth: () => ({ user: null, isLoading: false }),
 }));
 
 import { navState, navModule, resetNavState } from "@/__tests__/helpers/mock-navigation";
@@ -29,10 +24,6 @@ vi.mock("next/navigation", () => navModule);
 
 import LoginPage from "./page";
 
-function getSubmitButton() {
-  return screen.getByRole("button", { name: /sign in/i });
-}
-
 describe("LoginPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -40,88 +31,71 @@ describe("LoginPage", () => {
     navState.pathname = "/login";
   });
 
-  it("renders login form with email and password inputs", () => {
+  it("renders the terminal-style header", () => {
     render(<LoginPage />);
-    expect(screen.getByPlaceholderText("you@example.com")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("••••••••")).toBeInTheDocument();
-    expect(getSubmitButton()).toBeInTheDocument();
+    expect(screen.getByText("repofy auth login")).toBeInTheDocument();
   });
 
-  it("renders link to signup", () => {
+  it("renders the Continue with GitHub button", () => {
     render(<LoginPage />);
-    const signupButton = screen.getByRole("button", { name: /sign up/i });
-    expect(signupButton).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /continue with github/i })).toBeInTheDocument();
   });
 
-  it("shows email validation error for empty email", async () => {
+  it("renders the GitHub token disclosure", () => {
+    render(<LoginPage />);
+    expect(screen.getByText(/we use your github token/i)).toBeInTheDocument();
+  });
+
+  it("calls signInWithOAuth on button click", async () => {
+    mockSignInWithOAuth.mockResolvedValue({ error: null });
     const user = userEvent.setup();
     render(<LoginPage />);
 
-    await user.click(getSubmitButton());
+    await user.click(screen.getByRole("button", { name: /continue with github/i }));
 
-    expect(screen.getByText("Email is required")).toBeInTheDocument();
-  });
-
-  it("shows email validation error for invalid email", async () => {
-    const user = userEvent.setup();
-    render(<LoginPage />);
-
-    await user.type(screen.getByPlaceholderText("you@example.com"), "notanemail");
-    await user.click(getSubmitButton());
-
-    expect(screen.getByText("Enter a valid email address")).toBeInTheDocument();
-  });
-
-  it("shows password validation error for empty password", async () => {
-    const user = userEvent.setup();
-    render(<LoginPage />);
-
-    await user.type(screen.getByPlaceholderText("you@example.com"), "test@example.com");
-    await user.click(getSubmitButton());
-
-    expect(screen.getByText("Password is required")).toBeInTheDocument();
-  });
-
-  it("calls api.post /auth/login and redirects on success", async () => {
-    mockPost.mockResolvedValue({ user: { id: "1", email: "test@example.com" } });
-    const user = userEvent.setup();
-    render(<LoginPage />);
-
-    await user.type(screen.getByPlaceholderText("you@example.com"), "test@example.com");
-    await user.type(screen.getByPlaceholderText("••••••••"), "password123");
-    await user.click(getSubmitButton());
-
-    expect(mockPost).toHaveBeenCalledWith("/auth/login", {
-      body: { email: "test@example.com", password: "password123" },
+    expect(mockSignInWithOAuth).toHaveBeenCalledWith({
+      provider: "github",
+      options: expect.objectContaining({
+        scopes: "read:user user:email",
+      }),
     });
-    expect(mockRefresh).toHaveBeenCalled();
-    expect(navState.push).toHaveBeenCalledWith("/dashboard");
-    expect(navState.refresh).toHaveBeenCalled();
   });
 
-  it("shows error message on authentication failure", async () => {
-    const { ApiError } = await import("@/lib/api-client");
-    mockPost.mockRejectedValue(new ApiError("Invalid credentials", 401));
+  it("shows loading state after click", async () => {
+    mockSignInWithOAuth.mockReturnValue(new Promise(() => {})); // never resolves
     const user = userEvent.setup();
     render(<LoginPage />);
 
-    await user.type(screen.getByPlaceholderText("you@example.com"), "test@example.com");
-    await user.type(screen.getByPlaceholderText("••••••••"), "wrongpass");
-    await user.click(getSubmitButton());
+    await user.click(screen.getByRole("button", { name: /continue with github/i }));
 
-    expect(await screen.findByText("Invalid credentials")).toBeInTheDocument();
+    expect(screen.getByText("Connecting...")).toBeInTheDocument();
+    expect(screen.getByRole("button")).toBeDisabled();
   });
 
-  it("clears field errors on typing", async () => {
+  it("shows error when OAuth returns an error", async () => {
+    mockSignInWithOAuth.mockResolvedValue({ error: { message: "OAuth failed" } });
     const user = userEvent.setup();
     render(<LoginPage />);
 
-    // Submit empty form to trigger errors
-    await user.click(getSubmitButton());
-    expect(screen.getByText("Email is required")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /continue with github/i }));
 
-    // Type in email field should clear email error
-    await user.type(screen.getByPlaceholderText("you@example.com"), "a");
-    expect(screen.queryByText("Email is required")).not.toBeInTheDocument();
+    expect(await screen.findByText("OAuth failed")).toBeInTheDocument();
+  });
+
+  it("shows error when signInWithOAuth throws", async () => {
+    mockSignInWithOAuth.mockRejectedValue(new Error("network error"));
+    const user = userEvent.setup();
+    render(<LoginPage />);
+
+    await user.click(screen.getByRole("button", { name: /continue with github/i }));
+
+    expect(await screen.findByText("Something went wrong. Please try again.")).toBeInTheDocument();
+  });
+
+  it("shows callback error from search params", () => {
+    navState.searchParams = new URLSearchParams("error=exchange_failed");
+    render(<LoginPage />);
+
+    expect(screen.getByText("exchange_failed")).toBeInTheDocument();
   });
 });

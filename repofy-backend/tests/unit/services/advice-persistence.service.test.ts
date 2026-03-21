@@ -61,37 +61,37 @@ const fakeAdviceData: AdviceData = {
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
-function mockSupabaseUpsertSuccess(id = ADVICE_ID) {
+function mockSupabaseInsertSuccess(id = ADVICE_ID) {
   const singleFn = vi.fn().mockResolvedValue({ data: { id }, error: null });
   const selectFn = vi.fn().mockReturnValue({ single: singleFn });
-  const upsertFn = vi.fn().mockReturnValue({ select: selectFn });
-  const fromFn = vi.fn().mockReturnValue({ upsert: upsertFn });
+  const insertFn = vi.fn().mockReturnValue({ select: selectFn });
+  const fromFn = vi.fn().mockReturnValue({ insert: insertFn });
 
   mockGetSupabaseAdmin.mockReturnValue({ from: fromFn });
 
-  return { fromFn, upsertFn, selectFn, singleFn };
+  return { fromFn, insertFn, selectFn, singleFn };
 }
 
-function mockSupabaseUpsertError(error: Error) {
+function mockSupabaseInsertError(error: Error) {
   const singleFn = vi.fn().mockResolvedValue({ data: null, error });
   const selectFn = vi.fn().mockReturnValue({ single: singleFn });
-  const upsertFn = vi.fn().mockReturnValue({ select: selectFn });
-  const fromFn = vi.fn().mockReturnValue({ upsert: upsertFn });
+  const insertFn = vi.fn().mockReturnValue({ select: selectFn });
+  const fromFn = vi.fn().mockReturnValue({ insert: insertFn });
 
   mockGetSupabaseAdmin.mockReturnValue({ from: fromFn });
 
-  return { fromFn, upsertFn, selectFn, singleFn };
+  return { fromFn, insertFn, selectFn, singleFn };
 }
 
-function mockSupabaseUpsertNoData() {
+function mockSupabaseInsertNoData() {
   const singleFn = vi.fn().mockResolvedValue({ data: null, error: null });
   const selectFn = vi.fn().mockReturnValue({ single: singleFn });
-  const upsertFn = vi.fn().mockReturnValue({ select: selectFn });
-  const fromFn = vi.fn().mockReturnValue({ upsert: upsertFn });
+  const insertFn = vi.fn().mockReturnValue({ select: selectFn });
+  const fromFn = vi.fn().mockReturnValue({ insert: insertFn });
 
   mockGetSupabaseAdmin.mockReturnValue({ from: fromFn });
 
-  return { fromFn, upsertFn, selectFn, singleFn };
+  return { fromFn, insertFn, selectFn, singleFn };
 }
 
 // ── Tests ────────────────────────────────────────────────────────────
@@ -104,9 +104,9 @@ describe("advice-persistence.service", () => {
   describe("deductAndPersist", () => {
     // ── Success path ───────────────────────────────────────────────
 
-    it("deducts credit, persists advice, and returns the advice id", async () => {
+    it("deducts credit, persists advice via insert, and returns the advice id", async () => {
       mockDeductGrowthCredit.mockResolvedValue(true);
-      const { fromFn, upsertFn } = mockSupabaseUpsertSuccess();
+      const { fromFn, insertFn } = mockSupabaseInsertSuccess();
 
       const id = await deductAndPersist(USER_ID, REQUEST_ID, USERNAME, DISPLAY_NAME, fakeAdviceData);
 
@@ -118,29 +118,25 @@ describe("advice-persistence.service", () => {
         endpoint: "/advice",
       });
 
-      // Verify upsert was called on the correct table
+      // Verify insert was called on the correct table (not upsert)
       expect(fromFn).toHaveBeenCalledWith("advice");
-      expect(upsertFn).toHaveBeenCalledWith(
-        {
-          user_id: USER_ID,
-          analyzed_username: USERNAME,
-          analyzed_name: DISPLAY_NAME,
-          advice_data: fakeAdviceData,
-        },
-        { onConflict: "user_id,analyzed_username" },
-      );
+      expect(insertFn).toHaveBeenCalledWith({
+        user_id: USER_ID,
+        analyzed_username: USERNAME,
+        analyzed_name: DISPLAY_NAME,
+        advice_data: fakeAdviceData,
+      });
     });
 
     it("works when analyzedName is null", async () => {
       mockDeductGrowthCredit.mockResolvedValue(true);
-      const { upsertFn } = mockSupabaseUpsertSuccess();
+      const { insertFn } = mockSupabaseInsertSuccess();
 
       const id = await deductAndPersist(USER_ID, REQUEST_ID, USERNAME, null, fakeAdviceData);
 
       expect(id).toBe(ADVICE_ID);
-      expect(upsertFn).toHaveBeenCalledWith(
+      expect(insertFn).toHaveBeenCalledWith(
         expect.objectContaining({ analyzed_name: null }),
-        expect.any(Object),
       );
     });
 
@@ -148,7 +144,7 @@ describe("advice-persistence.service", () => {
 
     it("throws InsufficientCreditsError when deductGrowthCredit returns false", async () => {
       mockDeductGrowthCredit.mockResolvedValue(false);
-      mockSupabaseUpsertSuccess(); // should never be reached
+      mockSupabaseInsertSuccess(); // should never be reached
 
       await expect(
         deductAndPersist(USER_ID, REQUEST_ID, USERNAME, DISPLAY_NAME, fakeAdviceData),
@@ -161,7 +157,7 @@ describe("advice-persistence.service", () => {
 
     it("does not call supabase when credit deduction fails", async () => {
       mockDeductGrowthCredit.mockResolvedValue(false);
-      const { fromFn } = mockSupabaseUpsertSuccess();
+      const { fromFn } = mockSupabaseInsertSuccess();
 
       await expect(
         deductAndPersist(USER_ID, REQUEST_ID, USERNAME, DISPLAY_NAME, fakeAdviceData),
@@ -182,7 +178,7 @@ describe("advice-persistence.service", () => {
 
     it("does not persist when deductGrowthCredit throws", async () => {
       mockDeductGrowthCredit.mockRejectedValue(new Error("RPC timeout"));
-      const { fromFn } = mockSupabaseUpsertSuccess();
+      const { fromFn } = mockSupabaseInsertSuccess();
 
       await expect(
         deductAndPersist(USER_ID, REQUEST_ID, USERNAME, DISPLAY_NAME, fakeAdviceData),
@@ -193,9 +189,9 @@ describe("advice-persistence.service", () => {
 
     // ── Failure: persistence error (DB write fails after deduction) ──────
 
-    it("throws DatabaseError when upsert returns an error", async () => {
+    it("throws DatabaseError when insert returns an error", async () => {
       mockDeductGrowthCredit.mockResolvedValue(true);
-      mockSupabaseUpsertError(new Error("constraint violation"));
+      mockSupabaseInsertError(new Error("constraint violation"));
 
       await expect(
         deductAndPersist(USER_ID, REQUEST_ID, USERNAME, DISPLAY_NAME, fakeAdviceData),
@@ -209,7 +205,7 @@ describe("advice-persistence.service", () => {
     it("refunds credit when persistence fails", async () => {
       mockDeductGrowthCredit.mockResolvedValue(true);
       mockRefundGrowthCredit.mockResolvedValue(true);
-      mockSupabaseUpsertError(new Error("constraint violation"));
+      mockSupabaseInsertError(new Error("constraint violation"));
 
       await expect(
         deductAndPersist(USER_ID, REQUEST_ID, USERNAME, DISPLAY_NAME, fakeAdviceData),
@@ -221,12 +217,12 @@ describe("advice-persistence.service", () => {
       });
     });
 
-    // ── Failure: upsert succeeds but returns no id ───────────────────────
+    // ── Failure: insert succeeds but returns no id ───────────────────────
 
-    it("throws DatabaseError and refunds when upsert returns no id", async () => {
+    it("throws DatabaseError and refunds when insert returns no id", async () => {
       mockDeductGrowthCredit.mockResolvedValue(true);
       mockRefundGrowthCredit.mockResolvedValue(true);
-      mockSupabaseUpsertNoData();
+      mockSupabaseInsertNoData();
 
       await expect(
         deductAndPersist(USER_ID, REQUEST_ID, USERNAME, DISPLAY_NAME, fakeAdviceData),

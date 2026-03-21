@@ -33,11 +33,11 @@ export function createCrudHooks<TListItem extends { id: string }>(config: CrudHo
     });
   }
 
-  function useExists(username: string) {
+  function useCount(username: string) {
     const { user } = useAuth();
     return useQuery({
-      queryKey: [queryKey, "exists", username.toLowerCase()],
-      queryFn: () => api.get<boolean>(`${endpoint}/exists/${encodeURIComponent(username)}`, { schema: z.boolean() }),
+      queryKey: [queryKey, "count", username.toLowerCase()],
+      queryFn: () => api.get<number>(`${endpoint}/exists/${encodeURIComponent(username)}`, { schema: z.number() }),
       enabled: !!user,
     });
   }
@@ -69,5 +69,5 @@ export function createCrudHooks<TListItem extends { id: string }>(config: CrudHo
     });
   }
 
-  return { useList, useDetail, useExists, useDelete };
+  return { useList, useDetail, useCount, useDelete };
 }

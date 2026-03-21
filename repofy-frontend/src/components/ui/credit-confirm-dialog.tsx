@@ -45,8 +45,6 @@ export function CreditConfirmDialog({
             <span className="font-mono font-medium text-emerald-400">
               1 growth credit
             </span>
-            {actionVerb === "Regenerating" &&
-              " and replace the current advice"}
             . You currently have{" "}
             <span className="font-mono font-medium text-foreground">
               {balance}

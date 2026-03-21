@@ -9,7 +9,7 @@ interface CrudServiceConfig {
   entityName: string;
   listSelect: string;
   detailSelect: string;
-  /** Column used for exists check (typically "analyzed_username") */
+  /** Column used for count/exists check (typically "analyzed_username") */
   existsColumn: string;
 }
 
@@ -41,16 +41,15 @@ export function createCrudService(config: CrudServiceConfig) {
     return data;
   }
 
-  async function exists(userId: string, value: string): Promise<boolean> {
+  async function count(userId: string, value: string): Promise<number> {
     const supabase = getSupabaseAdmin();
-    const { data, error } = await supabase
+    const { count: total, error } = await supabase
       .from(table)
-      .select("id")
+      .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
-      .eq(existsColumn, value.toLowerCase())
-      .limit(1);
-    throwIfDbError(error, `check ${entityName} exists`);
-    return !!data && data.length > 0;
+      .eq(existsColumn, value.toLowerCase());
+    throwIfDbError(error, `count ${entityName}`);
+    return total ?? 0;
   }
 
   async function deleteBatch(userId: string, ids: string[]) {
@@ -63,5 +62,5 @@ export function createCrudService(config: CrudServiceConfig) {
     throwIfDbError(error, `delete ${entityName}`);
   }
 
-  return { list, getById, exists, deleteBatch };
+  return { list, getById, count, deleteBatch };
 }

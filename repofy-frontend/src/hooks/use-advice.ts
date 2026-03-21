@@ -33,5 +33,5 @@ const crud = createCrudHooks<AdviceListItem>({
 
 export const useAdviceList = crud.useList;
 export const useAdvice = crud.useDetail;
-export const useExistingAdvice = crud.useExists;
+export const useAdviceCount = crud.useCount;
 export const useDeleteAdvice = crud.useDelete;

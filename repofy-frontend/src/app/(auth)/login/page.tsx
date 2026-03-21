@@ -73,6 +73,10 @@ export default function LoginPage() {
           </>
         )}
       </Button>
+
+      <p className="text-center text-[11px] leading-relaxed text-muted-foreground/60">
+        We use your GitHub token to fetch public profile data for analysis. It is stored securely and never shared.
+      </p>
     </div>
   );
 }

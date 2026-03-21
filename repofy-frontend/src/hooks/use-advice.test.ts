@@ -12,7 +12,7 @@ const mockApi = vi.hoisted(() => ({
 }));
 vi.mock("@/lib/api-client", () => ({ api: mockApi, ApiError: Error }));
 
-import { useAdviceList, useAdvice, useExistingAdvice, useDeleteAdvice } from "./use-advice";
+import { useAdviceList, useAdvice, useAdviceCount, useDeleteAdvice } from "./use-advice";
 
 describe("useAdviceList", () => {
   beforeEach(() => {
@@ -83,31 +83,31 @@ describe("useAdvice - errors", () => {
   });
 });
 
-describe("useExistingAdvice", () => {
+describe("useAdviceCount", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("returns true when advice exists for username", async () => {
-    mockApi.get.mockResolvedValue(true);
+  it("returns count when reports exist for username", async () => {
+    mockApi.get.mockResolvedValue(3);
 
-    const { result } = renderHook(() => useExistingAdvice("testuser"), {
+    const { result } = renderHook(() => useAdviceCount("testuser"), {
       wrapper: TestProviders,
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toBe(true);
+    expect(result.current.data).toBe(3);
   });
 
-  it("returns false when no advice exists", async () => {
-    mockApi.get.mockResolvedValue(false);
+  it("returns 0 when no advice exists", async () => {
+    mockApi.get.mockResolvedValue(0);
 
-    const { result } = renderHook(() => useExistingAdvice("testuser"), {
+    const { result } = renderHook(() => useAdviceCount("testuser"), {
       wrapper: TestProviders,
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toBe(false);
+    expect(result.current.data).toBe(0);
   });
 });
 

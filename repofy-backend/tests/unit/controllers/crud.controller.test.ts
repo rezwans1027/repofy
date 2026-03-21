@@ -16,7 +16,7 @@ function createMockService() {
   return {
     list: vi.fn(),
     getById: vi.fn(),
-    exists: vi.fn(),
+    count: vi.fn(),
     deleteBatch: vi.fn(),
   };
 }

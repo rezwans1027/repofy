@@ -21,7 +21,7 @@ const crud = createCrudService({
 
 export const listAdvice = crud.list;
 export const getAdviceById = crud.getById;
-export const adviceExists = crud.exists;
+export const adviceCount = crud.count;
 export const deleteAdvice = crud.deleteBatch;
 
 /** Atomically deduct one credit and persist advice in a single step. */
@@ -44,10 +44,12 @@ export async function deductAndPersist(
   try {
     const { data, error } = await supabase
       .from("advice")
-      .upsert(
-        { user_id: userId, analyzed_username: analyzedUsername, analyzed_name: analyzedName, advice_data: adviceData },
-        { onConflict: "user_id,analyzed_username" },
-      )
+      .insert({
+        user_id: userId,
+        analyzed_username: analyzedUsername,
+        analyzed_name: analyzedName,
+        advice_data: adviceData,
+      })
       .select("id")
       .single();
 

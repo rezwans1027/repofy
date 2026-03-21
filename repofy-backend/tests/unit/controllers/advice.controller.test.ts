@@ -19,12 +19,12 @@ vi.mock("../../../src/services/credit.service", () => ({
   getCreditBalance: vi.fn(),
   deductGrowthCredit: vi.fn(),
 }));
-const mockSupabaseUpsert = vi.fn();
+const mockSupabaseInsert = vi.fn();
 vi.mock("../../../src/config/supabase", () => ({
   getSupabaseAdmin: () => ({
     from: () => ({
-      upsert: (...args: unknown[]) => {
-        const result = mockSupabaseUpsert(...args);
+      insert: (...args: unknown[]) => {
+        const result = mockSupabaseInsert(...args);
         return {
           select: () => ({
             single: () => result,
@@ -67,7 +67,7 @@ describe("adviseUser controller", () => {
     mockEnv.mockAi = false;
     mockGetCreditBalance.mockResolvedValue({ growth_balance: 5, eval_balance: 0 });
     mockDeductGrowthCredit.mockResolvedValue(true);
-    mockSupabaseUpsert.mockReturnValue({ data: { id: "advice-row-1" }, error: null });
+    mockSupabaseInsert.mockReturnValue({ data: { id: "advice-row-1" }, error: null });
   });
 
   sharedControllerBehaviorTests({

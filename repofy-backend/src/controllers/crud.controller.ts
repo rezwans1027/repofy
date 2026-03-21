@@ -7,7 +7,7 @@ import type { AuthenticatedRequest } from "../types";
 interface CrudServiceMethods {
   list: (userId: string, limit?: number, offset?: number) => Promise<unknown>;
   getById: (userId: string, id: string) => Promise<unknown>;
-  exists: (userId: string, value: string) => Promise<boolean>;
+  count: (userId: string, value: string) => Promise<number>;
   deleteBatch: (userId: string, ids: string[]) => Promise<void>;
 }
 
@@ -19,7 +19,7 @@ interface CrudControllerConfig {
 interface CrudController {
   list: RequestHandler;
   getById: RequestHandler;
-  exists: RequestHandler;
+  count: RequestHandler;
   deleteBatch: RequestHandler;
 }
 
@@ -53,13 +53,13 @@ export function createCrudController(config: CrudControllerConfig): CrudControll
       }
     },
 
-    exists: async (req, res) => {
+    count: async (req, res) => {
       const { userId } = req as AuthenticatedRequest;
       try {
-        const result = await service.exists(userId, String(req.params.username));
+        const result = await service.count(userId, String(req.params.username));
         sendSuccess(res, result);
       } catch (err) {
-        handleControllerError(err, req, res, `Check ${capName}`, `Failed to check ${entityName}`);
+        handleControllerError(err, req, res, `Count ${capName}`, `Failed to count ${entityName}`);
       }
     },
 

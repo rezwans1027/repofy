@@ -38,7 +38,7 @@ export function setupGitHubMocks(fetchMock: ReturnType<typeof vi.fn>, username =
   });
 }
 
-/** Build a chainable Supabase mock for .from().select().eq().single() / .upsert() / .delete().lt() */
+/** Build a chainable Supabase mock for .from().select().eq().single() / .insert() / .upsert() / .delete().lt() */
 function createSupabaseChainMock() {
   const creditData = { data: { id: "mock-id", growth_balance: 5, eval_balance: 0 }, error: null };
   const githubTokenData = { data: { github_token: "fake-github-token" }, error: null };
@@ -58,6 +58,9 @@ function createSupabaseChainMock() {
     chain.eq = vi.fn().mockReturnValue({ single: chain.single, maybeSingle: chain.maybeSingle });
     chain.lt = vi.fn().mockResolvedValue(empty);
     chain.select = vi.fn().mockReturnValue({ eq: chain.eq, single: chain.single });
+    const insertSingle = vi.fn().mockResolvedValue(upsertData);
+    const insertSelect = vi.fn().mockReturnValue({ single: insertSingle });
+    chain.insert = vi.fn().mockReturnValue({ select: insertSelect });
     const upsertSingle = vi.fn().mockResolvedValue(upsertData);
     const upsertSelect = vi.fn().mockReturnValue({ single: upsertSingle });
     chain.upsert = vi.fn().mockReturnValue({ select: upsertSelect });
@@ -69,6 +72,7 @@ function createSupabaseChainMock() {
     const chain = createTableChain(tableName);
     return {
       select: chain.select,
+      insert: chain.insert,
       upsert: chain.upsert,
       delete: chain.delete,
     };

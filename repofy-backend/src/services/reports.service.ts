@@ -13,7 +13,7 @@ const crud = createCrudService({
 
 export const listReports = crud.list;
 export const getReportById = crud.getById;
-export const reportExists = crud.exists;
+export const reportCount = crud.count;
 export const deleteReports = crud.deleteBatch;
 
 export async function saveReport(

@@ -77,7 +77,7 @@ export function AdviceExportBar({ username, adviceRef, onBeforeExport, onAfterEx
         onOpenChange={closeDialog}
         username={username}
         balance={balance?.growth_balance ?? 0}
-        actionVerb="Regenerating"
+        actionVerb="Generating"
         onConfirm={() => {
           setDialogOpen(null);
           router.push(`/advisor/generate/${username}`);
