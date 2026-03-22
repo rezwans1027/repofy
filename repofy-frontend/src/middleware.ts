@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
   const nonce = crypto.randomUUID();
   request.headers.set("x-nonce", nonce);
 
-  let response = NextResponse.next({ request });
+  const response = NextResponse.next({ request });
 
   // Forward Supabase cookies (required for PKCE code verifier to survive the OAuth redirect).
   // createServerClient reads cookies from the request and writes them to the response.

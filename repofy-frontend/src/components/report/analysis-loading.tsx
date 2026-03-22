@@ -205,7 +205,7 @@ export function AnalysisLoading({
               handleError(res.error);
               return;
             }
-            setPhase(phases.length);
+            setTimeout(() => setPhase(phases.length), 0);
             setTimeout(() => setFading(true), 400);
             setTimeout(() => {
               if (mountedRef.current) handleComplete(res!.data);
@@ -223,12 +223,14 @@ export function AnalysisLoading({
   useEffect(() => {
     if (!completedProp || completionHandled.current) return;
     completionHandled.current = true;
-    setPhase(phases.length);
-    setTimeout(() => setFading(true), 400);
-    setTimeout(() => {
+    const t1 = setTimeout(() => setPhase(phases.length), 0);
+    const t2 = setTimeout(() => setFading(true), 400);
+    const t3 = setTimeout(() => {
       if (mountedRef.current) handleComplete(null);
     }, 800);
-  }, [completedProp, phases.length, handleComplete]);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- handleComplete is a useEffectEvent (stable)
+  }, [completedProp, phases.length]);
 
   /* Only show the last 4 log entries */
   const visibleLogs = logs.slice(-4);

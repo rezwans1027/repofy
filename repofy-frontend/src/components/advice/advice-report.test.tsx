@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { TestProviders } from "@/__tests__/helpers/test-providers";
 import { AdviceReport } from "./advice-report";
 import { createAdviceFixture } from "@/__tests__/fixtures";
 

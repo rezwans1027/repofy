@@ -77,8 +77,8 @@ export function AdvisorListContent() {
   // Live progress tick for active job card
   useEffect(() => {
     if (!activeJob?.created_at) {
-      setJobProgress(0);
-      return;
+      const id = requestAnimationFrame(() => setJobProgress(0));
+      return () => cancelAnimationFrame(id);
     }
     const tick = () => setJobProgress(calculateAdviceProgress(activeJob.created_at).progress);
     tick();

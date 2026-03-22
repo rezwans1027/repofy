@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -17,11 +17,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [suffix, setSuffix] = useState(SUFFIX_MAP[pathname] ?? "");
-
-  useEffect(() => {
-    setSuffix(SUFFIX_MAP[pathname] ?? "");
-  }, [pathname]);
+  const suffix = useMemo(() => SUFFIX_MAP[pathname] ?? "", [pathname]);
 
   return (
     <main id="main-content" className="relative flex min-h-screen items-start justify-center px-4 pt-[25vh] overflow-hidden">
