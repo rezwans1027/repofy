@@ -3,6 +3,7 @@ import { createControllerMocks } from "../../helpers/controller-mocks";
 
 vi.mock("../../../src/services/stripe.service", () => ({
   createCheckoutSession: vi.fn(),
+  GROWTH_CREDITS_2_AMOUNT: 900,
 }));
 vi.mock("../../../src/services/credit.service", () => ({
   grantGrowthCredits: vi.fn(),
@@ -33,7 +34,7 @@ function buildWebhookEvent(overrides: Record<string, unknown> = {}) {
         id: "cs_123",
         client_reference_id: "user-123",
         customer_email: "test@example.com",
-        amount_total: 500,
+        amount_total: 900,
         currency: "usd",
         payment_status: "paid",
         mode: "payment",
@@ -201,7 +202,7 @@ describe("handleWebhook controller", () => {
     );
   });
 
-  it("returns 500 when amount_total is not 500 (invariant violation)", async () => {
+  it("returns 500 when amount_total is not 900 (invariant violation)", async () => {
     const event = buildWebhookEvent({ amount_total: 1000 });
     mockStripeWithEvent(event);
 
