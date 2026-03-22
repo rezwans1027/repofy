@@ -24,7 +24,7 @@ export default function AuthLayout({
   }, [pathname]);
 
   return (
-    <div className="relative flex min-h-screen items-start justify-center px-4 pt-[25vh] overflow-hidden">
+    <main id="main-content" className="relative flex min-h-screen items-start justify-center px-4 pt-[25vh] overflow-hidden">
       <motion.div
         className="relative z-10 w-full max-w-md space-y-6"
         initial={{ opacity: 0, y: 20 }}
@@ -50,6 +50,6 @@ export default function AuthLayout({
           <div className="p-4">{children}</div>
         </div>
       </motion.div>
-    </div>
+    </main>
   );
 }
