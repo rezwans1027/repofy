@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function ComparePage() {
   return (
     <ComingSoonCard
-      icon={GitCompareArrows}
+      icon={<GitCompareArrows className="mx-auto size-10 text-muted-foreground/30" />}
       title="Compare"
       description="Side-by-side candidate comparison is coming soon. Compare radar charts, stats, strengths, and weaknesses across two developers."
     />

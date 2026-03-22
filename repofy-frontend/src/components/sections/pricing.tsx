@@ -26,8 +26,8 @@ const plans = [
   },
   {
     name: "Pipeline",
-    price: "$29",
-    period: "/mo",
+    price: "TBD",
+    period: "",
     description: "For teams who hire at scale.",
     features: [
       "Everything in Explorer",

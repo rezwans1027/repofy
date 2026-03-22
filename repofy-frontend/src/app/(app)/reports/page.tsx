@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function ReportsPage() {
   return (
     <ComingSoonCard
-      icon={FileText}
+      icon={<FileText className="mx-auto size-10 text-muted-foreground/30" />}
       title="Evals"
       description="AI-powered candidate evaluations are coming soon. You'll be able to generate hiring-grade reports with scores, radar charts, and interview questions."
     />

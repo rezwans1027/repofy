@@ -120,7 +120,7 @@ export function DashboardPageContent() {
                 <Link
                   href={`/profile/${user.username}`}
                   data-testid={`search-result-${user.username}`}
-                  className="block rounded-lg border border-border bg-card p-4 hover:border-cyan/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/50"
+                  className="block rounded-lg border border-border bg-card p-4 transition-colors duration-200 hover:border-cyan/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/50"
                 >
                   <div className="flex items-center gap-4">
                     <Image

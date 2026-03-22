@@ -5,7 +5,12 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { Github, Loader2 } from "lucide-react";
+import { Github, Loader2, Lock } from "lucide-react";
+import {
+  EASE_OUT_EXPO,
+  staggerContainer,
+  staggerItem,
+} from "@/lib/animation-variants";
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
@@ -38,13 +43,43 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+    >
       <title>Login — Repofy</title>
-      <div>
+
+      {/* Status indicators */}
+      <motion.div variants={staggerItem} className="space-y-1.5">
+        <div className="flex items-center gap-2">
+          <span className="size-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
+          <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground/70">
+            system ready
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Lock className="size-3 text-muted-foreground/40" />
+          <span className="font-mono text-[11px] text-muted-foreground/40">
+            tls 1.3 · oauth 2.0
+          </span>
+        </div>
+      </motion.div>
+
+      {/* Terminal command */}
+      <motion.div variants={staggerItem}>
         <p className="font-mono text-sm text-muted-foreground">
           <span className="text-cyan">$</span> repofy auth login
+          <span className="ml-0.5 text-cyan animate-blink">_</span>
         </p>
-      </div>
+      </motion.div>
+
+      {/* Gradient divider */}
+      <motion.div
+        variants={staggerItem}
+        className="h-px bg-gradient-to-r from-transparent via-border to-transparent"
+      />
 
       {error && (
         <motion.p
@@ -59,28 +94,34 @@ export default function LoginPage() {
         </motion.p>
       )}
 
-      <Button
-        onClick={handleGitHubLogin}
-        disabled={isLoading}
-        aria-describedby={error ? "login-error" : undefined}
-        className="w-full bg-cyan text-background hover:bg-cyan/90 font-mono text-sm"
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="size-4 animate-spin" />
-            Connecting...
-          </>
-        ) : (
-          <>
-            <Github className="size-4" />
-            Continue with GitHub
-          </>
-        )}
-      </Button>
+      <motion.div variants={staggerItem}>
+        <Button
+          onClick={handleGitHubLogin}
+          disabled={isLoading}
+          aria-describedby={error ? "login-error" : undefined}
+          className="w-full bg-cyan text-background hover:bg-cyan/70 font-mono text-sm"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              Connecting...
+            </>
+          ) : (
+            <>
+              <Github className="size-4" />
+              Continue with GitHub
+            </>
+          )}
+        </Button>
+      </motion.div>
 
-      <p className="text-center text-[11px] leading-relaxed text-muted-foreground/60">
-        We use your GitHub token to fetch public profile data for analysis. It is stored securely and never shared.
-      </p>
-    </div>
+      <motion.p
+        variants={staggerItem}
+        className="text-center text-[11px] leading-relaxed text-muted-foreground/60"
+      >
+        We use your GitHub token to fetch public profile data for analysis. It
+        is stored securely and never shared.
+      </motion.p>
+    </motion.div>
   );
 }
