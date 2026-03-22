@@ -21,7 +21,7 @@ export const handleDeleteAccount: RequestHandler = async (req, res) => {
   const { userId, userEmail } = req as AuthenticatedRequest;
   const { confirmation } = req.body ?? {};
 
-  if (!confirmation || confirmation.toLowerCase() !== userEmail.toLowerCase()) {
+  if (typeof confirmation !== "string" || confirmation.toLowerCase() !== userEmail.toLowerCase()) {
     sendError(res, 400, "Confirmation email does not match your account email.");
     return;
   }
