@@ -31,18 +31,18 @@ import { navState, navModule, resetNavState } from "@/__tests__/helpers/mock-nav
 navState.pathname = "/pricing";
 vi.mock("next/navigation", () => navModule);
 
-import PricingPage from "./page";
+import { PricingPageContent } from "@/components/pricing/pricing-page-content";
 import { api } from "@/lib/api-client";
 
 function renderPricing() {
   return render(
     <TestProviders>
-      <PricingPage />
+      <PricingPageContent />
     </TestProviders>
   );
 }
 
-describe("PricingPage", () => {
+describe("PricingPageContent", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetNavState();
@@ -59,10 +59,10 @@ describe("PricingPage", () => {
     expect(screen.getByText("Recruiters")).toBeInTheDocument();
   });
 
-  it("renders the $5 price", () => {
+  it("renders the $9 price", () => {
     renderPricing();
 
-    expect(screen.getByText("$5")).toBeInTheDocument();
+    expect(screen.getByText("$9")).toBeInTheDocument();
     expect(screen.getByText("USD")).toBeInTheDocument();
   });
 

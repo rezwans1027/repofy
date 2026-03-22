@@ -78,9 +78,6 @@ export const webhookRateLimit = createLimiter({ max: 100, message: "Too many req
 /** Auth signup/verify limiter: 10 req/min per IP+email */
 export const authRateLimit = createLimiter({ max: 10, keyGenerator: authKeyGenerator });
 
-/** Tight limiter for OTP resend: 3 req/min per IP+email */
-export const resendRateLimit = createLimiter({ max: 3, keyGenerator: authKeyGenerator });
-
 /** Admin endpoint limiter: 20 req/min per IP */
 export const adminRateLimit = createLimiter({ max: 20 });
 

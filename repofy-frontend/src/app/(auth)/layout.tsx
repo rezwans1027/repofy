@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -17,14 +17,10 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [suffix, setSuffix] = useState(SUFFIX_MAP[pathname] ?? "");
-
-  useEffect(() => {
-    setSuffix(SUFFIX_MAP[pathname] ?? "");
-  }, [pathname]);
+  const suffix = useMemo(() => SUFFIX_MAP[pathname] ?? "", [pathname]);
 
   return (
-    <div className="relative flex min-h-screen items-start justify-center px-4 pt-[25vh] overflow-hidden">
+    <main id="main-content" className="relative flex min-h-screen items-start justify-center px-4 pt-[25vh] overflow-hidden">
       <motion.div
         className="relative z-10 w-full max-w-md space-y-6"
         initial={{ opacity: 0, y: 20 }}
@@ -50,6 +46,6 @@ export default function AuthLayout({
           <div className="p-4">{children}</div>
         </div>
       </motion.div>
-    </div>
+    </main>
   );
 }

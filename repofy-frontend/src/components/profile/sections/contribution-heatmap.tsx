@@ -19,7 +19,7 @@ export function ContributionHeatmap({ heatmapData }: ContributionHeatmapProps) {
         {heatmapData ? (
           <>
             <HeatmapGrid data={heatmapData} />
-            <div className="mt-3 flex items-center justify-end gap-1.5 text-xs text-muted-foreground font-mono">
+            <div className="mt-3 flex items-center justify-end gap-1.5 text-xs text-muted-foreground font-mono" aria-hidden="true">
               <span>Less</span>
               {[0, 1, 2, 3, 4].map((level) => (
                 <div
@@ -29,9 +29,9 @@ export function ContributionHeatmap({ heatmapData }: ContributionHeatmapProps) {
                     backgroundColor:
                       [
                         "var(--secondary)",
-                        "#064E3B",
-                        "#065F46",
-                        "#047857",
+                        "#0D9488",
+                        "#14B8A6",
+                        "#2DD4BF",
                         "#22D3EE",
                       ][level],
                   }}
@@ -39,6 +39,7 @@ export function ContributionHeatmap({ heatmapData }: ContributionHeatmapProps) {
               ))}
               <span>More</span>
             </div>
+            <span className="sr-only">Contribution intensity: gray means no activity, brighter teal and cyan means higher activity</span>
           </>
         ) : (
           <p className="py-8 text-center text-sm text-muted-foreground">

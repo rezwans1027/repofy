@@ -6,11 +6,13 @@ const adviceListItemSchema = z.object({
   analyzed_username: z.string(),
   generated_at: z.string(),
   analyzed_name: z.string().nullable(),
+  avatar_url: z.string().nullable().optional().default(null),
 });
 
 const adviceRowSchema = z.object({
   id: z.string(),
   analyzed_username: z.string(),
+  avatar_url: z.string().nullable().optional().default(null),
   user_id: z.string(),
   advice_data: z.object({
     schemaVersion: z.literal("v2"),

@@ -63,6 +63,32 @@ describe("githubRateLimit", () => {
   });
 });
 
+describe("aiRateLimit with userId key", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it("uses userId as key when present on request", async () => {
+    const { aiRateLimit } = await import("../../../src/middleware/rateLimit");
+    const app = express();
+    // Attach userId before the limiter runs
+    app.use((req, _res, next) => {
+      (req as any).userId = "user-abc";
+      next();
+    });
+    app.use(aiRateLimit);
+    app.get("/test", (_req, res) => res.json({ ok: true }));
+
+    for (let i = 0; i < 5; i++) {
+      const res = await request(app).get("/test");
+      expect(res.status).toBe(200);
+    }
+
+    const blocked = await request(app).get("/test");
+    expect(blocked.status).toBe(429);
+  });
+});
+
 describe("authRateLimit", () => {
   beforeEach(() => {
     vi.resetModules();
@@ -107,50 +133,3 @@ describe("authRateLimit", () => {
   });
 });
 
-describe("resendRateLimit", () => {
-  beforeEach(() => {
-    vi.resetModules();
-  });
-
-  it("allows 3 requests then blocks with 429", async () => {
-    const { resendRateLimit } = await import("../../../src/middleware/rateLimit");
-    const app = createPostApp(resendRateLimit);
-
-    for (let i = 0; i < 3; i++) {
-      const res = await request(app)
-        .post("/test")
-        .send({ email: "resend@test.com" });
-      expect(res.status).toBe(200);
-    }
-
-    const blocked = await request(app)
-      .post("/test")
-      .send({ email: "resend@test.com" });
-    expect(blocked.status).toBe(429);
-    expect(blocked.body).toEqual({
-      success: false,
-      error: "Too many requests. Please try again later.",
-    });
-  });
-
-  it("uses compound IP+email key so different emails have separate limits", async () => {
-    const { resendRateLimit } = await import("../../../src/middleware/rateLimit");
-    const app = createPostApp(resendRateLimit);
-
-    // Exhaust limit for email-a
-    for (let i = 0; i < 3; i++) {
-      await request(app).post("/test").send({ email: "a@test.com" });
-    }
-
-    const blockedA = await request(app)
-      .post("/test")
-      .send({ email: "a@test.com" });
-    expect(blockedA.status).toBe(429);
-
-    // email-b should still be allowed
-    const allowedB = await request(app)
-      .post("/test")
-      .send({ email: "b@test.com" });
-    expect(allowedB.status).toBe(200);
-  });
-});

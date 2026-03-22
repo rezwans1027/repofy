@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useCallback, useRef } from "react";
+import { use, useState, useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AnalysisLoading } from "@/components/report/analysis-loading";
@@ -56,12 +56,19 @@ export default function GenerateAdvicePage({
   const jobCompleted = jobData?.status === "completed" && !!jobData.advice_id;
   const jobFailed = jobData?.status === "failed";
 
-  // In resume mode, compute initialElapsed from job creation time
-  const initialElapsed = isResumeMode && jobData?.created_at
-    ? (Date.now() - new Date(jobData.created_at).getTime()) / 1000
-    : jobCreatedAt
-      ? (Date.now() - new Date(jobCreatedAt).getTime()) / 1000
-      : 0;
+  // Capture mount time once (lazy initializer runs outside the render path).
+  const [mountTime] = useState(() => Date.now());
+
+  // In resume mode, compute initialElapsed from job creation time.
+  const initialElapsed = (() => {
+    if (isResumeMode && jobData?.created_at) {
+      return (mountTime - new Date(jobData.created_at).getTime()) / 1000;
+    }
+    if (jobCreatedAt) {
+      return (mountTime - new Date(jobCreatedAt).getTime()) / 1000;
+    }
+    return 0;
+  })();
 
   // Start mode: POST to create the job, then return a never-resolving promise
   // (completion is signaled via the `completed` prop from polling)
@@ -83,7 +90,7 @@ export default function GenerateAdvicePage({
       }
       throw err;
     }
-  }, [username]);
+  }, [username, queryClient]);
 
   const handleComplete = useCallback(
     (data: unknown) => {
@@ -110,13 +117,14 @@ export default function GenerateAdvicePage({
   }, []);
 
   // Resume mode: if already completed, redirect immediately
-  if (isResumeMode && jobCompleted && !redirectedRef.current) {
+  const shouldRedirect = isResumeMode && jobCompleted;
+  useEffect(() => {
+    if (!shouldRedirect || redirectedRef.current) return;
     redirectedRef.current = true;
     queryClient.invalidateQueries({ queryKey: ["advice"] });
     queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
-    router.replace(`/advisor/${jobData.advice_id}?from=profile`);
-    return null;
-  }
+    router.replace(`/advisor/${jobData!.advice_id}?from=profile`);
+  }, [shouldRedirect, queryClient, router, jobData]);
 
   // Resume mode: if job failed, show error
   if (isResumeMode && jobFailed) {
@@ -138,7 +146,7 @@ export default function GenerateAdvicePage({
     );
   }
 
-  if (hasNoCredits || (error && error === NO_CREDITS_SENTINEL)) {
+  if (!isResumeMode && (hasNoCredits || (error && error === NO_CREDITS_SENTINEL))) {
     return (
       <div>
         <BackLink href={backHref} label={backLabel} hoverColor="hover:text-emerald-400" />
@@ -178,6 +186,7 @@ export default function GenerateAdvicePage({
 
   return (
     <div>
+      <title>{`Generating advice for @${username} — Repofy`}</title>
       <BackLink href={backHref} label={backLabel} hoverColor="hover:text-emerald-400" />
       <AnalysisLoading
         fetchReport={isResumeMode ? neverResolves : fetchAdvice}

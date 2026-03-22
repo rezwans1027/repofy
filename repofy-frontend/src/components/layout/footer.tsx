@@ -10,17 +10,17 @@ export function Footer() {
         </div>
         <div className="flex items-center gap-4">
           <a
-            href="#"
+            href="https://github.com/repofy"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Repofy on GitHub"
             className="text-muted-foreground hover:text-foreground text-sm"
           >
             GitHub
           </a>
-          <a
-            href="#"
-            className="text-muted-foreground hover:text-foreground text-sm"
-          >
-            Twitter
-          </a>
+          <span className="text-muted-foreground text-xs">
+            &copy; {new Date().getFullYear()} Repofy
+          </span>
         </div>
       </div>
     </footer>

@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SignOutButton } from "@/components/settings/sign-out-button";
+
+export const metadata: Metadata = {
+  title: "Settings",
+  description: "Manage your Repofy account preferences and session.",
+};
 
 async function getUser() {
   const backendUrl = process.env.API_BACKEND_URL || "http://localhost:3001/api";

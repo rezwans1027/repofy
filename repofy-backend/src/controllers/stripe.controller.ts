@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import { env } from "../config/env";
 import { getStripe } from "../config/stripe";
-import { createCheckoutSession } from "../services/stripe.service";
+import { createCheckoutSession, GROWTH_CREDITS_2_AMOUNT } from "../services/stripe.service";
 import { grantGrowthCredits } from "../services/credit.service";
 import { sendError, sendSuccess } from "../lib/response";
 import { logger } from "../lib/logger";
@@ -74,14 +74,14 @@ export const handleWebhook: RequestHandler = async (req, res) => {
           sendError(res, 500, "Webhook invariant failure: unexpected product");
           return;
         }
-        if (session.amount_total !== 500) {
-          logger.error("Webhook invariant: unexpected amount", { sessionId: session.id, amount: session.amount_total });
-          sendError(res, 500, "Webhook invariant failure: unexpected amount");
-          return;
-        }
         if (session.currency !== "usd") {
           logger.error("Webhook invariant: unexpected currency", { sessionId: session.id, currency: session.currency });
           sendError(res, 500, "Webhook invariant failure: unexpected currency");
+          return;
+        }
+        if (session.amount_total !== GROWTH_CREDITS_2_AMOUNT) {
+          logger.error("Webhook invariant: unexpected amount", { sessionId: session.id, expected: GROWTH_CREDITS_2_AMOUNT, actual: session.amount_total });
+          sendError(res, 500, "Webhook invariant failure: unexpected amount");
           return;
         }
 

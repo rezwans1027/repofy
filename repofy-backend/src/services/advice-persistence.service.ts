@@ -10,8 +10,8 @@ export class InsufficientCreditsError extends Error {
 const crud = createCrudService({
   table: "advice",
   entityName: "advice",
-  listSelect: "id, analyzed_username, analyzed_name, generated_at",
-  detailSelect: "id, analyzed_username, advice_data",
+  listSelect: "id, analyzed_username, analyzed_name, avatar_url, generated_at",
+  detailSelect: "id, analyzed_username, avatar_url, advice_data",
   existsColumn: "analyzed_username",
 });
 

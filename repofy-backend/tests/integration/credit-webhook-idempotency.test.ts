@@ -49,7 +49,7 @@ function buildSession(overrides: Record<string, unknown> = {}) {
     id: "cs_123",
     client_reference_id: USER_ID,
     customer_email: "test@example.com",
-    amount_total: 500,
+    amount_total: 900,
     currency: "usd",
     payment_status: "paid",
     mode: "payment",

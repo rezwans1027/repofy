@@ -25,9 +25,9 @@ vi.mock("@/hooks/use-advice-job", () => ({
   useActiveAdviceJob: () => ({ data: null }),
 }));
 
-import AdvisorPage from "./page";
+import { AdvisorListContent } from "@/components/advisor/advisor-list-content";
 
-describe("AdvisorPage", () => {
+describe("AdvisorListContent", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAdviceItems = [];
@@ -37,7 +37,7 @@ describe("AdvisorPage", () => {
   it("shows loading state when isLoading is true", () => {
     mockAdviceLoading = true;
 
-    const { container } = render(<TestProviders><AdvisorPage /></TestProviders>);
+    const { container } = render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     // Skeleton components render with data-slot="skeleton"
     const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
@@ -47,7 +47,7 @@ describe("AdvisorPage", () => {
   it("shows empty state when items is empty array", () => {
     mockAdviceItems = [];
 
-    render(<TestProviders><AdvisorPage /></TestProviders>);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     expect(screen.getByText("No advice generated yet")).toBeInTheDocument();
   });
@@ -59,16 +59,18 @@ describe("AdvisorPage", () => {
         analyzed_username: "alice",
         analyzed_name: "Alice",
         generated_at: "2025-01-15T10:00:00Z",
+        avatar_url: null,
       },
       {
         id: "a2",
         analyzed_username: "bob",
         analyzed_name: "Bob",
         generated_at: "2025-01-14T10:00:00Z",
+        avatar_url: null,
       },
     ];
 
-    render(<TestProviders><AdvisorPage /></TestProviders>);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     expect(screen.getByText("@alice")).toBeInTheDocument();
     expect(screen.getByText("@bob")).toBeInTheDocument();
@@ -81,17 +83,19 @@ describe("AdvisorPage", () => {
         analyzed_username: "alice",
         analyzed_name: "Alice",
         generated_at: "2025-01-15T10:00:00Z",
+        avatar_url: null,
       },
       {
         id: "a2",
         analyzed_username: "bob",
         analyzed_name: "Bob",
         generated_at: "2025-01-14T10:00:00Z",
+        avatar_url: null,
       },
     ];
 
     const user = userEvent.setup();
-    render(<TestProviders><AdvisorPage /></TestProviders>);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     await user.type(screen.getByPlaceholderText("Search by username or name…"), "alice");
 
@@ -106,10 +110,11 @@ describe("AdvisorPage", () => {
         analyzed_username: "alice",
         analyzed_name: "Alice",
         generated_at: "2025-01-15T10:00:00Z",
+        avatar_url: null,
       },
     ];
 
-    render(<TestProviders><AdvisorPage /></TestProviders>);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     expect(screen.getByText("Newest first")).toBeInTheDocument();
   });
@@ -121,11 +126,12 @@ describe("AdvisorPage", () => {
         analyzed_username: "alice",
         analyzed_name: "Alice",
         generated_at: "2025-01-15T10:00:00Z",
+        avatar_url: null,
       },
     ];
 
     const user = userEvent.setup();
-    render(<TestProviders><AdvisorPage /></TestProviders>);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     expect(screen.getByText("Select")).toBeInTheDocument();
 
@@ -140,10 +146,11 @@ describe("AdvisorPage", () => {
         analyzed_username: "alice",
         analyzed_name: "Alice",
         generated_at: "2025-01-15T10:00:00Z",
+        avatar_url: null,
       },
     ];
 
-    render(<TestProviders><AdvisorPage /></TestProviders>);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     expect(screen.getByText("Advisor")).toBeInTheDocument();
   });
@@ -152,7 +159,7 @@ describe("AdvisorPage", () => {
     mockAdviceItems = createAdviceListItemSet();
     const user = userEvent.setup();
 
-    render(<TestProviders><AdvisorPage /></TestProviders>);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     // Open the sort dropdown
     await user.click(screen.getByText("Newest first"));
@@ -169,7 +176,7 @@ describe("AdvisorPage", () => {
     mockAdviceItems = createAdviceListItemSet();
     const user = userEvent.setup();
 
-    render(<TestProviders><AdvisorPage /></TestProviders>);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     await user.type(screen.getByPlaceholderText("Search by username or name…"), "Bob Coder");
 
@@ -182,7 +189,7 @@ describe("AdvisorPage", () => {
     mockAdviceItems = createAdviceListItemSet();
     const user = userEvent.setup();
 
-    render(<TestProviders><AdvisorPage /></TestProviders>);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     await user.type(screen.getByPlaceholderText("Search by username or name…"), "zzz");
 
@@ -193,7 +200,7 @@ describe("AdvisorPage", () => {
     mockAdviceItems = createAdviceListItemSet();
     const user = userEvent.setup();
 
-    render(<TestProviders><AdvisorPage /></TestProviders>);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     await user.type(screen.getByPlaceholderText("Search by username or name…"), "zzz");
 
@@ -209,7 +216,7 @@ describe("AdvisorPage", () => {
   it("delete flow calls mutateAsync with selected IDs", async () => {
     mockAdviceItems = createAdviceListItemSet();
     const user = userEvent.setup();
-    render(<TestProviders><AdvisorPage /></TestProviders>);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     // Enter select mode
     await user.click(screen.getByText("Select"));

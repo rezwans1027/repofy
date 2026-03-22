@@ -26,9 +26,23 @@ const FinalCta = dynamic(() =>
   import("@/components/sections/final-cta").then((m) => ({ default: m.FinalCta })),
 );
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Repofy",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://repofy.dev",
+  logo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://repofy.dev"}/icon.svg`,
+  description:
+    "Analyze any GitHub profile. Get a hiring-grade developer evaluation powered by code analysis, not resumes.",
+};
+
 export default function Home() {
   return (
     <QueryProvider>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navbar />
       <SectionNav />
       <PageContainer>
