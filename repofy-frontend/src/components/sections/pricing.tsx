@@ -16,7 +16,7 @@ const plans = [
       "GitHub profile explorer with real stats",
       "Top repos, languages & activity feed",
       "Contribution heatmap & history",
-      "AI Profile Advisor — $5 for 2 growth credits",
+      "AI Profile Advisor — $9 for 2 growth credits",
       "Personalized project ideas & 12-week roadmap",
       "PDF export for advice plans",
     ],
@@ -50,7 +50,7 @@ export function Pricing() {
       <AnimateOnView>
         <SectionHeader
           title="Pricing"
-          subtitle="Explore profiles for free. Advisor credits start at $5."
+          subtitle="Explore profiles for free. Advisor credits start at $9."
         />
       </AnimateOnView>
 
@@ -111,7 +111,7 @@ export function Pricing() {
                         Credit pack
                       </span>
                       <span className="font-mono text-sm font-bold text-foreground">
-                        $5 <span className="text-muted-foreground text-xs font-normal">/ 2 credits</span>
+                        $9 <span className="text-muted-foreground text-xs font-normal">/ 2 credits</span>
                       </span>
                     </div>
                   </div>

@@ -46,6 +46,7 @@ import {
 import { useAuth } from "@/components/providers/auth-provider";
 import { useAdviceList, useDeleteAdvice, type AdviceListItem } from "@/hooks/use-advice";
 import { useActiveAdviceJob } from "@/hooks/use-advice-job";
+import Image from "next/image";
 import { useSelectableList } from "@/hooks/use-selectable-list";
 import { calculateAdviceProgress } from "@/lib/progress";
 import { relativeDate } from "@/lib/format";
@@ -381,11 +382,21 @@ export default function AdvisorPage() {
                       />
                     </div>
                   </div>
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <span className="font-mono text-xs font-bold uppercase">
-                      {item.analyzed_username.slice(0, 2)}
-                    </span>
-                  </div>
+                  {item.avatar_url ? (
+                    <Image
+                      src={item.avatar_url}
+                      alt={item.analyzed_username}
+                      width={36}
+                      height={36}
+                      className="size-9 shrink-0 rounded-full"
+                    />
+                  ) : (
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <span className="font-mono text-xs font-bold uppercase">
+                        {item.analyzed_username.slice(0, 2)}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Content */}
                   <div className="min-w-0 flex-1">

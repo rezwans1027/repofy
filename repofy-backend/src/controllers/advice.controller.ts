@@ -37,6 +37,7 @@ async function persistAdvice(
   analyzedUsername: string,
   analyzedName: string | null,
   adviceData: AdviceData,
+  avatarUrl: string | null,
 ): Promise<string> {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
@@ -46,6 +47,7 @@ async function persistAdvice(
       analyzed_username: analyzedUsername,
       analyzed_name: analyzedName,
       advice_data: adviceData,
+      avatar_url: avatarUrl,
     })
     .select("id")
     .single();
@@ -72,7 +74,7 @@ async function processAdviceInBackground(
     tokenUsage?.forEach((u) => logTokenUsage(u.endpoint, u.model, u.usage));
 
     const advice = buildAdviceData(aiAdvice, githubData);
-    const adviceId = await persistAdvice(userId, username.toLowerCase(), githubData.profile.name, advice);
+    const adviceId = await persistAdvice(userId, username.toLowerCase(), githubData.profile.name, advice, githubData.profile.avatarUrl ?? null);
 
     await completeJob(jobId, adviceId);
   } catch (err) {
@@ -169,7 +171,7 @@ export const adviseUser: RequestHandler = async (req, res) => {
       const advice = buildAdviceData(MOCK_ADVICE_RESPONSE, githubData);
 
       try {
-        const adviceId = await persistAdvice(userId, username.toLowerCase(), githubData.profile.name, advice);
+        const adviceId = await persistAdvice(userId, username.toLowerCase(), githubData.profile.name, advice, githubData.profile.avatarUrl ?? null);
         await completeJob(job.id, adviceId);
       } catch (err) {
         logger.error("Mock advice background completion failed:", err);

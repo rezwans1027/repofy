@@ -59,12 +59,14 @@ describe("AdvisorPage", () => {
         analyzed_username: "alice",
         analyzed_name: "Alice",
         generated_at: "2025-01-15T10:00:00Z",
+        avatar_url: null,
       },
       {
         id: "a2",
         analyzed_username: "bob",
         analyzed_name: "Bob",
         generated_at: "2025-01-14T10:00:00Z",
+        avatar_url: null,
       },
     ];
 
@@ -81,12 +83,14 @@ describe("AdvisorPage", () => {
         analyzed_username: "alice",
         analyzed_name: "Alice",
         generated_at: "2025-01-15T10:00:00Z",
+        avatar_url: null,
       },
       {
         id: "a2",
         analyzed_username: "bob",
         analyzed_name: "Bob",
         generated_at: "2025-01-14T10:00:00Z",
+        avatar_url: null,
       },
     ];
 
@@ -106,6 +110,7 @@ describe("AdvisorPage", () => {
         analyzed_username: "alice",
         analyzed_name: "Alice",
         generated_at: "2025-01-15T10:00:00Z",
+        avatar_url: null,
       },
     ];
 
@@ -121,6 +126,7 @@ describe("AdvisorPage", () => {
         analyzed_username: "alice",
         analyzed_name: "Alice",
         generated_at: "2025-01-15T10:00:00Z",
+        avatar_url: null,
       },
     ];
 
@@ -140,6 +146,7 @@ describe("AdvisorPage", () => {
         analyzed_username: "alice",
         analyzed_name: "Alice",
         generated_at: "2025-01-15T10:00:00Z",
+        avatar_url: null,
       },
     ];
 

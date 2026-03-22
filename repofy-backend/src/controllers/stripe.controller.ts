@@ -74,11 +74,6 @@ export const handleWebhook: RequestHandler = async (req, res) => {
           sendError(res, 500, "Webhook invariant failure: unexpected product");
           return;
         }
-        if (session.amount_total !== 500) {
-          logger.error("Webhook invariant: unexpected amount", { sessionId: session.id, amount: session.amount_total });
-          sendError(res, 500, "Webhook invariant failure: unexpected amount");
-          return;
-        }
         if (session.currency !== "usd") {
           logger.error("Webhook invariant: unexpected currency", { sessionId: session.id, currency: session.currency });
           sendError(res, 500, "Webhook invariant failure: unexpected currency");

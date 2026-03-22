@@ -25,7 +25,7 @@ export async function createCheckoutSession(
             name: "2 Growth Credits",
             description: "AI-powered profile improvement advice",
           },
-          unit_amount: 500, // $5.00
+          unit_amount: 900, // $9.00
         },
         quantity: 1,
       },

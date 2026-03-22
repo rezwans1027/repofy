@@ -118,14 +118,14 @@ export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
                 onClick={() => handleTabChange(tab.key)}
                 className={`relative shrink-0 rounded-md px-4 py-2 font-mono text-xs font-medium ${
                   activeTab === tab.key
-                    ? "text-emerald-400"
+                    ? "text-emerald-700 dark:text-emerald-400"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                 }`}
               >
                 {activeTab === tab.key && (
                   <motion.span
                     layoutId="advice-tab-indicator"
-                    className="absolute inset-0 rounded-md bg-emerald-500/15 border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.12)]"
+                    className="absolute inset-0 rounded-md bg-emerald-500/25 border border-emerald-600/40 dark:bg-emerald-500/15 dark:border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.12)]"
                     transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
                   />
                 )}

@@ -212,7 +212,7 @@ function PricingContent() {
               <div className="mb-5">
                 <div className="flex items-baseline gap-1">
                   <span className="font-mono text-3xl font-extrabold tracking-tight">
-                    $5
+                    $9
                   </span>
                   <span className="text-xs text-muted-foreground">USD</span>
                 </div>

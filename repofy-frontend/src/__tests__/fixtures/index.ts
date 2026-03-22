@@ -356,6 +356,7 @@ export function createAdviceListItemFixture(overrides: Record<string, unknown> =
     analyzed_username: "testuser",
     analyzed_name: "Test User",
     generated_at: "2025-01-15T10:00:00Z",
+    avatar_url: null,
     ...overrides,
   };
 }

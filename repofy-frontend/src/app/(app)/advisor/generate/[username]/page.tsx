@@ -138,7 +138,7 @@ export default function GenerateAdvicePage({
     );
   }
 
-  if (hasNoCredits || (error && error === NO_CREDITS_SENTINEL)) {
+  if (!isResumeMode && (hasNoCredits || (error && error === NO_CREDITS_SENTINEL))) {
     return (
       <div>
         <BackLink href={backHref} label={backLabel} hoverColor="hover:text-emerald-400" />

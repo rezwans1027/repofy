@@ -8,6 +8,7 @@ import type { AdviceData } from "@shared/types/advice";
 interface AdviceRow {
   id: string;
   analyzed_username: string;
+  avatar_url: string | null;
   advice_data: AdviceData;
 }
 
@@ -52,6 +53,7 @@ export default async function AdvicePage({
       <BackLink href={backHref} label={backLabel} hoverColor="hover:text-emerald-400" />
       <AdviceReport
         username={advice.analyzed_username}
+        avatarUrl={advice.avatar_url ?? undefined}
         data={advice.advice_data}
       />
     </div>
