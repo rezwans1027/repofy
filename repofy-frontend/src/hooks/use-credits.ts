@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { z } from "zod";
 import { useAuth } from "@/components/providers/auth-provider";
 import { api } from "@/lib/api-client";
@@ -17,6 +17,40 @@ export function useCreditBalance() {
     queryFn: ({ signal }) =>
       api.get<CreditBalance>("/credits/balance", { signal, schema: creditBalanceSchema }),
     enabled: !!user,
+  });
+}
+
+// ── Transaction history ──────────────────────────────────────────────
+
+const creditTransactionSchema = z.object({
+  id: z.string(),
+  credit_type: z.string(),
+  amount: z.number(),
+  source: z.string(),
+  description: z.string().nullable(),
+  metadata: z.record(z.string(), z.unknown()).nullable(),
+  created_at: z.string(),
+});
+
+const transactionHistorySchema = z.object({
+  transactions: z.array(creditTransactionSchema),
+  total: z.number(),
+});
+
+export type CreditTransaction = z.infer<typeof creditTransactionSchema>;
+export type TransactionHistory = z.infer<typeof transactionHistorySchema>;
+
+export function useCreditHistory(limit = 20, offset = 0) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["credits", "history", limit, offset],
+    queryFn: ({ signal }) =>
+      api.get<TransactionHistory>(`/credits/history?limit=${limit}&offset=${offset}`, {
+        signal,
+        schema: transactionHistorySchema,
+      }),
+    enabled: !!user,
+    placeholderData: keepPreviousData,
   });
 }
 

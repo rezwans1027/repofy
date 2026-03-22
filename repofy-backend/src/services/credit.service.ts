@@ -73,3 +73,49 @@ export async function refundGrowthCredit(
   return data === true;
 }
 
+export interface CreditTransaction {
+  id: string;
+  credit_type: string;
+  amount: number;
+  source: string;
+  description: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export interface TransactionHistoryResult {
+  transactions: CreditTransaction[];
+  total: number;
+}
+
+export async function getTransactionHistory(
+  userId: string,
+  limit: number,
+  offset: number,
+): Promise<TransactionHistoryResult> {
+  const supabase = getSupabaseAdmin();
+
+  // Get total count
+  const { count, error: countError } = await supabase
+    .from("credit_transactions")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  throwIfDbError(countError, "count credit transactions");
+
+  // Get paginated rows
+  const { data, error } = await supabase
+    .from("credit_transactions")
+    .select("id, credit_type, amount, source, description, metadata, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  throwIfDbError(error, "fetch credit transactions");
+
+  return {
+    transactions: data ?? [],
+    total: count ?? 0,
+  };
+}
+

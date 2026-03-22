@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SignOutButton } from "@/components/settings/sign-out-button";
+import { PurchaseHistory } from "@/components/settings/purchase-history";
+import { ExportDataButton } from "@/components/settings/export-data-button";
+import { DeleteAccountButton } from "@/components/settings/delete-account-button";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -75,8 +78,29 @@ export default async function SettingsPage() {
         </div>
       </AnimateOnView>
 
-      {/* Sign Out */}
+      {/* Purchase History */}
       <AnimateOnView delay={0.1}>
+        <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+          <h3 className="font-mono text-sm font-bold">Purchase History</h3>
+          <PurchaseHistory />
+        </div>
+      </AnimateOnView>
+
+      {/* Your Data */}
+      <AnimateOnView delay={0.15}>
+        <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+          <h3 className="font-mono text-sm font-bold">Your Data</h3>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs text-muted-foreground">
+              Download a copy of all your data
+            </span>
+            <ExportDataButton />
+          </div>
+        </div>
+      </AnimateOnView>
+
+      {/* Session */}
+      <AnimateOnView delay={0.2}>
         <div className="rounded-lg border border-border bg-card p-6 space-y-4">
           <h3 className="font-mono text-sm font-bold">Session</h3>
           <div className="flex items-center justify-between">
@@ -84,6 +108,19 @@ export default async function SettingsPage() {
               Sign out of your account
             </span>
             <SignOutButton />
+          </div>
+        </div>
+      </AnimateOnView>
+
+      {/* Danger Zone */}
+      <AnimateOnView delay={0.25}>
+        <div className="rounded-lg border border-destructive/30 bg-card p-6 space-y-4">
+          <h3 className="font-mono text-sm font-bold text-destructive">Danger Zone</h3>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs text-muted-foreground">
+              Permanently delete your account and all associated data
+            </span>
+            <DeleteAccountButton />
           </div>
         </div>
       </AnimateOnView>
