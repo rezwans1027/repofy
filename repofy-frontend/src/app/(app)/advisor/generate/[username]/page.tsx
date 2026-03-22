@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useCallback, useMemo, useRef } from "react";
+import { use, useState, useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AnalysisLoading } from "@/components/report/analysis-loading";
@@ -56,17 +56,19 @@ export default function GenerateAdvicePage({
   const jobCompleted = jobData?.status === "completed" && !!jobData.advice_id;
   const jobFailed = jobData?.status === "failed";
 
+  // Capture mount time once (lazy initializer runs outside the render path).
+  const [mountTime] = useState(() => Date.now());
+
   // In resume mode, compute initialElapsed from job creation time.
-  // useMemo ensures Date.now() is captured once per dependency change (not every render).
-  const initialElapsed = useMemo(() => {
+  const initialElapsed = (() => {
     if (isResumeMode && jobData?.created_at) {
-      return (Date.now() - new Date(jobData.created_at).getTime()) / 1000;
+      return (mountTime - new Date(jobData.created_at).getTime()) / 1000;
     }
     if (jobCreatedAt) {
-      return (Date.now() - new Date(jobCreatedAt).getTime()) / 1000;
+      return (mountTime - new Date(jobCreatedAt).getTime()) / 1000;
     }
     return 0;
-  }, [isResumeMode, jobData?.created_at, jobCreatedAt]);
+  })();
 
   // Start mode: POST to create the job, then return a never-resolving promise
   // (completion is signaled via the `completed` prop from polling)
@@ -115,13 +117,14 @@ export default function GenerateAdvicePage({
   }, []);
 
   // Resume mode: if already completed, redirect immediately
-  if (isResumeMode && jobCompleted && !redirectedRef.current) {
+  const shouldRedirect = isResumeMode && jobCompleted;
+  useEffect(() => {
+    if (!shouldRedirect || redirectedRef.current) return;
     redirectedRef.current = true;
     queryClient.invalidateQueries({ queryKey: ["advice"] });
     queryClient.invalidateQueries({ queryKey: ["credits", "balance"] });
-    router.replace(`/advisor/${jobData.advice_id}?from=profile`);
-    return null;
-  }
+    router.replace(`/advisor/${jobData!.advice_id}?from=profile`);
+  }, [shouldRedirect, queryClient, router, jobData]);
 
   // Resume mode: if job failed, show error
   if (isResumeMode && jobFailed) {

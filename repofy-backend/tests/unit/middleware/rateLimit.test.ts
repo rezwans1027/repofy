@@ -63,6 +63,32 @@ describe("githubRateLimit", () => {
   });
 });
 
+describe("aiRateLimit with userId key", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it("uses userId as key when present on request", async () => {
+    const { aiRateLimit } = await import("../../../src/middleware/rateLimit");
+    const app = express();
+    // Attach userId before the limiter runs
+    app.use((req, _res, next) => {
+      (req as any).userId = "user-abc";
+      next();
+    });
+    app.use(aiRateLimit);
+    app.get("/test", (_req, res) => res.json({ ok: true }));
+
+    for (let i = 0; i < 5; i++) {
+      const res = await request(app).get("/test");
+      expect(res.status).toBe(200);
+    }
+
+    const blocked = await request(app).get("/test");
+    expect(blocked.status).toBe(429);
+  });
+});
+
 describe("authRateLimit", () => {
   beforeEach(() => {
     vi.resetModules();

@@ -229,7 +229,6 @@ export function AnalysisLoading({
       if (mountedRef.current) handleComplete(null);
     }, 800);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- handleComplete is a useEffectEvent (stable)
   }, [completedProp, phases.length]);
 
   /* Only show the last 4 log entries */
