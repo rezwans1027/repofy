@@ -1,17 +1,17 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 
 interface ComingSoonCardProps {
-  icon: LucideIcon;
+  icon: ReactNode;
   title: string;
   description: string;
 }
 
 export function ComingSoonCard({
-  icon: Icon,
+  icon,
   title,
   description,
 }: ComingSoonCardProps) {
@@ -19,7 +19,7 @@ export function ComingSoonCard({
     <AnimateOnView>
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="max-w-md text-center">
-          <Icon className="mx-auto size-10 text-muted-foreground/30" />
+          {icon}
           <Badge className="mt-4 border-cyan/30 bg-cyan/10 text-cyan font-mono text-[10px] uppercase tracking-wider">
             Coming Soon
           </Badge>

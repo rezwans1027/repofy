@@ -280,7 +280,7 @@ export function AdvisorListContent() {
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           role="button"
           tabIndex={0}
-          className="group relative flex items-center gap-4 rounded-xl border border-emerald-500/30 bg-card p-4 cursor-pointer overflow-hidden hover:border-emerald-500/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
+          className="group relative flex items-center gap-4 rounded-xl border border-emerald-500/30 bg-card p-4 cursor-pointer overflow-hidden transition-colors duration-200 hover:border-emerald-500/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
           onClick={() => router.push(`/advisor/generate/${activeJob.analyzed_username}?jobId=${activeJob.id}`)}
           onKeyDown={(e: React.KeyboardEvent) => {
             if (e.key === "Enter" || e.key === " ") {
@@ -298,7 +298,7 @@ export function AdvisorListContent() {
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="truncate font-mono text-sm font-semibold text-foreground group-hover:text-emerald-400">
+              <span className="truncate font-mono text-sm font-semibold text-foreground transition-colors duration-200 group-hover:text-emerald-400">
                 @{activeJob.analyzed_username}
               </span>
               <span className="shrink-0 rounded bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-400">
@@ -355,7 +355,7 @@ export function AdvisorListContent() {
                   layout
                   role="button"
                   tabIndex={0}
-                  className={`group relative flex items-center gap-4 rounded-xl border p-4 ${
+                  className={`group relative flex items-center gap-4 rounded-xl border p-4 transition-colors duration-200 ${
                     isSelected
                       ? "border-primary/30 bg-primary/[0.04]"
                       : "border-border bg-card hover:border-border hover:bg-secondary/30"
@@ -401,7 +401,7 @@ export function AdvisorListContent() {
                   {/* Content */}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className={`truncate font-mono text-sm font-semibold text-foreground ${!selectMode ? "group-hover:text-primary" : ""}`}>
+                      <span className={`truncate font-mono text-sm font-semibold text-foreground transition-colors duration-200 ${!selectMode ? "group-hover:text-primary" : ""}`}>
                         @{item.analyzed_username}
                       </span>
                     </div>
