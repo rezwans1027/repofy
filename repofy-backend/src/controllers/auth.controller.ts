@@ -6,6 +6,7 @@ import { invalidateToken } from "../middleware/auth";
 import { getSupabaseAdmin } from "../config/supabase";
 import { setAuthCookies, clearAuthCookies, extractAccessToken, extractRefreshToken } from "../lib/cookie-utils";
 import { logger } from "../lib/logger";
+import { encryptToken } from "../lib/encryption";
 import type { AuthenticatedRequest } from "../types";
 
 export const handleGitHubCallback: RequestHandler = async (req, res) => {
@@ -58,7 +59,7 @@ export const handleGitHubCallback: RequestHandler = async (req, res) => {
     // 3. Upsert into github_tokens table
     const { error: upsertError } = await supabase.from("github_tokens").upsert({
       user_id: user.id,
-      github_token: provider_token,
+      github_token: encryptToken(provider_token),
       github_username: ghUser.login,
       github_avatar_url: ghUser.avatar_url,
       updated_at: new Date().toISOString(),

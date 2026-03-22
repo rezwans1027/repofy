@@ -1,3 +1,5 @@
+process.env.TOKEN_ENCRYPTION_KEY = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+
 // Dummy values for testing only — not real API keys or production credentials.
 process.env.SUPABASE_URL = "http://localhost:54321";
 process.env.SUPABASE_SERVICE_ROLE_KEY = "fake-service-role-key";

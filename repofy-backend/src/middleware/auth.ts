@@ -3,6 +3,8 @@ import { getSupabaseAdmin } from "../config/supabase";
 import { sendError } from "../lib/response";
 import { extractAccessToken, extractRefreshToken, setAuthCookies, clearAuthCookies } from "../lib/cookie-utils";
 import { refreshSession } from "../services/auth.service";
+import { decryptToken, isEncrypted, encryptToken } from "../lib/encryption";
+import { logger } from "../lib/logger";
 
 /**
  * Short-lived cache to avoid a Supabase HTTP roundtrip on every request.
@@ -51,7 +53,28 @@ async function fetchGitHubToken(userId: string): Promise<string | undefined> {
       .select("github_token")
       .eq("user_id", userId)
       .maybeSingle();
-    return data?.github_token ?? undefined;
+
+    const raw = data?.github_token;
+    if (!raw) return undefined;
+
+    if (isEncrypted(raw)) {
+      return decryptToken(raw);
+    }
+
+    // Legacy plaintext token — fire-and-forget re-encrypt for lazy migration
+    void (async () => {
+      try {
+        const { error } = await getSupabaseAdmin()
+          .from("github_tokens")
+          .update({ github_token: encryptToken(raw) })
+          .eq("user_id", userId);
+        if (error) logger.error("Lazy token encryption migration failed", { userId, error });
+      } catch (err) {
+        logger.error("Lazy token encryption migration threw", { userId, err });
+      }
+    })();
+
+    return raw;
   } catch {
     return undefined;
   }
