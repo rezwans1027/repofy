@@ -9,6 +9,8 @@ interface AnimateOnViewProps {
   className?: string;
   delay?: number;
   variant?: "fadeUp" | "fadeIn" | "scaleIn" | "slideLeft" | "slideRight";
+  /** Override the default viewport margin (e.g. "0px" to trigger at the edge). */
+  viewportMargin?: string;
 }
 
 const presets: Record<string, Variants> = {
@@ -58,6 +60,7 @@ export function AnimateOnView({
   className,
   delay = 0,
   variant = "fadeUp",
+  viewportMargin = "-60px",
 }: AnimateOnViewProps) {
   const prefersReducedMotion = useReducedMotion();
 
@@ -70,7 +73,7 @@ export function AnimateOnView({
       variants={presets[variant]}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: "-60px" }}
+      viewport={{ once: true, margin: viewportMargin }}
       custom={delay}
       className={className}
     >
