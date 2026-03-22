@@ -37,6 +37,15 @@ export interface UserDataExport {
     growth_balance: number;
     eval_balance: number;
   };
+  credit_transactions: {
+    id: string;
+    credit_type: string;
+    amount: number;
+    source: string;
+    description: string | null;
+    metadata: Record<string, unknown> | null;
+    created_at: string;
+  }[];
   exported_at: string;
 }
 
@@ -52,7 +61,7 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
   const user = authData.user;
 
   // Fetch all user data in parallel
-  const [githubResult, adviceResult, jobsResult, reportsResult, walletResult] = await Promise.all([
+  const [githubResult, adviceResult, jobsResult, reportsResult, walletResult, transactionsResult] = await Promise.all([
     supabase
       .from("github_tokens")
       .select("github_username, github_avatar_url, updated_at")
@@ -75,6 +84,11 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
       .select("growth_balance, eval_balance")
       .eq("user_id", userId)
       .maybeSingle(),
+    supabase
+      .from("credit_transactions")
+      .select("id, credit_type, amount, source, description, metadata, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false }),
   ]);
 
   throwIfDbError(githubResult.error, "fetch github data");
@@ -82,6 +96,7 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
   throwIfDbError(jobsResult.error, "fetch advice jobs");
   throwIfDbError(reportsResult.error, "fetch reports");
   throwIfDbError(walletResult.error, "fetch credit wallet");
+  throwIfDbError(transactionsResult.error, "fetch credit transactions");
 
   return {
     account: {
@@ -100,6 +115,7 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
     advice_jobs: jobsResult.data ?? [],
     reports: reportsResult.data ?? [],
     credits: walletResult.data ?? { growth_balance: 0, eval_balance: 0 },
+    credit_transactions: transactionsResult.data ?? [],
     exported_at: new Date().toISOString(),
   };
 }

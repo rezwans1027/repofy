@@ -16,6 +16,7 @@ function createChainable(resolvedValue: unknown) {
   // The terminal object is both thenable (for array queries) and has .maybeSingle() (for single-row queries)
   const terminal: Record<string, any> = {
     maybeSingle: vi.fn().mockResolvedValue(resolvedValue),
+    order: vi.fn().mockReturnValue({ then: (resolve: any, reject: any) => Promise.resolve(resolvedValue).then(resolve, reject) }),
     then: (resolve: any, reject: any) => Promise.resolve(resolvedValue).then(resolve, reject),
   };
   const chain: Record<string, any> = {
@@ -84,6 +85,7 @@ describe("account.service", () => {
         updated_at: "2024-06-01T00:00:00Z",
       });
       expect(result.credits).toEqual({ growth_balance: 3, eval_balance: 0 });
+      expect(result.credit_transactions).toEqual([]);
       expect(result.exported_at).toBeDefined();
     });
 
