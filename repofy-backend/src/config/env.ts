@@ -60,4 +60,5 @@ export const env = {
   })(),
   engineInternalKey: requireEnvUnlessMockAi("ENGINE_INTERNAL_KEY") ?? "",
   rubricVersion: process.env.RUBRIC_VERSION || "v1.1",
+  tokenEncryptionKey: requireEnv("TOKEN_ENCRYPTION_KEY"),
 } as const;

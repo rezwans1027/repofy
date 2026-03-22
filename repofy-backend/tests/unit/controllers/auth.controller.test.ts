@@ -18,6 +18,11 @@ vi.mock("../../../src/lib/logger", () => ({
 vi.mock("../../../src/middleware/auth", () => ({
   invalidateToken: vi.fn(),
 }));
+vi.mock("../../../src/lib/encryption", () => ({
+  encryptToken: (v: string) => `encrypted:${v}`,
+  decryptToken: (v: string) => v.replace("encrypted:", ""),
+  isEncrypted: (v: string) => v.startsWith("encrypted:"),
+}));
 vi.mock("../../../src/config/supabase", () => ({
   getSupabaseAdmin: vi.fn(() => ({
     auth: {
@@ -80,6 +85,62 @@ describe("handleGitHubCallback", () => {
     await handleGitHubCallback(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it("encrypts provider_token before upserting to github_tokens", async () => {
+    const { req, res, next } = createControllerMocks();
+    (req as any).body = {
+      access_token: "valid-at",
+      refresh_token: "valid-rt",
+      provider_token: "gho_testtoken123",
+    };
+
+    // Mock global fetch for GitHub /user call
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        login: "testuser",
+        avatar_url: "https://example.com/avatar.png",
+        name: "Test User",
+      }),
+    });
+    vi.stubGlobal("fetch", mockFetch);
+
+    // getUser returns a user with matching GitHub identity
+    const { getSupabaseAdmin } = await import("../../../src/config/supabase");
+    const mockUpsert = vi.fn().mockResolvedValue({ error: null });
+    vi.mocked(getSupabaseAdmin).mockReturnValue({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: {
+            user: {
+              id: "u1",
+              identities: [{
+                provider: "github",
+                identity_data: { user_name: "testuser" },
+              }],
+            },
+          },
+          error: null,
+        }),
+        admin: {
+          updateUserById: vi.fn().mockResolvedValue({}),
+        },
+      },
+      from: vi.fn().mockReturnValue({
+        upsert: mockUpsert,
+      }),
+    } as any);
+
+    await handleGitHubCallback(req, res, next);
+
+    expect(mockUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        github_token: "encrypted:gho_testtoken123",
+      }),
+      expect.any(Object),
+    );
+    vi.unstubAllGlobals();
   });
 });
 

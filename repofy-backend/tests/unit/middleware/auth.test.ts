@@ -8,6 +8,14 @@ vi.mock("../../../src/config/supabase", () => ({
 vi.mock("../../../src/services/auth.service", () => ({
   refreshSession: vi.fn(),
 }));
+vi.mock("../../../src/lib/encryption", () => ({
+  encryptToken: (v: string) => `encrypted:${v}`,
+  decryptToken: (v: string) => v.replace("encrypted:", ""),
+  isEncrypted: (v: string) => v.startsWith("encrypted:"),
+}));
+vi.mock("../../../src/lib/logger", () => ({
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
 
 import { requireAuth, clearTokenCache, invalidateToken } from "../../../src/middleware/auth";
 import { getSupabaseAdmin } from "../../../src/config/supabase";
@@ -418,6 +426,80 @@ describe("requireAuth", () => {
     // Should bail out because headersSent is true
     expect(res.status).not.toHaveBeenCalled();
     expect(next).not.toHaveBeenCalled();
+  });
+
+  // --- Token encryption ---
+  it("decrypts encrypted GitHub tokens from the database", async () => {
+    const mockGetUser = vi.fn().mockResolvedValue({
+      data: { user: { id: "enc-user", email: "enc@test.com" } },
+      error: null,
+    });
+    const mockMaybeSingle = vi.fn().mockResolvedValue({
+      data: { github_token: "encrypted:gho_secret123" },
+      error: null,
+    });
+    vi.mocked(getSupabaseAdmin).mockReturnValue({
+      auth: { getUser: mockGetUser },
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            maybeSingle: mockMaybeSingle,
+          }),
+        }),
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            then: vi.fn().mockReturnValue({ catch: vi.fn() }),
+          }),
+        }),
+      }),
+    } as any);
+
+    const { req, res, next } = createMocks({ headers: { authorization: "Bearer enc-token" } });
+    await requireAuth(req, res, next);
+
+    expect(req.githubToken).toBe("gho_secret123");
+    expect(next).toHaveBeenCalledWith();
+  });
+
+  it("returns plaintext token as-is and triggers lazy migration for unencrypted tokens", async () => {
+    const mockGetUser = vi.fn().mockResolvedValue({
+      data: { user: { id: "plain-user", email: "plain@test.com" } },
+      error: null,
+    });
+    const mockThen = vi.fn().mockReturnValue({ catch: vi.fn() });
+    const mockEqToken = vi.fn().mockReturnValue({ then: mockThen });
+    const mockEqUserId = vi.fn().mockReturnValue({ eq: mockEqToken });
+    const mockUpdate = vi.fn().mockReturnValue({ eq: mockEqUserId });
+    const mockMaybeSingle = vi.fn().mockResolvedValue({
+      data: { github_token: "gho_plaintext_token" },
+      error: null,
+    });
+    const mockFrom = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: mockMaybeSingle,
+        }),
+      }),
+      update: mockUpdate,
+    });
+    vi.mocked(getSupabaseAdmin).mockReturnValue({
+      auth: { getUser: mockGetUser },
+      from: mockFrom,
+    } as any);
+
+    const { req, res, next } = createMocks({ headers: { authorization: "Bearer plain-token" } });
+    await requireAuth(req, res, next);
+
+    // Should return the plaintext token
+    expect(req.githubToken).toBe("gho_plaintext_token");
+    expect(next).toHaveBeenCalledWith();
+
+    // Should have triggered lazy migration (fire-and-forget update)
+    expect(mockUpdate).toHaveBeenCalledWith({
+      github_token: "encrypted:gho_plaintext_token",
+    });
+    // Conditional write: only update if the row still holds the original plaintext
+    expect(mockEqToken).toHaveBeenCalledWith("github_token", "gho_plaintext_token");
   });
 
   // --- Error when headersSent is true during catch ---
