@@ -178,6 +178,7 @@ export default function GenerateAdvicePage({
 
   return (
     <div>
+      <title>{`Generating advice for @${username} — Repofy`}</title>
       <BackLink href={backHref} label={backLabel} hoverColor="hover:text-emerald-400" />
       <AnalysisLoading
         fetchReport={isResumeMode ? neverResolves : fetchAdvice}

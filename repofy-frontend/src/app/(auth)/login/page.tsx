@@ -39,6 +39,7 @@ export default function LoginPage() {
 
   return (
     <div className="space-y-6">
+      <title>Login — Repofy</title>
       <div>
         <p className="font-mono text-sm text-muted-foreground">
           <span className="text-cyan">$</span> repofy auth login
@@ -47,6 +48,8 @@ export default function LoginPage() {
 
       {error && (
         <motion.p
+          role="alert"
+          id="login-error"
           className="font-mono text-sm text-destructive"
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
@@ -59,6 +62,7 @@ export default function LoginPage() {
       <Button
         onClick={handleGitHubLogin}
         disabled={isLoading}
+        aria-describedby={error ? "login-error" : undefined}
         className="w-full bg-cyan text-background hover:bg-cyan/90 font-mono text-sm"
       >
         {isLoading ? (

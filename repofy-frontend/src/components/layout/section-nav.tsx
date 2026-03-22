@@ -14,7 +14,7 @@ export function SectionNav() {
   return (
     <>
       {/* Desktop: left rail */}
-      <nav className="fixed left-0 top-14 hidden h-[calc(100vh-3.5rem)] w-48 flex-col justify-center border-r border-border px-4 lg:flex">
+      <nav aria-label="Profile sections" className="fixed left-0 top-14 hidden h-[calc(100vh-3.5rem)] w-48 flex-col justify-center border-r border-border px-4 lg:flex">
         <ul className="space-y-1">
           {SECTIONS.map(({ id, label, number }) => (
             <li key={id}>
@@ -41,7 +41,7 @@ export function SectionNav() {
       </nav>
 
       {/* Mobile: horizontal sticky bar */}
-      <nav className="fixed top-14 left-0 right-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm lg:hidden">
+      <nav aria-label="Profile sections" className="fixed top-14 left-0 right-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm lg:hidden">
         <div className="no-scrollbar flex overflow-x-auto px-4 py-2">
           {SECTIONS.map(({ id, label }) => (
             <button

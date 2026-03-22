@@ -28,7 +28,7 @@ export function Navbar() {
       <div className="absolute left-0 lg:left-48 top-0 flex h-14 items-center px-4 sm:px-6">
         <Link
           href={user ? "/dashboard" : "/"}
-          className="flex items-center gap-2 hover:opacity-60 transition-opacity duration-150 ease-out will-change-[opacity]"
+          className="flex items-center gap-2 transition-colors duration-150 ease-out hover:text-foreground/60"
         >
           <span className="text-cyan font-mono text-lg font-bold tracking-tight">
             repofy
@@ -56,7 +56,7 @@ export function Navbar() {
                       <span className="min-w-0">{credits?.growth_balance ?? 0}</span>
                     </span>
                   </span>
-                  <span className="flex items-center gap-1 text-muted-foreground opacity-40">
+                  <span className="flex items-center gap-1 text-muted-foreground/60">
                     <BarChart3 className="h-3.5 w-3.5" />
                     <span
                       className="inline-grid overflow-hidden transition-[grid-template-columns,opacity] duration-150 ease-out"

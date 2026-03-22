@@ -26,10 +26,10 @@ vi.mock("@/components/providers/auth-provider", () => ({
   useAuth: () => ({ user: { id: "test-user" }, isLoading: false }),
 }));
 
-import DashboardPage from "./page";
+import { DashboardPageContent } from "@/components/dashboard/dashboard-page-content";
 import { api } from "@/lib/api-client";
 
-describe("DashboardPage", () => {
+describe("DashboardPageContent", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetNavState();
@@ -39,7 +39,7 @@ describe("DashboardPage", () => {
   it("renders search input", () => {
     render(
       <TestProviders>
-        <DashboardPage />
+        <DashboardPageContent />
       </TestProviders>,
     );
 
@@ -49,7 +49,7 @@ describe("DashboardPage", () => {
   it("renders prompt text when search is empty", () => {
     render(
       <TestProviders>
-        <DashboardPage />
+        <DashboardPageContent />
       </TestProviders>,
     );
 
@@ -67,7 +67,7 @@ describe("DashboardPage", () => {
 
     render(
       <TestProviders>
-        <DashboardPage />
+        <DashboardPageContent />
       </TestProviders>,
     );
 
@@ -89,7 +89,7 @@ describe("DashboardPage", () => {
 
     render(
       <TestProviders>
-        <DashboardPage />
+        <DashboardPageContent />
       </TestProviders>,
     );
 
@@ -112,7 +112,7 @@ describe("DashboardPage", () => {
 
     render(
       <TestProviders>
-        <DashboardPage />
+        <DashboardPageContent />
       </TestProviders>,
     );
 
@@ -125,11 +125,8 @@ describe("DashboardPage", () => {
       { timeout: 2000 },
     );
 
-    // Click the search result card
-    fireEvent.click(screen.getByTestId("search-result-alice"));
-
-    await waitFor(() => {
-      expect(navState.push).toHaveBeenCalledWith("/profile/alice");
-    });
+    // Verify the search result links to the correct profile page
+    const resultLink = screen.getByTestId("search-result-alice");
+    expect(resultLink).toHaveAttribute("href", "/profile/alice");
   });
 });
