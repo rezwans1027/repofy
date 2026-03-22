@@ -55,8 +55,16 @@ export default function CookiesPage() {
                 <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground">
                   access_token
                 </code>{" "}
-                — An HttpOnly cookie containing your session token. It is not
-                accessible to client-side JavaScript.
+                — An HttpOnly cookie containing your short-lived session token.
+                It is not accessible to client-side JavaScript.
+              </li>
+              <li>
+                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground">
+                  refresh_token
+                </code>{" "}
+                — An HttpOnly cookie used to renew your session without
+                requiring you to sign in again. It has a 30-day lifetime and is
+                not accessible to client-side JavaScript.
               </li>
               <li>
                 <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground">

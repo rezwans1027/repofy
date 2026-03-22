@@ -467,8 +467,9 @@ describe("requireAuth", () => {
       error: null,
     });
     const mockThen = vi.fn().mockReturnValue({ catch: vi.fn() });
-    const mockEqUpdate = vi.fn().mockReturnValue({ then: mockThen });
-    const mockUpdate = vi.fn().mockReturnValue({ eq: mockEqUpdate });
+    const mockEqToken = vi.fn().mockReturnValue({ then: mockThen });
+    const mockEqUserId = vi.fn().mockReturnValue({ eq: mockEqToken });
+    const mockUpdate = vi.fn().mockReturnValue({ eq: mockEqUserId });
     const mockMaybeSingle = vi.fn().mockResolvedValue({
       data: { github_token: "gho_plaintext_token" },
       error: null,
@@ -497,6 +498,8 @@ describe("requireAuth", () => {
     expect(mockUpdate).toHaveBeenCalledWith({
       github_token: "encrypted:gho_plaintext_token",
     });
+    // Conditional write: only update if the row still holds the original plaintext
+    expect(mockEqToken).toHaveBeenCalledWith("github_token", "gho_plaintext_token");
   });
 
   // --- Error when headersSent is true during catch ---

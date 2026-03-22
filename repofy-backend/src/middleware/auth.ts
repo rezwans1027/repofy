@@ -61,13 +61,16 @@ async function fetchGitHubToken(userId: string): Promise<string | undefined> {
       return decryptToken(raw);
     }
 
-    // Legacy plaintext token — fire-and-forget re-encrypt for lazy migration
+    // Legacy plaintext token — fire-and-forget re-encrypt for lazy migration.
+    // The WHERE clause ensures we only overwrite if the row still holds the
+    // exact plaintext value we read, avoiding clobbering a freshly rotated token.
     void (async () => {
       try {
         const { error } = await getSupabaseAdmin()
           .from("github_tokens")
           .update({ github_token: encryptToken(raw) })
-          .eq("user_id", userId);
+          .eq("user_id", userId)
+          .eq("github_token", raw);
         if (error) logger.error("Lazy token encryption migration failed", { userId, error });
       } catch (err) {
         logger.error("Lazy token encryption migration threw", { userId, err });
