@@ -147,6 +147,8 @@ jobs:
       CORS_ORIGIN: http://localhost:3000
       FRONTEND_URL: http://localhost:3000
       ENGINE_INTERNAL_KEY: test-engine-key
+      FEEDBACK_NOTIFICATION_EMAIL: test@example.com
+      TOKEN_ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
       NODE_ENV: test
       # Frontend env vars
       E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
