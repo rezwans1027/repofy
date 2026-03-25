@@ -15,7 +15,8 @@
  * Collect the Y-positions (in canvas pixels) where section boundaries occur.
  * These are the preferred page-break locations.
  */
-function collectSectionBreaks(
+/** @internal Exported for testing */
+export function collectSectionBreaks(
   element: HTMLElement,
   scale: number,
 ): number[] {
@@ -51,7 +52,8 @@ function collectSectionBreaks(
  * Determine page-break Y-positions, snapping to section boundaries
  * when possible to avoid splitting cards mid-way.
  */
-function findPageBreaks(
+/** @internal Exported for testing */
+export function findPageBreaks(
   totalHeight: number,
   maxSliceHeight: number,
   sectionBreaks: number[],
