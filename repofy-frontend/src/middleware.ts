@@ -1,5 +1,4 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createServerClient } from "@supabase/ssr";
 import { PROTECTED_ROUTES } from "@/lib/constants";
 
 export async function middleware(request: NextRequest) {
@@ -9,23 +8,13 @@ export async function middleware(request: NextRequest) {
 
   const response = NextResponse.next({ request });
 
-  // Forward Supabase cookies (required for PKCE code verifier to survive the OAuth redirect).
-  // createServerClient reads cookies from the request and writes them to the response.
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (supabaseUrl && supabaseKey) {
-    createServerClient(supabaseUrl, supabaseKey, {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          for (const { name, value, options } of cookiesToSet) {
-            response.cookies.set(name, value, options);
-          }
-        },
-      },
-    });
+  // Forward Supabase PKCE cookies (code verifier) from request to response
+  // so they survive the OAuth redirect. No need for the full @supabase/ssr
+  // client — just forward sb-* cookies that are already present.
+  for (const cookie of request.cookies.getAll()) {
+    if (cookie.name.startsWith("sb-")) {
+      response.cookies.set(cookie.name, cookie.value);
+    }
   }
 
   const pathname = request.nextUrl.pathname;
@@ -91,7 +80,7 @@ export async function middleware(request: NextRequest) {
 
     "img-src 'self' avatars.githubusercontent.com data: blob:", // data:/blob: needed for html2canvas-pro + jspdf
     "font-src 'self'",
-    `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL || ""}`,
+    `connect-src 'self' ${(process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim()}`,
     "worker-src 'self' blob:",   // jsPDF may use blob workers for PDF generation
     "object-src 'none'",
     "base-uri 'self'",           // prevent <base> tag injection attacks
