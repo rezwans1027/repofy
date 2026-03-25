@@ -6,6 +6,7 @@ import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Bug, Lightbulb, MessageSquare, Loader2 } from "lucide-react";
+import { EASE_OUT_EXPO } from "@/lib/animation-variants";
 
 function AnimatedCheck() {
   return (
@@ -60,9 +61,17 @@ export function FeedbackForm() {
     left: number; top: number; width: number; height: number;
   } | null>(null);
 
+  const prevCategoryIndexRef = useRef(-1);
   const categoryIndex = category
     ? CATEGORIES.findIndex((c) => c.value === category)
     : -1;
+  const direction = categoryIndex >= 0 && prevCategoryIndexRef.current >= 0
+    ? Math.sign(categoryIndex - prevCategoryIndexRef.current)
+    : 0;
+
+  useEffect(() => {
+    prevCategoryIndexRef.current = categoryIndex;
+  }, [categoryIndex]);
 
   useEffect(() => {
     const grid = gridRef.current;
@@ -245,19 +254,36 @@ export function FeedbackForm() {
                 {message.length}/2000
               </span>
             </div>
-            <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value.slice(0, 2000))}
-              placeholder={
-                category === "bug"
-                  ? "Describe the bug — what happened, what you expected, and steps to reproduce..."
-                  : category === "feature"
-                    ? "Describe the feature you'd like to see and how it would help you..."
-                    : "Share your thoughts on Repofy..."
-              }
-              className="font-mono text-xs min-h-[140px] resize-y"
-              required
-            />
+            <div className="relative">
+              <Textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value.slice(0, 2000))}
+                className="font-mono text-xs min-h-[140px] resize-y"
+                required
+              />
+              {/* Animated placeholder — directional slide like advisor report tabs */}
+              {!message && (
+                <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-md border border-transparent px-3 py-2">
+                  <AnimatePresence mode="wait" custom={direction}>
+                    <motion.span
+                      key={category ?? "default"}
+                      custom={direction}
+                      initial={{ opacity: 0, x: direction * 24 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: direction * -24 }}
+                      transition={{ duration: 0.25, ease: EASE_OUT_EXPO }}
+                      className="block font-mono text-xs text-muted-foreground"
+                    >
+                      {category === "bug"
+                        ? "Describe the bug — what happened, what you expected, and steps to reproduce..."
+                        : category === "feature"
+                          ? "Describe the feature you'd like to see and how it would help you..."
+                          : "Share your thoughts on Repofy..."}
+                    </motion.span>
+                  </AnimatePresence>
+                </div>
+              )}
+            </div>
             {message.length > 0 && message.trim().length < 10 && (
               <p className="font-mono text-[10px] text-destructive">
                 At least 10 characters required
@@ -271,31 +297,38 @@ export function FeedbackForm() {
               type="submit"
               size="sm"
               disabled={!canSubmit}
-              className="font-mono text-xs gap-2"
+              className="font-mono text-xs gap-2 overflow-hidden"
+              asChild
             >
-              <AnimatePresence mode="wait" initial={false}>
-                {loading ? (
-                  <motion.span
-                    key="loading"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.1 }}
-                  >
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  </motion.span>
-                ) : (
-                  <motion.span
-                    key={category ?? "default"}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    {selectedCategory ? `Submit ${selectedCategory.label}` : "Submit Feedback"}
-                  </motion.span>
-                )}
-              </AnimatePresence>
+              <motion.button
+                layout
+                transition={{ layout: { type: "spring", stiffness: 400, damping: 30 } }}
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  {loading ? (
+                    <motion.span
+                      key="loading"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.1 }}
+                    >
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key={category ?? "default"}
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ duration: 0.15 }}
+                      className="whitespace-nowrap"
+                    >
+                      {selectedCategory ? `Submit ${selectedCategory.label}` : "Submit Feedback"}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
             </Button>
           </div>
         </motion.form>
