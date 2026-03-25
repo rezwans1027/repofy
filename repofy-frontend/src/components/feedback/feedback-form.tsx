@@ -304,7 +304,7 @@ export function FeedbackForm() {
                 layout
                 transition={{ layout: { type: "spring", stiffness: 400, damping: 30 } }}
               >
-                <AnimatePresence mode="wait" initial={false}>
+                <AnimatePresence mode="popLayout" initial={false}>
                   {loading ? (
                     <motion.span
                       key="loading"
@@ -318,9 +318,9 @@ export function FeedbackForm() {
                   ) : (
                     <motion.span
                       key={category ?? "default"}
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
                       transition={{ duration: 0.15 }}
                       className="whitespace-nowrap"
                     >
