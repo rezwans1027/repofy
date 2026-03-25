@@ -49,6 +49,23 @@ const CATEGORIES = [
 
 type Category = (typeof CATEGORIES)[number]["value"];
 
+const placeholderVariants = {
+  enter: (dir: number) => ({
+    x: dir === 0 ? 0 : dir * 24,
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.25, ease: EASE_OUT_EXPO },
+  },
+  exit: (dir: number) => ({
+    x: dir === 0 ? 0 : dir * -24,
+    opacity: 0,
+    transition: { duration: 0.15 },
+  }),
+};
+
 export function FeedbackForm() {
   const [category, setCategory] = useState<Category | null>(null);
   const [message, setMessage] = useState("");
@@ -268,10 +285,10 @@ export function FeedbackForm() {
                     <motion.span
                       key={category ?? "default"}
                       custom={direction}
-                      initial={{ opacity: 0, x: direction * 24 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: direction * -24 }}
-                      transition={{ duration: 0.25, ease: EASE_OUT_EXPO }}
+                      variants={placeholderVariants}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
                       className="block font-mono text-xs text-muted-foreground"
                     >
                       {category === "bug"
