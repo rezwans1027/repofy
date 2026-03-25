@@ -6,7 +6,7 @@ import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Bug, Lightbulb, MessageSquare, Loader2 } from "lucide-react";
-import { EASE_OUT_EXPO } from "@/lib/animation-variants";
+import { tabContentVariants } from "@/lib/animation-variants";
 
 function AnimatedCheck() {
   return (
@@ -49,23 +49,6 @@ const CATEGORIES = [
 
 type Category = (typeof CATEGORIES)[number]["value"];
 
-const placeholderVariants = {
-  enter: (dir: number) => ({
-    x: dir === 0 ? 0 : dir * 24,
-    opacity: 0,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-    transition: { duration: 0.25, ease: EASE_OUT_EXPO },
-  },
-  exit: (dir: number) => ({
-    x: dir === 0 ? 0 : dir * -24,
-    opacity: 0,
-    transition: { duration: 0.15 },
-  }),
-};
-
 export function FeedbackForm() {
   const [category, setCategory] = useState<Category | null>(null);
   const [message, setMessage] = useState("");
@@ -82,9 +65,10 @@ export function FeedbackForm() {
   const categoryIndex = category
     ? CATEGORIES.findIndex((c) => c.value === category)
     : -1;
-  const direction = categoryIndex >= 0 && prevCategoryIndexRef.current >= 0
-    ? Math.sign(categoryIndex - prevCategoryIndexRef.current)
-    : 0;
+  const direction: number | null =
+    categoryIndex >= 0 && prevCategoryIndexRef.current >= 0
+      ? Math.sign(categoryIndex - prevCategoryIndexRef.current)
+      : null;
 
   useEffect(() => {
     prevCategoryIndexRef.current = categoryIndex;
@@ -285,7 +269,7 @@ export function FeedbackForm() {
                     <motion.span
                       key={category ?? "default"}
                       custom={direction}
-                      variants={placeholderVariants}
+                      variants={tabContentVariants}
                       initial="enter"
                       animate="center"
                       exit="exit"
