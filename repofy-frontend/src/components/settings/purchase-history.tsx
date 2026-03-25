@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useCreditHistory, type CreditTransaction } from "@/hooks/use-credits";
 import { Button } from "@/components/ui/button";
@@ -76,8 +76,7 @@ function SkeletonRows() {
 
 export function PurchaseHistory() {
   const [page, setPage] = useState(0);
-  const directionRef = useRef<number | null>(null);
-  const hasInteracted = useRef(false);
+  const [direction, setDirection] = useState<number | null>(null);
   const prefersReducedMotion = useReducedMotion();
 
   const offset = page * PAGE_SIZE;
@@ -95,8 +94,7 @@ export function PurchaseHistory() {
   const dataKey = transactions[0]?.id ?? `empty-${page}`;
 
   function goTo(newPage: number) {
-    directionRef.current = newPage > page ? 1 : -1;
-    hasInteracted.current = true;
+    setDirection(newPage > page ? 1 : -1);
     setPage(newPage);
   }
 
@@ -110,7 +108,6 @@ export function PurchaseHistory() {
   }
 
   const animate = !prefersReducedMotion;
-  const direction = hasInteracted.current ? directionRef.current : null;
 
   return (
     <div className="space-y-3">

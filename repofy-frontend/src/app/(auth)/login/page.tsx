@@ -7,7 +7,6 @@ import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Github, Loader2, Lock } from "lucide-react";
 import {
-  EASE_OUT_EXPO,
   staggerContainer,
   staggerItem,
 } from "@/lib/animation-variants";
