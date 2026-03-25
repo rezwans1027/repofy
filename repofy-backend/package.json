@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@sentry/node": "^10.46.0",
     "@supabase/supabase-js": "^2.95.3",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",

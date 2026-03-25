@@ -43,30 +43,34 @@ vi.mock("framer-motion", async () => {
     layoutId?: string;
   }
 
+  const cache = new Map<string, React.ForwardRefExoticComponent<MockMotionProps & React.RefAttributes<HTMLElement>>>();
   const handler: ProxyHandler<Record<string, unknown>> = {
     get(_target, prop: string) {
-      const MockMotionComponent = React.forwardRef<HTMLElement, MockMotionProps>(function MockMotionComponent(
-        props,
-        ref,
-      ) {
-        const {
-          initial: _initial,
-          animate: _animate,
-          exit: _exit,
-          variants: _variants,
-          transition: _transition,
-          whileHover: _whileHover,
-          whileInView: _whileInView,
-          whileTap: _whileTap,
-          viewport: _viewport,
-          layout: _layout,
-          layoutId: _layoutId,
-          ...rest
-        } = props;
-        return React.createElement(prop as ElementType, { ...rest, ref });
-      });
-      MockMotionComponent.displayName = `MockMotion(${prop})`;
-      return MockMotionComponent;
+      if (!cache.has(prop)) {
+        const MockMotionComponent = React.forwardRef<HTMLElement, MockMotionProps>(function MockMotionComponent(
+          props,
+          ref,
+        ) {
+          const {
+            initial: _initial,
+            animate: _animate,
+            exit: _exit,
+            variants: _variants,
+            transition: _transition,
+            whileHover: _whileHover,
+            whileInView: _whileInView,
+            whileTap: _whileTap,
+            viewport: _viewport,
+            layout: _layout,
+            layoutId: _layoutId,
+            ...rest
+          } = props;
+          return React.createElement(prop as ElementType, { ...rest, ref });
+        });
+        MockMotionComponent.displayName = `MockMotion(${prop})`;
+        cache.set(prop, MockMotionComponent);
+      }
+      return cache.get(prop);
     },
   };
 

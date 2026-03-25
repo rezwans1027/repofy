@@ -1,3 +1,8 @@
+import { initSentry } from "./lib/sentry";
+
+// Sentry must be initialized before any other imports that might throw
+initSentry();
+
 import { createApp } from "./app";
 import { env } from "./config/env";
 import { logger } from "./lib/logger";

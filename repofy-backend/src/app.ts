@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/node";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import express from "express";
@@ -82,6 +83,7 @@ export function createApp() {
   app.use("/api", routes);
 
   app.use(notFound);
+  Sentry.setupExpressErrorHandler(app);
   app.use(errorHandler);
 
   return app;

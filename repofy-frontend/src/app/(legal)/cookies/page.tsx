@@ -27,9 +27,10 @@ export default function CookiesPage() {
             What Are Cookies
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            Cookies are small text files stored on your device by your web browser
-            when you visit a website. They are widely used to make websites work
-            efficiently and to provide information to site operators.
+            Cookies are small text files stored on your device by your web
+            browser when you visit a website. They are widely used to make
+            websites work efficiently and to provide information to site
+            operators.
           </p>
         </section>
       </AnimateOnView>
@@ -40,8 +41,8 @@ export default function CookiesPage() {
             Cookies We Use
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            Repofy uses a minimal set of cookies, limited to what is necessary for
-            the Service to function:
+            Repofy uses a minimal set of cookies, limited to what is necessary
+            for the Service to function:
           </p>
 
           <div className="space-y-4">
@@ -61,16 +62,16 @@ export default function CookiesPage() {
                   <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground">
                     access_token
                   </code>{" "}
-                  — An HttpOnly cookie containing your short-lived session token.
-                  It is not accessible to client-side JavaScript.
+                  — An HttpOnly cookie containing your short-lived session
+                  token. It is not accessible to client-side JavaScript.
                 </li>
                 <li>
                   <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground">
                     refresh_token
                   </code>{" "}
                   — An HttpOnly cookie used to renew your session without
-                  requiring you to sign in again. It has a 30-day lifetime and is
-                  not accessible to client-side JavaScript.
+                  requiring you to sign in again. It has a 30-day lifetime and
+                  is not accessible to client-side JavaScript.
                 </li>
                 <li>
                   <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground">
@@ -107,8 +108,8 @@ export default function CookiesPage() {
           </h2>
           <p className="text-muted-foreground leading-relaxed">
             Repofy does <strong className="text-foreground">not</strong> use any
-            analytics cookies, tracking pixels, or advertising cookies. We do not
-            use Google Analytics, Facebook Pixel, or any similar tracking
+            analytics cookies, tracking pixels, or advertising cookies. We do
+            not use Google Analytics, Facebook Pixel, or any similar tracking
             technology. Your browsing behavior is not tracked or profiled for
             advertising purposes.
           </p>
@@ -144,11 +145,11 @@ export default function CookiesPage() {
             Managing Cookies
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            You can control and delete cookies through your browser settings. Most
-            browsers allow you to block or remove cookies, but doing so may
-            prevent you from signing in or using certain features of the Service.
-            Consult your browser&apos;s help documentation for instructions on
-            managing cookies.
+            You can control and delete cookies through your browser settings.
+            Most browsers allow you to block or remove cookies, but doing so may
+            prevent you from signing in or using certain features of the
+            Service. Consult your browser&apos;s help documentation for
+            instructions on managing cookies.
           </p>
         </section>
       </AnimateOnView>
@@ -163,10 +164,10 @@ export default function CookiesPage() {
             reflected by the &quot;Last updated&quot; date above. For questions,
             contact us at{" "}
             <a
-              href="mailto:rezwanswe23@gmail.com"
+              href="mailto:admin@repofy.app"
               className="text-cyan underline underline-offset-4 hover:text-cyan/80"
             >
-              rezwanswe23@gmail.com
+              admin@repofy.app
             </a>
             .
           </p>

@@ -29,8 +29,8 @@ export default function PrivacyPage() {
           <p className="text-muted-foreground leading-relaxed">
             Repofy (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) operates
             the repofy.dev website and related services. This Privacy Policy
-            explains how we collect, use, and protect your information when you use
-            our platform.
+            explains how we collect, use, and protect your information when you
+            use our platform.
           </p>
         </section>
       </AnimateOnView>
@@ -46,14 +46,15 @@ export default function PrivacyPage() {
           <ul className="list-disc space-y-2 pl-6 text-muted-foreground">
             <li>
               <strong className="text-foreground">GitHub profile data</strong> —
-              Public repository information, commit history, language statistics,
-              and contribution activity fetched via the GitHub API for the profiles
-              you analyze.
+              Public repository information, commit history, language
+              statistics, and contribution activity fetched via the GitHub API
+              for the profiles you analyze.
             </li>
             <li>
               <strong className="text-foreground">OAuth account data</strong> —
-              When you sign in with GitHub, we receive your GitHub user ID, email
-              address, username, and avatar URL to create and manage your account.
+              When you sign in with GitHub, we receive your GitHub user ID,
+              email address, username, and avatar URL to create and manage your
+              account.
             </li>
             <li>
               <strong className="text-foreground">Payment information</strong> —
@@ -73,7 +74,8 @@ export default function PrivacyPage() {
           <ul className="list-disc space-y-2 pl-6 text-muted-foreground">
             <li>
               <strong className="text-foreground">Profile analysis</strong> —
-              Generating developer evaluations and metrics from public GitHub data.
+              Generating developer evaluations and metrics from public GitHub
+              data.
             </li>
             <li>
               <strong className="text-foreground">AI career advice</strong> —
@@ -82,8 +84,8 @@ export default function PrivacyPage() {
             </li>
             <li>
               <strong className="text-foreground">Credit tracking</strong> —
-              Managing your credit balance, recording purchases, and tracking usage
-              of paid features.
+              Managing your credit balance, recording purchases, and tracking
+              usage of paid features.
             </li>
           </ul>
         </section>
@@ -95,7 +97,8 @@ export default function PrivacyPage() {
             Third-Party Services
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            We rely on the following third-party providers to operate our service:
+            We rely on the following third-party providers to operate our
+            service:
           </p>
           <ul className="list-disc space-y-2 pl-6 text-muted-foreground">
             <li>
@@ -129,10 +132,10 @@ export default function PrivacyPage() {
           </h2>
           <p className="text-muted-foreground leading-relaxed">
             We retain your account data and analysis history for as long as your
-            account is active. Cached GitHub profile data is stored temporarily to
-            improve performance and is refreshed periodically. You may request
-            deletion of your account and all associated data at any time by
-            contacting us.
+            account is active. Cached GitHub profile data is stored temporarily
+            to improve performance and is refreshed periodically. You may
+            request deletion of your account and all associated data at any time
+            by contacting us.
           </p>
         </section>
       </AnimateOnView>
@@ -147,16 +150,16 @@ export default function PrivacyPage() {
           </p>
           <ul className="list-disc space-y-2 pl-6 text-muted-foreground">
             <li>
-              <strong className="text-foreground">Access</strong> — Request a copy
-              of the personal data we hold about you.
+              <strong className="text-foreground">Access</strong> — Request a
+              copy of the personal data we hold about you.
             </li>
             <li>
-              <strong className="text-foreground">Correction</strong> — Ask us to
-              correct inaccurate or incomplete data.
+              <strong className="text-foreground">Correction</strong> — Ask us
+              to correct inaccurate or incomplete data.
             </li>
             <li>
-              <strong className="text-foreground">Deletion</strong> — Request that
-              we delete your personal data and account.
+              <strong className="text-foreground">Deletion</strong> — Request
+              that we delete your personal data and account.
             </li>
             <li>
               <strong className="text-foreground">Portability</strong> — Receive
@@ -176,11 +179,11 @@ export default function PrivacyPage() {
             Security
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            We implement industry-standard security measures to protect your data,
-            including encrypted connections (HTTPS/TLS), secure authentication
-            tokens, and access controls on our infrastructure. However, no method
-            of transmission or storage is 100% secure, and we cannot guarantee
-            absolute security.
+            We implement industry-standard security measures to protect your
+            data, including encrypted connections (HTTPS/TLS), secure
+            authentication tokens, and access controls on our infrastructure.
+            However, no method of transmission or storage is 100% secure, and we
+            cannot guarantee absolute security.
           </p>
         </section>
       </AnimateOnView>
@@ -192,9 +195,9 @@ export default function PrivacyPage() {
           </h2>
           <p className="text-muted-foreground leading-relaxed">
             We may update this Privacy Policy from time to time. When we make
-            material changes, we will update the &quot;Last updated&quot; date at
-            the top of this page. Your continued use of Repofy after any changes
-            constitutes acceptance of the updated policy.
+            material changes, we will update the &quot;Last updated&quot; date
+            at the top of this page. Your continued use of Repofy after any
+            changes constitutes acceptance of the updated policy.
           </p>
         </section>
       </AnimateOnView>
@@ -208,10 +211,10 @@ export default function PrivacyPage() {
             If you have questions about this Privacy Policy or wish to exercise
             your rights, please reach out to us at{" "}
             <a
-              href="mailto:rezwanswe23@gmail.com"
+              href="mailto:admin@repofy.app"
               className="text-cyan underline underline-offset-4 hover:text-cyan/80"
             >
-              rezwanswe23@gmail.com
+              admin@repofy.app
             </a>
             .
           </p>
