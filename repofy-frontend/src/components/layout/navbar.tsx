@@ -89,7 +89,9 @@ export function Navbar() {
           onClick={() => {
             const next = theme === "dark" ? "light" : "dark";
             if (document.startViewTransition) {
-              document.startViewTransition(() => setTheme(next));
+              document.documentElement.dataset.themeTransitioning = "";
+              const vt = document.startViewTransition(() => setTheme(next));
+              vt.finished.then(() => delete document.documentElement.dataset.themeTransitioning);
             } else {
               setTheme(next);
             }
