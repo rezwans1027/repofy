@@ -26,6 +26,10 @@ export async function grantGrowthCredits(
   stripePaymentIntentId: string,
   metadata?: Record<string, unknown>,
 ): Promise<boolean> {
+  if (amount <= 0 || !Number.isInteger(amount)) {
+    throw new Error("Invalid credit amount");
+  }
+
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase.rpc("grant_growth_credits", {
     p_user_id: userId,

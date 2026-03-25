@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { ProfilePageContent } from "@/components/profile/profile-page-content";
+import type { GitHubProfileRaw } from "@/hooks/use-github";
+import { serverFetch } from "@/lib/server-api";
 
 export async function generateMetadata({
   params,
@@ -30,5 +32,13 @@ export default async function ProfilePage({
   params: Promise<{ username: string }>;
 }) {
   const { username } = await params;
-  return <ProfilePageContent username={username} />;
+  const { data } = await serverFetch<GitHubProfileRaw>(
+    `/github/${encodeURIComponent(username)}`,
+  );
+  return (
+    <ProfilePageContent
+      username={username}
+      initialData={data ?? undefined}
+    />
+  );
 }

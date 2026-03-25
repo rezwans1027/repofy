@@ -136,7 +136,7 @@ describe("adviseUser controller", () => {
       expect.any(String),
       { username: "octocat", endpoint: "/advice" },
     );
-    expect(mockCreateJob).toHaveBeenCalledWith("user-123", "octocat");
+    expect(mockCreateJob).toHaveBeenCalledWith("user-123", "octocat", expect.any(String));
     expect(res.status).toHaveBeenCalledWith(202);
     expect(res.json).toHaveBeenCalledWith({
       success: true,

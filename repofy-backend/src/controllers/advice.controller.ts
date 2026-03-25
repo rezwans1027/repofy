@@ -23,9 +23,6 @@ interface AdviceEngineResponse {
   tokenUsage?: { endpoint: string; model: string; usage: TokenUsage }[];
 }
 
-/** TTL for the distributed advice lock (seconds). */
-const ADVICE_LOCK_TTL_SECS = 10 * 60; // 10 minutes (max realistic advice duration)
-
 /** Build a consistent lock key for a user's advice request. */
 function adviceLockKey(userId: string): string {
   return `advice:${userId}`;
@@ -92,7 +89,7 @@ async function processAdviceInBackground(
       logger.error("Failed to refund credit after background failure:", e),
     );
   } finally {
-    await advisoryLock.release(lockKey);
+    advisoryLock.release(lockKey);
   }
 }
 
@@ -107,7 +104,7 @@ export const adviseUser: RequestHandler = async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
   const lockKey = adviceLockKey(userId);
 
-  const acquired = await advisoryLock.acquire(lockKey, ADVICE_LOCK_TTL_SECS);
+  const acquired = advisoryLock.acquire(lockKey);
   if (!acquired) {
     // Check if there's an active job to return (idempotent)
     const existingJob = await getActiveJob(userId);
@@ -120,6 +117,8 @@ export const adviseUser: RequestHandler = async (req, res) => {
   }
 
   const requestId = crypto.randomUUID();
+  // Track whether lock ownership was handed to a background task
+  let lockHandedOff = false;
 
   try {
     // Expire any stuck jobs before checking for active ones
@@ -128,7 +127,6 @@ export const adviseUser: RequestHandler = async (req, res) => {
     // Check for existing active job (idempotent)
     const existingJob = await getActiveJob(userId);
     if (existingJob) {
-      await advisoryLock.release(lockKey);
       res.status(202).json({ success: true, data: { jobId: existingJob.id, createdAt: existingJob.created_at } });
       return;
     }
@@ -137,7 +135,6 @@ export const adviseUser: RequestHandler = async (req, res) => {
       // Mock path: deduct credit, create job, complete immediately in background
       const balance = await getCreditBalance(userId);
       if (balance.growth_balance <= 0) {
-        await advisoryLock.release(lockKey);
         sendError(res, 402, "Insufficient growth credits");
         return;
       }
@@ -147,13 +144,12 @@ export const adviseUser: RequestHandler = async (req, res) => {
         endpoint: "/advice",
       });
       if (!deducted) {
-        await advisoryLock.release(lockKey);
         throw new InsufficientCreditsError();
       }
 
       let job;
       try {
-        job = await createJob(userId, username);
+        job = await createJob(userId, username, requestId);
       } catch (err) {
         await refundGrowthCredit(userId, requestId, {
           reason: "job_creation_failed",
@@ -180,14 +176,11 @@ export const adviseUser: RequestHandler = async (req, res) => {
           reason: "mock_persist_failed",
           username: username.toLowerCase(),
         }).catch(() => {});
-      } finally {
-        await advisoryLock.release(lockKey);
       }
       return;
     }
 
     if (!req.githubToken) {
-      await advisoryLock.release(lockKey);
       sendError(res, 403, "GitHub authentication required. Please sign in again.");
       return;
     }
@@ -195,7 +188,6 @@ export const adviseUser: RequestHandler = async (req, res) => {
     // Pre-check credits
     const balance = await getCreditBalance(userId);
     if (balance.growth_balance <= 0) {
-      await advisoryLock.release(lockKey);
       sendError(res, 402, "Insufficient growth credits");
       return;
     }
@@ -206,14 +198,13 @@ export const adviseUser: RequestHandler = async (req, res) => {
       endpoint: "/advice",
     });
     if (!deducted) {
-      await advisoryLock.release(lockKey);
       throw new InsufficientCreditsError();
     }
 
     // Create job — refund credit if this fails before background processing starts
     let job;
     try {
-      job = await createJob(userId, username);
+      job = await createJob(userId, username, requestId);
     } catch (err) {
       await refundGrowthCredit(userId, requestId, {
         reason: "job_creation_failed",
@@ -228,10 +219,21 @@ export const adviseUser: RequestHandler = async (req, res) => {
     // Capture token before response completes
     const githubToken = req.githubToken;
 
-    // Fire-and-forget background processing (lock released in finally block)
-    processAdviceInBackground(userId, requestId, username, githubToken, job.id, lockKey);
+    // Hand lock ownership to background processing (released in its finally block)
+    lockHandedOff = true;
+    processAdviceInBackground(userId, requestId, username, githubToken, job.id, lockKey)
+      .catch((err) => {
+        logger.error("Unhandled error in background advice processing:", err);
+        refundGrowthCredit(userId, requestId, {
+          reason: "background_unhandled_error",
+          username: username.toLowerCase(),
+        }).catch((e) => logger.error("Failed to refund credit after unhandled error:", e));
+      });
   } catch (err) {
-    await advisoryLock.release(lockKey);
     handleControllerError(err, req, res, "Advice", "Advice generation failed. Please try again.");
+  } finally {
+    if (!lockHandedOff) {
+      advisoryLock.release(lockKey);
+    }
   }
 };

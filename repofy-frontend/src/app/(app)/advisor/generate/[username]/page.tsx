@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useCallback, useEffect, useRef } from "react";
+import { use, useState, useCallback, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AnalysisLoading } from "@/components/report/analysis-loading";
@@ -29,6 +29,18 @@ const ADVICE_PHASES = [
 const neverResolves = () => new Promise<unknown>(() => {});
 
 export default function GenerateAdvicePage({
+  params,
+}: {
+  params: Promise<{ username: string }>;
+}) {
+  return (
+    <Suspense>
+      <GenerateAdviceContent params={params} />
+    </Suspense>
+  );
+}
+
+function GenerateAdviceContent({
   params,
 }: {
   params: Promise<{ username: string }>;

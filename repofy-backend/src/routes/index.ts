@@ -7,6 +7,7 @@ import reportRoutes from "./reports.routes";
 import adminRoutes from "./admin.routes";
 import stripeRoutes from "./stripe.routes";
 import creditRoutes from "./credit.routes";
+import feedbackRoutes from "./feedback.routes";
 import authRoutes from "./auth.routes";
 
 const router = Router();
@@ -20,5 +21,6 @@ router.use(reportRoutes);
 router.use(adminRoutes);
 router.use(stripeRoutes);
 router.use(creditRoutes);
+router.use(feedbackRoutes);
 
 export default router;

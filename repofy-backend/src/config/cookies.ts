@@ -15,14 +15,14 @@ export function getCookieOptions(isProduction: boolean): CookieConfig {
     accessToken: {
       httpOnly: true,
       secure: isProduction,
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/",
       maxAge: 2 * 60 * 60 * 1000, // 2 hours
     },
     refreshToken: {
       httpOnly: true,
       secure: isProduction,
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/",
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     },

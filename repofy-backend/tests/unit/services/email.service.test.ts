@@ -16,7 +16,7 @@ vi.mock("../../../src/lib/logger", () => ({
   }),
 }));
 
-import { escapeHtml, sendOtpEmail } from "../../../src/services/email.service";
+import { escapeHtml, sendFeedbackNotificationEmail, sendOtpEmail } from "../../../src/services/email.service";
 import { getResend } from "../../../src/config/resend";
 import { logger, maskEmail } from "../../../src/lib/logger";
 
@@ -179,6 +179,129 @@ describe("sendOtpEmail", () => {
     expect(mockLogger.error).toHaveBeenCalledWith(
       "Failed to send OTP email",
       expect.objectContaining({ email: "a***@test.com" }),
+    );
+  });
+});
+
+describe("sendFeedbackNotificationEmail", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("calls resend.emails.send with correct recipient, subject, and replyTo", async () => {
+    const { sendFn } = mockResend();
+
+    await sendFeedbackNotificationEmail({
+      category: "bug",
+      message: "Something broke",
+      userId: "user-123",
+      userEmail: "alice@test.com",
+      submittedAt: "2026-03-25T12:00:00.000Z",
+    });
+
+    expect(sendFn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: "Repofy <noreply@repofy.app>",
+        to: "feedback@test.com",
+        replyTo: "alice@test.com",
+        subject: "[Repofy] New Bug Report from alice@test.com",
+      }),
+    );
+  });
+
+  it("HTML body escapes the message and uses the user-facing category label", async () => {
+    const { sendFn } = mockResend();
+
+    await sendFeedbackNotificationEmail({
+      category: "feature",
+      message: "<script>alert('xss')</script>\nLine two",
+      userId: "user-123",
+      userEmail: "alice@test.com",
+      submittedAt: "2026-03-25T12:00:00.000Z",
+    });
+
+    const html = sendFn.mock.calls[0][0].html as string;
+    expect(html).toContain("&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;<br />Line two");
+    expect(html).toContain("Feature Request");
+    expect(html).toContain("alice@test.com");
+    expect(html).toContain("user-123");
+    expect(html).toContain("2026-03-25T12:00:00.000Z");
+  });
+
+  it("omits replyTo when userEmail is unavailable", async () => {
+    const { sendFn } = mockResend();
+
+    await sendFeedbackNotificationEmail({
+      category: "feedback",
+      message: "General note",
+      userId: "user-123",
+      submittedAt: "2026-03-25T12:00:00.000Z",
+    });
+
+    expect(sendFn.mock.calls[0][0]).not.toHaveProperty("replyTo");
+  });
+
+  it("logs success with masked recipient and sender emails", async () => {
+    mockResend();
+
+    await sendFeedbackNotificationEmail({
+      category: "bug",
+      message: "Something broke",
+      userId: "user-123",
+      userEmail: "alice@test.com",
+      submittedAt: "2026-03-25T12:00:00.000Z",
+    });
+
+    expect(maskEmail).toHaveBeenCalledWith("feedback@test.com");
+    expect(maskEmail).toHaveBeenCalledWith("alice@test.com");
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      "Feedback notification email sent",
+      expect.objectContaining({
+        recipientEmail: "f***@test.com",
+        userEmail: "a***@test.com",
+        userId: "user-123",
+        category: "bug",
+      }),
+    );
+  });
+
+  it("throws when Resend returns an error", async () => {
+    mockResend({ error: { message: "Rate limited" } });
+
+    await expect(
+      sendFeedbackNotificationEmail({
+        category: "bug",
+        message: "Something broke",
+        userId: "user-123",
+        userEmail: "alice@test.com",
+        submittedAt: "2026-03-25T12:00:00.000Z",
+      }),
+    ).rejects.toThrow("Failed to send feedback notification email");
+  });
+
+  it("logs error with masked recipient and sender emails on failure", async () => {
+    mockResend({ error: { message: "Rate limited" } });
+
+    await expect(
+      sendFeedbackNotificationEmail({
+        category: "bug",
+        message: "Something broke",
+        userId: "user-123",
+        userEmail: "alice@test.com",
+        submittedAt: "2026-03-25T12:00:00.000Z",
+      }),
+    ).rejects.toThrow();
+
+    expect(maskEmail).toHaveBeenCalledWith("feedback@test.com");
+    expect(maskEmail).toHaveBeenCalledWith("alice@test.com");
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      "Failed to send feedback notification email",
+      expect.objectContaining({
+        recipientEmail: "f***@test.com",
+        userEmail: "a***@test.com",
+        userId: "user-123",
+        category: "bug",
+      }),
     );
   });
 });

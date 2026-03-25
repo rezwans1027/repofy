@@ -14,7 +14,6 @@ import {
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useTypewriter } from "@/hooks/use-typewriter";
 import { useGitHubSearch } from "@/hooks/use-github";
-import { SmoothCaretInput } from "@/components/ui/smooth-caret-input";
 
 export function DashboardPageContent() {
   const [query, setQuery] = useState("");
@@ -52,7 +51,7 @@ export function DashboardPageContent() {
               <span className="text-muted-foreground" aria-hidden="true">repofy search</span>
               <div className="relative flex-1">
                 <label htmlFor="github-search" className="sr-only">Search GitHub username</label>
-                <SmoothCaretInput
+                <input
                   id="github-search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}

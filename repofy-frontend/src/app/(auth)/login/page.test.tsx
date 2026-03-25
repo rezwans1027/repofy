@@ -96,6 +96,6 @@ describe("LoginPage", () => {
     navState.searchParams = new URLSearchParams("error=exchange_failed");
     render(<LoginPage />);
 
-    expect(screen.getByText("exchange_failed")).toBeInTheDocument();
+    expect(screen.getByText(/could not complete sign-in/i)).toBeInTheDocument();
   });
 });

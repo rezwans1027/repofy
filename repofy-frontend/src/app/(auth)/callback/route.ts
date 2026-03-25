@@ -11,8 +11,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error("[callback] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY");
+    url.pathname = "/login";
+    url.searchParams.set("error", "server_misconfigured");
+    return NextResponse.redirect(url);
+  }
+
   const backendUrl = process.env.API_BACKEND_URL || "http://localhost:3001/api";
 
   // Create a response we can set cookies on

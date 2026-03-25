@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { getSupabase } from "@/lib/supabase";
@@ -13,9 +13,27 @@ import {
 } from "@/lib/animation-variants";
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+const ERROR_MESSAGES: Record<string, string> = {
+  missing_code: "Authentication failed. Please try again.",
+  exchange_failed: "Could not complete sign-in. Please try again.",
+  no_provider_token: "GitHub did not grant the required permissions. Please try again.",
+  backend_error: "Something went wrong on our end. Please try again.",
+  backend_unreachable: "Our servers are temporarily unavailable. Please try again shortly.",
+};
+
+function LoginPageContent() {
   const searchParams = useSearchParams();
   const callbackError = searchParams.get("error");
-  const [error, setError] = useState<string | null>(callbackError);
+  const [error, setError] = useState<string | null>(
+    callbackError ? (ERROR_MESSAGES[callbackError] ?? "Something went wrong. Please try again.") : null,
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleGitHubLogin() {
@@ -49,8 +67,6 @@ export default function LoginPage() {
       initial="hidden"
       animate="visible"
     >
-      <title>Login — Repofy</title>
-
       {/* Status indicators */}
       <motion.div variants={staggerItem} className="space-y-1.5">
         <div className="flex items-center gap-2">

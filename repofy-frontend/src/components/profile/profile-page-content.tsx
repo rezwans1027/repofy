@@ -19,13 +19,19 @@ import {
   ExternalLink,
   Loader2,
 } from "lucide-react";
-import { useGitHubProfile } from "@/hooks/use-github";
+import { useGitHubProfile, type GitHubProfileRaw } from "@/hooks/use-github";
 import { Skeleton } from "@/components/ui/skeleton";
 import { timeAgo } from "@/lib/format";
 
-export function ProfilePageContent({ username }: { username: string }) {
+export function ProfilePageContent({
+  username,
+  initialData,
+}: {
+  username: string;
+  initialData?: GitHubProfileRaw;
+}) {
   const router = useRouter();
-  const { data: raw, isLoading, error } = useGitHubProfile(username);
+  const { data: raw, isLoading, error } = useGitHubProfile(username, { initialData });
 
   const apiProfile = useMemo(() => {
     if (!raw) return null;

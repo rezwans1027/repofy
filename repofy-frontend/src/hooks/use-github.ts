@@ -57,7 +57,7 @@ const gitHubProfileSchema = z.object({
 });
 
 type SearchResult = z.infer<typeof searchResultSchema>;
-type GitHubProfileRaw = z.infer<typeof gitHubProfileSchema>;
+export type GitHubProfileRaw = z.infer<typeof gitHubProfileSchema>;
 
 export function useGitHubSearch(debouncedQuery: string) {
   const { isLoading } = useAuth();
@@ -74,7 +74,10 @@ export function useGitHubSearch(debouncedQuery: string) {
   });
 }
 
-export function useGitHubProfile(username: string) {
+export function useGitHubProfile(
+  username: string,
+  options?: { initialData?: GitHubProfileRaw },
+) {
   const { isLoading } = useAuth();
   return useQuery({
     queryKey: ["github", "profile", username],
@@ -86,5 +89,6 @@ export function useGitHubProfile(username: string) {
     // Wait for auth to load so the cached access token is available
     enabled: !isLoading && !!username,
     staleTime: STALE_MEDIUM,
+    initialData: options?.initialData,
   });
 }

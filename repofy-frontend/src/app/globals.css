@@ -150,6 +150,15 @@ html {
   animation-timing-function: ease;
 }
 
+/* Disable element-level transitions during theme switch so only the
+   view-transition cross-fade drives the visual change. */
+[data-theme-transitioning],
+[data-theme-transitioning] *,
+[data-theme-transitioning] *::before,
+[data-theme-transitioning] *::after {
+  transition-duration: 0s !important;
+}
+
 /* Prevent Radix scroll-lock from causing layout shift */
 body[data-scroll-locked] {
   overflow: unset !important;
@@ -163,12 +172,6 @@ body[data-scroll-locked] {
   @keyframes blink {
     0%, 50% { opacity: 1; }
     51%, 100% { opacity: 0; }
-  }
-
-  /* Smooth caret blink (VS Code style) */
-  @keyframes smooth-caret-blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
   }
 
   /* Slide up from bottom */
@@ -222,9 +225,6 @@ body[data-scroll-locked] {
 
 .animate-blink {
   animation: blink 1s step-end infinite;
-}
-.animate-smooth-caret-blink {
-  animation: smooth-caret-blink 1s ease-in-out infinite;
 }
 .animate-slide-up {
   animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;

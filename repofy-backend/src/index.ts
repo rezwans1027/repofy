@@ -1,19 +1,23 @@
+import { initSentry } from "./lib/sentry";
+
+// Sentry must be initialized before any other imports that might throw
+initSentry();
+
 import { createApp } from "./app";
 import { env } from "./config/env";
 import { logger } from "./lib/logger";
-import { closeRedis } from "./lib/redis";
 import { cleanExpiredCache } from "./services/cache.service";
 
 const app = createApp();
 
 process.on("uncaughtException", (err) => {
   logger.error("Uncaught exception", { error: err });
-  process.exit(1);
+  gracefulShutdown("uncaughtException");
 });
 
 process.on("unhandledRejection", (reason) => {
   logger.error("Unhandled rejection", { error: reason });
-  process.exit(1);
+  gracefulShutdown("unhandledRejection");
 });
 
 const server = app.listen(env.port, () => {
@@ -29,16 +33,20 @@ const cacheCleanupInterval = setInterval(() => {
 }, 60 * 60 * 1000);
 cacheCleanupInterval.unref();
 
+let isShuttingDown = false;
+
 function gracefulShutdown(signal: string) {
+  if (isShuttingDown) {
+    logger.warn(`${signal} received during shutdown, ignoring`);
+    return;
+  }
+  isShuttingDown = true;
+
   logger.info(`${signal} received, shutting down gracefully`);
   clearInterval(cacheCleanupInterval);
   server.close(() => {
-    closeRedis()
-      .catch(() => {}) // ignore — may already be disconnected
-      .finally(() => {
-        logger.info("All in-flight requests completed, exiting");
-        process.exit(0);
-      });
+    logger.info("All in-flight requests completed, exiting");
+    process.exit(0);
   });
 
   // Force exit if in-flight requests don't finish within 30s

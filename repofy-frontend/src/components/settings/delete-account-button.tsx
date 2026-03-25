@@ -69,10 +69,11 @@ export function DeleteAccountButton() {
         </AlertDialogHeader>
 
         <div className="space-y-2">
-          <label className="font-mono text-xs text-muted-foreground">
+          <label htmlFor="delete-confirm" className="font-mono text-xs text-muted-foreground">
             Type <span className="text-foreground">{user?.email}</span> to confirm
           </label>
           <Input
+            id="delete-confirm"
             value={confirmation}
             onChange={(e) => setConfirmation(e.target.value)}
             placeholder="your@email.com"

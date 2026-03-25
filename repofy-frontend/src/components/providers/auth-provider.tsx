@@ -19,9 +19,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export function AuthProvider({
+  children,
+  initialUser,
+}: {
+  children: React.ReactNode;
+  initialUser?: AuthUser | null;
+}) {
+  const [user, setUser] = useState<AuthUser | null>(initialUser ?? null);
+  const [isLoading, setIsLoading] = useState(initialUser === undefined);
 
   const refresh = useCallback(async () => {
     try {
@@ -33,11 +39,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // Skip initial fetch if server provided auth state
+    if (initialUser !== undefined) return;
+
     api.get<{ user: AuthUser }>("/auth/me")
       .then((data) => setUser(data.user))
       .catch(() => setUser(null))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [initialUser]);
 
   const value = useMemo(() => ({ user, isLoading, refresh }), [user, isLoading, refresh]);
 

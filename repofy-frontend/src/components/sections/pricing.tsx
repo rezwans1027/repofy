@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CREDIT_PACK_PRICE, CREDIT_PACK_SIZE } from "@/lib/constants";
 import { SectionHeader } from "@/components/ui/section-header";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { TerminalWindow } from "@/components/ui/terminal-window";
@@ -16,7 +17,7 @@ const plans = [
       "GitHub profile explorer with real stats",
       "Top repos, languages & activity feed",
       "Contribution heatmap & history",
-      "AI Profile Advisor — $9 for 2 growth credits",
+      `AI Profile Advisor — $${CREDIT_PACK_PRICE} for ${CREDIT_PACK_SIZE} growth credits`,
       "Personalized project ideas & 12-week roadmap",
       "PDF export for advice plans",
     ],
@@ -50,7 +51,7 @@ export function Pricing() {
       <AnimateOnView>
         <SectionHeader
           title="Pricing"
-          subtitle="Explore profiles for free. Advisor credits start at $9."
+          subtitle={`Explore profiles for free. Advisor credits start at $${CREDIT_PACK_PRICE}.`}
         />
       </AnimateOnView>
 
@@ -111,7 +112,7 @@ export function Pricing() {
                         Credit pack
                       </span>
                       <span className="font-mono text-sm font-bold text-foreground">
-                        $9 <span className="text-muted-foreground text-xs font-normal">/ 2 credits</span>
+                        ${CREDIT_PACK_PRICE} <span className="text-muted-foreground text-xs font-normal">/ {CREDIT_PACK_SIZE} credits</span>
                       </span>
                     </div>
                   </div>

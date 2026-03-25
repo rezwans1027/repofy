@@ -1,36 +1,27 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SignOutButton } from "@/components/settings/sign-out-button";
 import { PurchaseHistory } from "@/components/settings/purchase-history";
 import { ExportDataButton } from "@/components/settings/export-data-button";
 import { DeleteAccountButton } from "@/components/settings/delete-account-button";
+import { serverFetch } from "@/lib/server-api";
 
 export const metadata: Metadata = {
   title: "Settings",
   description: "Manage your Repofy account preferences and session.",
 };
 
-async function getUser() {
-  const backendUrl = process.env.API_BACKEND_URL || "http://localhost:3001/api";
-  const cookieStore = await cookies();
-  const cookieHeader = cookieStore.getAll().map((c) => `${c.name}=${c.value}`).join("; ");
-
-  try {
-    const res = await fetch(`${backendUrl}/auth/me`, {
-      headers: { Cookie: cookieHeader },
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json.data?.user as { id: string; email: string; display_name?: string; github_username?: string; avatar_url?: string } | null;
-  } catch {
-    return null;
-  }
+interface AuthUser {
+  id: string;
+  email: string;
+  display_name?: string;
+  github_username?: string;
+  avatar_url?: string;
 }
 
 export default async function SettingsPage() {
-  const user = await getUser();
+  const { data } = await serverFetch<{ user: AuthUser }>("/auth/me");
+  const user = data?.user ?? null;
 
   return (
     <div className="space-y-10">
