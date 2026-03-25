@@ -265,7 +265,7 @@ export function FeedbackForm() {
               {/* Animated placeholder — directional slide like advisor report tabs */}
               {!message && (
                 <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-md border border-transparent px-3 py-2">
-                  <AnimatePresence mode="wait" custom={direction}>
+                  <AnimatePresence mode="popLayout" custom={direction}>
                     <motion.span
                       key={category ?? "default"}
                       custom={direction}
