@@ -28,7 +28,7 @@ describe("FeedbackForm", () => {
     expect(screen.getByRole("button", { name: "Submit Bug Report" })).toBeDisabled();
 
     await user.type(
-      screen.getByPlaceholderText(/describe the bug/i),
+      screen.getByRole("textbox"),
       "The feedback category should stay on bug.",
     );
     await user.click(screen.getByRole("button", { name: "Submit Bug Report" }));
@@ -52,7 +52,7 @@ describe("FeedbackForm", () => {
     expect(screen.getByText("Selected: Feature Request")).toBeInTheDocument();
 
     await user.type(
-      screen.getByPlaceholderText(/describe the feature/i),
+      screen.getByRole("textbox"),
       "Please add better reporting filters.",
     );
     await user.click(screen.getByRole("button", { name: "Submit Feature Request" }));
