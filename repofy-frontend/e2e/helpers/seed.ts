@@ -3,13 +3,13 @@ import { resolve } from "path";
 import type { Page } from "@playwright/test";
 import { TIMEOUTS } from "./timeouts";
 
-const BACKEND_URL = "http://localhost:3003";
+const BACKEND_URL = "http://localhost:3001";
 
 /** Read Supabase config from process.env, falling back to .env.local. */
 function getSupabaseConfig(): { url: string; anonKey: string } {
   // Prefer process.env (works in CI where secrets are injected as env vars)
-  const envUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const envKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const envUrl = process.env.SUPABASE_URL;
+  const envKey = process.env.SUPABASE_ANON_KEY;
   if (envUrl && envKey) {
     return { url: envUrl, anonKey: envKey };
   }
@@ -21,7 +21,7 @@ function getSupabaseConfig(): { url: string; anonKey: string } {
     content = readFileSync(envPath, "utf-8");
   } catch {
     throw new Error(
-      "Missing Supabase env vars: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in environment, or provide a .env.local file",
+      "Missing Supabase env vars: set SUPABASE_URL and SUPABASE_ANON_KEY in environment, or provide a .env.local file",
     );
   }
   const vars: Record<string, string> = {};
@@ -37,56 +37,46 @@ function getSupabaseConfig(): { url: string; anonKey: string } {
       vars[match[1]] = value;
     }
   }
-  const url = vars["NEXT_PUBLIC_SUPABASE_URL"];
-  const anonKey = vars["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
+  const url = vars["SUPABASE_URL"];
+  const anonKey = vars["SUPABASE_ANON_KEY"];
   if (!url || !anonKey) {
     throw new Error(
-      "Missing Supabase env vars: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in environment, or provide a .env.local file",
+      "Missing Supabase env vars: set SUPABASE_URL and SUPABASE_ANON_KEY in environment, or provide a .env.local file",
     );
   }
   return { url, anonKey };
 }
 
 /**
- * Retrieve the Supabase session info from the page's localStorage.
- * Returns the access token and user ID from the stored session.
+ * Retrieve the access token from the page's HttpOnly cookies.
+ * Playwright CAN read HttpOnly cookies via the browser context API.
  */
-async function getSupabaseSession(
-  page: Page,
-): Promise<{ accessToken: string; userId: string }> {
-  const session = await page.evaluate(() => {
-    const keys = Object.keys(localStorage);
-    for (const key of keys) {
-      if (key.includes("sb-") && key.includes("-auth-token")) {
-        try {
-          const raw = localStorage.getItem(key);
-          if (!raw) continue;
-          const parsed = JSON.parse(raw);
-          const token =
-            parsed?.access_token ?? parsed?.currentSession?.access_token;
-          const userId =
-            parsed?.user?.id ?? parsed?.currentSession?.user?.id;
-          if (token && userId) return { accessToken: token, userId };
-        } catch {
-          // skip malformed entries
-        }
-      }
-    }
-    return null;
-  });
-
-  if (!session) {
-    throw new Error("No Supabase session found in localStorage");
+export async function getAccessToken(page: Page): Promise<string> {
+  const cookies = await page.context().cookies();
+  const accessCookie = cookies.find((c) => c.name === "access_token");
+  if (!accessCookie?.value) {
+    throw new Error("No access_token cookie found — is the user logged in?");
   }
-  return session;
+  return accessCookie.value;
 }
 
 /**
- * Retrieve the Supabase access token from the page's localStorage.
+ * Retrieve the user ID by calling the /auth/me backend endpoint.
  */
-export async function getAccessToken(page: Page): Promise<string> {
-  const { accessToken } = await getSupabaseSession(page);
-  return accessToken;
+async function getUserId(page: Page): Promise<string> {
+  const token = await getAccessToken(page);
+  const resp = await page.request.get(`${BACKEND_URL}/api/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!resp.ok()) {
+    throw new Error(`/auth/me failed: ${resp.status()}`);
+  }
+  const json = (await resp.json()) as { data?: { user?: { id?: string } } };
+  const userId = json.data?.user?.id;
+  if (!userId) {
+    throw new Error("Could not resolve user ID from /auth/me");
+  }
+  return userId;
 }
 
 /**
@@ -123,7 +113,8 @@ export async function seedReportViaApi(
   page: Page,
   username: string,
 ): Promise<void> {
-  const { accessToken, userId } = await getSupabaseSession(page);
+  const accessToken = await getAccessToken(page);
+  const userId = await getUserId(page);
   const { url: supabaseUrl, anonKey } = getSupabaseConfig();
 
   // 1. Generate the report data via the backend API (reuse shared logic)
@@ -205,7 +196,8 @@ export async function deleteSeededReports(
   page: Page,
   analyzedUsernames: string[],
 ): Promise<void> {
-  const { accessToken, userId } = await getSupabaseSession(page);
+  const accessToken = await getAccessToken(page);
+  const userId = await getUserId(page);
   const { url: supabaseUrl, anonKey } = getSupabaseConfig();
 
   const filter = analyzedUsernames
@@ -224,6 +216,42 @@ export async function deleteSeededReports(
 
   if (!resp.ok()) {
     const msg = `cleanup: delete reports returned ${resp.status()}`;
+    if (process.env.CI) {
+      throw new Error(msg);
+    }
+    console.warn(msg);
+  }
+}
+
+/**
+ * Delete only the specified seeded advice for the current user.
+ * Pass the exact analyzed_usernames that were seeded in the test.
+ * Fails hard in CI to surface contamination issues.
+ */
+export async function deleteSeededAdvice(
+  page: Page,
+  analyzedUsernames: string[],
+): Promise<void> {
+  const accessToken = await getAccessToken(page);
+  const userId = await getUserId(page);
+  const { url: supabaseUrl, anonKey } = getSupabaseConfig();
+
+  const filter = analyzedUsernames
+    .map((u) => u.toLowerCase())
+    .join(",");
+
+  const resp = await page.request.delete(
+    `${supabaseUrl}/rest/v1/advice?user_id=eq.${userId}&analyzed_username=in.(${filter})`,
+    {
+      headers: {
+        apikey: anonKey,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  if (!resp.ok()) {
+    const msg = `cleanup: delete advice returned ${resp.status()}`;
     if (process.env.CI) {
       throw new Error(msg);
     }

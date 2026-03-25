@@ -1,8 +1,29 @@
 import cors from "cors";
 import { env } from "../config/env";
 
+const allowedOrigins = env.corsOrigin.split(",").map((o) => o.trim());
+
 export const corsMiddleware = cors({
-  origin: env.corsOrigin,
+  origin(origin, callback) {
+    // In production, reject requests without an Origin header (e.g. direct curl).
+    // Health checks still work — they just won't get CORS headers.
+    if (!origin) {
+      if (env.isProduction) return callback(null, false);
+      return callback(null, true);
+    }
+
+    // Exact match against CORS_ORIGIN list
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+
+    // Allow Vercel preview deployments (unique URLs per deploy)
+    if (allowedOrigins.some((o) => o.includes(".vercel.app")) &&
+        /^https:\/\/[\w-]+-rezwan-sheikhs-projects-dc71e171\.vercel\.app$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
 });

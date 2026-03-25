@@ -1,23 +1,27 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/components/providers/auth-provider";
-import { createClient } from "@/lib/supabase/client";
+import type { Metadata } from "next";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { SignOutButton } from "@/components/settings/sign-out-button";
+import { PurchaseHistory } from "@/components/settings/purchase-history";
+import { ExportDataButton } from "@/components/settings/export-data-button";
+import { DeleteAccountButton } from "@/components/settings/delete-account-button";
+import { serverFetch } from "@/lib/server-api";
 
-export default function SettingsPage() {
-  const { user, isLoading } = useAuth();
-  const router = useRouter();
+export const metadata: Metadata = {
+  title: "Settings",
+  description: "Manage your Repofy account preferences and session.",
+};
 
-  async function handleSignOut() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/");
-    router.refresh();
-  }
+interface AuthUser {
+  id: string;
+  email: string;
+  display_name?: string;
+  github_username?: string;
+  avatar_url?: string;
+}
+
+export default async function SettingsPage() {
+  const { data } = await serverFetch<{ user: AuthUser }>("/auth/me");
+  const user = data?.user ?? null;
 
   return (
     <div className="space-y-10">
@@ -39,66 +43,75 @@ export default function SettingsPage() {
               <span className="font-mono text-xs text-muted-foreground">
                 Email
               </span>
-              {isLoading ? (
-                <Skeleton className="h-4 w-48" />
-              ) : (
-                <span className="font-mono text-xs text-foreground">
-                  {user?.email}
-                </span>
-              )}
+              <span className="font-mono text-xs text-foreground">
+                {user?.email}
+              </span>
             </div>
             <div className="border-t border-border" />
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs text-muted-foreground">
                 Display Name
               </span>
-              {isLoading ? (
-                <Skeleton className="h-4 w-32" />
-              ) : (
-                <span className="font-mono text-xs text-foreground">
-                  {user?.user_metadata?.display_name || "—"}
-                </span>
-              )}
+              <span className="font-mono text-xs text-foreground">
+                {user?.display_name || user?.github_username || "—"}
+              </span>
             </div>
             <div className="border-t border-border" />
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs text-muted-foreground">
-                Member Since
+                GitHub
               </span>
-              {isLoading ? (
-                <Skeleton className="h-4 w-28" />
-              ) : (
-                <span className="font-mono text-xs text-foreground">
-                  {user?.created_at
-                    ? new Date(user.created_at).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                      })
-                    : "—"}
-                </span>
-              )}
+              <span className="font-mono text-xs text-foreground">
+                {user?.github_username ? `@${user.github_username}` : "—"}
+              </span>
             </div>
           </div>
         </div>
       </AnimateOnView>
 
-      {/* Sign Out */}
+      {/* Purchase History */}
       <AnimateOnView delay={0.1}>
+        <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+          <h3 className="font-mono text-sm font-bold">Purchase History</h3>
+          <PurchaseHistory />
+        </div>
+      </AnimateOnView>
+
+      {/* Your Data */}
+      <AnimateOnView delay={0.15}>
+        <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+          <h3 className="font-mono text-sm font-bold">Your Data</h3>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs text-muted-foreground">
+              Download a copy of all your data
+            </span>
+            <ExportDataButton />
+          </div>
+        </div>
+      </AnimateOnView>
+
+      {/* Session */}
+      <AnimateOnView delay={0.2}>
         <div className="rounded-lg border border-border bg-card p-6 space-y-4">
           <h3 className="font-mono text-sm font-bold">Session</h3>
           <div className="flex items-center justify-between">
             <span className="font-mono text-xs text-muted-foreground">
               Sign out of your account
             </span>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleSignOut}
-              className="font-mono text-xs gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              Sign Out
-            </Button>
+            <SignOutButton />
+          </div>
+        </div>
+      </AnimateOnView>
+
+      {/* Danger Zone */}
+      <AnimateOnView delay={0.25}>
+        <div className="rounded-lg border border-destructive/30 bg-card p-6 space-y-4">
+          <h3 className="font-mono text-sm font-bold text-destructive">Danger Zone</h3>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs text-muted-foreground">
+              Permanently delete your account and all associated data
+            </span>
+            <DeleteAccountButton />
           </div>
         </div>
       </AnimateOnView>

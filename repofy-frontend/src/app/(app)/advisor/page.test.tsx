@@ -2,11 +2,13 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { authMockFactory } from "@/__tests__/helpers/mock-auth";
+import { TestProviders } from "@/__tests__/helpers/test-providers";
 import { createAdviceListItemSet } from "@/__tests__/fixtures";
+import type { AdviceListItem } from "@/hooks/use-advice";
 
 vi.mock("@/components/providers/auth-provider", () => authMockFactory());
 
-let mockAdviceItems: any[] = [];
+let mockAdviceItems: AdviceListItem[] = [];
 let mockAdviceLoading = false;
 const mockDeleteMutateAsync = vi.fn().mockResolvedValue(undefined);
 vi.mock("@/hooks/use-advice", () => ({
@@ -19,10 +21,13 @@ vi.mock("@/hooks/use-advice", () => ({
     isPending: false,
   }),
 }));
+vi.mock("@/hooks/use-advice-job", () => ({
+  useActiveAdviceJob: () => ({ data: null }),
+}));
 
-import AdvisorPage from "./page";
+import { AdvisorListContent } from "@/components/advisor/advisor-list-content";
 
-describe("AdvisorPage", () => {
+describe("AdvisorListContent", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAdviceItems = [];
@@ -32,7 +37,7 @@ describe("AdvisorPage", () => {
   it("shows loading state when isLoading is true", () => {
     mockAdviceLoading = true;
 
-    const { container } = render(<AdvisorPage />);
+    const { container } = render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     // Skeleton components render with data-slot="skeleton"
     const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
@@ -42,7 +47,7 @@ describe("AdvisorPage", () => {
   it("shows empty state when items is empty array", () => {
     mockAdviceItems = [];
 
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     expect(screen.getByText("No advice generated yet")).toBeInTheDocument();
   });
@@ -54,16 +59,18 @@ describe("AdvisorPage", () => {
         analyzed_username: "alice",
         analyzed_name: "Alice",
         generated_at: "2025-01-15T10:00:00Z",
+        avatar_url: null,
       },
       {
         id: "a2",
         analyzed_username: "bob",
         analyzed_name: "Bob",
         generated_at: "2025-01-14T10:00:00Z",
+        avatar_url: null,
       },
     ];
 
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     expect(screen.getByText("@alice")).toBeInTheDocument();
     expect(screen.getByText("@bob")).toBeInTheDocument();
@@ -76,19 +83,21 @@ describe("AdvisorPage", () => {
         analyzed_username: "alice",
         analyzed_name: "Alice",
         generated_at: "2025-01-15T10:00:00Z",
+        avatar_url: null,
       },
       {
         id: "a2",
         analyzed_username: "bob",
         analyzed_name: "Bob",
         generated_at: "2025-01-14T10:00:00Z",
+        avatar_url: null,
       },
     ];
 
     const user = userEvent.setup();
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
-    await user.type(screen.getByPlaceholderText("Search…"), "alice");
+    await user.type(screen.getByPlaceholderText("Search by username or name…"), "alice");
 
     expect(screen.getByText("@alice")).toBeInTheDocument();
     expect(screen.queryByText("@bob")).not.toBeInTheDocument();
@@ -101,10 +110,11 @@ describe("AdvisorPage", () => {
         analyzed_username: "alice",
         analyzed_name: "Alice",
         generated_at: "2025-01-15T10:00:00Z",
+        avatar_url: null,
       },
     ];
 
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     expect(screen.getByText("Newest first")).toBeInTheDocument();
   });
@@ -116,11 +126,12 @@ describe("AdvisorPage", () => {
         analyzed_username: "alice",
         analyzed_name: "Alice",
         generated_at: "2025-01-15T10:00:00Z",
+        avatar_url: null,
       },
     ];
 
     const user = userEvent.setup();
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     expect(screen.getByText("Select")).toBeInTheDocument();
 
@@ -135,10 +146,11 @@ describe("AdvisorPage", () => {
         analyzed_username: "alice",
         analyzed_name: "Alice",
         generated_at: "2025-01-15T10:00:00Z",
+        avatar_url: null,
       },
     ];
 
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     expect(screen.getByText("Advisor")).toBeInTheDocument();
   });
@@ -147,7 +159,7 @@ describe("AdvisorPage", () => {
     mockAdviceItems = createAdviceListItemSet();
     const user = userEvent.setup();
 
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     // Open the sort dropdown
     await user.click(screen.getByText("Newest first"));
@@ -164,9 +176,9 @@ describe("AdvisorPage", () => {
     mockAdviceItems = createAdviceListItemSet();
     const user = userEvent.setup();
 
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
-    await user.type(screen.getByPlaceholderText("Search…"), "Bob Coder");
+    await user.type(screen.getByPlaceholderText("Search by username or name…"), "Bob Coder");
 
     expect(screen.getByText("@bob")).toBeInTheDocument();
     expect(screen.queryByText("@alice")).not.toBeInTheDocument();
@@ -177,9 +189,9 @@ describe("AdvisorPage", () => {
     mockAdviceItems = createAdviceListItemSet();
     const user = userEvent.setup();
 
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
-    await user.type(screen.getByPlaceholderText("Search…"), "zzz");
+    await user.type(screen.getByPlaceholderText("Search by username or name…"), "zzz");
 
     expect(screen.getByText("No advice matches your search")).toBeInTheDocument();
   });
@@ -188,9 +200,9 @@ describe("AdvisorPage", () => {
     mockAdviceItems = createAdviceListItemSet();
     const user = userEvent.setup();
 
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
-    await user.type(screen.getByPlaceholderText("Search…"), "zzz");
+    await user.type(screen.getByPlaceholderText("Search by username or name…"), "zzz");
 
     expect(screen.getByText("No advice matches your search")).toBeInTheDocument();
 
@@ -204,7 +216,7 @@ describe("AdvisorPage", () => {
   it("delete flow calls mutateAsync with selected IDs", async () => {
     mockAdviceItems = createAdviceListItemSet();
     const user = userEvent.setup();
-    render(<AdvisorPage />);
+    render(<TestProviders><AdvisorListContent /></TestProviders>);
 
     // Enter select mode
     await user.click(screen.getByText("Select"));
@@ -213,11 +225,18 @@ describe("AdvisorPage", () => {
     const rows = screen.getAllByText(/@\w+/);
     await user.click(rows[0]); // alice (first in Newest first order)
 
-    // Selection bar should show "1 selected"
-    expect(screen.getByText("1 selected")).toBeInTheDocument();
+    // Selection bar should show count and "selected" label
+    expect(screen.getByText("1")).toBeInTheDocument();
+    expect(screen.getByText("selected")).toBeInTheDocument();
 
-    // Click Delete
-    await user.click(screen.getByText("Delete"));
+    // Click Delete trigger to open AlertDialog
+    const deleteButtons = screen.getAllByText("Delete");
+    await user.click(deleteButtons[0]);
+
+    // Click the confirmation Delete button inside the AlertDialog
+    const confirmButtons = screen.getAllByText("Delete");
+    // The last "Delete" is the AlertDialogAction confirmation button
+    await user.click(confirmButtons[confirmButtons.length - 1]);
 
     expect(mockDeleteMutateAsync).toHaveBeenCalledTimes(1);
     expect(mockDeleteMutateAsync).toHaveBeenCalledWith(["a1"]);

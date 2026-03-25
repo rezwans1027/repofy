@@ -1,5 +1,3 @@
-import { vi } from "vitest";
-
 /**
  * Shared auth mock factory for vi.mock("@/components/providers/auth-provider", ...).
  *

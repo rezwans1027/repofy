@@ -1,46 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { TYPEWRITER_USERNAMES } from "@/lib/constants";
+import { useTypewriter } from "@/hooks/use-typewriter";
 import { ArrowRight } from "lucide-react";
 
 export function Hero() {
-  const [placeholder, setPlaceholder] = useState("");
-  const [usernameIndex, setUsernameIndex] = useState(0);
-  const [charIndex, setCharIndex] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    const currentName = TYPEWRITER_USERNAMES[usernameIndex];
-
-    const timeout = setTimeout(
-      () => {
-        if (!isDeleting) {
-          setPlaceholder(currentName.slice(0, charIndex + 1));
-          setCharIndex((c) => c + 1);
-
-          if (charIndex + 1 === currentName.length) {
-            setTimeout(() => setIsDeleting(true), 1500);
-          }
-        } else {
-          setPlaceholder(currentName.slice(0, charIndex - 1));
-          setCharIndex((c) => c - 1);
-
-          if (charIndex <= 1) {
-            setIsDeleting(false);
-            setUsernameIndex((i) => (i + 1) % TYPEWRITER_USERNAMES.length);
-            setCharIndex(0);
-          }
-        }
-      },
-      isDeleting ? 50 : 120
-    );
-
-    return () => clearTimeout(timeout);
-  }, [charIndex, isDeleting, usernameIndex]);
+  const placeholder = useTypewriter(TYPEWRITER_USERNAMES);
 
   return (
     <section
@@ -54,7 +22,7 @@ export function Hero() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
           <p className="text-cyan mb-4 font-mono text-sm tracking-wide">
-            AI-powered GitHub analysis for technical hiring
+            AI-powered GitHub intelligence platform
           </p>
           <h1 className="font-mono text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
             Know any developer.
@@ -62,8 +30,9 @@ export function Hero() {
             <span className="text-cyan">From their code.</span>
           </h1>
           <p className="text-muted-foreground mx-auto mt-6 max-w-xl text-base sm:text-lg">
-            Paste a GitHub username. Get a hiring-grade evaluation, actionable career
-            advice, or a side-by-side candidate comparison — powered by AI.
+            Explore any GitHub profile in depth, get AI-powered career advice
+            with a personalized growth plan, and export polished PDFs — with
+            hiring-grade developer analysis coming soon.
           </p>
         </motion.div>
 
@@ -124,7 +93,7 @@ export function Hero() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.6 }}
         >
-          Free during beta &middot; No credit card required
+          Free to explore &middot; No credit card required
         </motion.p>
       </div>
     </section>

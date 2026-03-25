@@ -1,26 +1,21 @@
 import { RequestHandler } from "express";
 import { env } from "../config/env";
 import { getStripe } from "../config/stripe";
-import { createCheckoutSession } from "../services/stripe.service";
+import { createCheckoutSession, GROWTH_CREDITS_2_AMOUNT } from "../services/stripe.service";
 import { grantGrowthCredits } from "../services/credit.service";
 import { sendError, sendSuccess } from "../lib/response";
 import { logger } from "../lib/logger";
+import { handleControllerError } from "../lib/controller-utils";
+import type { AuthenticatedRequest } from "../types";
 
 export const createCheckout: RequestHandler = async (req, res) => {
   try {
-    const userId = req.userId;
-    const userEmail = req.userEmail;
-
-    if (!userId || !userEmail) {
-      sendError(res, 401, "Authentication required");
-      return;
-    }
+    const { userId, userEmail } = req as AuthenticatedRequest;
 
     const url = await createCheckoutSession(userId, userEmail);
     sendSuccess(res, { url });
   } catch (err) {
-    logger.error("Stripe checkout error:", err);
-    sendError(res, 500, "Failed to create checkout session");
+    handleControllerError(err, req, res, "Stripe Checkout", "Failed to create checkout session");
   }
 };
 
@@ -53,7 +48,6 @@ export const handleWebhook: RequestHandler = async (req, res) => {
         logger.info("Checkout completed", {
           sessionId: session.id,
           userId: session.client_reference_id,
-          email: session.customer_email,
           amountTotal: session.amount_total,
         });
 
@@ -80,14 +74,14 @@ export const handleWebhook: RequestHandler = async (req, res) => {
           sendError(res, 500, "Webhook invariant failure: unexpected product");
           return;
         }
-        if (session.amount_total !== 500) {
-          logger.error("Webhook invariant: unexpected amount", { sessionId: session.id, amount: session.amount_total });
-          sendError(res, 500, "Webhook invariant failure: unexpected amount");
-          return;
-        }
         if (session.currency !== "usd") {
           logger.error("Webhook invariant: unexpected currency", { sessionId: session.id, currency: session.currency });
           sendError(res, 500, "Webhook invariant failure: unexpected currency");
+          return;
+        }
+        if (session.amount_total === null || session.amount_total < 0 || session.amount_total > GROWTH_CREDITS_2_AMOUNT) {
+          logger.error("Webhook invariant: unexpected amount", { sessionId: session.id, expected: `0–${GROWTH_CREDITS_2_AMOUNT}`, actual: session.amount_total });
+          sendError(res, 500, "Webhook invariant failure: unexpected amount");
           return;
         }
 
@@ -113,7 +107,7 @@ export const handleWebhook: RequestHandler = async (req, res) => {
         logger.info(`Unhandled Stripe event: ${event.type}`);
     }
 
-    res.json({ received: true });
+    sendSuccess(res, { received: true });
   } catch (err) {
     logger.error("Webhook processing error:", err);
     sendError(res, 500, "Webhook processing failed");

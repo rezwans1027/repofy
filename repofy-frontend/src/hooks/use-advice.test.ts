@@ -1,26 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
-import { mockChain, setupChain } from "@/__tests__/helpers/mock-supabase-chain";
 import { TestProviders } from "@/__tests__/helpers/test-providers";
 import { authMockFactory } from "@/__tests__/helpers/mock-auth";
-import { supabaseClientMockFactory } from "@/__tests__/helpers/mock-supabase-client";
 
 vi.mock("@/components/providers/auth-provider", () => authMockFactory());
-vi.mock("@/lib/supabase/client", () => supabaseClientMockFactory());
 
-import { useAdviceList, useAdvice, useDeleteAdvice } from "./use-advice";
+const mockApi = vi.hoisted(() => ({
+  get: vi.fn(),
+  post: vi.fn(),
+  delete: vi.fn(),
+}));
+vi.mock("@/lib/api-client", () => ({ api: mockApi, ApiError: Error }));
+
+import { useAdviceList, useAdvice, useAdviceCount, useDeleteAdvice } from "./use-advice";
 
 describe("useAdviceList", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    setupChain();
   });
 
   it("fetches list of advice entries", async () => {
     const mockAdvice = [
       { id: "adv-1", analyzed_username: "testuser", analyzed_name: "Test", generated_at: "2025-01-15T10:00:00Z" },
     ];
-    mockChain.order.mockResolvedValue({ data: mockAdvice, error: null });
+    mockApi.get.mockResolvedValue(mockAdvice);
 
     const { result } = renderHook(() => useAdviceList(), {
       wrapper: TestProviders,
@@ -31,10 +34,7 @@ describe("useAdviceList", () => {
   });
 
   it("returns error when fetch fails", async () => {
-    mockChain.order.mockResolvedValue({
-      data: null,
-      error: { message: "DB error" },
-    });
+    mockApi.get.mockRejectedValue(new Error("API error"));
 
     const { result } = renderHook(() => useAdviceList(), {
       wrapper: TestProviders,
@@ -47,7 +47,6 @@ describe("useAdviceList", () => {
 describe("useAdvice", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    setupChain();
   });
 
   it("fetches single advice by id", async () => {
@@ -55,9 +54,9 @@ describe("useAdvice", () => {
       id: "adv-1",
       analyzed_username: "testuser",
       user_id: "user-123",
-      advice_data: {},
+      advice_data: { schemaVersion: "v2" },
     };
-    mockChain.single.mockResolvedValue({ data: mockAdvice, error: null });
+    mockApi.get.mockResolvedValue(mockAdvice);
 
     const { result } = renderHook(() => useAdvice("adv-1"), {
       wrapper: TestProviders,
@@ -71,14 +70,10 @@ describe("useAdvice", () => {
 describe("useAdvice - errors", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    setupChain();
   });
 
   it("transitions to error state when fetch fails", async () => {
-    mockChain.single.mockResolvedValue({
-      data: null,
-      error: { message: "Not found" },
-    });
+    mockApi.get.mockRejectedValue(new Error("Not found"));
 
     const { result } = renderHook(() => useAdvice("adv-1"), {
       wrapper: TestProviders,
@@ -88,28 +83,55 @@ describe("useAdvice - errors", () => {
   });
 });
 
+describe("useAdviceCount", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns count when reports exist for username", async () => {
+    mockApi.get.mockResolvedValue(3);
+
+    const { result } = renderHook(() => useAdviceCount("testuser"), {
+      wrapper: TestProviders,
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toBe(3);
+  });
+
+  it("returns 0 when no advice exists", async () => {
+    mockApi.get.mockResolvedValue(0);
+
+    const { result } = renderHook(() => useAdviceCount("testuser"), {
+      wrapper: TestProviders,
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toBe(0);
+  });
+});
+
 describe("useDeleteAdvice", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    setupChain();
   });
 
-  it("calls delete and invalidates queries", async () => {
-    mockChain.in.mockResolvedValue({ error: null });
+  it("calls delete with ids and invalidates queries", async () => {
+    mockApi.delete.mockResolvedValue(null);
 
     const { result } = renderHook(() => useDeleteAdvice(), {
       wrapper: TestProviders,
     });
 
     await result.current.mutateAsync(["adv-1"]);
-    expect(mockChain.delete).toHaveBeenCalled();
-    expect(mockChain.in).toHaveBeenCalledWith("id", ["adv-1"]);
+    expect(mockApi.delete).toHaveBeenCalledWith(
+      "/advice",
+      expect.objectContaining({ body: { ids: ["adv-1"] } }),
+    );
   });
 
   it("rejects when delete fails", async () => {
-    mockChain.in.mockResolvedValue({
-      error: { message: "Delete failed" },
-    });
+    mockApi.delete.mockRejectedValue(new Error("Delete failed"));
 
     const { result } = renderHook(() => useDeleteAdvice(), {
       wrapper: TestProviders,

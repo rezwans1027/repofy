@@ -17,8 +17,15 @@ vi.mock("framer-motion", async () => {
           prop,
           React.forwardRef((props: any, ref: any) => {
             const {
-              initial, animate, exit, variants, transition,
-              whileHover, whileInView, whileTap, viewport,
+              initial: _initial,
+              animate: _animate,
+              exit: _exit,
+              variants: _variants,
+              transition: _transition,
+              whileHover: _whileHover,
+              whileInView: _whileInView,
+              whileTap: _whileTap,
+              viewport: _viewport,
               ...rest
             } = props;
             return React.createElement(prop, { ...rest, ref });
@@ -66,7 +73,7 @@ describe("Hero", () => {
   it("renders subtitle text", () => {
     render(<Hero />);
     expect(
-      screen.getByText("AI-powered GitHub analysis for technical hiring"),
+      screen.getByText("AI-powered GitHub intelligence platform"),
     ).toBeInTheDocument();
   });
 
@@ -130,28 +137,20 @@ describe("Hero", () => {
     }
     expect(input.placeholder).toBe("torvalds");
 
-    // Advance 1500ms: the nested pause timeout fires, switching to delete mode.
-    // One extra typing tick (120ms < 1500ms) runs during the pause, pushing
-    // charIndex from 8 to 9 (placeholder stays "torvalds" since slice beyond
-    // string length is harmless).
+    // Advance 1500ms: pause phase fires, switching to delete mode.
+    // Placeholder stays "torvalds" since the pause step only transitions phase.
     await act(async () => {
       vi.advanceTimersByTime(1500);
     });
     expect(input.placeholder).toBe("torvalds");
 
-    // First delete tick: charIndex 9 -> 8, slice(0,8) = "torvalds" (no visible change)
-    await act(async () => {
-      vi.advanceTimersByTime(50);
-    });
-    expect(input.placeholder).toBe("torvalds");
-
-    // Second delete tick: charIndex 8 -> 7, slice(0,7) = "torvald"
+    // First delete tick: charIndex 8 -> 7, slice(0,7) = "torvald"
     await act(async () => {
       vi.advanceTimersByTime(50);
     });
     expect(input.placeholder).toBe("torvald");
 
-    // Third delete tick: charIndex 7 -> 6, slice(0,6) = "torval"
+    // Second delete tick: charIndex 7 -> 6, slice(0,6) = "torval"
     await act(async () => {
       vi.advanceTimersByTime(50);
     });
@@ -160,6 +159,6 @@ describe("Hero", () => {
 
   it("renders trust line", () => {
     render(<Hero />);
-    expect(screen.getByText(/free during beta/i)).toBeInTheDocument();
+    expect(screen.getByText(/free to explore/i)).toBeInTheDocument();
   });
 });

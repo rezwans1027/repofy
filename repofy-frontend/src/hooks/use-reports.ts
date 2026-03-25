@@ -1,30 +1,31 @@
-import { createSupabaseQueries } from "@/lib/supabase-queries";
-import type { ReportData } from "@/components/report/analysis-report";
+import { z } from "zod";
+import { createCrudHooks } from "./use-crud";
 
-export interface ReportListItem {
-  id: string;
-  analyzed_username: string;
-  overall_score: number;
-  recommendation: string;
-  generated_at: string;
-  analyzed_name: string | null;
-}
-
-interface ReportRow {
-  id: string;
-  analyzed_username: string;
-  report_data: ReportData;
-}
-
-const reportQueries = createSupabaseQueries<ReportListItem, ReportRow>({
-  table: "reports",
-  queryKeyPrefix: "reports",
-  listSelect:
-    "id, analyzed_username, analyzed_name, overall_score, recommendation, generated_at",
-  detailSelect: "id, analyzed_username, report_data",
+const reportListItemSchema = z.object({
+  id: z.string(),
+  analyzed_username: z.string(),
+  overall_score: z.number(),
+  recommendation: z.string(),
+  generated_at: z.string(),
+  analyzed_name: z.string().nullable(),
 });
 
-export const useReports = reportQueries.useList;
-export const useReport = reportQueries.useById;
-export const useExistingReport = reportQueries.useExisting;
-export const useDeleteReports = reportQueries.useDelete;
+const reportRowSchema = z.object({
+  id: z.string(),
+  analyzed_username: z.string(),
+  report_data: z.record(z.string(), z.unknown()),
+});
+
+export type ReportListItem = z.infer<typeof reportListItemSchema>;
+
+const crud = createCrudHooks<ReportListItem>({
+  queryKey: "reports",
+  endpoint: "/reports",
+  listSchema: z.array(reportListItemSchema),
+  detailSchema: reportRowSchema,
+});
+
+export const useReports = crud.useList;
+export const useReport = crud.useDetail;
+export const useReportCount = crud.useCount;
+export const useDeleteReports = crud.useDelete;

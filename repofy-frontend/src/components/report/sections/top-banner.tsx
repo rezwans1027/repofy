@@ -1,10 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { CountUp } from "@/components/ui/count-up";
 import { Badge } from "@/components/ui/badge";
-import type { ReportData } from "@/components/report/analysis-report";
+import type { ReportData } from "@shared/types/report";
 import { recommendationStyle } from "@/lib/styles";
 
 interface TopBannerProps {
@@ -30,9 +31,11 @@ export function TopBanner({ username, avatarUrl, data }: TopBannerProps) {
           <div className="flex items-center gap-4">
             <div className="relative">
               {avatarUrl ? (
-                <img
+                <Image
                   src={avatarUrl}
                   alt={username}
+                  width={64}
+                  height={64}
                   className="h-16 w-16 rounded-full border-2 border-cyan/30"
                 />
               ) : (

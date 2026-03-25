@@ -1,10 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { FileDown, Loader2, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { exportToPdf } from "@/lib/export-pdf";
+import { StickyBottomBar } from "@/components/ui/sticky-bottom-bar";
+import { ExportPdfButton } from "@/components/ui/export-pdf-button";
+import { CreditConfirmDialog } from "@/components/ui/credit-confirm-dialog";
+import { NoCreditsDialog } from "@/components/ui/no-credits-dialog";
+import { ADVISOR_ACCENT } from "@/lib/styles";
+import { useCreditBalance } from "@/hooks/use-credits";
+import { useActiveAdviceJob } from "@/hooks/use-advice-job";
+import { ActiveJobDialog } from "@/components/ui/active-job-dialog";
+import { useExportPdf } from "@/hooks/use-export-pdf";
 
 interface AdviceExportBarProps {
   username: string;
@@ -15,58 +23,77 @@ interface AdviceExportBarProps {
 
 export function AdviceExportBar({ username, adviceRef, onBeforeExport, onAfterExport }: AdviceExportBarProps) {
   const router = useRouter();
-  const [isExporting, setIsExporting] = useState(false);
+  const { data: balance } = useCreditBalance();
+  const { data: activeJob } = useActiveAdviceJob();
+  const [dialogOpen, setDialogOpen] = useState<"confirm_credit" | "no_credits" | "active_job" | null>(null);
 
-  const handleExportPDF = async () => {
-    if (!adviceRef.current || isExporting) return;
+  const { isExporting, handleExportPDF } = useExportPdf(
+    adviceRef,
+    `repofy-advice-${username}`,
+    { onBeforeExport, onAfterExport },
+  );
 
-    setIsExporting(true);
-    onBeforeExport();
-
-    try {
-      await new Promise((r) => setTimeout(r, 300));
-      const date = new Date().toISOString().split("T")[0];
-      await exportToPdf(adviceRef.current, `repofy-advice-${username}-${date}.pdf`);
-    } catch (err) {
-      console.error("PDF export failed:", err);
-    } finally {
-      onAfterExport();
-      setIsExporting(false);
+  const handleRunAgain = () => {
+    if (activeJob) {
+      setDialogOpen("active_job");
+    } else if (balance && balance.growth_balance === 0) {
+      setDialogOpen("no_credits");
+    } else {
+      setDialogOpen("confirm_credit");
     }
   };
 
+  const closeDialog = useCallback((open: boolean) => {
+    if (!open) setDialogOpen(null);
+  }, []);
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 lg:left-48 z-50 border-t border-border bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+    <>
+      <StickyBottomBar delay="0.4s">
         <p className="hidden font-mono text-xs text-muted-foreground sm:block">
           Advice for{" "}
-          <span className="text-emerald-400">@{username}</span>
+          <span className={ADVISOR_ACCENT}>@{username}</span>
         </p>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Button
             size="sm"
             variant="outline"
             className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-400 font-mono text-xs flex-1 sm:flex-initial"
-            onClick={() => router.push(`/advisor/generate/${username}`)}
+            onClick={handleRunAgain}
           >
             <RefreshCw className="size-3.5" />
             Run Again
           </Button>
-          <Button
-            size="sm"
-            className="bg-emerald-500 text-background hover:bg-emerald-500/90 font-mono text-xs flex-1 sm:flex-initial"
+          <ExportPdfButton
+            isExporting={isExporting}
             onClick={handleExportPDF}
-            disabled={isExporting}
-          >
-            {isExporting ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : (
-              <FileDown className="size-3.5" />
-            )}
-            {isExporting ? "Exporting..." : "Export PDF"}
-          </Button>
+            className="bg-emerald-500 text-background hover:bg-emerald-500/90 font-mono text-xs flex-1 sm:flex-initial"
+          />
         </div>
-      </div>
-    </div>
+      </StickyBottomBar>
+
+      <NoCreditsDialog
+        open={dialogOpen === "no_credits"}
+        onOpenChange={closeDialog}
+      />
+
+      <CreditConfirmDialog
+        open={dialogOpen === "confirm_credit"}
+        onOpenChange={closeDialog}
+        username={username}
+        balance={balance?.growth_balance ?? 0}
+        actionVerb="Generating"
+        onConfirm={() => {
+          setDialogOpen(null);
+          router.push(`/advisor/generate/${username}`);
+        }}
+      />
+
+      <ActiveJobDialog
+        open={dialogOpen === "active_job"}
+        onOpenChange={closeDialog}
+        activeJob={activeJob ?? null}
+      />
+    </>
   );
 }

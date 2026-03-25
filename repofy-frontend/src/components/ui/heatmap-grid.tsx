@@ -1,8 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
-import { useMemo } from "react";
+import { useRef, useMemo } from "react";
+import { useInView } from "framer-motion";
 
 interface HeatmapGridProps {
   data: number[][];
@@ -16,17 +15,26 @@ const COLORS = [
   "#22D3EE",
 ];
 
+/**
+ * Renders a contribution heatmap grouped by week columns.
+ * Animation is applied per-week (~52 groups) instead of per-cell (~364),
+ * avoiding layout jank on slower devices.
+ */
 export function HeatmapGrid({ data }: HeatmapGridProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true });
 
-  const cells = useMemo(() => {
-    const result: { day: number; week: number; value: number }[] = [];
-    data.forEach((row, day) => {
-      row.forEach((value, week) => {
-        result.push({ day, week, value });
-      });
-    });
+  // Group cells by week column: weeks[weekIndex] = [value_day0, value_day1, …, value_day6]
+  const weeks = useMemo(() => {
+    const numWeeks = data[0]?.length ?? 52;
+    const result: number[][] = [];
+    for (let week = 0; week < numWeeks; week++) {
+      const column: number[] = [];
+      for (let day = 0; day < data.length; day++) {
+        column.push(data[day]?.[week] ?? 0);
+      }
+      result.push(column);
+    }
     return result;
   }, [data]);
 
@@ -34,24 +42,33 @@ export function HeatmapGrid({ data }: HeatmapGridProps) {
     <div className="overflow-x-auto">
       <div
         ref={ref}
+        role="img"
+        aria-label="Contribution heatmap showing activity levels over time"
         className="grid gap-[3px]"
         style={{
-          gridTemplateColumns: `repeat(${data[0]?.length ?? 52}, 1fr)`,
-          gridTemplateRows: `repeat(7, 1fr)`,
+          gridTemplateColumns: `repeat(${weeks.length}, 1fr)`,
         }}
       >
-        {cells.map(({ day, week, value }) => (
-          <motion.div
-            key={`${day}-${week}`}
-            className="aspect-square w-full min-w-[8px] rounded-[2px]"
-            style={{ backgroundColor: COLORS[value] || COLORS[0] }}
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : undefined}
-            transition={{
-              duration: 0.15,
-              delay: (week * 7 + day) * 0.002,
+        {weeks.map((column, week) => (
+          <div
+            key={week}
+            className={`grid gap-[3px] ${isInView ? "heatmap-cell-animate" : ""}`}
+            style={{
+              gridTemplateRows: "repeat(7, 1fr)",
+              opacity: isInView ? undefined : 0,
+              animationDelay: `${week * 14}ms`,
             }}
-          />
+          >
+            {column.map((value, day) => (
+              <div
+                key={day}
+                className="aspect-square w-full min-w-[8px] rounded-[2px]"
+                style={{
+                  backgroundColor: COLORS[value] || COLORS[0],
+                }}
+              />
+            ))}
+          </div>
         ))}
       </div>
     </div>

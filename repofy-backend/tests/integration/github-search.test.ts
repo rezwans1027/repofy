@@ -2,15 +2,28 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import { getApp } from "../helpers/supertest-app";
 import { createGitHubApiUser, createSearchResponse } from "../fixtures/github";
-import { mockFetchJson } from "../helpers/integration-setup";
+import { mockFetchJson, setupAuthMock } from "../helpers/integration-setup";
 
 const fetchMock = vi.fn();
 vi.stubGlobal("fetch", fetchMock);
 
+vi.mock("../../src/config/supabase", () => ({
+  getSupabaseAdmin: vi.fn(),
+}));
+
 describe("GET /api/github/search", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     // Explicit reset — vi.stubGlobal mocks need manual reset despite config-level mockReset
     fetchMock.mockReset();
+    await setupAuthMock(true);
+  });
+
+  it("returns 401 without auth", async () => {
+    const app = getApp();
+    const res = await request(app).get("/api/github/search?q=octocat");
+
+    expect(res.status).toBe(401);
+    expect(res.body.success).toBe(false);
   });
 
   it("returns results for valid query", async () => {
@@ -22,7 +35,9 @@ describe("GET /api/github/search", () => {
       .mockReturnValueOnce(mockFetchJson(user));
 
     const app = getApp();
-    const res = await request(app).get("/api/github/search?q=octocat");
+    const res = await request(app)
+      .get("/api/github/search?q=octocat")
+      .set("Authorization", "Bearer valid-token");
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
@@ -35,27 +50,32 @@ describe("GET /api/github/search", () => {
 
   it("returns empty array for empty query", async () => {
     const app = getApp();
-    const res = await request(app).get("/api/github/search?q=");
+    const res = await request(app)
+      .get("/api/github/search?q=")
+      .set("Authorization", "Bearer valid-token");
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data).toEqual([]);
   });
 
-  it("returns empty array when no q param", async () => {
+  it("returns 400 when no q param", async () => {
     const app = getApp();
-    const res = await request(app).get("/api/github/search");
+    const res = await request(app)
+      .get("/api/github/search")
+      .set("Authorization", "Bearer valid-token");
 
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data).toEqual([]);
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
   });
 
   it("returns 429 when GitHub API rate limit is hit", async () => {
     fetchMock.mockReturnValue(mockFetchJson({}, false, 403));
 
     const app = getApp();
-    const res = await request(app).get("/api/github/search?q=octocat");
+    const res = await request(app)
+      .get("/api/github/search?q=octocat")
+      .set("Authorization", "Bearer valid-token");
 
     expect(res.status).toBe(429);
     expect(res.body.success).toBe(false);
@@ -66,7 +86,9 @@ describe("GET /api/github/search", () => {
     fetchMock.mockReturnValue(mockFetchJson({}, false, 500));
 
     const app = getApp();
-    const res = await request(app).get("/api/github/search?q=octocat");
+    const res = await request(app)
+      .get("/api/github/search?q=octocat")
+      .set("Authorization", "Bearer valid-token");
 
     expect(res.status).toBe(500);
     expect(res.body.success).toBe(false);

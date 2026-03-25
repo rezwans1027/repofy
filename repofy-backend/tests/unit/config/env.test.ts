@@ -8,13 +8,18 @@ vi.mock("dotenv", () => ({
 const ENV_KEYS = [
   "SUPABASE_URL",
   "SUPABASE_SERVICE_ROLE_KEY",
-  "GITHUB_TOKEN",
-  "OPENAI_API_KEY",
+  "SUPABASE_ANON_KEY",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
+  "RESEND_API_KEY",
+  "FEEDBACK_NOTIFICATION_EMAIL",
+  "ADMIN_SECRET",
+  "ENGINE_INTERNAL_KEY",
+  "ENGINE_URL",
   "MOCK_AI",
   "NODE_ENV",
   "PORT",
+  "CORS_ORIGIN",
 ] as const;
 
 describe("env config", () => {
@@ -33,6 +38,8 @@ describe("env config", () => {
       if (val === undefined) delete process.env[key];
       else process.env[key] = val;
     }
+    // ENGINE_INTERNAL_KEY is required when MOCK_AI is off
+    process.env.ENGINE_INTERNAL_KEY ??= "test-engine-key";
     vi.resetModules();
   });
 
@@ -52,30 +59,11 @@ describe("env config", () => {
     );
   });
 
-  it("allows missing OPENAI_API_KEY when MOCK_AI is enabled", async () => {
-    process.env.MOCK_AI = "true";
-    process.env.NODE_ENV = "test";
-    delete process.env.OPENAI_API_KEY;
-
-    const { env } = await import("../../../src/config/env");
-
-    expect(env.openaiApiKey).toBeUndefined();
-    expect(env.mockAi).toBe(true);
-  });
-
-  it("requires OPENAI_API_KEY when MOCK_AI is disabled", async () => {
-    process.env.MOCK_AI = "false";
-    delete process.env.OPENAI_API_KEY;
-
-    await expect(import("../../../src/config/env")).rejects.toThrow(
-      "Missing required environment variable: OPENAI_API_KEY",
-    );
-  });
-
   it("disables MOCK_AI in production even when set", async () => {
     process.env.MOCK_AI = "true";
     process.env.NODE_ENV = "production";
-    process.env.OPENAI_API_KEY = "sk-real-key";
+    process.env.CORS_ORIGIN = "https://example.com";
+    process.env.ENGINE_URL = "https://engine.example.com";
 
     const { env } = await import("../../../src/config/env");
 
@@ -90,12 +78,12 @@ describe("env config", () => {
     expect(env.port).toBe(4000);
   });
 
-  it("defaults port to 3003", async () => {
+  it("defaults port to 3001", async () => {
     delete process.env.PORT;
 
     const { env } = await import("../../../src/config/env");
 
-    expect(env.port).toBe(3003);
+    expect(env.port).toBe(3001);
   });
 
   it("throws when SUPABASE_SERVICE_ROLE_KEY is missing", async () => {
@@ -106,11 +94,11 @@ describe("env config", () => {
     );
   });
 
-  it("throws when GITHUB_TOKEN is missing", async () => {
-    delete process.env.GITHUB_TOKEN;
+  it("throws when FEEDBACK_NOTIFICATION_EMAIL is missing", async () => {
+    delete process.env.FEEDBACK_NOTIFICATION_EMAIL;
 
     await expect(import("../../../src/config/env")).rejects.toThrow(
-      "Missing required environment variable: GITHUB_TOKEN",
+      "Missing required environment variable: FEEDBACK_NOTIFICATION_EMAIL",
     );
   });
 

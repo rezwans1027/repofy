@@ -1,11 +1,28 @@
 import { RequestHandler } from "express";
 import { env } from "../config/env";
-import { fetchGitHubUserData, GitHubError } from "../services/github.service";
-import { generateAnalysis } from "../services/openai.service";
+import { fetchGitHubUserData } from "../services/github.service";
+import { callEngine } from "../services/engine.service";
 import { buildReportData } from "../services/analyze.service";
+import {
+  computeSnapshotHash,
+  buildCacheKey,
+  getCachedAnalysis,
+  setCachedAnalysis,
+} from "../services/cache.service";
+import { saveReport } from "../services/reports.service";
+import { logTokenUsage, type TokenUsage } from "../lib/usage-logger";
 import { USERNAME_RE } from "../lib/validators";
 import { sendError, sendSuccess } from "../lib/response";
 import { logger } from "../lib/logger";
+import { handleControllerError } from "../lib/controller-utils";
+import type { AuthenticatedRequest, ScorerResponse, ScoringResult } from "../types";
+
+interface AnalyzeEngineResponse {
+  scorerResponse: ScorerResponse;
+  scoringResult: ScoringResult;
+  narrativeReport: string;
+  tokenUsage?: { endpoint: string; model: string; usage: TokenUsage }[];
+}
 
 export const analyzeUser: RequestHandler = async (req, res) => {
   const username = req.params.username as string;
@@ -15,35 +32,68 @@ export const analyzeUser: RequestHandler = async (req, res) => {
     return;
   }
 
+  const { userId } = req as AuthenticatedRequest;
+
   try {
     if (env.mockAi) {
-      const { MOCK_ANALYSIS_RESPONSE, buildMockGitHubData } = await import("../services/mock-ai.service");
+      const { buildMockReport, buildMockGitHubData } = await import("../services/mock-ai.service");
       const githubData = buildMockGitHubData(username);
-      const report = buildReportData(MOCK_ANALYSIS_RESPONSE, githubData);
-      sendSuccess(res, { analyzedName: githubData.profile.name, report });
+      const report = buildMockReport(githubData);
+      const reportId = await saveReport(userId, username, githubData.profile.name, report);
+      sendSuccess(res, { analyzedName: githubData.profile.name, report, reportId });
       return;
     }
 
-    if (!env.openaiApiKey) {
-      sendError(res, 500, "OpenAI API key is not configured");
+    if (!req.githubToken) {
+      sendError(res, 403, "GitHub authentication required. Please sign in again.");
       return;
     }
 
-    const githubData = await fetchGitHubUserData(username, req.signal);
-    const aiAnalysis = await generateAnalysis(githubData, req.signal);
-    const report = buildReportData(aiAnalysis, githubData);
+    // 1. Fetch GitHub data (with snapshots + aggregate metrics)
+    const githubData = await fetchGitHubUserData(username, req.signal, req.githubToken);
+
+    // 2. Compute snapshot hash → check cache
+    const snapshotHash = computeSnapshotHash(githubData);
+    const cacheKey = buildCacheKey(env.openaiModel, env.rubricVersion, snapshotHash);
+
+    const cached = await getCachedAnalysis(cacheKey);
+    if (cached) {
+      logger.info(`Cache hit for ${username} (key: ${cacheKey.slice(0, 8)}...)`);
+      const report = buildReportData(
+        cached.scorerResponse,
+        cached.scoringResult,
+        cached.narrativeReport,
+        githubData,
+      );
+      const reportId = await saveReport(userId, username, githubData.profile.name, report);
+      sendSuccess(res, { analyzedName: githubData.profile.name, report, reportId });
+      return;
+    }
+
+    // 3. Call engine for AI analysis
+    const { scorerResponse, scoringResult, narrativeReport, tokenUsage } =
+      await callEngine<AnalyzeEngineResponse>("/analyze", { githubData }, req.signal);
+
+    // Log token usage to Supabase (fire-and-forget)
+    tokenUsage?.forEach((u) => logTokenUsage(u.endpoint, u.model, u.usage));
+
+    // 4. Cache results (fire-and-forget)
+    setCachedAnalysis(cacheKey, snapshotHash, env.openaiModel, env.rubricVersion, {
+      scorerResponse,
+      scoringResult,
+      narrativeReport,
+    });
+
+    // 5. Build report & persist
+    const report = buildReportData(scorerResponse, scoringResult, narrativeReport, githubData);
+    const reportId = await saveReport(userId, username, githubData.profile.name, report);
 
     sendSuccess(res, {
       analyzedName: githubData.profile.name,
       report,
+      reportId,
     });
   } catch (err) {
-    if (req.signal?.aborted || res.headersSent) return;
-    if (err instanceof GitHubError) {
-      sendError(res, err.statusCode, err.message);
-      return;
-    }
-    logger.error("Analysis error:", err);
-    sendError(res, 500, "Analysis failed. Please try again.");
+    handleControllerError(err, req, res, "Analysis", "Analysis failed. Please try again.");
   }
 };

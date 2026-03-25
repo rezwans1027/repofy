@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { AuthProvider } from "@/components/providers/auth-provider";
-import { AnalysisProvider } from "@/components/providers/analysis-provider";
+import { AuthProvider, type AuthUser } from "@/components/providers/auth-provider";
+import { MotionProvider } from "@/components/providers/motion-provider";
+import { serverFetch } from "@/lib/server-api";
+import { OverlayScrollbar } from "@/components/ui/overlay-scrollbar";
 import "./globals.css";
 
 const inter = localFont({
@@ -18,26 +21,59 @@ const jetbrainsMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Repofy — Hiring-Grade Developer Evaluations",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://repofy.dev",
+  ),
+  title: {
+    default: "Repofy — Hiring-Grade Developer Evaluations",
+    template: "%s — Repofy",
+  },
   description:
     "Analyze any GitHub profile. Get a hiring-grade developer evaluation powered by code analysis, not resumes.",
+  openGraph: {
+    type: "website",
+    siteName: "Repofy",
+    title: "Repofy — Hiring-Grade Developer Evaluations",
+    description:
+      "Analyze any GitHub profile. Get a hiring-grade developer evaluation powered by code analysis, not resumes.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Repofy — Hiring-Grade Developer Evaluations",
+    description:
+      "Analyze any GitHub profile. Get a hiring-grade developer evaluation powered by code analysis, not resumes.",
+  },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const { data: authData } = await serverFetch<{ user: AuthUser }>("/auth/me");
+  const initialUser = authData?.user ?? null;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
+        id="overlay-scrollbar-target"
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
-        <ThemeProvider>
-          <AuthProvider>
-            <AnalysisProvider>{children}</AnalysisProvider>
-          </AuthProvider>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-cyan focus:px-4 focus:py-2 focus:font-mono focus:text-sm focus:font-semibold focus:text-background"
+        >
+          Skip to main content
+        </a>
+        <ThemeProvider nonce={nonce}>
+          <MotionProvider>
+            <AuthProvider initialUser={initialUser}>
+                <OverlayScrollbar />
+                {children}
+            </AuthProvider>
+          </MotionProvider>
         </ThemeProvider>
       </body>
     </html>

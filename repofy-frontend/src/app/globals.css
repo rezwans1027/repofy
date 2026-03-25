@@ -5,8 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 
 html {
-  overflow-y: scroll;
   overscroll-behavior: none;
+  scrollbar-width: none; /* Firefox */
+}
+::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 @theme inline {
@@ -147,41 +150,145 @@ html {
   animation-timing-function: ease;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
+/* Disable element-level transitions during theme switch so only the
+   view-transition cross-fade drives the visual change. */
+[data-theme-transitioning],
+[data-theme-transitioning] *,
+[data-theme-transitioning] *::before,
+[data-theme-transitioning] *::after {
+  transition-duration: 0s !important;
 }
 
-/* Typewriter cursor blink */
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
+/* Prevent Radix scroll-lock from causing layout shift */
+body[data-scroll-locked] {
+  overflow: unset !important;
+  padding-right: 0px !important;
+  margin-right: 0px !important;
 }
+
+
+@layer base {
+  /* Typewriter cursor blink */
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  /* Slide up from bottom */
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* ── Advisor report ambient animations ───────────────────────── */
+  @keyframes glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.25), 0 0 24px rgba(16, 185, 129, 0.08);
+    }
+    50% {
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.45), 0 0 48px rgba(16, 185, 129, 0.15);
+    }
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-3px); }
+  }
+
+  @keyframes shimmer {
+    100% { transform: translateX(100%); }
+  }
+
+  /* Waveform bar pulse */
+  @keyframes waveform-bar {
+    0%, 100% { transform: scaleY(0.25); }
+    50% { transform: scaleY(1); }
+  }
+
+  /* Heatmap cell fade-in */
+  @keyframes heatmapFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
 .animate-blink {
   animation: blink 1s step-end infinite;
-}
-
-/* Slide up from bottom */
-@keyframes slide-up {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
 }
 .animate-slide-up {
   animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease-in-out infinite;
+}
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+.heatmap-cell-animate {
+  animation: heatmapFadeIn 0.15s ease both;
+}
+
+/* ── Auth page background ────────────────────────────────────────── */
+.auth-grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle,
+    rgba(34, 211, 238, 0.06) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 60% 50% at 50% 35%,
+    black 0%,
+    transparent 70%
+  );
+  mask-image: radial-gradient(
+    ellipse 60% 50% at 50% 35%,
+    black 0%,
+    transparent 70%
+  );
+}
+
+.auth-glow-button {
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.12),
+    0 0 60px rgba(34, 211, 238, 0.04);
+  transition: box-shadow 0.3s ease;
+}
+.auth-glow-button:hover:not(:disabled) {
+  box-shadow: 0 0 30px rgba(34, 211, 238, 0.25),
+    0 0 80px rgba(34, 211, 238, 0.08);
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+

@@ -1,19 +1,24 @@
+import { logger } from "./logger";
+
 /**
- * Returns true for errors that warrant a credit refund:
- * AI service 5xx, network timeout, unexpected internal errors.
- * Returns false for 4xx-class errors.
+ * Sanitised database error — the message shown to clients never
+ * exposes internal schema details. The raw Supabase error is
+ * logged server-side via `cause`.
  */
-export function isRefundableError(err: unknown): boolean {
-  // Abort signal = client disconnect or timeout
-  if (err instanceof DOMException && err.name === "AbortError") return true;
-
-  // Explicit HTTP status from AI provider SDK
-  if (err && typeof err === "object" && "status" in err) {
-    const status = (err as { status: number }).status;
-    return status >= 500;
+export class DatabaseError extends Error {
+  constructor(message: string, cause: unknown) {
+    super(message);
+    this.name = "DatabaseError";
+    logger.error(message, cause);
   }
+}
 
-  // Any other unexpected exception — refund to be safe
-  // GitHubError is a known 4xx but can't reach here (thrown before deduction)
-  return true;
+/**
+ * Replaces the common `if (error) throw error` pattern for Supabase calls.
+ * Wraps the raw error in a DatabaseError with a sanitised client-facing message.
+ */
+export function throwIfDbError(error: unknown, context: string): void {
+  if (error) {
+    throw new DatabaseError(`Database operation failed: ${context}`, error);
+  }
 }

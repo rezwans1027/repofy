@@ -1,42 +1,96 @@
 import crypto from "crypto";
 import { RequestHandler } from "express";
 import { env } from "../config/env";
-import { getSupabaseAdmin } from "../config/supabase";
-import {
-  fetchGitHubUserData,
-  GitHubError,
-} from "../services/github.service";
-import { generateAdvice } from "../services/advice.service";
+import { fetchGitHubUserData } from "../services/github.service";
+import { callEngine } from "../services/engine.service";
 import { buildAdviceData } from "../services/advice-builder.service";
 import { getCreditBalance, deductGrowthCredit, refundGrowthCredit } from "../services/credit.service";
+import { InsufficientCreditsError } from "../services/advice-persistence.service";
+import { logTokenUsage, type TokenUsage } from "../lib/usage-logger";
 import { USERNAME_RE } from "../lib/validators";
 import { sendError, sendSuccess } from "../lib/response";
-import { isRefundableError } from "../lib/errors";
+import { handleControllerError } from "../lib/controller-utils";
+import { advisoryLock } from "../lib/distributed-lock";
 import { logger } from "../lib/logger";
+import { createJob, getActiveJob, completeJob, failJob, expireStaleJobs } from "../services/advice-job.service";
+import { getSupabaseAdmin } from "../config/supabase";
+import { throwIfDbError, DatabaseError } from "../lib/errors";
+import type { AuthenticatedRequest, AdviceV2 } from "../types";
+import type { AdviceData } from "../types/shared/advice";
 
-/** Persist advice via Supabase admin and return the row id. */
+interface AdviceEngineResponse {
+  advice: AdviceV2;
+  tokenUsage?: { endpoint: string; model: string; usage: TokenUsage }[];
+}
+
+/** Build a consistent lock key for a user's advice request. */
+function adviceLockKey(userId: string): string {
+  return `advice:${userId}`;
+}
+
+/** Persist advice row and return its id. */
 async function persistAdvice(
   userId: string,
   analyzedUsername: string,
   analyzedName: string | null,
-  adviceData: Record<string, unknown>,
+  adviceData: AdviceData,
+  avatarUrl: string | null,
 ): Promise<string> {
   const supabase = getSupabaseAdmin();
-  const row = {
-    user_id: userId,
-    analyzed_username: analyzedUsername,
-    analyzed_name: analyzedName,
-    advice_data: adviceData,
-  };
-
   const { data, error } = await supabase
     .from("advice")
-    .upsert(row, { onConflict: "user_id,analyzed_username" })
+    .insert({
+      user_id: userId,
+      analyzed_username: analyzedUsername,
+      analyzed_name: analyzedName,
+      advice_data: adviceData,
+      avatar_url: avatarUrl,
+    })
     .select("id")
     .single();
-
-  if (error) throw error;
+  throwIfDbError(error, "persist advice");
+  if (!data?.id) throw new DatabaseError("persist advice returned no id", null);
   return data.id as string;
+}
+
+/** Background processing — GitHub fetch → engine → persist → complete job. */
+async function processAdviceInBackground(
+  userId: string,
+  requestId: string,
+  username: string,
+  githubToken: string,
+  jobId: string,
+  lockKey: string,
+): Promise<void> {
+  try {
+    const githubData = await fetchGitHubUserData(username, undefined, githubToken);
+
+    const { advice: aiAdvice, tokenUsage } =
+      await callEngine<AdviceEngineResponse>("/advice", { githubData });
+
+    tokenUsage?.forEach((u) => logTokenUsage(u.endpoint, u.model, u.usage));
+
+    const advice = buildAdviceData(aiAdvice, githubData);
+    const adviceId = await persistAdvice(userId, username.toLowerCase(), githubData.profile.name, advice, githubData.profile.avatarUrl ?? null);
+
+    await completeJob(jobId, adviceId);
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Background advice generation failed";
+    logger.error("Background advice generation failed:", err);
+
+    await failJob(jobId, errorMessage).catch((e) =>
+      logger.error("Failed to mark job as failed:", e),
+    );
+
+    await refundGrowthCredit(userId, requestId, {
+      reason: "background_generation_failed",
+      username: username.toLowerCase(),
+    }).catch((e) =>
+      logger.error("Failed to refund credit after background failure:", e),
+    );
+  } finally {
+    advisoryLock.release(lockKey);
+  }
 }
 
 export const adviseUser: RequestHandler = async (req, res) => {
@@ -47,84 +101,139 @@ export const adviseUser: RequestHandler = async (req, res) => {
     return;
   }
 
+  const { userId } = req as AuthenticatedRequest;
+  const lockKey = adviceLockKey(userId);
+
+  const acquired = advisoryLock.acquire(lockKey);
+  if (!acquired) {
+    // Check if there's an active job to return (idempotent)
+    const existingJob = await getActiveJob(userId);
+    if (existingJob) {
+      res.status(202).json({ success: true, data: { jobId: existingJob.id, createdAt: existingJob.created_at } });
+      return;
+    }
+    sendError(res, 429, "An advice request is already in progress. Please wait.");
+    return;
+  }
+
   const requestId = crypto.randomUUID();
+  // Track whether lock ownership was handed to a background task
+  let lockHandedOff = false;
 
   try {
+    // Expire any stuck jobs before checking for active ones
+    await expireStaleJobs(userId);
+
+    // Check for existing active job (idempotent)
+    const existingJob = await getActiveJob(userId);
+    if (existingJob) {
+      res.status(202).json({ success: true, data: { jobId: existingJob.id, createdAt: existingJob.created_at } });
+      return;
+    }
+
     if (env.mockAi) {
+      // Mock path: deduct credit, create job, complete immediately in background
+      const balance = await getCreditBalance(userId);
+      if (balance.growth_balance <= 0) {
+        sendError(res, 402, "Insufficient growth credits");
+        return;
+      }
+
+      const deducted = await deductGrowthCredit(userId, requestId, {
+        username: username.toLowerCase(),
+        endpoint: "/advice",
+      });
+      if (!deducted) {
+        throw new InsufficientCreditsError();
+      }
+
+      let job;
+      try {
+        job = await createJob(userId, username, requestId);
+      } catch (err) {
+        await refundGrowthCredit(userId, requestId, {
+          reason: "job_creation_failed",
+          username: username.toLowerCase(),
+        }).catch((e) => logger.error("Failed to refund credit after job creation failure:", e));
+        throw err;
+      }
+
+      // Return 202 immediately
+      res.status(202).json({ success: true, data: { jobId: job.id, createdAt: job.created_at } });
+
+      // Complete mock job in background
       const { MOCK_ADVICE_RESPONSE, buildMockGitHubData } = await import("../services/mock-ai.service");
       const githubData = buildMockGitHubData(username);
       const advice = buildAdviceData(MOCK_ADVICE_RESPONSE, githubData);
-      const adviceId = await persistAdvice(
-        req.userId!,
-        username.toLowerCase(),
-        githubData.profile.name,
-        advice,
-      );
-      sendSuccess(res, { adviceId });
+
+      try {
+        const adviceId = await persistAdvice(userId, username.toLowerCase(), githubData.profile.name, advice, githubData.profile.avatarUrl ?? null);
+        await completeJob(job.id, adviceId);
+      } catch (err) {
+        logger.error("Mock advice background completion failed:", err);
+        await failJob(job.id, "Mock advice persistence failed").catch(() => {});
+        await refundGrowthCredit(userId, requestId, {
+          reason: "mock_persist_failed",
+          username: username.toLowerCase(),
+        }).catch(() => {});
+      }
       return;
     }
 
-    if (!env.openaiApiKey) {
-      sendError(res, 500, "OpenAI API key is not configured");
+    if (!req.githubToken) {
+      sendError(res, 403, "GitHub authentication required. Please sign in again.");
       return;
     }
 
-    // Cheap pre-check: reject early if user has zero credits (avoids GitHub quota)
-    const balance = await getCreditBalance(req.userId!);
+    // Pre-check credits
+    const balance = await getCreditBalance(userId);
     if (balance.growth_balance <= 0) {
       sendError(res, 402, "Insufficient growth credits");
       return;
     }
 
-    // Fetch GitHub data BEFORE deducting — 4xx here costs no credit
-    const githubData = await fetchGitHubUserData(username, req.signal);
-
-    // Atomic deduct (still needed — pre-check is non-locking)
-    const deducted = await deductGrowthCredit(req.userId!, requestId, {
-      username,
+    // Deduct credit upfront
+    const deducted = await deductGrowthCredit(userId, requestId, {
+      username: username.toLowerCase(),
       endpoint: "/advice",
     });
     if (!deducted) {
-      sendError(res, 402, "Insufficient growth credits");
-      return;
+      throw new InsufficientCreditsError();
     }
 
-    // Everything after deduction is credit-guarded — refund on refundable failure
+    // Create job — refund credit if this fails before background processing starts
+    let job;
     try {
-      const aiAdvice = await generateAdvice(githubData, req.signal);
-      const advice = buildAdviceData(aiAdvice, githubData);
-
-      // Persist server-side so deduction + artifact are atomic
-      const adviceId = await persistAdvice(
-        req.userId!,
-        username.toLowerCase(),
-        githubData.profile.name,
-        advice,
-      );
-
-      sendSuccess(res, { adviceId });
-    } catch (postDeductErr) {
-      if (isRefundableError(postDeductErr)) {
-        const refunded = await refundGrowthCredit(req.userId!, requestId, {
-          reason: "post_deduction_failure",
-        });
-        if (!refunded) {
-          logger.error("CRITICAL: refund failed", {
-            userId: req.userId,
-            requestId,
-            error: postDeductErr instanceof Error ? postDeductErr.message : String(postDeductErr),
-          });
-        }
-      }
-      throw postDeductErr;
+      job = await createJob(userId, username, requestId);
+    } catch (err) {
+      await refundGrowthCredit(userId, requestId, {
+        reason: "job_creation_failed",
+        username: username.toLowerCase(),
+      }).catch((e) => logger.error("Failed to refund credit after job creation failure:", e));
+      throw err;
     }
+
+    // Return 202 immediately
+    res.status(202).json({ success: true, data: { jobId: job.id, createdAt: job.created_at } });
+
+    // Capture token before response completes
+    const githubToken = req.githubToken;
+
+    // Hand lock ownership to background processing (released in its finally block)
+    lockHandedOff = true;
+    processAdviceInBackground(userId, requestId, username, githubToken, job.id, lockKey)
+      .catch((err) => {
+        logger.error("Unhandled error in background advice processing:", err);
+        refundGrowthCredit(userId, requestId, {
+          reason: "background_unhandled_error",
+          username: username.toLowerCase(),
+        }).catch((e) => logger.error("Failed to refund credit after unhandled error:", e));
+      });
   } catch (err) {
-    if (req.signal?.aborted || res.headersSent) return;
-    if (err instanceof GitHubError) {
-      sendError(res, err.statusCode, err.message);
-      return;
+    handleControllerError(err, req, res, "Advice", "Advice generation failed. Please try again.");
+  } finally {
+    if (!lockHandedOff) {
+      advisoryLock.release(lockKey);
     }
-    logger.error("Advice error:", err);
-    sendError(res, 500, "Advice generation failed. Please try again.");
   }
 };

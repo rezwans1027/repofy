@@ -1,30 +1,30 @@
 import { test as setup, expect } from "@playwright/test";
-import { TIMEOUTS } from "./helpers/timeouts";
 
 const authFile = "e2e/.auth/user.json";
 
 setup("authenticate", async ({ page }) => {
-  const email = process.env.E2E_TEST_EMAIL;
-  const password = process.env.E2E_TEST_PASSWORD;
+  // GitHub OAuth cannot be automated in Playwright.
+  // This setup loads a pre-saved storageState from a manual login session.
+  // To generate it:
+  //   1. Run `npx playwright codegen http://localhost:3000/login`
+  //   2. Complete the GitHub OAuth flow manually
+  //   3. Copy the resulting storageState to e2e/.auth/user.json
 
-  if (!email || !password) {
-    throw new Error("E2E_TEST_EMAIL and E2E_TEST_PASSWORD must be set");
+  // Check if saved auth state exists
+  const fs = await import("fs");
+  if (!fs.existsSync(authFile)) {
+    throw new Error(
+      `Auth state file not found at ${authFile}. ` +
+      "Please log in manually and save the storageState. " +
+      "See e2e/auth.setup.ts for instructions.",
+    );
   }
 
-  await page.goto("/login");
+  // Load the saved auth state and verify it works
+  await page.context().addCookies(
+    JSON.parse(fs.readFileSync(authFile, "utf-8")).cookies ?? [],
+  );
 
-  // The login form uses <label> elements with text "email" and "password"
-  // and a submit button with text "Sign In"
-  await page.getByLabel(/email/i).fill(email);
-  await page.getByLabel(/password/i).fill(password);
-  await page.getByRole("button", { name: /sign in/i }).click();
-
-  // Wait for redirect to dashboard after successful login
-  await page.waitForURL(/\/dashboard/, { timeout: TIMEOUTS.API });
-
-  // Verify we actually landed on the dashboard
+  await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/dashboard/);
-
-  // Save auth state (cookies + localStorage with Supabase session)
-  await page.context().storageState({ path: authFile });
 });

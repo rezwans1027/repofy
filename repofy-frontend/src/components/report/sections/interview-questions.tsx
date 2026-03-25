@@ -1,6 +1,5 @@
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
-import type { ReportData } from "@/components/report/analysis-report";
+import { SectionCard } from "@/components/ui/section-card";
+import type { ReportData } from "@shared/types/report";
 
 interface InterviewQuestionsProps {
   questions: ReportData["interviewQuestions"];
@@ -8,12 +7,7 @@ interface InterviewQuestionsProps {
 
 export function InterviewQuestions({ questions }: InterviewQuestionsProps) {
   return (
-    <AnimateOnView delay={0.54}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader
-          title="Suggested Interview Questions"
-          subtitle="Tailored to this candidate's profile"
-        />
+    <SectionCard delay={0.54} title="Suggested Interview Questions" subtitle="Tailored to this candidate's profile">
         <div className="space-y-0 divide-y divide-border">
           {questions.map((q, i) => (
             <div
@@ -30,7 +24,6 @@ export function InterviewQuestions({ questions }: InterviewQuestionsProps) {
             </div>
           ))}
         </div>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }

@@ -7,6 +7,6 @@ import { timeout } from "../middleware/timeout";
 
 const router = Router();
 
-router.post("/analyze/:username", aiRateLimit, timeout(120_000), requireAuth, asyncHandler(analyzeUser));
+router.post("/analyze/:username", aiRateLimit, requireAuth, timeout(120_000), asyncHandler(analyzeUser));
 
 export default router;

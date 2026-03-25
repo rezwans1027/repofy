@@ -1,45 +1,87 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { Target } from "lucide-react";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
-import type { AdviceData } from "@/components/advice/advice-report";
+import { SectionCard } from "@/components/ui/section-card";
+import { AdviceEmptyState } from "./advice-empty-state";
+import {
+  staggerContainer,
+  staggerItemScale,
+  contentFade,
+} from "@/lib/animation-variants";
+import { ADVISOR_ACCENT, ADVISOR_HOVER_BORDER } from "@/lib/styles";
+import type { AdviceData } from "@shared/types/advice";
 
 interface ProfileOptimizationsProps {
   optimizations: AdviceData["profileOptimizations"];
 }
 
 export function ProfileOptimizations({ optimizations }: ProfileOptimizationsProps) {
+  if (optimizations.length === 0) {
+    return (
+      <AdviceEmptyState
+        title="Profile Optimizations"
+        message="No profile optimization suggestions available."
+        delay={0.16}
+      />
+    );
+  }
+
   return (
-    <AnimateOnView delay={0.3} className="h-full">
-      <div className="rounded-lg border border-border bg-card p-5 h-full">
-        <SectionHeader title="Profile Optimizations" />
-        <div className="space-y-3">
+    <SectionCard delay={0.16} title="Profile Optimizations">
+
+        <motion.div
+          className="space-y-3"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
           {optimizations.map((opt) => (
-            <div
+            <motion.div
               key={opt.area}
-              className="rounded-md border border-border bg-background p-3 space-y-2"
+              variants={staggerItemScale}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              whileHover={{ scale: 1.02, y: -2 }}
+              className={`rounded-md border border-border bg-background p-3 space-y-2 ${ADVISOR_HOVER_BORDER} cursor-default`}
             >
               <div className="flex items-center gap-2">
-                <Target className="size-3.5 shrink-0 text-emerald-400" />
+                <Target className={`size-3.5 shrink-0 ${ADVISOR_ACCENT}`} />
                 <span className="font-mono text-xs font-bold">{opt.area}</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                <div>
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                    Current
-                  </span>
-                  <p className="mt-0.5 text-muted-foreground">{opt.current}</p>
+              <motion.div className="space-y-2" variants={contentFade}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                      Current
+                    </span>
+                    <p className="mt-0.5 text-muted-foreground">{opt.current}</p>
+                  </div>
+                  <div>
+                    <span className={`font-mono text-[10px] uppercase tracking-wider ${ADVISOR_ACCENT}`}>
+                      Suggestion
+                    </span>
+                    <p className="mt-0.5">{opt.suggestion}</p>
+                  </div>
                 </div>
-                <div>
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
-                    Suggestion
-                  </span>
-                  <p className="mt-0.5">{opt.suggestion}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                      Example
+                    </span>
+                    <p className="mt-0.5 text-muted-foreground">{opt.example}</p>
+                  </div>
+                  <div>
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                      Impact
+                    </span>
+                    <p className="mt-0.5 text-muted-foreground">{opt.impact}</p>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           ))}
-        </div>
-      </div>
-    </AnimateOnView>
+        </motion.div>
+    </SectionCard>
   );
 }

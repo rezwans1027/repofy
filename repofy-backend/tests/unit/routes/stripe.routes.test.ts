@@ -16,6 +16,6 @@ describe("stripe routes wiring", () => {
       (l: any) => l.route?.path === "/stripe/create-checkout-session",
     );
     const names = layer.route.stack.map((s: any) => s.handle.name);
-    expect(names).toEqual(["", "timeoutMiddleware", "requireAuth", "asyncHandlerWrapper"]);
+    expect(names).toEqual(["", "requireAuth", "timeoutMiddleware", "asyncHandlerWrapper"]);
   });
 });

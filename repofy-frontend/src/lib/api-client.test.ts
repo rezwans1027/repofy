@@ -1,16 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock the supabase client module before api-client imports it
-vi.mock("@/lib/supabase/client", () => ({
-  createClient: () => ({
-    auth: {
-      refreshSession: vi.fn().mockResolvedValue({
-        data: { session: { access_token: "test-token" } },
-      }),
-    },
-  }),
-}));
-
 import { api, ApiError } from "./api-client";
 
 describe("ApiError", () => {
@@ -29,7 +18,7 @@ describe("api.get", () => {
     vi.restoreAllMocks();
   });
 
-  it("makes GET request and returns data", async () => {
+  it("makes GET request with credentials: include", async () => {
     const mockData = { users: ["alice"] };
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ success: true, data: mockData }), {
@@ -42,7 +31,7 @@ describe("api.get", () => {
     expect(result).toEqual(mockData);
     expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining("/test"),
-      expect.objectContaining({ method: "GET" }),
+      expect.objectContaining({ method: "GET", credentials: "include" }),
     );
   });
 
@@ -71,25 +60,6 @@ describe("api.get", () => {
 
     await expect(api.get("/bad")).rejects.toThrow("Server returned non-JSON response");
   });
-
-  it("includes auth header when auth option is true", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ success: true, data: {} }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }),
-    );
-
-    await api.get("/secure", { auth: true });
-    expect(fetch).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          Authorization: "Bearer test-token",
-        }),
-      }),
-    );
-  });
 });
 
 describe("api.post", () => {
@@ -97,7 +67,7 @@ describe("api.post", () => {
     vi.restoreAllMocks();
   });
 
-  it("makes POST request with JSON body", async () => {
+  it("makes POST request with JSON body and X-Requested-With header", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ success: true, data: { id: 1 } }), {
         status: 200,
@@ -111,9 +81,11 @@ describe("api.post", () => {
       expect.any(String),
       expect.objectContaining({
         method: "POST",
+        credentials: "include",
         body: JSON.stringify({ name: "test" }),
         headers: expect.objectContaining({
           "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
         }),
       }),
     );
@@ -128,6 +100,44 @@ describe("api.post", () => {
     );
 
     await expect(api.post("/validate")).rejects.toThrow("Validation failed");
+  });
+});
+
+describe("api - 401 auto-refresh", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("retries request after successful refresh on 401", async () => {
+    const mockData = { items: [1] };
+    const fetchSpy = vi.spyOn(globalThis, "fetch")
+      // First call: original request returns 401
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: false, error: "Unauthorized" }), { status: 401 }),
+      )
+      // Second call: refresh endpoint succeeds
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true, data: {} }), { status: 200 }),
+      )
+      // Third call: retried original request succeeds
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true, data: mockData }), { status: 200 }),
+      );
+
+    const result = await api.get("/protected");
+    expect(result).toEqual(mockData);
+    expect(fetchSpy).toHaveBeenCalledTimes(3);
+  });
+
+  it("does not auto-refresh for /auth/login", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ success: false, error: "Invalid" }), { status: 401 }),
+    );
+
+    await expect(api.post("/auth/login", { body: { email: "a@b.com", password: "x" } }))
+      .rejects.toThrow("Invalid");
+    // Only 1 call — no refresh attempted
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 });
 

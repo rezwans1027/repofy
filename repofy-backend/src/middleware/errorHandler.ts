@@ -1,12 +1,22 @@
 import { ErrorRequestHandler } from "express";
-import { env } from "../config/env";
+import { logger } from "../lib/logger";
+import { DatabaseError } from "../lib/errors";
 import { sendError } from "../lib/response";
 
-export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   if (res.headersSent) return;
 
-  const status = err.status || 500;
-  const message = env.isProduction ? "Internal server error" : err.message;
+  // DatabaseError already logged the raw cause in its constructor;
+  // surface only the sanitised message to the client.
+  if (err instanceof DatabaseError) {
+    sendError(res, 500, err.message);
+    return;
+  }
 
+  const status = err.status || 500;
+
+  logger.error("Unhandled error", { requestId: req.requestId, status, message: err.message, stack: err.stack });
+
+  const message = status >= 500 ? "Internal server error" : err.message;
   sendError(res, status, message);
 };

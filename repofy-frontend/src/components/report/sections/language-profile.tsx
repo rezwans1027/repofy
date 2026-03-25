@@ -1,9 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
-import type { ReportData } from "@/components/report/analysis-report";
+import { SectionCard } from "@/components/ui/section-card";
+import type { ReportData } from "@shared/types/report";
 
 interface LanguageProfileProps {
   languageProfile: ReportData["languageProfile"];
@@ -13,9 +12,7 @@ export function LanguageProfile({ languageProfile }: LanguageProfileProps) {
   const langs = languageProfile.languages;
 
   return (
-    <AnimateOnView delay={0.3}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader title="Language Profile" />
+    <SectionCard delay={0.3} title="Language Profile">
         <div className="flex h-5 w-full overflow-hidden rounded-full">
           {langs.map((lang) => (
             <motion.div
@@ -53,7 +50,6 @@ export function LanguageProfile({ languageProfile }: LanguageProfileProps) {
         <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
           {languageProfile.interpretation}
         </p>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }

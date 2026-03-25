@@ -16,8 +16,10 @@ vi.mock("@/lib/api-client", () => ({
 }));
 
 const mockUseCreditBalance = vi.fn();
+const mockUseAwaitCreditUpdate = vi.fn();
 vi.mock("@/hooks/use-credits", () => ({
   useCreditBalance: () => mockUseCreditBalance(),
+  useAwaitCreditUpdate: () => mockUseAwaitCreditUpdate(),
 }));
 
 vi.mock("@/components/providers/auth-provider", () => ({
@@ -29,24 +31,25 @@ import { navState, navModule, resetNavState } from "@/__tests__/helpers/mock-nav
 navState.pathname = "/pricing";
 vi.mock("next/navigation", () => navModule);
 
-import PricingPage from "./page";
+import { PricingPageContent } from "@/components/pricing/pricing-page-content";
 import { api } from "@/lib/api-client";
 
 function renderPricing() {
   return render(
     <TestProviders>
-      <PricingPage />
+      <PricingPageContent />
     </TestProviders>
   );
 }
 
-describe("PricingPage", () => {
+describe("PricingPageContent", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetNavState();
     navState.pathname = "/pricing";
     navState.searchParams = new URLSearchParams();
-    mockUseCreditBalance.mockReturnValue({ data: undefined, isLoading: true });
+    mockUseCreditBalance.mockReturnValue({ data: { growth_balance: 0, eval_balance: 0 }, isLoading: false });
+    mockUseAwaitCreditUpdate.mockReturnValue({ data: undefined, isLoading: false });
   });
 
   it("renders Developers and Recruiters cards", () => {
@@ -56,17 +59,17 @@ describe("PricingPage", () => {
     expect(screen.getByText("Recruiters")).toBeInTheDocument();
   });
 
-  it("renders the $5 price", () => {
+  it("renders the credit pack price", () => {
     renderPricing();
 
-    expect(screen.getByText("$5")).toBeInTheDocument();
+    expect(screen.getByText(`$10`)).toBeInTheDocument();
     expect(screen.getByText("USD")).toBeInTheDocument();
   });
 
   it("renders the checkout button", () => {
     renderPricing();
 
-    expect(screen.getByRole("button", { name: /Get Started — \$5/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Get Started/i })).toBeInTheDocument();
   });
 
   it("renders Coming Soon for Recruiters", () => {
@@ -92,8 +95,7 @@ describe("PricingPage", () => {
     renderPricing();
 
     expect(screen.getByText("3")).toBeInTheDocument();
-    // Match the balance card text "You have N growth credits" (not feature list)
-    expect(screen.getByText(/You have/)).toBeInTheDocument();
+    expect(screen.getByText("Your balance")).toBeInTheDocument();
   });
 
   it("does not show credit balance card when loading", () => {
@@ -101,7 +103,7 @@ describe("PricingPage", () => {
 
     renderPricing();
 
-    expect(screen.queryByText(/You have/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Your balance/i)).not.toBeInTheDocument();
   });
 
   it("shows singular 'credit' for balance of 1", () => {
@@ -112,61 +114,43 @@ describe("PricingPage", () => {
 
     renderPricing();
 
-    // The balance line renders "You have 1 growth credit" (no trailing 's')
-    const balanceLine = screen.getByText(/You have/);
-    expect(balanceLine.textContent).toContain("1");
-    expect(balanceLine.textContent).toMatch(/growth credit$/);
-  });
-
-  it("shows success banner with credit message when ?success=true", () => {
-    navState.searchParams = new URLSearchParams("success=true");
-
-    renderPricing();
-
-    expect(screen.getByText(/2 growth credits added/i)).toBeInTheDocument();
-  });
-
-  it("shows canceled banner when ?canceled=true", () => {
-    navState.searchParams = new URLSearchParams("canceled=true");
-
-    renderPricing();
-
-    expect(screen.getByText(/Payment canceled/i)).toBeInTheDocument();
+    expect(screen.getByText("1")).toBeInTheDocument();
+    // Should show singular "credit" not "credits"
+    expect(screen.getByText("credit")).toBeInTheDocument();
   });
 
   it("does not show banners by default", () => {
     renderPricing();
 
-    expect(screen.queryByText(/growth credits added/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Payment canceled/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Credits added/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Checkout in progress/i)).not.toBeInTheDocument();
   });
 
-  it("calls API and redirects on checkout button click", async () => {
+  it("calls API and opens Stripe in new tab on checkout", async () => {
     vi.mocked(api.post).mockResolvedValue({ url: "https://checkout.stripe.com/session-123" });
-
-    // Mock window.location.href assignment
-    const hrefSetter = vi.fn();
-    Object.defineProperty(window, "location", {
-      value: { href: "" },
-      writable: true,
-    });
-    Object.defineProperty(window.location, "href", {
-      set: hrefSetter,
-      get: () => "",
-    });
+    const openSpy = vi.spyOn(window, "open").mockReturnValue(null);
 
     const user = userEvent.setup();
     renderPricing();
 
-    await user.click(screen.getByRole("button", { name: /Get Started — \$5/i }));
+    await user.click(screen.getByRole("button", { name: /Get Started/i }));
 
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith("/stripe/create-checkout-session", { auth: true });
+      expect(api.post).toHaveBeenCalledWith("/stripe/create-checkout-session", {});
     });
 
     await waitFor(() => {
-      expect(hrefSetter).toHaveBeenCalledWith("https://checkout.stripe.com/session-123");
+      expect(openSpy).toHaveBeenCalledWith(
+        "https://checkout.stripe.com/session-123",
+        "_blank",
+        "noopener,noreferrer",
+      );
     });
+
+    // Should show "Checkout in progress" banner
+    expect(screen.getByText(/Checkout in progress/i)).toBeInTheDocument();
+
+    openSpy.mockRestore();
   });
 
   it("shows error message when checkout fails", async () => {
@@ -175,24 +159,10 @@ describe("PricingPage", () => {
     const user = userEvent.setup();
     renderPricing();
 
-    await user.click(screen.getByRole("button", { name: /Get Started — \$5/i }));
+    await user.click(screen.getByRole("button", { name: /Get Started/i }));
 
     await waitFor(() => {
       expect(screen.getByText("Network error")).toBeInTheDocument();
-    });
-  });
-
-  it("shows loading state during checkout", async () => {
-    // Never-resolving promise to keep loading state
-    vi.mocked(api.post).mockReturnValue(new Promise(() => {}));
-
-    const user = userEvent.setup();
-    renderPricing();
-
-    await user.click(screen.getByRole("button", { name: /Get Started — \$5/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText("Redirecting…")).toBeInTheDocument();
     });
   });
 });

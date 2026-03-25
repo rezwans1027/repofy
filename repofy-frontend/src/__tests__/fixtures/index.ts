@@ -3,7 +3,7 @@ export function createReportFixture(overrides: Record<string, unknown> = {}) {
     candidateLevel: "Senior" as const,
     overallScore: 82,
     recommendation: "Strong Hire" as const,
-    summary: "A strong engineer with excellent code quality.",
+    narrativeReport: "A strong engineer with excellent code quality. Scores 82/100 at the Senior level with a recommendation of \"Strong Hire\".",
     radarAxes: [
       { axis: "Code Quality", value: 0.87 },
       { axis: "Project Complexity", value: 0.78 },
@@ -13,12 +13,12 @@ export function createReportFixture(overrides: Record<string, unknown> = {}) {
       { axis: "Collaboration", value: 0.68 },
     ],
     radarBreakdown: [
-      { label: "Code Quality", score: 8.7, note: "Clean code" },
-      { label: "Project Complexity", score: 7.8, note: "Non-trivial systems" },
-      { label: "Technical Breadth", score: 8.2, note: "Multi-language" },
-      { label: "Engineering Practices", score: 7.4, note: "Good CI/CD" },
-      { label: "Consistency", score: 9.1, note: "Regular commits" },
-      { label: "Collaboration", score: 6.8, note: "Some PR reviews" },
+      { label: "Code Quality", score: 9, note: "Clean code" },
+      { label: "Project Complexity", score: 8, note: "Non-trivial systems" },
+      { label: "Technical Breadth", score: 8, note: "Multi-language" },
+      { label: "Eng. Practices", score: 7, note: "Good CI/CD" },
+      { label: "Consistency", score: 9, note: "Regular commits" },
+      { label: "Collaboration", score: 7, note: "Some PR reviews" },
     ],
     stats: {
       repos: 47,
@@ -52,10 +52,10 @@ export function createReportFixture(overrides: Record<string, unknown> = {}) {
         stars: 100,
         forks: 10,
         topics: ["typescript"],
-        codeQuality: "A" as const,
-        testing: "B+" as const,
-        cicd: "A-" as const,
-        verdict: "Good project.",
+        codeQuality: "Excellent" as const,
+        testing: "Strong" as const,
+        cicd: "Present" as const,
+        verdict: "Standout" as const,
         isBestWork: true,
       },
     ],
@@ -71,6 +71,11 @@ export function createReportFixture(overrides: Record<string, unknown> = {}) {
     interviewQuestions: [
       { question: "Describe your testing approach.", why: "Tests testing philosophy" },
     ],
+    riskSignals: { concerningCount: 0, notableCount: 0 },
+    confidenceScore: 0.95,
+    rubricVersion: "v1.1",
+    modelVersion: "gpt-5.1",
+    dataQualityWarnings: [] as string[],
     ...overrides,
   };
 }
@@ -146,14 +151,72 @@ export function createProfileFixture(overrides: Record<string, unknown> = {}) {
 
 export function createAdviceFixture(overrides: Record<string, unknown> = {}) {
   return {
+    schemaVersion: "v2" as const,
+    generationWarnings: [] as import("@/shared/types/advice").GenerationWarning[],
     summary: "Focus on testing and open-source contributions to strengthen your profile.",
-    projectIdeas: [
+    trajectory: {
+      currentEstimate: "Junior" as const,
+      targetEstimate: "Mid-Level" as const,
+      confidence: "Medium" as const,
+      rationale: "Repos show clean fundamentals but lack tests. Complexity is moderate. Breadth limited to JS ecosystem. Collaboration is single-contributor. Engineering practices are weak with no CI. Consistency is good with recent pushes.",
+      calibration: {
+        complexity: "Moderate complexity projects.",
+        breadth: "TypeScript and JavaScript only.",
+        collaboration: "Single-contributor repos.",
+        engineeringPractices: "No tests or CI detected.",
+        consistency: "Active pushes within 60 days.",
+      },
+    },
+    buildRoadmap: [
       {
-        title: "Real-time Chat App",
-        description: "Build a scalable chat application with WebSockets.",
-        techStack: ["TypeScript", "Node.js", "Redis"],
+        title: "Tested REST API",
+        projectOutcome: "A production-grade REST API with full test suite.",
         difficulty: "Intermediate" as const,
-        why: "Demonstrates real-time architecture skills.",
+        estimatedWeeks: 4,
+        techStack: ["Node.js", "Express", "Vitest", "Supertest", "GitHub Actions", "Docker"],
+        milestones: ["API scaffolding with tests", "Integration tests", "CI pipeline", "Docker deployment"],
+        hiringSignals: ["Test coverage badge", "Green CI pipeline"],
+        evidence: "cool-project has no tests or CI.",
+      },
+      {
+        title: "Published CLI Tool",
+        projectOutcome: "An npm-published CLI with automated releases.",
+        difficulty: "Beginner" as const,
+        estimatedWeeks: 3,
+        techStack: ["TypeScript", "Commander", "GitHub Actions", "npm"],
+        milestones: ["CLI scaffolding", "Unit tests and CI", "Automated npm publish"],
+        hiringSignals: ["Published npm package", "Automated release workflow"],
+        evidence: "No CI/CD or package publishing in repos.",
+      },
+      {
+        title: "Real-Time Dashboard",
+        projectOutcome: "A full-stack dashboard with WebSocket updates.",
+        difficulty: "Advanced" as const,
+        estimatedWeeks: 5,
+        techStack: ["React", "WebSocket", "PostgreSQL", "Prisma"],
+        milestones: ["Database and API layer", "WebSocket integration", "Frontend dashboard", "E2E tests", "Deployment"],
+        hiringSignals: ["Live deployed URL", "Full-stack architecture"],
+        evidence: "No full-stack or real-time projects.",
+      },
+    ],
+    skillRoadmap: [
+      {
+        skill: "Docker",
+        priority: "Now" as const,
+        demandLevel: "High" as const,
+        relatedTo: "Node.js",
+        reason: "Essential for modern deployment.",
+        proofOfLearning: "Add Dockerfile to Build #1.",
+        evidence: "No Dockerfiles found.",
+      },
+      {
+        skill: "GraphQL",
+        priority: "Next" as const,
+        demandLevel: "Growing" as const,
+        relatedTo: "REST APIs",
+        reason: "Growing API paradigm.",
+        proofOfLearning: "Add GraphQL endpoint to dashboard build.",
+        evidence: "All repos use REST only.",
       },
     ],
     repoImprovements: [
@@ -168,33 +231,75 @@ export function createAdviceFixture(overrides: Record<string, unknown> = {}) {
             area: "Testing" as const,
             suggestion: "Add integration tests for API routes.",
             priority: "High" as const,
+            expectedOutcome: "Test coverage badge and confidence in refactoring.",
           },
           {
             area: "Documentation" as const,
             suggestion: "Add API documentation with examples.",
             priority: "Medium" as const,
+            expectedOutcome: "Recruiters can understand the project in 30 seconds.",
           },
         ],
       },
     ],
-    skillsToLearn: [
+    strengthsAndGaps: {
+      strengths: [
+        { area: "Clean Code", detail: "Consistent naming in test-repo." },
+        { area: "Consistency", detail: "Regular pushes in last 60 days." },
+        { area: "TypeScript", detail: "Strict mode across repos." },
+      ],
+      gaps: [
+        { area: "Testing", detail: "No test files found." },
+        { area: "CI/CD", detail: "No pipelines detected." },
+        { area: "Collaboration", detail: "Single-contributor repos only." },
+      ],
+    },
+    careerPositioning: {
+      positioning: "Position yourself as a TypeScript-focused developer building toward full-stack production readiness.",
+      roles: ["Junior Full-Stack Developer", "Junior Backend Engineer"],
+      differentiators: [
+        "Consistent commit cadence showing sustained effort.",
+        "Clean TypeScript fundamentals with strict mode.",
+      ],
+    },
+    contributionStrategy: [
       {
-        skill: "Kubernetes",
-        reason: "Essential for modern deployment workflows.",
-        demandLevel: "High" as const,
-        relatedTo: "your DevOps experience",
+        title: "Contribute to popular OSS",
+        detail: "Start with documentation fixes to build reputation.",
+        evidence: "No external contributions visible on profile.",
       },
     ],
-    contributionAdvice: [
-      { title: "Contribute to popular OSS", detail: "Start with documentation fixes to build reputation." },
-    ],
     profileOptimizations: [
-      { area: "Bio", current: "Developer", suggestion: "Senior Full-Stack Engineer | TypeScript & Rust" },
+      {
+        area: "Bio",
+        current: "Developer",
+        suggestion: "Senior Full-Stack Engineer | TypeScript & Rust",
+        example: "Full-stack TS engineer building tested, production-grade APIs.",
+        impact: "First impression for recruiters.",
+      },
     ],
-    actionPlan: [
-      { timeframe: "30 days" as const, actions: ["Add tests to top 3 repos", "Update GitHub bio"] },
-      { timeframe: "60 days" as const, actions: ["Launch side project", "Start blogging"] },
-      { timeframe: "90 days" as const, actions: ["Contribute to 2 OSS projects", "Apply to speak at meetup"] },
+    weeklyRoadmap: Array.from({ length: 12 }, (_, i) => {
+      const week = i + 1;
+      let activeBuildTitle: string;
+      if (week <= 4) activeBuildTitle = "Tested REST API";
+      else if (week <= 7) activeBuildTitle = "Published CLI Tool";
+      else activeBuildTitle = "Real-Time Dashboard";
+      return {
+        week,
+        activeBuildTitle,
+        focus: `Week ${week} focus`,
+        deliverable: `Week ${week} deliverable`,
+        tasks: [`Task A for week ${week}`, `Task B for week ${week}`],
+        skillTask: `Skill learning for week ${week}`,
+        successCheck: `Week ${week} checkpoint`,
+      };
+    }),
+    successMetrics: [
+      "Reach 3+ merged PRs to OSS repos outside personal projects within 12 weeks.",
+      "Deploy all 3 portfolio builds with public URLs by week 12.",
+      "Publish the CLI tool to npm with automated release pipeline by week 7.",
+      "Achieve 80%+ test coverage on the REST API build by week 4.",
+      "Maintain weekly commit streak for 12 consecutive weeks.",
     ],
     ...overrides,
   };
@@ -251,6 +356,7 @@ export function createAdviceListItemFixture(overrides: Record<string, unknown> =
     analyzed_username: "testuser",
     analyzed_name: "Test User",
     generated_at: "2025-01-15T10:00:00Z",
+    avatar_url: null,
     ...overrides,
   };
 }

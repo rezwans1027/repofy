@@ -2,9 +2,8 @@
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
-import type { ReportData } from "@/components/report/analysis-report";
+import { SectionCard } from "@/components/ui/section-card";
+import type { ReportData } from "@shared/types/report";
 
 interface ActivityBreakdownProps {
   activityBreakdown: ReportData["activityBreakdown"];
@@ -22,9 +21,7 @@ export function ActivityBreakdown({ activityBreakdown }: ActivityBreakdownProps)
   );
 
   return (
-    <AnimateOnView delay={0.24}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader title="Activity Breakdown" />
+    <SectionCard delay={0.24} title="Activity Breakdown">
         <div className="flex h-6 w-full overflow-hidden rounded-full">
           {segments.map((seg) => (
             <motion.div
@@ -54,7 +51,6 @@ export function ActivityBreakdown({ activityBreakdown }: ActivityBreakdownProps)
         <p className="mt-3 text-xs text-muted-foreground">
           {activityBreakdown.interpretation}
         </p>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }

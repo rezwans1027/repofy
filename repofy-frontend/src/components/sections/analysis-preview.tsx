@@ -2,71 +2,55 @@
 
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { SectionHeader } from "@/components/ui/section-header";
-import { RadarChart } from "@/components/ui/radar-chart";
-import { CountUp } from "@/components/ui/count-up";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import {
-  CheckCircle2,
+  FileSearch,
+  Radar,
+  GraduationCap,
   AlertTriangle,
-  AlertCircle,
   MessageSquareText,
+  Star,
 } from "lucide-react";
 
-const radarAxes = [
-  { axis: "Code Quality", value: 0.87 },
-  { axis: "Complexity", value: 0.78 },
-  { axis: "Breadth", value: 0.82 },
-  { axis: "Practices", value: 0.74 },
-  { axis: "Consistency", value: 0.91 },
-  { axis: "Collaboration", value: 0.68 },
-];
-
-const repoGrades = [
+const plannedFeatures = [
   {
-    name: "rustic-kv",
-    language: "Rust",
-    langColor: "#DEA584",
-    stars: 847,
-    codeQuality: "A",
-    testing: "B+",
-    cicd: "A-",
-    isBest: true,
+    icon: Radar,
+    label: "6-axis Developer DNA",
+    description:
+      "Code Quality, Complexity, Breadth, Practices, Consistency, and Collaboration scored on a radar chart",
   },
   {
-    name: "ts-api-forge",
-    language: "TypeScript",
-    langColor: "#3178C6",
-    stars: 612,
-    codeQuality: "A-",
-    testing: "B",
-    cicd: "A",
-    isBest: false,
+    icon: Star,
+    label: "Per-repo code grades",
+    description:
+      "Every repository graded on Code Quality, Testing, and CI/CD with A-through-C tier scoring",
   },
   {
-    name: "commit-radar",
-    language: "TypeScript",
-    langColor: "#3178C6",
-    stars: 234,
-    codeQuality: "B+",
-    testing: "C+",
-    cicd: "B",
-    isBest: false,
+    icon: AlertTriangle,
+    label: "Strengths & red flags",
+    description:
+      "Automatically surface what stands out — both the good and the concerning patterns",
+  },
+  {
+    icon: MessageSquareText,
+    label: "Interview questions",
+    description:
+      "AI-generated questions tailored to the candidate's actual code and projects",
+  },
+  {
+    icon: GraduationCap,
+    label: "Hire recommendation",
+    description:
+      "Overall score with a hiring recommendation and estimated seniority level",
+  },
+  {
+    icon: FileSearch,
+    label: "Exportable PDF",
+    description:
+      "Share the full analysis as a polished multi-page PDF with your hiring team",
   },
 ];
-
-function GradeBadge({ grade }: { grade: string }) {
-  const color = grade.startsWith("A")
-    ? "text-emerald-400 border-emerald-400/30 bg-emerald-400/10"
-    : grade.startsWith("B")
-      ? "text-cyan border-cyan/30 bg-cyan/10"
-      : "text-amber-400 border-amber-400/30 bg-amber-400/10";
-  return (
-    <span className={`inline-flex rounded border px-1.5 py-0.5 font-mono text-[10px] font-bold ${color}`}>
-      {grade}
-    </span>
-  );
-}
 
 export function AnalysisPreview() {
   return (
@@ -78,235 +62,55 @@ export function AnalysisPreview() {
         />
       </AnimateOnView>
 
-      {/* Top: Score + Radar */}
-      <div className="grid gap-4 md:grid-cols-[200px_1fr]">
-        {/* Score Ring */}
-        <AnimateOnView delay={0.1}>
-          <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-border bg-card p-6">
-            <div className="relative">
-              <svg viewBox="0 0 120 120" className="h-28 w-28">
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="52"
-                  fill="none"
-                  stroke="var(--secondary)"
-                  strokeWidth="8"
-                />
-                <motion.circle
-                  cx="60"
-                  cy="60"
-                  r="52"
-                  fill="none"
-                  stroke="var(--cyan)"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeDasharray={`${2 * Math.PI * 52}`}
-                  strokeDashoffset={`${2 * Math.PI * 52 * (1 - 0.82)}`}
-                  transform="rotate(-90 60 60)"
-                  initial={{ strokeDashoffset: 2 * Math.PI * 52 }}
-                  whileInView={{ strokeDashoffset: 2 * Math.PI * 52 * (1 - 0.82) }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1.2, ease: "easeOut" }}
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <CountUp
-                  end={82}
-                  className="text-cyan font-mono text-2xl font-bold"
-                />
-              </div>
+      <AnimateOnView delay={0.1}>
+        <div className="rounded-lg border border-cyan/20 bg-cyan/5 p-8 sm:p-10">
+          <div className="flex flex-col items-center text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-cyan/30 bg-cyan/10">
+              <FileSearch className="h-6 w-6 text-cyan" />
             </div>
-            <div className="text-center">
-              <Badge className="bg-cyan/10 text-cyan border-cyan/20 font-mono text-[10px]">
-                Strong Hire
-              </Badge>
-              <p className="text-muted-foreground mt-1 font-mono text-[10px]">
-                Senior Level
-              </p>
-            </div>
-          </div>
-        </AnimateOnView>
-
-        {/* Radar Chart + Breakdown */}
-        <AnimateOnView delay={0.15}>
-          <div className="rounded-lg border border-border bg-card p-6">
-            <p className="text-muted-foreground mb-2 font-mono text-xs">
-              Developer DNA &mdash; 6-axis code pattern analysis
+            <Badge
+              variant="outline"
+              className="mt-4 font-mono text-xs text-cyan border-cyan/30"
+            >
+              Coming Soon
+            </Badge>
+            <h3 className="mt-4 font-mono text-lg font-bold">
+              Hiring-Grade Developer Reports
+            </h3>
+            <p className="text-muted-foreground mt-2 max-w-lg text-sm">
+              Paste a GitHub username and get a comprehensive AI-generated
+              evaluation — complete with scores, grades, strengths, red flags,
+              and tailored interview questions. Everything backed by real code.
             </p>
-            <div className="flex flex-col items-center gap-6 md:flex-row">
-              <div className="w-full md:w-1/2">
-                <RadarChart data={radarAxes} />
-              </div>
-              <div className="w-full space-y-3 md:w-1/2">
-                {radarAxes.map((axis) => (
-                  <div key={axis.axis} className="flex items-center justify-between">
-                    <span className="text-muted-foreground font-mono text-xs">
-                      {axis.axis}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <div className="h-1.5 w-20 overflow-hidden rounded-full bg-secondary">
-                        <motion.div
-                          className="h-full rounded-full bg-cyan"
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${axis.value * 100}%` }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.8 }}
-                        />
-                      </div>
-                      <span className="text-cyan w-8 text-right font-mono text-xs">
-                        {Math.round(axis.value * 100)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
-        </AnimateOnView>
-      </div>
 
-      {/* Repo Grades */}
-      <AnimateOnView delay={0.2}>
-        <div className="mt-4 rounded-lg border border-border bg-card p-6">
-          <p className="text-muted-foreground mb-4 font-mono text-xs">
-            Per-repository code grades
-          </p>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {repoGrades.map((repo) => (
-              <div
-                key={repo.name}
-                className="rounded-md border border-border bg-background p-3"
+          <motion.div
+            className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-40px" }}
+            variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
+          >
+            {plannedFeatures.map((feature) => (
+              <motion.div
+                key={feature.label}
+                className="rounded-md border border-border bg-background/50 p-4"
+                variants={{
+                  hidden: { opacity: 0, y: 16 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+                }}
               >
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm font-bold">{repo.name}</span>
-                  {repo.isBest && (
-                    <Badge className="bg-amber-400/10 text-amber-400 border-amber-400/30 font-mono text-[9px]">
-                      Best Work
-                    </Badge>
-                  )}
-                </div>
-                <div className="mt-1 flex items-center gap-2">
-                  <span
-                    className="h-2 w-2 rounded-full"
-                    style={{ backgroundColor: repo.langColor }}
-                  />
-                  <span className="text-muted-foreground font-mono text-[10px]">
-                    {repo.language}
-                  </span>
-                  <span className="text-muted-foreground font-mono text-[10px]">
-                    &middot; {repo.stars} stars
-                  </span>
-                </div>
-                <div className="mt-3 flex gap-3">
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-muted-foreground text-[9px]">Quality</span>
-                    <GradeBadge grade={repo.codeQuality} />
-                  </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-muted-foreground text-[9px]">Testing</span>
-                    <GradeBadge grade={repo.testing} />
-                  </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-muted-foreground text-[9px]">CI/CD</span>
-                    <GradeBadge grade={repo.cicd} />
-                  </div>
-                </div>
-              </div>
+                <feature.icon className="h-4 w-4 text-cyan" />
+                <p className="mt-2 font-mono text-xs font-bold">
+                  {feature.label}
+                </p>
+                <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">
+                  {feature.description}
+                </p>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
-      </AnimateOnView>
-
-      {/* Strengths, Red Flags, Interview Questions */}
-      <div className="mt-4 grid gap-4 md:grid-cols-3">
-        <AnimateOnView delay={0.25}>
-          <div className="h-full rounded-lg border border-border bg-card p-5">
-            <div className="mb-3 flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-              <span className="font-mono text-xs font-bold">Strengths</span>
-            </div>
-            <ul className="space-y-2">
-              {[
-                "Exceptional commit consistency over 3+ years",
-                "Strong architectural patterns across languages",
-                "Meaningful OSS impact — 2,340 total stars",
-              ].map((s) => (
-                <li
-                  key={s}
-                  className="flex items-start gap-2 text-xs text-muted-foreground"
-                >
-                  <span className="mt-0.5 text-emerald-400">+</span>
-                  {s}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </AnimateOnView>
-
-        <AnimateOnView delay={0.3}>
-          <div className="h-full rounded-lg border border-border bg-card p-5">
-            <div className="mb-3 flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-amber-400" />
-              <span className="font-mono text-xs font-bold">Red Flags</span>
-            </div>
-            <ul className="space-y-2">
-              {[
-                { text: "Outdated dependencies in 12 repos", severity: "Minor" },
-                { text: "Commit quality drops under time pressure", severity: "Notable" },
-              ].map((f) => (
-                <li
-                  key={f.text}
-                  className="flex items-start gap-2 text-xs text-muted-foreground"
-                >
-                  <AlertCircle className="mt-0.5 h-3 w-3 shrink-0 text-amber-400" />
-                  <span>
-                    {f.text}
-                    <Badge
-                      variant="outline"
-                      className="ml-1.5 border-amber-400/30 font-mono text-[9px] text-amber-400"
-                    >
-                      {f.severity}
-                    </Badge>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </AnimateOnView>
-
-        <AnimateOnView delay={0.35}>
-          <div className="h-full rounded-lg border border-border bg-card p-5">
-            <div className="mb-3 flex items-center gap-2">
-              <MessageSquareText className="h-4 w-4 text-cyan" />
-              <span className="font-mono text-xs font-bold">Interview Questions</span>
-            </div>
-            <ul className="space-y-2">
-              {[
-                "Walk me through the LSM-tree tradeoffs in rustic-kv.",
-                "Your testing coverage varies 45-78%. How do you decide?",
-                "How would you refactor commit-radar's frontend?",
-              ].map((q, i) => (
-                <li
-                  key={q}
-                  className="flex items-start gap-2 text-xs text-muted-foreground"
-                >
-                  <span className="text-cyan font-mono text-[10px] font-bold shrink-0">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  {q}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </AnimateOnView>
-      </div>
-
-      <AnimateOnView delay={0.4}>
-        <p className="text-muted-foreground mt-6 text-center font-mono text-xs">
-          Every analysis includes an executive summary, activity breakdown, language
-          profile, and exportable PDF.
-        </p>
       </AnimateOnView>
     </section>
   );

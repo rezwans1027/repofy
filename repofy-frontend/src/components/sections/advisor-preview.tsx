@@ -9,7 +9,6 @@ import {
   GraduationCap,
   Target,
   ArrowUpRight,
-  TrendingUp,
 } from "lucide-react";
 
 const projectIdeas = [
@@ -39,9 +38,9 @@ const skillsToLearn = [
   { skill: "Terraform", demand: "Growing", relatedTo: "Infrastructure work" },
 ];
 
-const actionPlan = [
+const weeklyRoadmap = [
   {
-    period: "30 days",
+    period: "Weeks 1–4",
     color: "text-emerald-400 border-emerald-400/30 bg-emerald-400/10",
     items: [
       "Add integration tests to ts-api-forge",
@@ -50,7 +49,7 @@ const actionPlan = [
     ],
   },
   {
-    period: "60 days",
+    period: "Weeks 5–8",
     color: "text-amber-400 border-amber-400/30 bg-amber-400/10",
     items: [
       "Build the distributed task queue project",
@@ -59,7 +58,7 @@ const actionPlan = [
     ],
   },
   {
-    period: "90 days",
+    period: "Weeks 9–12",
     color: "text-violet-400 border-violet-400/30 bg-violet-400/10",
     items: [
       "Publish a technical blog post",
@@ -232,17 +231,17 @@ export function AdvisorPreview() {
         </AnimateOnView>
       </div>
 
-      {/* 30-60-90 Day Action Plan */}
+      {/* 12-Week Roadmap */}
       <AnimateOnView delay={0.25}>
         <div className="mt-4 rounded-lg border border-border bg-card p-6">
           <div className="mb-4 flex items-center gap-2">
             <Target className="h-4 w-4 text-emerald-400" />
             <span className="font-mono text-xs font-bold">
-              30-60-90 Day Action Plan
+              12-Week Roadmap
             </span>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
-            {actionPlan.map((phase) => (
+            {weeklyRoadmap.map((phase) => (
               <div
                 key={phase.period}
                 className={`rounded-md border p-4 ${phase.color}`}
@@ -268,7 +267,7 @@ export function AdvisorPreview() {
       <AnimateOnView delay={0.3}>
         <p className="text-muted-foreground mt-6 text-center font-mono text-xs">
           Advice also includes contribution habits analysis, profile optimizations,
-          and an exportable PDF action plan.
+          and an exportable PDF roadmap.
         </p>
       </AnimateOnView>
     </section>

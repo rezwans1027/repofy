@@ -1,51 +1,60 @@
 "use client";
 
 import { useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import { motion, AnimatePresence } from "framer-motion";
+import { AlertTriangle } from "lucide-react";
 
 import { AdviceTopBanner } from "./sections/advice-top-banner";
 import { AdviceSummary } from "./sections/advice-summary";
-import { ProjectIdeas } from "./sections/project-ideas";
+import { TrajectorySection } from "./sections/trajectory";
+import { BuildRoadmap } from "./sections/build-roadmap";
+import { WeeklyRoadmap } from "./sections/weekly-roadmap";
+import { SuccessMetrics } from "./sections/success-metrics";
+import { SkillRoadmap } from "./sections/skill-roadmap";
 import { RepoImprovements } from "./sections/repo-improvements";
-import { SkillsToLearn } from "./sections/skills-to-learn";
-import { ContributionAdvice } from "./sections/contribution-advice";
+import { ContributionStrategy } from "./sections/contribution-strategy";
 import { ProfileOptimizations } from "./sections/profile-optimizations";
-import { ActionPlan } from "./sections/action-plan";
+import { StrengthsAndGaps } from "./sections/strengths-and-gaps";
+import { CareerPositioning } from "./sections/career-positioning";
 import { AdviceExportBar } from "./sections/advice-export-bar";
+import { tabContentVariants, EASE_OUT_EXPO } from "@/lib/animation-variants";
+import type { AdviceData, GenerationWarning } from "@shared/types/advice";
 
-export interface AdviceData {
-  summary: string;
-  projectIdeas: {
-    title: string;
-    description: string;
-    techStack: string[];
-    difficulty: "Beginner" | "Intermediate" | "Advanced";
-    why: string;
-  }[];
-  repoImprovements: {
-    repoName: string;
-    repoUrl?: string | null;
-    language?: string | null;
-    languageColor?: string;
-    stars?: number;
-    improvements: {
-      area: "Testing" | "Documentation" | "CI/CD" | "Code Quality" | "Architecture";
-      suggestion: string;
-      priority: "High" | "Medium" | "Low";
-    }[];
-  }[];
-  skillsToLearn: {
-    skill: string;
-    reason: string;
-    demandLevel: "High" | "Medium" | "Growing";
-    relatedTo: string;
-  }[];
-  contributionAdvice: { title: string; detail: string }[];
-  profileOptimizations: { area: string; current: string; suggestion: string }[];
-  actionPlan: {
-    timeframe: "30 days" | "60 days" | "90 days";
-    actions: string[];
-  }[];
-}
+const AdviceReportPdfLayout = dynamic(
+  () => import("./advice-pdf-layout").then((m) => ({ default: m.AdviceReportPdfLayout })),
+  { ssr: false }
+);
+
+export type { AdviceData, GenerationWarning };
+
+// ── Warning system ──────────────────────────────────────────────────
+
+const WARNING_MESSAGES: Record<GenerationWarning, string> = {
+  repo_improvements_unavailable: "Repo improvement suggestions could not be generated for this profile.",
+  repo_improvements_reduced: "Some repo improvements were removed due to unrecognized repository names.",
+  weekly_roadmap_synthesized: "The weekly roadmap was auto-generated from your build milestones.",
+  success_metrics_reduced: "Some success metrics were refined for measurability.",
+  profile_optimizations_reduced: "Some profile optimization suggestions were removed.",
+  skill_roadmap_reduced: "Some skill suggestions were removed as they overlap with your existing stack.",
+  contribution_strategy_reduced: "Some contribution strategy items were removed.",
+  strengths_and_gaps_reduced: "Strengths and gaps analysis could not be fully generated.",
+  career_positioning_reduced: "Career positioning could not be fully generated.",
+};
+
+// ── Tabs ────────────────────────────────────────────────────────────
+
+const TABS = [
+  { key: "career", label: "Career Direction" },
+  { key: "build", label: "Build Plan" },
+  { key: "improve", label: "Improve" },
+] as const;
+
+type TabKey = (typeof TABS)[number]["key"];
+
+const TAB_INDEX: Record<TabKey, number> = { career: 0, build: 1, improve: 2 };
+
+// ── Component ───────────────────────────────────────────────────────
 
 interface AdviceReportProps {
   username: string;
@@ -54,28 +63,166 @@ interface AdviceReportProps {
 }
 
 export function AdviceReport({ username, avatarUrl, data }: AdviceReportProps) {
-  const adviceRef = useRef<HTMLDivElement>(null);
-  const [pdfMode, setPdfMode] = useState(false);
+  const pdfRef = useRef<HTMLDivElement>(null);
+  const [exporting, setExporting] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabKey>("career");
+  const [direction, setDirection] = useState(0);
+
+  const warnings = data.generationWarnings ?? [];
+
+  const handleTabChange = (tab: TabKey) => {
+    setHasInteracted(true);
+    const d = TAB_INDEX[tab] - TAB_INDEX[activeTab];
+    setDirection(d > 0 ? 1 : -1);
+    setActiveTab(tab);
+  };
 
   return (
     <div className="space-y-4 pb-20">
-      <div ref={adviceRef} data-pdf-target className="space-y-4">
+      <div className="space-y-4">
         <AdviceTopBanner username={username} avatarUrl={avatarUrl} />
-        <AdviceSummary summary={data.summary} />
-        <ProjectIdeas projectIdeas={data.projectIdeas} />
-        <RepoImprovements repoImprovements={data.repoImprovements} expandAll={pdfMode} />
-        <SkillsToLearn skills={data.skillsToLearn} />
-        <div className="grid gap-4 lg:grid-cols-2 items-stretch">
-          <ContributionAdvice items={data.contributionAdvice} />
-          <ProfileOptimizations optimizations={data.profileOptimizations} />
-        </div>
-        <ActionPlan actionPlan={data.actionPlan} />
+
+        {/* Warning banner */}
+        {warnings.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3, ease: EASE_OUT_EXPO }}
+            className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4"
+          >
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="size-4 shrink-0 text-yellow-400 mt-0.5" />
+              <div className="space-y-1">
+                {warnings.map((w) => (
+                  <p key={w} className="text-xs text-yellow-400/80">
+                    {WARNING_MESSAGES[w] ?? w}
+                  </p>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Tab navigation */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15, ease: EASE_OUT_EXPO }}
+          className="sticky top-0 z-10 -mx-1 px-1 pt-1 pb-2 bg-background/80 backdrop-blur-lg border-b border-border"
+        >
+          <div className="flex gap-1" role="tablist" aria-label="Advice sections">
+            {TABS.map((tab) => (
+              <button
+                key={tab.key}
+                id={`tab-${tab.key}`}
+                role="tab"
+                aria-selected={activeTab === tab.key}
+                aria-controls={`tabpanel-${tab.key}`}
+                onClick={() => handleTabChange(tab.key)}
+                className={`relative shrink-0 rounded-md px-4 py-2 font-mono text-xs font-medium ${
+                  activeTab === tab.key
+                    ? "text-emerald-700 dark:text-emerald-400"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                }`}
+              >
+                {activeTab === tab.key && (
+                  <motion.span
+                    layoutId="advice-tab-indicator"
+                    className="absolute inset-0 rounded-md bg-emerald-500/25 border border-emerald-600/40 dark:bg-emerald-500/15 dark:border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.12)]"
+                    transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
+                  />
+                )}
+                <span className="relative z-[1]">{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Tab content with directional slide + crossfade */}
+        <AnimatePresence mode="wait" custom={hasInteracted ? direction : null}>
+          {activeTab === "career" && (
+            <motion.div
+              key="career"
+              role="tabpanel"
+              id="tabpanel-career"
+              aria-labelledby="tab-career"
+              custom={hasInteracted ? direction : null}
+              variants={tabContentVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="space-y-4"
+              data-tab="career"
+            >
+              <AdviceSummary summary={data.summary} />
+              <TrajectorySection trajectory={data.trajectory} />
+              <StrengthsAndGaps data={data.strengthsAndGaps} />
+              <CareerPositioning data={data.careerPositioning} />
+            </motion.div>
+          )}
+
+          {activeTab === "build" && (
+            <motion.div
+              key="build"
+              role="tabpanel"
+              id="tabpanel-build"
+              aria-labelledby="tab-build"
+              custom={hasInteracted ? direction : null}
+              variants={tabContentVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="space-y-4"
+              data-tab="build"
+            >
+              <BuildRoadmap builds={data.buildRoadmap} />
+              <WeeklyRoadmap weeks={data.weeklyRoadmap} builds={data.buildRoadmap} />
+              <SuccessMetrics metrics={data.successMetrics} />
+            </motion.div>
+          )}
+
+          {activeTab === "improve" && (
+            <motion.div
+              key="improve"
+              role="tabpanel"
+              id="tabpanel-improve"
+              aria-labelledby="tab-improve"
+              custom={hasInteracted ? direction : null}
+              variants={tabContentVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="space-y-4"
+              data-tab="improve"
+            >
+              <RepoImprovements repoImprovements={data.repoImprovements} expandAll={false} />
+              <SkillRoadmap skills={data.skillRoadmap} />
+              <ContributionStrategy items={data.contributionStrategy} />
+              <ProfileOptimizations optimizations={data.profileOptimizations} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* Off-screen PDF layout — only mounted during export */}
+      {exporting && (
+        <div
+          aria-hidden="true"
+          className="fixed pointer-events-none"
+          style={{ left: "-200vw", top: 0 }}
+        >
+          <div ref={pdfRef} data-pdf-target className="w-[900px]">
+            <AdviceReportPdfLayout username={username} data={data} />
+          </div>
+        </div>
+      )}
+
       <AdviceExportBar
         username={username}
-        adviceRef={adviceRef}
-        onBeforeExport={() => setPdfMode(true)}
-        onAfterExport={() => setPdfMode(false)}
+        adviceRef={pdfRef}
+        onBeforeExport={() => setExporting(true)}
+        onAfterExport={() => setExporting(false)}
       />
     </div>
   );

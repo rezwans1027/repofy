@@ -1,43 +1,57 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { api } from "@/lib/api-client";
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  display_name?: string;
+  github_username?: string;
+  avatar_url?: string;
+}
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   isLoading: boolean;
+  refresh: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const supabase = createClient();
+export function AuthProvider({
+  children,
+  initialUser,
+}: {
+  children: React.ReactNode;
+  initialUser?: AuthUser | null;
+}) {
+  const [user, setUser] = useState<AuthUser | null>(initialUser ?? null);
+  const [isLoading, setIsLoading] = useState(initialUser === undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-      setIsLoading(false);
-    }).catch((err) => {
-      console.error("Failed to get user:", err);
-      setIsLoading(false);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+  const refresh = useCallback(async () => {
+    try {
+      const data = await api.get<{ user: AuthUser }>("/auth/me");
+      setUser(data.user);
+    } catch {
+      setUser(null);
+    }
   }, []);
 
+  useEffect(() => {
+    // Skip initial fetch if server provided auth state
+    if (initialUser !== undefined) return;
+
+    api.get<{ user: AuthUser }>("/auth/me")
+      .then((data) => setUser(data.user))
+      .catch(() => setUser(null))
+      .finally(() => setIsLoading(false));
+  }, [initialUser]);
+
+  const value = useMemo(() => ({ user, isLoading, refresh }), [user, isLoading, refresh]);
+
   return (
-    <AuthContext.Provider value={{ user, isLoading }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

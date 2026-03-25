@@ -8,7 +8,7 @@ import {
   getCreditBalance,
   grantGrowthCredits,
   deductGrowthCredit,
-  refundGrowthCredit,
+  getTransactionHistory,
 } from "../../../src/services/credit.service";
 import { getSupabaseAdmin } from "../../../src/config/supabase";
 
@@ -72,7 +72,7 @@ describe("credit.service", () => {
         }),
       });
 
-      await expect(getCreditBalance("user-1")).rejects.toThrow("DB down");
+      await expect(getCreditBalance("user-1")).rejects.toThrow("Database operation failed: fetch credit balance");
     });
   });
 
@@ -116,7 +116,7 @@ describe("credit.service", () => {
       const client = mockSupabase();
       client.rpc.mockResolvedValue({ data: null, error: new Error("RPC fail") });
 
-      await expect(grantGrowthCredits("user-1", 2, "pi_123")).rejects.toThrow("RPC fail");
+      await expect(grantGrowthCredits("user-1", 2, "pi_123")).rejects.toThrow("Database operation failed: grant growth credits");
     });
   });
 
@@ -146,37 +146,77 @@ describe("credit.service", () => {
       const client = mockSupabase();
       client.rpc.mockResolvedValue({ data: null, error: new Error("RPC fail") });
 
-      await expect(deductGrowthCredit("user-1", "req-abc")).rejects.toThrow("RPC fail");
+      await expect(deductGrowthCredit("user-1", "req-abc")).rejects.toThrow("Database operation failed: deduct growth credit");
     });
   });
 
-  describe("refundGrowthCredit", () => {
-    it("calls RPC with required requestId and returns boolean", async () => {
-      const client = mockSupabase();
-
-      const result = await refundGrowthCredit("user-1", "req-abc", { reason: "ai_failure" });
-
-      expect(client.rpc).toHaveBeenCalledWith("refund_growth_credit", {
-        p_user_id: "user-1",
-        p_request_id: "req-abc",
-        p_metadata: { reason: "ai_failure" },
+  describe("getTransactionHistory", () => {
+    function mockTransactionQueries(client: any, { count = 3, rows = [], countError = null, rowsError = null }: {
+      count?: number;
+      rows?: unknown[];
+      countError?: Error | null;
+      rowsError?: Error | null;
+    } = {}) {
+      let callIndex = 0;
+      client.from.mockImplementation(() => {
+        callIndex++;
+        if (callIndex === 1) {
+          // Count query
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ count, error: countError }),
+            }),
+          };
+        }
+        // Data query
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              order: vi.fn().mockReturnValue({
+                range: vi.fn().mockResolvedValue({ data: rows, error: rowsError }),
+              }),
+            }),
+          }),
+        };
       });
-      expect(result).toBe(true);
+    }
+
+    it("returns transactions and total count", async () => {
+      const client = mockSupabase();
+      const mockRows = [
+        { id: "tx-1", credit_type: "growth", amount: 2, source: "purchase", description: null, metadata: null, created_at: "2024-01-01" },
+      ];
+      mockTransactionQueries(client, { count: 1, rows: mockRows });
+
+      const result = await getTransactionHistory("user-1", 10, 0);
+
+      expect(result.transactions).toEqual(mockRows);
+      expect(result.total).toBe(1);
     });
 
-    it("returns false on real failure", async () => {
+    it("returns empty array when no transactions exist", async () => {
       const client = mockSupabase();
-      client.rpc.mockResolvedValue({ data: false, error: null });
+      mockTransactionQueries(client, { count: 0, rows: [] });
 
-      const result = await refundGrowthCredit("user-1", "req-abc");
-      expect(result).toBe(false);
+      const result = await getTransactionHistory("user-1", 10, 0);
+
+      expect(result.transactions).toEqual([]);
+      expect(result.total).toBe(0);
     });
 
-    it("throws on RPC error", async () => {
+    it("throws on count query error", async () => {
       const client = mockSupabase();
-      client.rpc.mockResolvedValue({ data: null, error: new Error("RPC fail") });
+      mockTransactionQueries(client, { countError: new Error("DB down") });
 
-      await expect(refundGrowthCredit("user-1", "req-abc")).rejects.toThrow("RPC fail");
+      await expect(getTransactionHistory("user-1", 10, 0)).rejects.toThrow("Database operation failed: count credit transactions");
+    });
+
+    it("throws on data query error", async () => {
+      const client = mockSupabase();
+      mockTransactionQueries(client, { rowsError: new Error("DB down") });
+
+      await expect(getTransactionHistory("user-1", 10, 0)).rejects.toThrow("Database operation failed: fetch credit transactions");
     });
   });
+
 });

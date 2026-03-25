@@ -3,6 +3,7 @@ import { createControllerMocks } from "../../helpers/controller-mocks";
 
 vi.mock("../../../src/services/stripe.service", () => ({
   createCheckoutSession: vi.fn(),
+  GROWTH_CREDITS_2_AMOUNT: 1000,
 }));
 vi.mock("../../../src/services/credit.service", () => ({
   grantGrowthCredits: vi.fn(),
@@ -33,7 +34,7 @@ function buildWebhookEvent(overrides: Record<string, unknown> = {}) {
         id: "cs_123",
         client_reference_id: "user-123",
         customer_email: "test@example.com",
-        amount_total: 500,
+        amount_total: 1000,
         currency: "usd",
         payment_status: "paid",
         mode: "payment",
@@ -56,31 +57,6 @@ function mockStripeWithEvent(event: unknown) {
 describe("createCheckout controller", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it("returns 401 when userId is missing", async () => {
-    const { req, res, next } = createControllerMocks();
-
-    await createCheckout(req, res, next);
-
-    expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({
-      success: false,
-      error: "Authentication required",
-    });
-  });
-
-  it("returns 401 when userEmail is missing", async () => {
-    const { req, res, next } = createControllerMocks();
-    (req as any).userId = "user-123";
-
-    await createCheckout(req, res, next);
-
-    expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({
-      success: false,
-      error: "Authentication required",
-    });
   });
 
   it("returns checkout URL on success", async () => {
@@ -167,7 +143,7 @@ describe("handleWebhook controller", () => {
     expect(mockGrantGrowthCredits).toHaveBeenCalledWith("user-123", 2, "pi_abc", {
       stripe_event_id: "evt_123",
     });
-    expect(res.json).toHaveBeenCalledWith({ received: true });
+    expect(res.json).toHaveBeenCalledWith({ success: true, data: { received: true } });
   });
 
   it("logs idempotent skip when grant returns false", async () => {
@@ -188,7 +164,7 @@ describe("handleWebhook controller", () => {
       "Growth credits already granted (idempotent)",
       expect.objectContaining({ userId: "user-123", paymentIntentId: "pi_abc" }),
     );
-    expect(res.json).toHaveBeenCalledWith({ received: true });
+    expect(res.json).toHaveBeenCalledWith({ success: true, data: { received: true } });
   });
 
   it("skips grant when client_reference_id is null", async () => {
@@ -206,7 +182,7 @@ describe("handleWebhook controller", () => {
       "Webhook: missing client_reference_id",
       expect.any(Object),
     );
-    expect(res.json).toHaveBeenCalledWith({ received: true });
+    expect(res.json).toHaveBeenCalledWith({ success: true, data: { received: true } });
   });
 
   it("skips grant when payment_status is not paid", async () => {
@@ -226,8 +202,8 @@ describe("handleWebhook controller", () => {
     );
   });
 
-  it("returns 500 when amount_total is not 500 (invariant violation)", async () => {
-    const event = buildWebhookEvent({ amount_total: 1000 });
+  it("returns 500 when amount_total exceeds max (invariant violation)", async () => {
+    const event = buildWebhookEvent({ amount_total: 2000 });
     mockStripeWithEvent(event);
 
     const { req, res, next } = createControllerMocks();
@@ -349,6 +325,6 @@ describe("handleWebhook controller", () => {
 
     await handleWebhook(req, res, next);
 
-    expect(res.json).toHaveBeenCalledWith({ received: true });
+    expect(res.json).toHaveBeenCalledWith({ success: true, data: { received: true } });
   });
 });

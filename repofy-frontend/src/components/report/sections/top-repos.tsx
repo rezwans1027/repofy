@@ -3,11 +3,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown, Award, Star, GitFork } from "lucide-react";
-import { AnimateOnView } from "@/components/ui/animate-on-view";
-import { SectionHeader } from "@/components/ui/section-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { Badge } from "@/components/ui/badge";
-import { gradeColor } from "@/lib/styles";
-import type { ReportData } from "@/components/report/analysis-report";
+import { codeQualityColor, testingColor, cicdColor, verdictBadgeStyle } from "@/lib/styles";
+import type { ReportData } from "@shared/types/report";
 
 interface TopReposProps {
   topRepos: ReportData["topRepos"];
@@ -18,12 +17,7 @@ export function TopRepos({ topRepos, expandAll }: TopReposProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   return (
-    <AnimateOnView delay={0.36}>
-      <div className="rounded-lg border border-border bg-card p-5">
-        <SectionHeader
-          title="Top Repositories"
-          subtitle="Deep dive into signature projects"
-        />
+    <SectionCard delay={0.36} title="Top Repositories" subtitle="Deep dive into signature projects">
         <div className="space-y-3">
           {topRepos.map((repo) => (
             <div
@@ -34,7 +28,7 @@ export function TopRepos({ topRepos, expandAll }: TopReposProps) {
                 onClick={() =>
                   !expandAll && setExpanded(expanded === repo.name ? null : repo.name)
                 }
-                className="flex w-full items-center justify-between p-3 text-left hover:bg-secondary/30 transition-colors"
+                className="flex w-full items-center justify-between p-3 text-left hover:bg-secondary/30"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-mono text-sm font-bold truncate">
@@ -46,6 +40,9 @@ export function TopRepos({ topRepos, expandAll }: TopReposProps) {
                       Best Work
                     </Badge>
                   )}
+                  <Badge className={`text-[9px] shrink-0 border ${verdictBadgeStyle(repo.verdict)}`}>
+                    {repo.verdict}
+                  </Badge>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
@@ -101,9 +98,9 @@ export function TopRepos({ topRepos, expandAll }: TopReposProps) {
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       {[
-                        { label: "Code Quality", grade: repo.codeQuality },
-                        { label: "Testing", grade: repo.testing },
-                        { label: "CI/CD", grade: repo.cicd },
+                        { label: "Code Quality", grade: repo.codeQuality, colorFn: codeQualityColor },
+                        { label: "Testing", grade: repo.testing, colorFn: testingColor },
+                        { label: "CI/CD", grade: repo.cicd, colorFn: cicdColor },
                       ].map((g) => (
                         <div
                           key={g.label}
@@ -113,23 +110,19 @@ export function TopRepos({ topRepos, expandAll }: TopReposProps) {
                             {g.label}
                           </p>
                           <p
-                            className={`mt-0.5 font-mono text-sm font-bold ${gradeColor(g.grade)}`}
+                            className={`mt-0.5 font-mono text-sm font-bold ${g.colorFn(g.grade)}`}
                           >
                             {g.grade}
                           </p>
                         </div>
                       ))}
                     </div>
-                    <p className="text-xs leading-relaxed text-muted-foreground border-l-2 border-cyan/30 pl-3">
-                      {repo.verdict}
-                    </p>
                   </div>
                 </motion.div>
               )}
             </div>
           ))}
         </div>
-      </div>
-    </AnimateOnView>
+    </SectionCard>
   );
 }

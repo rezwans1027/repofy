@@ -1,0 +1,214 @@
+name: CI
+
+on:
+  pull_request:
+    paths:
+      - "repofy-frontend/**"
+      - "repofy-backend/**"
+      - ".github/workflows/**"
+  push:
+    branches:
+      - main
+      - staging
+    paths:
+      - "repofy-frontend/**"
+      - "repofy-backend/**"
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: changes
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+      workflows: ${{ steps.filter.outputs.workflows }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect changed areas
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            frontend:
+              - "repofy-frontend/**"
+            backend:
+              - "repofy-backend/**"
+            workflows:
+              - ".github/workflows/**"
+
+  backend:
+    name: backend
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.workflows == 'true' }}
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: repofy-backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: repofy-backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test with coverage
+        run: npm test -- --coverage
+
+      - name: Build
+        run: npm run build
+
+  frontend-unit:
+    name: frontend-unit
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ needs.changes.outputs.frontend == 'true' || needs.changes.outputs.workflows == 'true' }}
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    defaults:
+      run:
+        working-directory: repofy-frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: repofy-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test with coverage
+        run: npm test -- --coverage
+
+      - name: Build
+        run: npm run build
+
+  frontend-e2e:
+    name: frontend-e2e
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    needs:
+      - changes
+      - backend
+      - frontend-unit
+    if: >-
+      ${{
+        !cancelled() &&
+        (
+          needs.changes.outputs.frontend == 'true' ||
+          needs.changes.outputs.backend == 'true' ||
+          needs.changes.outputs.workflows == 'true'
+        ) &&
+        (needs.backend.result == 'success' || needs.backend.result == 'skipped') &&
+        (needs.frontend-unit.result == 'success' || needs.frontend-unit.result == 'skipped')
+      }}
+    timeout-minutes: 25
+    env:
+      # Backend env vars
+      SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY }}
+      GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}
+      OPENAI_API_KEY: fake-openai-key
+      ADMIN_SECRET: test-admin-secret
+      STRIPE_SECRET_KEY: sk_test_fake_key
+      STRIPE_WEBHOOK_SECRET: whsec_fake_secret
+      RESEND_API_KEY: re_fake_resend_key
+      OTP_HMAC_SECRET: test-otp-secret
+      CORS_ORIGIN: http://localhost:3000
+      FRONTEND_URL: http://localhost:3000
+      ENGINE_INTERNAL_KEY: test-engine-key
+      FEEDBACK_NOTIFICATION_EMAIL: test@example.com
+      TOKEN_ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      NODE_ENV: test
+      # Frontend env vars
+      E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+      E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            repofy-backend/package-lock.json
+            repofy-frontend/package-lock.json
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          required=(
+            SUPABASE_URL
+            SUPABASE_ANON_KEY
+            E2E_TEST_EMAIL
+            E2E_TEST_PASSWORD
+            GITHUB_TOKEN
+          )
+
+          for name in "${required[@]}"; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing required CI secret or environment variable: ${name}"
+              exit 1
+            fi
+          done
+
+      - name: Install backend dependencies
+        working-directory: repofy-backend
+        run: npm ci
+
+      - name: Install frontend dependencies
+        working-directory: repofy-frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: repofy-frontend
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright
+        working-directory: repofy-frontend
+        run: npm run test:e2e
+
+      - name: Upload Playwright artifacts
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            repofy-frontend/playwright-report
+            repofy-frontend/test-results
+          if-no-files-found: ignore
+          retention-days: 7

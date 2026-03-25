@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import { validateSafeUrl } from "../lib/validators";
 
 dotenv.config();
 
@@ -21,19 +22,48 @@ function requireEnvUnlessMockAi(name: string): string | undefined {
   return requireEnv(name);
 }
 
+if (!process.env.NODE_ENV) {
+  console.warn("WARNING: NODE_ENV is not set — defaulting to \"production\" for safety");
+}
+
+const _isProduction = (process.env.NODE_ENV ?? "production") === "production";
+
 export const env = {
-  port: parseInt(process.env.PORT || "3003", 10),
-  corsOrigin: process.env.CORS_ORIGIN || "http://localhost:3002",
-  nodeEnv: process.env.NODE_ENV || "development",
-  isProduction: process.env.NODE_ENV === "production",
-  trustProxy: process.env.TRUST_PROXY === "true",
+  port: parseInt(process.env.PORT || "3001", 10),
+  corsOrigin: _isProduction ? requireEnv("CORS_ORIGIN") : (process.env.CORS_ORIGIN || "http://localhost:3000"),
+  nodeEnv: process.env.NODE_ENV ?? "production",
+  isProduction: _isProduction,
+  trustProxy: _isProduction ? process.env.TRUST_PROXY !== "false" : process.env.TRUST_PROXY === "true",
   mockAi: _mockAi,
   supabaseUrl: requireEnv("SUPABASE_URL"),
   supabaseServiceRoleKey: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
-  githubToken: requireEnvUnlessMockAi("GITHUB_TOKEN"),
-  openaiApiKey: requireEnvUnlessMockAi("OPENAI_API_KEY"),
-  openaiModel: process.env.OPENAI_MODEL || "gpt-4o",
-  frontendUrl: process.env.FRONTEND_URL || process.env.CORS_ORIGIN || "http://localhost:3002",
+  supabaseAnonKey: requireEnv("SUPABASE_ANON_KEY"),
+  openaiModel: process.env.OPENAI_MODEL || "gpt-5.1",
+  adminSecret: requireEnv("ADMIN_SECRET"),
+  frontendUrl: _isProduction
+    ? (process.env.FRONTEND_URL || requireEnv("CORS_ORIGIN"))
+    : (process.env.FRONTEND_URL || process.env.CORS_ORIGIN || "http://localhost:3000"),
   stripeSecretKey: requireEnv("STRIPE_SECRET_KEY"),
   stripeWebhookSecret: requireEnv("STRIPE_WEBHOOK_SECRET"),
+  resendApiKey: requireEnv("RESEND_API_KEY"),
+  feedbackNotificationEmail: requireEnv("FEEDBACK_NOTIFICATION_EMAIL"),
+  engineUrl: (() => {
+    const raw = process.env.ENGINE_URL || "http://localhost:3002";
+    // Validate URL scheme and block private IPs at startup (SSRF prevention).
+    // In dev the default localhost URL is allowed; in production only https is accepted
+    // and the hostname must not be a private IP literal.
+    const isDevDefault = !process.env.ENGINE_URL && !_isProduction;
+    if (!isDevDefault) {
+      // Allow http for Railway internal service-to-service networking
+      validateSafeUrl(raw, "ENGINE_URL", { allowedSchemes: ["http", "https"] });
+    }
+    return raw;
+  })(),
+  engineInternalKey: requireEnvUnlessMockAi("ENGINE_INTERNAL_KEY") ?? "",
+  /** Daily AI spending cap in USD. Engine calls are rejected once the rolling 24h cost exceeds this. */
+  dailyAiSpendingCap: parseFloat(process.env.DAILY_AI_SPENDING_CAP || "50"),
+  /** Max serialised payload size (bytes) sent to the Engine. Requests exceeding this are rejected. */
+  maxEnginePayloadBytes: parseInt(process.env.MAX_ENGINE_PAYLOAD_BYTES || String(2 * 1024 * 1024), 10), // 2 MB
+  rubricVersion: process.env.RUBRIC_VERSION || "v1.1",
+  tokenEncryptionKey: requireEnv("TOKEN_ENCRYPTION_KEY"),
 } as const;
