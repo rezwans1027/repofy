@@ -8,6 +8,8 @@ vi.mock("../../../src/config/env", () => ({
   env: {
     engineUrl: "http://localhost:3002",
     engineInternalKey: "test-internal-key",
+    dailyAiSpendingCap: 50,
+    maxEnginePayloadBytes: 2 * 1024 * 1024,
   },
 }));
 
@@ -15,12 +17,18 @@ vi.mock("../../../src/lib/validators", () => ({
   validateSafeUrl: vi.fn((url: string) => new URL(url)),
 }));
 
+vi.mock("../../../src/lib/usage-logger", () => ({
+  checkSpendingCap: vi.fn(),
+}));
+
 import { callEngine } from "../../../src/services/engine.service";
 import { fetchWithRetry } from "../../../src/lib/retry";
 import { validateSafeUrl } from "../../../src/lib/validators";
+import { checkSpendingCap } from "../../../src/lib/usage-logger";
 
 const mockFetchWithRetry = fetchWithRetry as ReturnType<typeof vi.fn>;
 const mockValidateSafeUrl = validateSafeUrl as ReturnType<typeof vi.fn>;
+const mockCheckSpendingCap = checkSpendingCap as ReturnType<typeof vi.fn>;
 
 function mockOkResponse(data: unknown): Partial<Response> {
   return {
@@ -43,6 +51,7 @@ describe("engine.service — callEngine", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockValidateSafeUrl.mockImplementation((url: string) => new URL(url));
+    mockCheckSpendingCap.mockResolvedValue(true);
   });
 
   // ── Path validation ─────────────────────────────────────────────────
@@ -141,27 +150,27 @@ describe("engine.service — callEngine", () => {
   // ── Error responses ─────────────────────────────────────────────────
 
   describe("error responses", () => {
-    it("throws with status and body text on non-ok response", async () => {
+    it("throws with status on non-ok response", async () => {
       mockFetchWithRetry.mockResolvedValue(
         mockErrorResponse(500, "Internal Server Error"),
       );
 
       await expect(callEngine("/analyze", {})).rejects.toThrow(
-        "Engine /analyze failed: 500 Internal Server Error",
+        "Engine /analyze failed: 500",
       );
     });
 
-    it("throws with status 422 and validation message", async () => {
+    it("throws with status 422", async () => {
       mockFetchWithRetry.mockResolvedValue(
         mockErrorResponse(422, "Invalid username"),
       );
 
       await expect(callEngine("/advice", {})).rejects.toThrow(
-        "Engine /advice failed: 422 Invalid username",
+        "Engine /advice failed: 422",
       );
     });
 
-    it("falls back to empty string when text() fails on error response", async () => {
+    it("throws with status when text() fails on error response", async () => {
       const errorResponse: Partial<Response> = {
         ok: false,
         status: 503,
@@ -170,7 +179,7 @@ describe("engine.service — callEngine", () => {
       mockFetchWithRetry.mockResolvedValue(errorResponse);
 
       await expect(callEngine("/analyze", {})).rejects.toThrow(
-        "Engine /analyze failed: 503 ",
+        "Engine /analyze failed: 503",
       );
     });
   });

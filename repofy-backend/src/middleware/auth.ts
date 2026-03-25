@@ -4,37 +4,16 @@ import { sendError } from "../lib/response";
 import { extractAccessToken, extractRefreshToken, setAuthCookies, clearAuthCookies } from "../lib/cookie-utils";
 import { refreshSession } from "../services/auth.service";
 import { decryptToken, isEncrypted, encryptToken } from "../lib/encryption";
+import { TTLCache } from "../lib/ttl-cache";
 import { logger } from "../lib/logger";
-
-/**
- * Short-lived cache to avoid a Supabase HTTP roundtrip on every request.
- * 3-5 auth-guarded calls per page load x ~60s TTL = safe + significant savings.
- *
- * This is per-process only. In a multi-replica deployment each instance
- * maintains its own token cache, which is fine — worst case is an extra
- * Supabase call, not a security issue.
- */
-const TOKEN_CACHE_TTL = 60 * 1000; // 60 seconds
-const TOKEN_CACHE_MAX = 256;
 
 interface TokenEntry {
   userId: string;
   email: string | undefined;
   githubToken: string | undefined;
-  expiresAt: number;
 }
 
-const tokenCache = new Map<string, TokenEntry>();
-
-// Periodic sweep of expired tokens so stale entries don't linger.
-// Unref'd so it won't keep the process alive during shutdown.
-const tokenCacheSweepInterval = setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of tokenCache) {
-    if (now >= entry.expiresAt) tokenCache.delete(key);
-  }
-}, TOKEN_CACHE_TTL);
-tokenCacheSweepInterval.unref();
+const tokenCache = new TTLCache<TokenEntry>(256, 60 * 1000);
 
 /** Exposed for test isolation. */
 export function clearTokenCache(): void {
@@ -94,11 +73,8 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    // Check cache first (LRU: delete + re-set moves entry to end)
     const cached = tokenCache.get(token);
-    if (cached && Date.now() < cached.expiresAt) {
-      tokenCache.delete(token);
-      tokenCache.set(token, cached);
+    if (cached) {
       req.userId = cached.userId;
       req.userEmail = cached.email;
       req.githubToken = cached.githubToken;
@@ -125,17 +101,11 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
           // Fetch GitHub token from DB
           const githubToken = await fetchGitHubToken(result.user.id);
 
-          // Cache the new token
           const newToken = result.session.access_token;
-          if (tokenCache.size >= TOKEN_CACHE_MAX) {
-            const oldest = tokenCache.keys().next().value;
-            if (oldest !== undefined) tokenCache.delete(oldest);
-          }
           tokenCache.set(newToken, {
             userId: result.user.id,
             email: result.user.email,
             githubToken,
-            expiresAt: Date.now() + TOKEN_CACHE_TTL,
           });
 
           req.userId = result.user.id;
@@ -158,16 +128,10 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
     // Fetch GitHub token from DB
     const githubToken = await fetchGitHubToken(data.user.id);
 
-    // Cache the verified token
-    if (tokenCache.size >= TOKEN_CACHE_MAX) {
-      const oldest = tokenCache.keys().next().value;
-      if (oldest !== undefined) tokenCache.delete(oldest);
-    }
     tokenCache.set(token, {
       userId: data.user.id,
       email: data.user.email,
       githubToken,
-      expiresAt: Date.now() + TOKEN_CACHE_TTL,
     });
 
     req.userId = data.user.id;

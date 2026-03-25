@@ -32,6 +32,20 @@ describe("auth routes wiring", () => {
     expect(layer).toBeDefined();
   });
 
+  it("has a GET /auth/export-data route", () => {
+    const layer = stack.find(
+      (l: any) => l.route?.path === "/auth/export-data" && l.route?.methods?.get,
+    );
+    expect(layer).toBeDefined();
+  });
+
+  it("has a DELETE /auth/account route", () => {
+    const layer = stack.find(
+      (l: any) => l.route?.path === "/auth/account" && l.route?.methods?.delete,
+    );
+    expect(layer).toBeDefined();
+  });
+
   it("does NOT have old signup/login routes", () => {
     const oldPaths = ["/auth/signup/initiate", "/auth/signup/verify", "/auth/signup/resend", "/auth/login"];
     for (const path of oldPaths) {

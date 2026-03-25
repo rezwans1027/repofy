@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CREDIT_PACK_PRICE, CREDIT_PACK_SIZE } from "@/lib/constants";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 
 export const metadata: Metadata = {
@@ -72,7 +73,7 @@ export default function TermsPage() {
           </p>
           <ul className="list-disc space-y-2 pl-6 text-muted-foreground">
             <li>
-              Credits are purchased in packs (e.g., $5 for 2 growth credits) and
+              Credits are purchased in packs (e.g., ${CREDIT_PACK_PRICE} for {CREDIT_PACK_SIZE} growth credits) and
               are non-transferable.
             </li>
             <li>

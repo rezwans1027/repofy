@@ -12,8 +12,10 @@ export function setAuthCookies(res: Response, accessToken: string, refreshToken:
 /** Clear both auth cookies (maxAge: 0). */
 export function clearAuthCookies(res: Response): void {
   const opts = getCookieOptions(env.isProduction);
-  res.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, { path: opts.accessToken.path });
-  res.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, { path: opts.refreshToken.path });
+  const { maxAge: _a, ...accessClearOpts } = opts.accessToken;
+  const { maxAge: _r, ...refreshClearOpts } = opts.refreshToken;
+  res.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, accessClearOpts);
+  res.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, refreshClearOpts);
 }
 
 /** Extract access token from cookie first, then fall back to Authorization header. */

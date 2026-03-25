@@ -40,7 +40,13 @@ export function AnalysisReport({ username, avatarUrl, data }: AnalysisReportProp
       <div className="space-y-4">
         <TopBanner username={username} avatarUrl={avatarUrl} data={reportData} />
         <Summary narrativeReport={reportData.narrativeReport} />
-        <Suspense>
+        <Suspense fallback={
+          <div className="space-y-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-48 animate-pulse rounded-lg bg-muted" />
+            ))}
+          </div>
+        }>
         <RadarSection radarAxes={reportData.radarAxes} radarBreakdown={reportData.radarBreakdown} />
         <StatsOverview stats={reportData.stats} />
         <ActivityBreakdown activityBreakdown={reportData.activityBreakdown} />

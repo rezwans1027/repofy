@@ -59,10 +59,10 @@ describe("PricingPageContent", () => {
     expect(screen.getByText("Recruiters")).toBeInTheDocument();
   });
 
-  it("renders the $9 price", () => {
+  it("renders the credit pack price", () => {
     renderPricing();
 
-    expect(screen.getByText("$9")).toBeInTheDocument();
+    expect(screen.getByText(`$10`)).toBeInTheDocument();
     expect(screen.getByText("USD")).toBeInTheDocument();
   });
 

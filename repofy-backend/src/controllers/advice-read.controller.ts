@@ -3,6 +3,7 @@ import { createCrudController } from "./crud.controller";
 import { listAdvice, getAdviceById, adviceCount, deleteAdvice } from "../services/advice-persistence.service";
 import { getActiveJob, getJobById, expireStaleJobs } from "../services/advice-job.service";
 import { sendSuccess, sendError } from "../lib/response";
+import { UUID_RE } from "../lib/validators";
 import type { AuthenticatedRequest } from "../types";
 
 const crud = createCrudController({
@@ -25,6 +26,10 @@ export const getActiveAdviceJob: RequestHandler = async (req, res) => {
 export const getAdviceJobStatus: RequestHandler = async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
   const jobId = req.params.jobId as string;
+  if (!UUID_RE.test(jobId)) {
+    sendError(res, 400, "Invalid job ID format");
+    return;
+  }
   const job = await getJobById(jobId, userId);
   if (!job) {
     sendError(res, 404, "Job not found");

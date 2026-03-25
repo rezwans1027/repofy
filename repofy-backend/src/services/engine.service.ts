@@ -1,5 +1,6 @@
 import { env } from "../config/env";
 import { fetchWithRetry } from "../lib/retry";
+import { checkSpendingCap } from "../lib/usage-logger";
 import { validateSafeUrl } from "../lib/validators";
 
 /** Hardcoded set of allowed engine API paths (defense-in-depth). */
@@ -15,7 +16,13 @@ export async function callEngine<T>(
     throw new Error(`Engine: disallowed path "${path}"`);
   }
 
-  // 2. Parse and validate the full URL (scheme + IP-literal check)
+  // 2. Check the daily spending cap before making an AI call
+  const withinBudget = await checkSpendingCap();
+  if (!withinBudget) {
+    throw new Error("Daily AI spending cap exceeded. Please try again later.");
+  }
+
+  // 3. Parse and validate the full URL (scheme + IP-literal check)
   const fullUrl = `${env.engineUrl}${path}`;
   // Allow http for Railway internal service-to-service networking
   const parsed = validateSafeUrl(fullUrl, `Engine ${path}`, { allowedSchemes: ["http", "https"] });
@@ -23,6 +30,15 @@ export async function callEngine<T>(
   // NOTE: No DNS-rebinding check here. The engine URL is operator-configured
   // (env var), not user-supplied, so SSRF via DNS rebinding is not a concern.
   // The engine commonly runs on localhost / private IPs in dev and staging.
+
+  // 4. Serialise and enforce payload size limit
+  const serialised = JSON.stringify(body);
+  if (serialised.length > env.maxEnginePayloadBytes) {
+    throw new Error(
+      `Engine payload too large (${(serialised.length / 1024 / 1024).toFixed(1)} MB). ` +
+        `Maximum allowed: ${(env.maxEnginePayloadBytes / 1024 / 1024).toFixed(1)} MB.`,
+    );
+  }
 
   const res = await fetchWithRetry(
     parsed.href,
@@ -32,7 +48,7 @@ export async function callEngine<T>(
         "Content-Type": "application/json",
         "X-Internal-Key": env.engineInternalKey,
       },
-      body: JSON.stringify(body),
+      body: serialised,
       signal,
     },
     { label: `Engine ${path}` },
@@ -40,7 +56,7 @@ export async function callEngine<T>(
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`Engine ${path} failed: ${res.status} ${text}`);
+    throw new Error(`Engine ${path} failed: ${res.status}`);
   }
 
   return res.json() as Promise<T>;

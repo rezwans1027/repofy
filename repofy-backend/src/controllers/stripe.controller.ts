@@ -79,8 +79,8 @@ export const handleWebhook: RequestHandler = async (req, res) => {
           sendError(res, 500, "Webhook invariant failure: unexpected currency");
           return;
         }
-        if (session.amount_total !== GROWTH_CREDITS_2_AMOUNT) {
-          logger.error("Webhook invariant: unexpected amount", { sessionId: session.id, expected: GROWTH_CREDITS_2_AMOUNT, actual: session.amount_total });
+        if (session.amount_total === null || session.amount_total < 0 || session.amount_total > GROWTH_CREDITS_2_AMOUNT) {
+          logger.error("Webhook invariant: unexpected amount", { sessionId: session.id, expected: `0–${GROWTH_CREDITS_2_AMOUNT}`, actual: session.amount_total });
           sendError(res, 500, "Webhook invariant failure: unexpected amount");
           return;
         }

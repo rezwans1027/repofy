@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { CREDIT_PACK_PRICE } from "@/lib/constants";
 import { AnimateOnView } from "@/components/ui/animate-on-view";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useCreditBalance, useAwaitCreditUpdate } from "@/hooks/use-credits";
@@ -212,7 +213,7 @@ export function PricingPageContent() {
               <div className="mb-5">
                 <div className="flex items-baseline gap-1">
                   <span className="font-mono text-3xl font-extrabold tracking-tight">
-                    $9
+                    ${CREDIT_PACK_PRICE}
                   </span>
                   <span className="text-xs text-muted-foreground">USD</span>
                 </div>

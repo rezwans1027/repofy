@@ -12,6 +12,7 @@ const ENV_KEYS = [
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
   "RESEND_API_KEY",
+  "FEEDBACK_NOTIFICATION_EMAIL",
   "ADMIN_SECRET",
   "ENGINE_INTERNAL_KEY",
   "ENGINE_URL",
@@ -90,6 +91,14 @@ describe("env config", () => {
 
     await expect(import("../../../src/config/env")).rejects.toThrow(
       "Missing required environment variable: SUPABASE_SERVICE_ROLE_KEY",
+    );
+  });
+
+  it("throws when FEEDBACK_NOTIFICATION_EMAIL is missing", async () => {
+    delete process.env.FEEDBACK_NOTIFICATION_EMAIL;
+
+    await expect(import("../../../src/config/env")).rejects.toThrow(
+      "Missing required environment variable: FEEDBACK_NOTIFICATION_EMAIL",
     );
   });
 

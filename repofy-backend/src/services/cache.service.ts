@@ -2,6 +2,7 @@ import { createHash } from "crypto";
 import { getSupabaseAdmin } from "../config/supabase";
 import { logger } from "../lib/logger";
 import { expiresInDays } from "../lib/date-utils";
+import { TTLCache } from "../lib/ttl-cache";
 import type { GitHubUserData, ScorerResponse, ScoringResult } from "../types";
 
 export interface CachedAnalysis {
@@ -11,63 +12,17 @@ export interface CachedAnalysis {
 }
 
 /**
- * Simple in-memory LRU cache to avoid hitting Supabase on repeated lookups.
- * Entries are evicted after MEM_MAX_AGE_MS or when the cache exceeds
- * MEM_MAX_ENTRIES. A periodic sweep removes expired entries proactively
- * so stale data doesn't linger between access-time checks.
- *
- * This is per-process only, which is fine for a single Railway instance.
+ * In-memory LRU cache to avoid hitting Supabase on repeated lookups.
+ * Per-process only, which is fine for a single Railway instance.
  *
  * TODO(scaling): For multi-replica deployments, consider a shared Redis
- * cache to improve cross-instance hit rates. The Supabase DB layer already
- * provides shared persistence, so this is an optimisation, not a correctness
- * concern.
+ * cache to improve cross-instance hit rates.
  */
-const MEM_MAX_ENTRIES = 64;
-const MEM_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
-
-interface MemEntry {
-  data: CachedAnalysis;
-  storedAt: number;
-}
-
-const memCache = new Map<string, MemEntry>();
-
-// Periodic sweep of expired in-memory entries.
-// Unref'd so it won't keep the process alive during shutdown.
-const memCacheSweepInterval = setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of memCache) {
-    if (now - entry.storedAt > MEM_MAX_AGE_MS) memCache.delete(key);
-  }
-}, MEM_MAX_AGE_MS);
-memCacheSweepInterval.unref();
+const memCache = new TTLCache<CachedAnalysis>(64, 5 * 60 * 1000);
 
 /** Clear the in-memory cache. Exposed for test isolation. */
 export function clearMemCache(): void {
   memCache.clear();
-}
-
-function memGet(key: string): CachedAnalysis | null {
-  const entry = memCache.get(key);
-  if (!entry) return null;
-  if (Date.now() - entry.storedAt > MEM_MAX_AGE_MS) {
-    memCache.delete(key);
-    return null;
-  }
-  // Move to end for LRU ordering
-  memCache.delete(key);
-  memCache.set(key, entry);
-  return entry.data;
-}
-
-function memSet(key: string, data: CachedAnalysis): void {
-  if (memCache.size >= MEM_MAX_ENTRIES) {
-    // Evict oldest entry (first key in Map iteration order)
-    const oldest = memCache.keys().next().value;
-    if (oldest !== undefined) memCache.delete(oldest);
-  }
-  memCache.set(key, { data, storedAt: Date.now() });
 }
 
 export function computeSnapshotHash(githubData: GitHubUserData): string {
@@ -88,7 +43,7 @@ export function buildCacheKey(model: string, rubricVersion: string, snapshotHash
 
 export async function getCachedAnalysis(cacheKey: string): Promise<CachedAnalysis | null> {
   // Check in-memory cache first to avoid a Supabase round-trip
-  const cached = memGet(cacheKey);
+  const cached = memCache.get(cacheKey);
   if (cached) return cached;
 
   try {
@@ -111,7 +66,7 @@ export async function getCachedAnalysis(cacheKey: string): Promise<CachedAnalysi
       narrativeReport: data.narrative_report as string,
     };
 
-    memSet(cacheKey, result);
+    memCache.set(cacheKey, result);
     return result;
   } catch (err) {
     logger.warn("Cache lookup failed:", err);
@@ -148,7 +103,7 @@ export async function setCachedAnalysis(
     if (error) {
       logger.error("Failed to write analysis cache:", error.message);
     } else {
-      memSet(cacheKey, analysis);
+      memCache.set(cacheKey, analysis);
     }
   } catch (err) {
     logger.warn("Cache write failed:", err);

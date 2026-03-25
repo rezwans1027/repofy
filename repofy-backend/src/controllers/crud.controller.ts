@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import { sendError, sendSuccess } from "../lib/response";
 import { handleControllerError } from "../lib/controller-utils";
-import { MAX_DELETE_IDS, UUID_RE } from "../lib/validators";
+import { MAX_DELETE_IDS, UUID_RE, USERNAME_RE } from "../lib/validators";
 import type { AuthenticatedRequest } from "../types";
 
 interface CrudServiceMethods {
@@ -44,8 +44,10 @@ export function createCrudController(config: CrudControllerConfig): CrudControll
 
     getById: async (req, res) => {
       const { userId } = req as AuthenticatedRequest;
+      const id = String(req.params.id);
+      if (!UUID_RE.test(id)) { sendError(res, 400, "Invalid ID format"); return; }
       try {
-        const data = await service.getById(userId, String(req.params.id));
+        const data = await service.getById(userId, id);
         if (!data) { sendError(res, 404, `${capName} not found`); return; }
         sendSuccess(res, data);
       } catch (err) {
@@ -55,8 +57,10 @@ export function createCrudController(config: CrudControllerConfig): CrudControll
 
     count: async (req, res) => {
       const { userId } = req as AuthenticatedRequest;
+      const username = String(req.params.username);
+      if (!USERNAME_RE.test(username)) { sendError(res, 400, "Invalid username format"); return; }
       try {
-        const result = await service.count(userId, String(req.params.username));
+        const result = await service.count(userId, username);
         sendSuccess(res, result);
       } catch (err) {
         handleControllerError(err, req, res, `Count ${capName}`, `Failed to count ${entityName}`);

@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { AuthProvider } from "@/components/providers/auth-provider";
+import { AuthProvider, type AuthUser } from "@/components/providers/auth-provider";
 import { MotionProvider } from "@/components/providers/motion-provider";
+import { serverFetch } from "@/lib/server-api";
 import { OverlayScrollbar } from "@/components/ui/overlay-scrollbar";
 import "./globals.css";
 
@@ -50,6 +51,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const { data: authData } = await serverFetch<{ user: AuthUser }>("/auth/me");
+  const initialUser = authData?.user ?? null;
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -66,7 +69,7 @@ export default async function RootLayout({
         </a>
         <ThemeProvider nonce={nonce}>
           <MotionProvider>
-            <AuthProvider>
+            <AuthProvider initialUser={initialUser}>
                 <OverlayScrollbar />
                 {children}
             </AuthProvider>

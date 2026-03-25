@@ -43,6 +43,7 @@ describe("stripe.service", () => {
         client_reference_id: "user-1",
         customer_email: "user@test.com",
         metadata: { product: "growth_credits_2" },
+        allow_promotion_codes: true,
         line_items: [
           {
             price_data: {
@@ -51,7 +52,7 @@ describe("stripe.service", () => {
                 name: "2 Growth Credits",
                 description: "AI-powered profile improvement advice",
               },
-              unit_amount: 900,
+              unit_amount: 1000,
             },
             quantity: 1,
           },
@@ -88,13 +89,13 @@ describe("stripe.service", () => {
       ).rejects.toThrow("Stripe did not return a checkout URL");
     });
 
-    it("verifies unit_amount is 900 ($9.00)", async () => {
+    it("verifies unit_amount is 1000 ($10.00)", async () => {
       const { createFn } = mockStripe();
 
       await createCheckoutSession("user-1", "user@test.com");
 
       const args = createFn.mock.calls[0][0];
-      expect(args.line_items[0].price_data.unit_amount).toBe(900);
+      expect(args.line_items[0].price_data.unit_amount).toBe(1000);
     });
 
     it("verifies success_url and cancel_url use frontendUrl", async () => {

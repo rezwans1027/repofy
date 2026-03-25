@@ -44,7 +44,7 @@ describe("setAuthCookies", () => {
       "access-tok",
       expect.objectContaining({
         httpOnly: true,
-        sameSite: "strict",
+        sameSite: "lax",
         path: "/",
         maxAge: 2 * 60 * 60 * 1000,
       }),
@@ -54,7 +54,7 @@ describe("setAuthCookies", () => {
       "refresh-tok",
       expect.objectContaining({
         httpOnly: true,
-        sameSite: "strict",
+        sameSite: "lax",
         path: "/",
         maxAge: 30 * 24 * 60 * 60 * 1000,
       }),

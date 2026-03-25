@@ -1,3 +1,4 @@
+import { env } from "../config/env";
 import { getSupabaseAdmin } from "../config/supabase";
 import { logger } from "./logger";
 
@@ -30,6 +31,63 @@ function estimateCost(
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  Spending-cap circuit breaker                                      */
+/* ------------------------------------------------------------------ */
+
+/** Rolling 24-hour cost cached in memory. Refreshed from Supabase periodically. */
+let _rollingCost = 0;
+let _rollingCostFetchedAt = 0;
+const ROLLING_COST_TTL_MS = 60_000; // refresh from DB at most once per minute
+
+async function fetchRolling24hCost(): Promise<number> {
+  const now = Date.now();
+  if (now - _rollingCostFetchedAt < ROLLING_COST_TTL_MS) return _rollingCost;
+
+  try {
+    const since = new Date(now - 24 * 60 * 60 * 1000).toISOString();
+    const { data, error } = await getSupabaseAdmin()
+      .from("api_usage")
+      .select("estimated_cost")
+      .gte("created_at", since);
+
+    if (error) {
+      logger.error("Failed to fetch rolling 24h cost", error.message);
+      return _rollingCost; // fallback to stale value
+    }
+
+    _rollingCost = (data ?? []).reduce(
+      (sum, row) => sum + ((row as { estimated_cost: number | null }).estimated_cost ?? 0),
+      0,
+    );
+    _rollingCostFetchedAt = now;
+  } catch (err) {
+    logger.error("Unhandled error fetching rolling 24h cost", err);
+  }
+
+  return _rollingCost;
+}
+
+/**
+ * Check whether the daily AI spending cap has been exceeded.
+ * Returns `true` if it's safe to proceed, `false` if the cap is breached.
+ */
+export async function checkSpendingCap(): Promise<boolean> {
+  const cap = env.dailyAiSpendingCap;
+  if (cap <= 0) return true; // cap disabled
+
+  const rolling = await fetchRolling24hCost();
+  if (rolling >= cap) {
+    logger.warn(
+      `AI spending cap breached — rolling 24h cost $${rolling.toFixed(4)} >= cap $${cap.toFixed(2)}. Rejecting engine call.`,
+    );
+    return false;
+  }
+  return true;
+}
+
+/* ------------------------------------------------------------------ */
+
 export function logTokenUsage(
   endpoint: string,
   model: string,
@@ -48,6 +106,9 @@ export function logTokenUsage(
       `total: ${usage.total_tokens}` +
       (cost !== null ? `, est. cost: $${cost.toFixed(4)}` : ""),
   );
+
+  // Update in-memory rolling cost immediately so back-to-back calls are aware
+  if (cost !== null) _rollingCost += cost;
 
   // Persist to Supabase (fire-and-forget, never block the response)
   Promise.resolve(

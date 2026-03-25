@@ -39,4 +39,5 @@ repofy-engine/
 # Misc
 .vercel
 skills/
+issues/
 .env*.local

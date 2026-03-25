@@ -4,7 +4,7 @@ import { getStripe } from "../config/stripe";
 const FRONTEND_URL = env.frontendUrl;
 
 /** Canonical price in cents for the 2-credit growth pack. */
-export const GROWTH_CREDITS_2_AMOUNT = 900;
+export const GROWTH_CREDITS_2_AMOUNT = 1000;
 
 export async function createCheckoutSession(
   userId: string,
@@ -20,6 +20,7 @@ export async function createCheckoutSession(
     metadata: {
       product: "growth_credits_2",
     },
+    allow_promotion_codes: true,
     line_items: [
       {
         price_data: {

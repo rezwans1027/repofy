@@ -46,6 +46,7 @@ export const env = {
   stripeSecretKey: requireEnv("STRIPE_SECRET_KEY"),
   stripeWebhookSecret: requireEnv("STRIPE_WEBHOOK_SECRET"),
   resendApiKey: requireEnv("RESEND_API_KEY"),
+  feedbackNotificationEmail: requireEnv("FEEDBACK_NOTIFICATION_EMAIL"),
   engineUrl: (() => {
     const raw = process.env.ENGINE_URL || "http://localhost:3002";
     // Validate URL scheme and block private IPs at startup (SSRF prevention).
@@ -59,6 +60,10 @@ export const env = {
     return raw;
   })(),
   engineInternalKey: requireEnvUnlessMockAi("ENGINE_INTERNAL_KEY") ?? "",
+  /** Daily AI spending cap in USD. Engine calls are rejected once the rolling 24h cost exceeds this. */
+  dailyAiSpendingCap: parseFloat(process.env.DAILY_AI_SPENDING_CAP || "50"),
+  /** Max serialised payload size (bytes) sent to the Engine. Requests exceeding this are rejected. */
+  maxEnginePayloadBytes: parseInt(process.env.MAX_ENGINE_PAYLOAD_BYTES || String(2 * 1024 * 1024), 10), // 2 MB
   rubricVersion: process.env.RUBRIC_VERSION || "v1.1",
   tokenEncryptionKey: requireEnv("TOKEN_ENCRYPTION_KEY"),
 } as const;

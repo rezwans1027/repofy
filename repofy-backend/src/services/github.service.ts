@@ -12,10 +12,12 @@
  * handling, and type imports — the refactoring overhead outweighs the
  * benefit while the file remains internally well-structured.
  */
+import { createHash } from "node:crypto";
 import { logger } from "../lib/logger";
 import { LANGUAGE_COLORS, DEFAULT_COLOR } from "../lib/language-colors";
 import { fetchWithRetry } from "../lib/retry";
 import { daysAgo } from "../lib/date-utils";
+import { TTLCache } from "../lib/ttl-cache";
 import type {
   GitHubApiUser,
   GitHubApiRepo,
@@ -980,15 +982,7 @@ function computeAggregateMetrics(snapshots: RepoSnapshot[]): AggregateMetrics {
 // 128 entries); this one is tighter (3 min, 64 entries) and sits closer
 // to the network boundary so *all* callers benefit.
 
-const USER_DATA_CACHE_TTL = 3 * 60 * 1000; // 3 minutes
-const USER_DATA_CACHE_MAX = 64;
-
-interface UserDataCacheEntry {
-  data: GitHubUserData;
-  timestamp: number;
-}
-
-const userDataCache = new Map<string, UserDataCacheEntry>();
+const userDataCache = new TTLCache<GitHubUserData>(64, 3 * 60 * 1000);
 
 /** Clear the service-level user data cache. Exposed for test isolation. */
 export function clearUserDataCache(): void {
@@ -1038,24 +1032,13 @@ export async function fetchGitHubUserData(
 ): Promise<GitHubUserData> {
   // Key includes a token suffix so different users' tokens produce separate
   // cache entries — prevents leaking private GitHub data between users.
-  const cacheKey = `${username.toLowerCase()}:${token.slice(-8)}`;
+  const cacheKey = `${username.toLowerCase()}:${createHash("sha256").update(token).digest("hex").slice(0, 16)}`;
 
-  // Check cache
   const cached = userDataCache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < USER_DATA_CACHE_TTL) {
-    return cached.data;
-  }
-  // Remove stale entry
-  if (cached) userDataCache.delete(cacheKey);
+  if (cached) return cached;
 
   const data = await fetchGitHubUserDataUncached(username, signal, token);
-
-  // Evict oldest entry when cache is full
-  if (userDataCache.size >= USER_DATA_CACHE_MAX) {
-    const oldest = userDataCache.keys().next().value;
-    if (oldest !== undefined) userDataCache.delete(oldest);
-  }
-  userDataCache.set(cacheKey, { data, timestamp: Date.now() });
+  userDataCache.set(cacheKey, data);
 
   return data;
 }

@@ -61,7 +61,7 @@ function createSupabaseChainMock() {
     // Use mockImplementation with lazy access so circular refs work
     const queryResult = () => ({
       eq: chain.eq, single: chain.single, maybeSingle: chain.maybeSingle,
-      order: chain.order, limit: chain.limit, in: chain.in,
+      order: chain.order, limit: chain.limit, in: chain.in, lt: chain.lt,
     });
     chain.eq = vi.fn().mockImplementation(() => queryResult());
     chain.order = vi.fn().mockImplementation(() => queryResult());

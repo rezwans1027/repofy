@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Search, FileText, GitCompareArrows, Lightbulb, CreditCard, Settings } from "lucide-react";
+import { Search, FileText, GitCompareArrows, Lightbulb, CreditCard, Settings, MessageSquare } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Search", icon: Search, number: 1 },
@@ -12,7 +12,8 @@ const NAV_ITEMS = [
   { href: "/reports", label: "Evals", icon: FileText, number: 3, comingSoon: true },
   { href: "/compare", label: "Compare", icon: GitCompareArrows, number: 4, comingSoon: true },
   { href: "/pricing", label: "Pricing", icon: CreditCard, number: 5 },
-  { href: "/settings", label: "Settings", icon: Settings, number: 6 },
+  { href: "/feedback", label: "Feedback", icon: MessageSquare, number: 6 },
+  { href: "/settings", label: "Settings", icon: Settings, number: 7 },
 ];
 
 function isItemActive(href: string, pathname: string) {
@@ -102,7 +103,7 @@ export function AppSidebar() {
 
       {/* Mobile: horizontal sticky bar */}
       <nav aria-label="Main navigation" className="fixed top-14 left-0 right-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm lg:hidden">
-        <div className="relative flex justify-center px-4 py-1.5 gap-6 sm:gap-2">
+        <div className="relative flex justify-between px-4 py-1.5">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = isItemActive(href, pathname);
 

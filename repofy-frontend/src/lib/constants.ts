@@ -1,3 +1,7 @@
+/** Price in dollars for the 2-credit growth pack. Single source of truth for all UI. */
+export const CREDIT_PACK_PRICE = 10;
+export const CREDIT_PACK_SIZE = 2;
+
 export const SECTIONS = [
   { id: "hero", label: "Home", number: 0 },
   { id: "features", label: "Features", number: 1 },
@@ -20,6 +24,7 @@ export const PROTECTED_ROUTES = [
   "/compare",
   "/advisor",
   "/pricing",
+  "/feedback",
 ] as const;
 
 export const TYPEWRITER_USERNAMES = [

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { CREDIT_PACK_PRICE, CREDIT_PACK_SIZE } from "@/lib/constants";
 import { PricingPageContent } from "@/components/pricing/pricing-page-content";
 
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Get growth credits for AI-powered career advice. $9 for 2 credits.",
+    `Get growth credits for AI-powered career advice. $${CREDIT_PACK_PRICE} for ${CREDIT_PACK_SIZE} credits.`,
 };
 
 const jsonLd = {
