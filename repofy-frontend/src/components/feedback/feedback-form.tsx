@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,39 @@ export function FeedbackForm() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const selectedCategory = CATEGORIES.find((item) => item.value === category) ?? null;
+
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [indicatorRect, setIndicatorRect] = useState<{
+    left: number; top: number; width: number; height: number;
+  } | null>(null);
+
+  const categoryIndex = category
+    ? CATEGORIES.findIndex((c) => c.value === category)
+    : -1;
+
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    function measure() {
+      if (categoryIndex < 0) { setIndicatorRect(null); return; }
+      const card = grid!.children[categoryIndex] as HTMLElement | undefined;
+      if (!card) return;
+      const gridBox = grid!.getBoundingClientRect();
+      const cardBox = card.getBoundingClientRect();
+      setIndicatorRect({
+        left: cardBox.left - gridBox.left,
+        top: cardBox.top - gridBox.top,
+        width: cardBox.width,
+        height: cardBox.height,
+      });
+    }
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(grid);
+    return () => observer.disconnect();
+  }, [categoryIndex]);
 
   const canSubmit = category && message.trim().length >= 10 && !loading;
 
@@ -147,7 +180,7 @@ export function FeedbackForm() {
                 </motion.p>
               </AnimatePresence>
             </div>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div ref={gridRef} className="relative grid gap-3 sm:grid-cols-3">
               {CATEGORIES.map((cat) => {
                 const Icon = cat.icon;
                 const selected = category === cat.value;
@@ -157,13 +190,6 @@ export function FeedbackForm() {
                     htmlFor={`feedback-category-${cat.value}`}
                     className="group relative flex flex-col items-center gap-2 rounded-lg border border-border bg-card p-4 text-center cursor-pointer transition-colors duration-200 hover:border-primary/40 hover:bg-primary/[0.02]"
                   >
-                    {selected && (
-                      <motion.div
-                        layoutId="feedback-category-indicator"
-                        className="absolute inset-0 rounded-lg border border-primary bg-primary/5"
-                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                      />
-                    )}
                     <input
                       id={`feedback-category-${cat.value}`}
                       type="radio"
@@ -175,15 +201,39 @@ export function FeedbackForm() {
                       className="sr-only"
                     />
                     <Icon
-                      className={`relative h-5 w-5 transition-colors ${
+                      className={`h-5 w-5 transition-colors ${
                         selected ? "text-primary" : "text-muted-foreground group-hover:text-primary/60"
                       }`}
                     />
-                    <span className="relative font-mono text-xs font-bold">{cat.label}</span>
-                    <span className="relative text-[10px] text-muted-foreground">{cat.description}</span>
+                    <span className="font-mono text-xs font-bold">{cat.label}</span>
+                    <span className="text-[10px] text-muted-foreground">{cat.description}</span>
                   </label>
                 );
               })}
+              {/* Sliding indicator — positioned at grid level to avoid card overflow clipping */}
+              <AnimatePresence>
+                {indicatorRect && (
+                  <motion.div
+                    key="feedback-indicator"
+                    className="absolute rounded-lg border border-primary bg-primary/5 pointer-events-none"
+                    initial={{ opacity: 0 }}
+                    animate={{
+                      opacity: 1,
+                      left: indicatorRect.left,
+                      top: indicatorRect.top,
+                      width: indicatorRect.width,
+                      height: indicatorRect.height,
+                    }}
+                    exit={{ opacity: 0 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 30,
+                      opacity: { duration: 0.15 },
+                    }}
+                  />
+                )}
+              </AnimatePresence>
             </div>
           </fieldset>
 
