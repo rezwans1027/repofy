@@ -132,11 +132,20 @@ export function FeedbackForm() {
           <fieldset className="rounded-lg border border-border bg-card p-6 space-y-4">
             <div className="space-y-1">
               <legend className="font-mono text-sm font-bold">What kind of feedback?</legend>
-              <p className="font-mono text-[10px] text-muted-foreground">
-                {selectedCategory
-                  ? `Selected: ${selectedCategory.label}`
-                  : "Select Bug Report, Feature Request, or General Feedback before submitting."}
-              </p>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={category ?? "none"}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="font-mono text-[10px] text-muted-foreground"
+                >
+                  {selectedCategory
+                    ? `Selected: ${selectedCategory.label}`
+                    : "Select Bug Report, Feature Request, or General Feedback before submitting."}
+                </motion.p>
+              </AnimatePresence>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               {CATEGORIES.map((cat) => {
@@ -146,12 +155,15 @@ export function FeedbackForm() {
                   <label
                     key={cat.value}
                     htmlFor={`feedback-category-${cat.value}`}
-                    className={`group flex flex-col items-center gap-2 rounded-lg border p-4 text-center transition-all duration-200 ${
-                      selected
-                        ? "border-primary bg-primary/5"
-                        : "border-border bg-card hover:border-primary/40 hover:bg-primary/[0.02]"
-                    }`}
+                    className="group relative flex flex-col items-center gap-2 rounded-lg border border-border bg-card p-4 text-center cursor-pointer transition-colors duration-200 hover:border-primary/40 hover:bg-primary/[0.02]"
                   >
+                    {selected && (
+                      <motion.div
+                        layoutId="feedback-category-indicator"
+                        className="absolute inset-0 rounded-lg border border-primary bg-primary/5"
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
                     <input
                       id={`feedback-category-${cat.value}`}
                       type="radio"
@@ -163,12 +175,12 @@ export function FeedbackForm() {
                       className="sr-only"
                     />
                     <Icon
-                      className={`h-5 w-5 transition-colors ${
+                      className={`relative h-5 w-5 transition-colors ${
                         selected ? "text-primary" : "text-muted-foreground group-hover:text-primary/60"
                       }`}
                     />
-                    <span className="font-mono text-xs font-bold">{cat.label}</span>
-                    <span className="text-[10px] text-muted-foreground">{cat.description}</span>
+                    <span className="relative font-mono text-xs font-bold">{cat.label}</span>
+                    <span className="relative text-[10px] text-muted-foreground">{cat.description}</span>
                   </label>
                 );
               })}
@@ -211,11 +223,29 @@ export function FeedbackForm() {
               disabled={!canSubmit}
               className="font-mono text-xs gap-2"
             >
-              {loading ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                selectedCategory ? `Submit ${selectedCategory.label}` : "Submit Feedback"
-              )}
+              <AnimatePresence mode="wait" initial={false}>
+                {loading ? (
+                  <motion.span
+                    key="loading"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.1 }}
+                  >
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key={category ?? "default"}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    {selectedCategory ? `Submit ${selectedCategory.label}` : "Submit Feedback"}
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </Button>
           </div>
         </motion.form>
