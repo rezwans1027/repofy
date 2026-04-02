@@ -138,8 +138,8 @@ function GenerateAdviceContent({
     router.replace(`/advisor/${jobData!.advice_id}?from=profile`);
   }, [shouldRedirect, queryClient, router, jobData]);
 
-  // Resume mode: if job failed, show error
-  if (isResumeMode && jobFailed) {
+  // If job failed (resume or start mode), show error
+  if (jobFailed) {
     return (
       <div>
         <BackLink href={backHref} label={backLabel} hoverColor="hover:text-emerald-400" />
