@@ -256,7 +256,7 @@ describe("handleWebhook controller", () => {
     );
   });
 
-  it("returns 500 when payment_intent is missing (invariant violation)", async () => {
+  it("returns 500 when payment_intent is missing for non-zero amount (invariant violation)", async () => {
     const event = buildWebhookEvent({ payment_intent: null });
     mockStripeWithEvent(event);
 
@@ -269,9 +269,30 @@ describe("handleWebhook controller", () => {
     expect(mockGrantGrowthCredits).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(500);
     expect(logger.error).toHaveBeenCalledWith(
-      "Webhook invariant: missing or invalid payment_intent",
+      "Webhook invariant: missing payment_intent for non-zero amount",
       expect.any(Object),
     );
+  });
+
+  it("grants credits for $0 checkout (100% coupon) with no payment_intent", async () => {
+    const event = buildWebhookEvent({
+      amount_total: 0,
+      payment_intent: null,
+      payment_status: "no_payment_required",
+    });
+    mockStripeWithEvent(event);
+    mockGrantGrowthCredits.mockResolvedValue(true);
+
+    const { req, res, next } = createControllerMocks();
+    (req as any).headers = { "stripe-signature": "sig_valid" };
+    (req as any).body = Buffer.from("{}");
+
+    await handleWebhook(req, res, next);
+
+    expect(mockGrantGrowthCredits).toHaveBeenCalledWith("user-123", 2, "session_cs_123", {
+      stripe_event_id: "evt_123",
+    });
+    expect(res.json).toHaveBeenCalledWith({ success: true, data: { received: true } });
   });
 
   it("returns 500 when mode is not payment (invariant violation)", async () => {

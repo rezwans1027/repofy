@@ -57,7 +57,7 @@ export const handleWebhook: RequestHandler = async (req, res) => {
           logger.warn("Webhook: missing client_reference_id", { sessionId: session.id });
           break;
         }
-        if (session.payment_status !== "paid") {
+        if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") {
           // Async payment method not yet paid — Stripe will send another event when paid
           logger.warn("Webhook: payment_status not paid", { sessionId: session.id, status: session.payment_status });
           break;
@@ -85,13 +85,17 @@ export const handleWebhook: RequestHandler = async (req, res) => {
           return;
         }
 
-        const paymentIntentId = session.payment_intent;
-        if (typeof paymentIntentId !== "string" || paymentIntentId.length === 0) {
-          logger.error("Webhook invariant: missing or invalid payment_intent", { sessionId: session.id, paymentIntent: paymentIntentId });
+        // For $0 checkouts (100% coupon), Stripe doesn't create a payment_intent — use session ID as idempotency key
+        const paymentIntentId = typeof session.payment_intent === "string" && session.payment_intent.length > 0
+          ? session.payment_intent
+          : null;
+        if (!paymentIntentId && (session.amount_total ?? 0) > 0) {
+          logger.error("Webhook invariant: missing payment_intent for non-zero amount", { sessionId: session.id, paymentIntent: session.payment_intent });
           sendError(res, 500, "Webhook invariant failure: missing payment_intent");
           return;
         }
-        const granted = await grantGrowthCredits(userId, 2, paymentIntentId, {
+        const idempotencyKey = paymentIntentId ?? `session_${session.id}`;
+        const granted = await grantGrowthCredits(userId, 2, idempotencyKey, {
           stripe_event_id: event.id,
         });
 
