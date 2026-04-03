@@ -8,15 +8,6 @@ export async function middleware(request: NextRequest) {
 
   const response = NextResponse.next({ request });
 
-  // Forward Supabase PKCE cookies (code verifier) from request to response
-  // so they survive the OAuth redirect. No need for the full @supabase/ssr
-  // client — just forward sb-* cookies that are already present.
-  for (const cookie of request.cookies.getAll()) {
-    if (cookie.name.startsWith("sb-")) {
-      response.cookies.set(cookie.name, cookie.value);
-    }
-  }
-
   const pathname = request.nextUrl.pathname;
 
   // Read access_token HttpOnly cookie directly (server-side middleware CAN read HttpOnly cookies)
@@ -72,15 +63,15 @@ export async function middleware(request: NextRequest) {
     // Risk mitigation:
     //  - script-src is nonce-locked (no 'unsafe-inline'), so style injection via
     //    XSS would require script execution first, which the nonce blocks.
-    //  - style-based attacks (CSS exfil) are low-severity. connect-src allows
-    //    'self' plus the Supabase domain (for auth/DB), but no arbitrary
-    //    endpoints, so exfiltration surface remains limited.
+    //  - style-based attacks (CSS exfil) are low-severity. connect-src is
+    //    restricted to 'self' only (no external domains), so exfiltration
+    //    surface remains limited.
     //  - All other directives are as restrictive as possible.
     "style-src 'self' 'unsafe-inline'",
 
     "img-src 'self' avatars.githubusercontent.com data: blob:", // data:/blob: needed for html2canvas-pro + jspdf
     "font-src 'self'",
-    `connect-src 'self' ${(process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim()}`,
+    "connect-src 'self'",
     "worker-src 'self' blob:",   // jsPDF may use blob workers for PDF generation
     "object-src 'none'",
     "base-uri 'self'",           // prevent <base> tag injection attacks

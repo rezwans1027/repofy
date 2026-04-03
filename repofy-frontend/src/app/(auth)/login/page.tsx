@@ -3,7 +3,6 @@
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Github, Loader2, Lock } from "lucide-react";
 import {
@@ -21,11 +20,38 @@ export default function LoginPage() {
 
 const ERROR_MESSAGES: Record<string, string> = {
   missing_code: "Authentication failed. Please try again.",
+  missing_state: "Authentication session expired. Please try again.",
+  invalid_state: "Authentication verification failed. Please try again.",
+  missing_verifier: "Authentication session expired. Please try again.",
   exchange_failed: "Could not complete sign-in. Please try again.",
-  no_provider_token: "GitHub did not grant the required permissions. Please try again.",
   backend_error: "Something went wrong on our end. Please try again.",
   backend_unreachable: "Our servers are temporarily unavailable. Please try again shortly.",
 };
+
+// ── PKCE helpers ─────────────────────────────────────────────────────
+
+function generateCodeVerifier(): string {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return base64UrlEncode(array);
+}
+
+async function computeCodeChallenge(verifier: string): Promise<string> {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(verifier),
+  );
+  return base64UrlEncode(new Uint8Array(digest));
+}
+
+function base64UrlEncode(bytes: Uint8Array): string {
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+// ── Component ────────────────────────────────────────────────────────
 
 function LoginPageContent() {
   const searchParams = useSearchParams();
@@ -39,20 +65,35 @@ function LoginPageContent() {
     setError(null);
     setIsLoading(true);
 
-    try {
-      const { error: oauthError } = await getSupabase().auth.signInWithOAuth({
-        provider: "github",
-        options: {
-          redirectTo: `${window.location.origin}/callback`,
-          scopes: "read:user user:email",
-        },
-      });
+    const clientId = process.env.NEXT_PUBLIC_GITHUB_APP_CLIENT_ID;
+    if (!clientId) {
+      setError("GitHub login is not configured. Please contact support.");
+      setIsLoading(false);
+      return;
+    }
 
-      if (oauthError) {
-        setError(oauthError.message);
-        setIsLoading(false);
-      }
-      // If no error, the browser will redirect to GitHub
+    try {
+      // PKCE: generate code_verifier and derive code_challenge (S256)
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = await computeCodeChallenge(codeVerifier);
+
+      // CSRF: random state
+      const state = crypto.randomUUID();
+
+      // Store both in cookies (10-min TTL, samesite=lax, secure in production)
+      const secure = window.location.protocol === "https:" ? "; secure" : "";
+      document.cookie = `github_oauth_state=${state}; path=/; max-age=600; samesite=lax${secure}`;
+      document.cookie = `github_oauth_code_verifier=${codeVerifier}; path=/; max-age=600; samesite=lax${secure}`;
+
+      // Redirect to GitHub App authorization (no scope — permissions come from app config)
+      const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: `${window.location.origin}/callback`,
+        state,
+        code_challenge: codeChallenge,
+        code_challenge_method: "S256",
+      });
+      window.location.href = `https://github.com/login/oauth/authorize?${params}`;
     } catch {
       setError("Something went wrong. Please try again.");
       setIsLoading(false);

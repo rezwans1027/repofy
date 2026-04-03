@@ -16,6 +16,8 @@ const ENV_KEYS = [
   "ADMIN_SECRET",
   "ENGINE_INTERNAL_KEY",
   "ENGINE_URL",
+  "GITHUB_APP_CLIENT_ID",
+  "GITHUB_APP_CLIENT_SECRET",
   "MOCK_AI",
   "NODE_ENV",
   "PORT",
@@ -40,6 +42,9 @@ describe("env config", () => {
     }
     // ENGINE_INTERNAL_KEY is required when MOCK_AI is off
     process.env.ENGINE_INTERNAL_KEY ??= "test-engine-key";
+    // GitHub App OAuth is always required
+    process.env.GITHUB_APP_CLIENT_ID ??= "test-gh-client-id";
+    process.env.GITHUB_APP_CLIENT_SECRET ??= "test-gh-client-secret";
     vi.resetModules();
   });
 

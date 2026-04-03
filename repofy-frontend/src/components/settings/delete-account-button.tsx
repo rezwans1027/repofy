@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/auth-provider";
 import { api } from "@/lib/api-client";
-import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -39,7 +38,6 @@ export function DeleteAccountButton() {
       await api.delete("/auth/account", {
         body: { confirmation },
       });
-      await getSupabase().auth.signOut();
       router.push("/");
       router.refresh();
     } catch {

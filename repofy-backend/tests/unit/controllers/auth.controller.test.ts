@@ -1,8 +1,40 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createControllerMocks } from "../../helpers/controller-mocks";
 
-vi.mock("../../../src/services/auth.service", () => ({
+// ── Hoisted mocks (available inside vi.mock factories) ──────────────
+
+const mocks = vi.hoisted(() => ({
+  exchangeCodeForToken: vi.fn(),
+  getGitHubUser: vi.fn(),
+  getGitHubUserEmail: vi.fn(),
   refreshSession: vi.fn(),
+  invalidateToken: vi.fn(),
+  encryptToken: vi.fn((v: string) => `encrypted:${v}`),
+  setAuthCookies: vi.fn(),
+  clearAuthCookies: vi.fn(),
+  extractAccessToken: vi.fn(),
+  extractRefreshToken: vi.fn(),
+  // Supabase admin
+  getUser: vi.fn(),
+  adminSignOut: vi.fn().mockResolvedValue({}),
+  getUserById: vi.fn(),
+  updateUserById: vi.fn().mockResolvedValue({}),
+  generateLink: vi.fn(),
+  createUser: vi.fn(),
+  upsert: vi.fn().mockResolvedValue({ error: null }),
+  maybeSingle: vi.fn(),
+  // Supabase auth (anon)
+  verifyOtp: vi.fn(),
+}));
+
+vi.mock("../../../src/services/github-oauth.service", () => ({
+  exchangeCodeForToken: mocks.exchangeCodeForToken,
+  getGitHubUser: mocks.getGitHubUser,
+  getGitHubUserEmail: mocks.getGitHubUserEmail,
+}));
+
+vi.mock("../../../src/services/auth.service", () => ({
+  refreshSession: mocks.refreshSession,
   AuthError: class AuthError extends Error {
     status: number;
     constructor(message: string, status: number) {
@@ -12,42 +44,51 @@ vi.mock("../../../src/services/auth.service", () => ({
     }
   },
 }));
+
 vi.mock("../../../src/lib/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
+
 vi.mock("../../../src/middleware/auth", () => ({
-  invalidateToken: vi.fn(),
+  invalidateToken: mocks.invalidateToken,
 }));
+
 vi.mock("../../../src/lib/encryption", () => ({
-  encryptToken: (v: string) => `encrypted:${v}`,
+  encryptToken: mocks.encryptToken,
   decryptToken: (v: string) => v.replace("encrypted:", ""),
   isEncrypted: (v: string) => v.startsWith("encrypted:"),
 }));
+
 vi.mock("../../../src/config/supabase", () => ({
-  getSupabaseAdmin: vi.fn(() => ({
+  getSupabaseAdmin: () => ({
     auth: {
-      getUser: vi.fn().mockResolvedValue({ data: { user: { id: "u1" } } }),
+      getUser: mocks.getUser,
       admin: {
-        signOut: vi.fn().mockResolvedValue({}),
-        getUserById: vi.fn().mockResolvedValue({ data: { user: { user_metadata: { display_name: "Test User" } } } }),
-        updateUserById: vi.fn().mockResolvedValue({}),
+        signOut: mocks.adminSignOut,
+        getUserById: mocks.getUserById,
+        updateUserById: mocks.updateUserById,
+        generateLink: mocks.generateLink,
+        createUser: mocks.createUser,
       },
     },
-    from: vi.fn().mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          maybeSingle: vi.fn().mockResolvedValue({ data: { github_username: "testuser", github_avatar_url: "https://example.com/avatar.png" }, error: null }),
-        }),
-      }),
-      upsert: vi.fn().mockResolvedValue({ error: null }),
+    from: () => ({
+      select: () => ({ eq: () => ({ maybeSingle: mocks.maybeSingle }) }),
+      upsert: mocks.upsert,
     }),
-  })),
+  }),
 }));
+
+vi.mock("../../../src/config/supabase-auth", () => ({
+  getSupabaseAuth: () => ({
+    auth: { verifyOtp: mocks.verifyOtp },
+  }),
+}));
+
 vi.mock("../../../src/lib/cookie-utils", () => ({
-  setAuthCookies: vi.fn(),
-  clearAuthCookies: vi.fn(),
-  extractAccessToken: vi.fn(),
-  extractRefreshToken: vi.fn(),
+  setAuthCookies: mocks.setAuthCookies,
+  clearAuthCookies: mocks.clearAuthCookies,
+  extractAccessToken: mocks.extractAccessToken,
+  extractRefreshToken: mocks.extractRefreshToken,
 }));
 
 import {
@@ -56,91 +97,215 @@ import {
   handleMe,
   handleLogout,
 } from "../../../src/controllers/auth.controller";
-import { refreshSession, AuthError } from "../../../src/services/auth.service";
-import { setAuthCookies, clearAuthCookies, extractAccessToken, extractRefreshToken } from "../../../src/lib/cookie-utils";
+import { AuthError } from "../../../src/services/auth.service";
 
-const mockRefreshSession = refreshSession as ReturnType<typeof vi.fn>;
-const mockSetAuthCookies = setAuthCookies as ReturnType<typeof vi.fn>;
-const mockClearAuthCookies = clearAuthCookies as ReturnType<typeof vi.fn>;
-const mockExtractAccessToken = extractAccessToken as ReturnType<typeof vi.fn>;
-const mockExtractRefreshToken = extractRefreshToken as ReturnType<typeof vi.fn>;
+// Default GitHub user
+const defaultGhUser = {
+  id: 12345,
+  login: "testuser",
+  avatar_url: "https://example.com/avatar.png",
+  name: "Test User",
+  email: "test@example.com",
+};
+
+function defaultBody() {
+  return {
+    code: "auth-code",
+    redirect_uri: "http://localhost:3000/callback",
+    code_verifier: "verifier123",
+  };
+}
 
 describe("handleGitHubCallback", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
 
-  it("returns 400 when tokens are missing", async () => {
+    // Default: exchange succeeds
+    mocks.exchangeCodeForToken.mockResolvedValue("gho_testtoken123");
+    mocks.getGitHubUser.mockResolvedValue(defaultGhUser);
+
+    // Default: no existing user in github_tokens
+    mocks.maybeSingle.mockResolvedValue({ data: null, error: null });
+
+    // Default: createUser succeeds (new user)
+    mocks.createUser.mockResolvedValue({
+      data: { user: { id: "u1", email: "test@example.com" } },
+      error: null,
+    });
+
+    // Default: generateLink succeeds
+    mocks.generateLink.mockResolvedValue({
+      data: {
+        user: { id: "u1", email: "test@example.com" },
+        properties: { hashed_token: "magic-hash" },
+      },
+      error: null,
+    });
+
+    // Default: verifyOtp succeeds
+    mocks.verifyOtp.mockResolvedValue({
+      data: {
+        session: { access_token: "new-at", refresh_token: "new-rt" },
+        user: { id: "u1" },
+      },
+      error: null,
+    });
+
+    // Default: upsert + updateUserById succeed
+    mocks.upsert.mockResolvedValue({ error: null });
+    mocks.updateUserById.mockResolvedValue({});
+  });
+
+  it("returns 400 when code is missing", async () => {
     const { req, res, next } = createControllerMocks();
     (req as any).body = {};
 
     await handleGitHubCallback(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ success: false, error: "Missing required tokens." });
   });
 
-  it("returns 400 when provider_token is missing", async () => {
+  it("returns 400 when redirect_uri is missing", async () => {
     const { req, res, next } = createControllerMocks();
-    (req as any).body = { access_token: "at", refresh_token: "rt" };
+    (req as any).body = { code: "abc", code_verifier: "v" };
 
     await handleGitHubCallback(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
   });
 
-  it("encrypts provider_token before upserting to github_tokens", async () => {
+  it("returns 400 when code_verifier is missing", async () => {
     const { req, res, next } = createControllerMocks();
-    (req as any).body = {
-      access_token: "valid-at",
-      refresh_token: "valid-rt",
-      provider_token: "gho_testtoken123",
-    };
-
-    // Mock global fetch for GitHub /user call
-    const mockFetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        login: "testuser",
-        avatar_url: "https://example.com/avatar.png",
-        name: "Test User",
-      }),
-    });
-    vi.stubGlobal("fetch", mockFetch);
-
-    // getUser returns a user with matching GitHub identity
-    const { getSupabaseAdmin } = await import("../../../src/config/supabase");
-    const mockUpsert = vi.fn().mockResolvedValue({ error: null });
-    vi.mocked(getSupabaseAdmin).mockReturnValue({
-      auth: {
-        getUser: vi.fn().mockResolvedValue({
-          data: {
-            user: {
-              id: "u1",
-              identities: [{
-                provider: "github",
-                identity_data: { user_name: "testuser" },
-              }],
-            },
-          },
-          error: null,
-        }),
-        admin: {
-          updateUserById: vi.fn().mockResolvedValue({}),
-        },
-      },
-      from: vi.fn().mockReturnValue({
-        upsert: mockUpsert,
-      }),
-    } as any);
+    (req as any).body = { code: "abc", redirect_uri: "http://localhost:3000/callback" };
 
     await handleGitHubCallback(req, res, next);
 
-    expect(mockUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        github_token: "encrypted:gho_testtoken123",
-      }),
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it("creates new user and mints session on first login", async () => {
+    const { req, res, next } = createControllerMocks();
+    (req as any).body = defaultBody();
+
+    await handleGitHubCallback(req, res, next);
+
+    expect(mocks.exchangeCodeForToken).toHaveBeenCalledWith(
+      "auth-code", "http://localhost:3000/callback", "verifier123",
+    );
+    expect(mocks.createUser).toHaveBeenCalledWith({
+      email: "test@example.com",
+      email_confirm: true,
+      user_metadata: { display_name: "Test User" },
+    });
+    expect(mocks.generateLink).toHaveBeenCalledWith({ type: "magiclink", email: "test@example.com" });
+    expect(mocks.verifyOtp).toHaveBeenCalledWith({ token_hash: "magic-hash", type: "magiclink" });
+    expect(mocks.setAuthCookies).toHaveBeenCalledWith(res, "new-at", "new-rt");
+
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      data: {
+        user: {
+          id: "u1",
+          email: "test@example.com",
+          display_name: "Test User",
+          github_username: "testuser",
+          avatar_url: "https://example.com/avatar.png",
+        },
+      },
+    });
+  });
+
+  it("finds existing user by github_user_id", async () => {
+    mocks.maybeSingle.mockResolvedValue({ data: { user_id: "existing-u1" }, error: null });
+    mocks.getUserById.mockResolvedValue({
+      data: { user: { email: "existing@example.com", user_metadata: {} } },
+    });
+
+    const { req, res, next } = createControllerMocks();
+    (req as any).body = defaultBody();
+
+    await handleGitHubCallback(req, res, next);
+
+    expect(mocks.createUser).not.toHaveBeenCalled();
+    expect(mocks.generateLink).toHaveBeenCalledWith({ type: "magiclink", email: "existing@example.com" });
+    expect(mocks.setAuthCookies).toHaveBeenCalledWith(res, "new-at", "new-rt");
+  });
+
+  it("handles createUser conflict by resolving via generateLink", async () => {
+    mocks.createUser.mockResolvedValue({
+      data: null,
+      error: { message: "User already registered" },
+    });
+    mocks.generateLink
+      .mockResolvedValueOnce({
+        data: { user: { id: "legacy-u1", email: "test@example.com" }, properties: { hashed_token: "hash-1" } },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: { user: { id: "legacy-u1", email: "test@example.com" }, properties: { hashed_token: "hash-2" } },
+        error: null,
+      });
+
+    const { req, res, next } = createControllerMocks();
+    (req as any).body = defaultBody();
+
+    await handleGitHubCallback(req, res, next);
+
+    expect(mocks.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ user_id: "legacy-u1" }),
       expect.any(Object),
     );
-    vi.unstubAllGlobals();
+    expect(mocks.setAuthCookies).toHaveBeenCalled();
+  });
+
+  it("encrypts github token before upserting", async () => {
+    const { req, res, next } = createControllerMocks();
+    (req as any).body = defaultBody();
+
+    await handleGitHubCallback(req, res, next);
+
+    expect(mocks.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ github_token: "encrypted:gho_testtoken123" }),
+      expect.any(Object),
+    );
+  });
+
+  it("writes github_user_id to upsert", async () => {
+    const { req, res, next } = createControllerMocks();
+    (req as any).body = defaultBody();
+
+    await handleGitHubCallback(req, res, next);
+
+    expect(mocks.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ github_user_id: 12345 }),
+      expect.any(Object),
+    );
+  });
+
+  it("fetches email from /user/emails when public email is null", async () => {
+    mocks.getGitHubUser.mockResolvedValue({ ...defaultGhUser, email: null });
+    mocks.getGitHubUserEmail.mockResolvedValue("private@example.com");
+    mocks.createUser.mockResolvedValue({
+      data: { user: { id: "u1", email: "private@example.com" } },
+      error: null,
+    });
+    mocks.generateLink.mockResolvedValue({
+      data: {
+        user: { id: "u1", email: "private@example.com" },
+        properties: { hashed_token: "magic-hash" },
+      },
+      error: null,
+    });
+
+    const { req, res, next } = createControllerMocks();
+    (req as any).body = defaultBody();
+
+    await handleGitHubCallback(req, res, next);
+
+    expect(mocks.getGitHubUserEmail).toHaveBeenCalledWith("gho_testtoken123");
+    expect(mocks.createUser).toHaveBeenCalledWith(
+      expect.objectContaining({ email: "private@example.com" }),
+    );
   });
 });
 
@@ -149,24 +314,20 @@ describe("handleRefresh", () => {
 
   it("refreshes session and sets new cookies", async () => {
     const { req, res, next } = createControllerMocks();
-    mockExtractRefreshToken.mockReturnValue("rt");
-    mockRefreshSession.mockResolvedValue({
+    mocks.extractRefreshToken.mockReturnValue("rt");
+    mocks.refreshSession.mockResolvedValue({
       session: { access_token: "new-at", refresh_token: "new-rt" },
       user: { id: "u1", email: "a@b.com" },
     });
 
     await handleRefresh(req, res, next);
 
-    expect(mockSetAuthCookies).toHaveBeenCalledWith(res, "new-at", "new-rt");
-    expect(res.json).toHaveBeenCalledWith({
-      success: true,
-      data: { user: { id: "u1", email: "a@b.com" } },
-    });
+    expect(mocks.setAuthCookies).toHaveBeenCalledWith(res, "new-at", "new-rt");
   });
 
   it("returns 401 when no refresh token", async () => {
     const { req, res, next } = createControllerMocks();
-    mockExtractRefreshToken.mockReturnValue(undefined);
+    mocks.extractRefreshToken.mockReturnValue(undefined);
 
     await handleRefresh(req, res, next);
 
@@ -175,17 +336,29 @@ describe("handleRefresh", () => {
 
   it("clears cookies on refresh failure", async () => {
     const { req, res, next } = createControllerMocks();
-    mockExtractRefreshToken.mockReturnValue("rt");
-    mockRefreshSession.mockRejectedValue(new AuthError("Session expired", 401));
+    mocks.extractRefreshToken.mockReturnValue("rt");
+    mocks.refreshSession.mockRejectedValue(new AuthError("Session expired", 401));
 
     await handleRefresh(req, res, next);
 
-    expect(mockClearAuthCookies).toHaveBeenCalledWith(res);
+    expect(mocks.clearAuthCookies).toHaveBeenCalledWith(res);
     expect(res.status).toHaveBeenCalledWith(401);
   });
 });
 
 describe("handleMe", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // handleMe reads github_tokens then getUserById
+    mocks.maybeSingle.mockResolvedValue({
+      data: { github_username: "testuser", github_avatar_url: "https://example.com/avatar.png" },
+      error: null,
+    });
+    mocks.getUserById.mockResolvedValue({
+      data: { user: { user_metadata: { display_name: "Test User" } } },
+    });
+  });
+
   it("returns user data with GitHub info", async () => {
     const { req, res, next } = createControllerMocks();
     (req as any).userId = "u1";
@@ -213,11 +386,11 @@ describe("handleLogout", () => {
 
   it("clears cookies and returns success", async () => {
     const { req, res, next } = createControllerMocks();
-    mockExtractAccessToken.mockReturnValue(undefined);
+    mocks.extractAccessToken.mockReturnValue(undefined);
 
     await handleLogout(req, res, next);
 
-    expect(mockClearAuthCookies).toHaveBeenCalledWith(res);
+    expect(mocks.clearAuthCookies).toHaveBeenCalledWith(res);
     expect(res.json).toHaveBeenCalledWith({
       success: true,
       data: { message: "Logged out successfully." },
@@ -226,12 +399,12 @@ describe("handleLogout", () => {
 
   it("invalidates token cache when token present", async () => {
     const { req, res, next } = createControllerMocks();
-    mockExtractAccessToken.mockReturnValue("some-token");
+    mocks.extractAccessToken.mockReturnValue("some-token");
+    mocks.getUser.mockResolvedValue({ data: { user: { id: "u1" } } });
 
     await handleLogout(req, res, next);
 
-    const { invalidateToken } = await import("../../../src/middleware/auth");
-    expect(invalidateToken).toHaveBeenCalledWith("some-token");
-    expect(mockClearAuthCookies).toHaveBeenCalledWith(res);
+    expect(mocks.invalidateToken).toHaveBeenCalledWith("some-token");
+    expect(mocks.clearAuthCookies).toHaveBeenCalledWith(res);
   });
 });

@@ -23,8 +23,8 @@ Needed by `e2e/helpers/seed.ts` for direct PostgREST calls:
 
 | Variable | Description |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL (also read from `.env.local`) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key (also read from `.env.local`) |
+| `SUPABASE_URL` | Supabase project URL (also read from `.env.local`) |
+| `SUPABASE_ANON_KEY` | Supabase anon/public key (also read from `.env.local`) |
 
 ### Backend (started automatically by Playwright)
 

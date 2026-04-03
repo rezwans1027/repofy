@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createServerClient } from "@supabase/ssr";
 
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.clone();
   const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
 
   if (!code) {
     url.pathname = "/login";
@@ -11,60 +11,55 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // ── CSRF: validate state ──────────────────────────────────────────
 
-  if (!supabaseUrl || !supabaseKey) {
-    console.error("[callback] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  const storedState = request.cookies.get("github_oauth_state")?.value;
+  if (!storedState) {
     url.pathname = "/login";
-    url.searchParams.set("error", "server_misconfigured");
+    url.searchParams.set("error", "missing_state");
     return NextResponse.redirect(url);
   }
 
-  const backendUrl = process.env.API_BACKEND_URL || "http://localhost:3001/api";
+  if (state !== storedState) {
+    url.pathname = "/login";
+    url.searchParams.set("error", "invalid_state");
+    return NextResponse.redirect(url);
+  }
 
-  // Create a response we can set cookies on
+  // ── PKCE: extract code_verifier ───────────────────────────────────
+
+  const codeVerifier = request.cookies.get("github_oauth_code_verifier")?.value;
+  if (!codeVerifier) {
+    url.pathname = "/login";
+    url.searchParams.set("error", "missing_verifier");
+    return NextResponse.redirect(url);
+  }
+
+  // ── Clear OAuth cookies ───────────────────────────────────────────
+
+  const isProduction = process.env.NODE_ENV === "production";
   const response = NextResponse.redirect(new URL("/dashboard", request.url));
 
-  // Create server-side Supabase client that reads/writes cookies on the request/response
-  const supabase = createServerClient(supabaseUrl, supabaseKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        for (const { name, value, options } of cookiesToSet) {
-          response.cookies.set(name, value, options);
-        }
-      },
-    },
-  });
+  // Clear with matching attributes so the browser actually removes them
+  const clearOpts = {
+    path: "/",
+    maxAge: 0,
+    sameSite: "lax" as const,
+    ...(isProduction && { secure: true }),
+  };
+  response.cookies.set("github_oauth_state", "", clearOpts);
+  response.cookies.set("github_oauth_code_verifier", "", clearOpts);
 
-  // Exchange the PKCE code for a session (server-side has access to the code verifier cookie)
-  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+  // ── Exchange code via backend ─────────────────────────────────────
 
-  if (error || !data.session) {
-    console.error("[callback] Exchange failed:", error?.message);
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("error", error?.message || "exchange_failed");
-    return NextResponse.redirect(loginUrl);
-  }
+  const backendUrl = process.env.API_BACKEND_URL || "http://localhost:3001/api";
+  const redirectUri = `${url.origin}/callback`;
 
-  const { access_token, refresh_token, provider_token } = data.session;
-
-  if (!provider_token) {
-    console.error("[callback] No provider_token in session");
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("error", "no_provider_token");
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // POST to backend to store GitHub token and set auth cookies
   try {
     const backendRes = await fetch(`${backendUrl}/auth/github-callback`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ access_token, refresh_token, provider_token }),
+      body: JSON.stringify({ code, redirect_uri: redirectUri, code_verifier: codeVerifier }),
     });
 
     if (!backendRes.ok) {

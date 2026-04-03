@@ -11,6 +11,8 @@ process.env.RESEND_API_KEY = "re_fake_resend_key";
 process.env.FEEDBACK_NOTIFICATION_EMAIL = "feedback@test.com";
 process.env.ADMIN_SECRET = "fake-admin-secret";
 process.env.ENGINE_INTERNAL_KEY = "fake-engine-key";
+process.env.GITHUB_APP_CLIENT_ID = "fake-gh-client-id";
+process.env.GITHUB_APP_CLIENT_SECRET = "fake-gh-client-secret";
 process.env.NODE_ENV = "test";
 
 import { afterEach, vi } from "vitest";

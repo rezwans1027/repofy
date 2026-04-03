@@ -66,4 +66,6 @@ export const env = {
   maxEnginePayloadBytes: parseInt(process.env.MAX_ENGINE_PAYLOAD_BYTES || String(2 * 1024 * 1024), 10), // 2 MB
   rubricVersion: process.env.RUBRIC_VERSION || "v1.1",
   tokenEncryptionKey: requireEnv("TOKEN_ENCRYPTION_KEY"),
+  githubAppClientId: requireEnv("GITHUB_APP_CLIENT_ID"),
+  githubAppClientSecret: requireEnv("GITHUB_APP_CLIENT_SECRET"),
 } as const;

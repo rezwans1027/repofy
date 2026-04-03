@@ -4,87 +4,145 @@ import { handleControllerError } from "../lib/controller-utils";
 import { refreshSession } from "../services/auth.service";
 import { invalidateToken } from "../middleware/auth";
 import { getSupabaseAdmin } from "../config/supabase";
+import { getSupabaseAuth } from "../config/supabase-auth";
 import { setAuthCookies, clearAuthCookies, extractAccessToken, extractRefreshToken } from "../lib/cookie-utils";
 import { logger } from "../lib/logger";
 import { encryptToken } from "../lib/encryption";
+import { exchangeCodeForToken, getGitHubUser, getGitHubUserEmail } from "../services/github-oauth.service";
 import type { AuthenticatedRequest } from "../types";
 
 export const handleGitHubCallback: RequestHandler = async (req, res) => {
-  const { access_token, refresh_token, provider_token } = req.body;
+  const { code, redirect_uri, code_verifier } = req.body;
 
-  if (!access_token || !refresh_token || !provider_token) {
-    sendError(res, 400, "Missing required tokens.");
+  if (!code || !redirect_uri || !code_verifier) {
+    sendError(res, 400, "Missing required fields: code, redirect_uri, code_verifier.");
     return;
   }
 
   try {
     const supabase = getSupabaseAdmin();
 
-    // 1. Verify the access token
-    const { data, error } = await supabase.auth.getUser(access_token);
-    if (error || !data.user) {
-      sendError(res, 401, "Invalid access token.");
-      return;
+    // 1. Exchange authorization code for GitHub access token (PKCE-verified)
+    const githubToken = await exchangeCodeForToken(code, redirect_uri, code_verifier);
+
+    // 2. Get GitHub user profile
+    const ghUser = await getGitHubUser(githubToken);
+
+    // 3. Resolve email (public or via /user/emails)
+    let email = ghUser.email;
+    if (!email) {
+      email = await getGitHubUserEmail(githubToken);
     }
 
-    const user = data.user;
+    // 4. Resolve Supabase user
+    let userId: string;
+    let userEmail: string;
 
-    // 2. Call GitHub /user with provider_token to get canonical login & avatar
-    const ghRes = await fetch("https://api.github.com/user", {
-      headers: {
-        Authorization: `Bearer ${provider_token}`,
-        Accept: "application/vnd.github.v3+json",
-        "User-Agent": "Repofy",
-      },
+    // 4a. Primary lookup: stable numeric GitHub user ID
+    const { data: existingRow } = await supabase
+      .from("github_tokens")
+      .select("user_id")
+      .eq("github_user_id", ghUser.id)
+      .maybeSingle();
+
+    if (existingRow) {
+      // Returning user — fetch their current Supabase email
+      userId = existingRow.user_id;
+      const { data: userData } = await supabase.auth.admin.getUserById(userId);
+      userEmail = userData?.user?.email ?? email;
+    } else {
+      // 4b. Try to create a new Supabase user
+      const { data: created, error: createErr } = await supabase.auth.admin.createUser({
+        email,
+        email_confirm: true,
+        user_metadata: { display_name: ghUser.name || ghUser.login },
+      });
+
+      if (created?.user) {
+        // New user
+        userId = created.user.id;
+        userEmail = created.user.email ?? email;
+      } else if (createErr) {
+        // 4c. User already exists in Supabase auth (e.g. legacy user without github_user_id row).
+        // Use generateLink to resolve their ID — it only works for existing users with magiclink type.
+        const { data: linkData, error: linkErr } = await supabase.auth.admin.generateLink({
+          type: "magiclink",
+          email,
+        });
+
+        if (linkErr || !linkData?.user) {
+          logger.error("Failed to resolve existing Supabase user", { email, error: linkErr });
+          sendError(res, 500, "Failed to resolve user account.");
+          return;
+        }
+
+        userId = linkData.user.id;
+        userEmail = linkData.user.email ?? email;
+      } else {
+        // Should not happen — createUser returned neither data nor error
+        sendError(res, 500, "Unexpected error creating user account.");
+        return;
+      }
+    }
+
+    // 5. Mint Supabase session via magic link bridge
+    // For returning users (step 4a) and new users (step 4b), we need a fresh generateLink call.
+    // For step 4c, we already called generateLink but we call again to get a fresh token_hash
+    // (the previous one may have already been used internally).
+    const { data: linkData, error: linkErr } = await supabase.auth.admin.generateLink({
+      type: "magiclink",
+      email: userEmail,
     });
 
-    if (!ghRes.ok) {
-      logger.error("GitHub /user call failed during callback", { status: ghRes.status });
-      sendError(res, 502, "Failed to verify GitHub token.");
+    if (linkErr || !linkData?.properties?.hashed_token) {
+      logger.error("Failed to generate magic link", { userId, error: linkErr });
+      sendError(res, 500, "Failed to create session.");
       return;
     }
 
-    const ghUser = await ghRes.json() as { login: string; avatar_url: string; name: string | null };
+    const { data: otpData, error: otpErr } = await getSupabaseAuth().auth.verifyOtp({
+      token_hash: linkData.properties.hashed_token,
+      type: "magiclink",
+    });
 
-    // 2b. Verify the provider_token belongs to the same GitHub account linked to this Supabase user
-    const githubIdentity = user.identities?.find((i: { provider: string }) => i.provider === "github");
-    if (
-      !githubIdentity ||
-      (githubIdentity.identity_data as Record<string, unknown>)?.user_name?.toString().toLowerCase() !== ghUser.login.toLowerCase()
-    ) {
-      sendError(res, 403, "GitHub token does not match your linked GitHub account.");
+    if (otpErr || !otpData.session) {
+      logger.error("Failed to verify OTP for session", { userId, error: otpErr });
+      sendError(res, 500, "Failed to create session.");
       return;
     }
 
-    // 3. Upsert into github_tokens table
+    const { access_token, refresh_token } = otpData.session;
+
+    // 6. Upsert github_tokens (with stable github_user_id)
     const { error: upsertError } = await supabase.from("github_tokens").upsert({
-      user_id: user.id,
-      github_token: encryptToken(provider_token),
+      user_id: userId,
+      github_user_id: ghUser.id,
+      github_token: encryptToken(githubToken),
       github_username: ghUser.login,
       github_avatar_url: ghUser.avatar_url,
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_id" });
 
     if (upsertError) {
-      logger.error("Failed to upsert github_tokens", { userId: user.id, error: upsertError });
+      logger.error("Failed to upsert github_tokens", { userId, error: upsertError });
       sendError(res, 500, "Failed to store GitHub token.");
       return;
     }
 
-    // 4. Set display_name from GitHub's name field
+    // 7. Update display_name
     const displayName = ghUser.name || ghUser.login;
-    await supabase.auth.admin.updateUserById(user.id, {
+    await supabase.auth.admin.updateUserById(userId, {
       user_metadata: { display_name: displayName },
     });
 
-    // 5. Set auth cookies
+    // 8. Set auth cookies
     setAuthCookies(res, access_token, refresh_token);
 
-    // 6. Return user data
+    // 9. Return user data
     sendSuccess(res, {
       user: {
-        id: user.id,
-        email: user.email,
+        id: userId,
+        email: userEmail,
         display_name: displayName,
         github_username: ghUser.login,
         avatar_url: ghUser.avatar_url,
