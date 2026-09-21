@@ -25,8 +25,11 @@ function createChainable(resolvedValue: unknown) {
   return chain;
 }
 
+const evidenceExport = Object.fromEntries(["githubAccounts", "installations", "repositories", "accessGrants", "snapshotReceipts", "snapshots", "files", "evidence", "jobs", "attempts", "runs", "runSnapshots", "reports", "auditEvents", "modelRuns", "githubConnections", "discoveredRepositories", "repositorySelections", "ingestionSnapshots", "ingestionAttempts", "ingestionFiles", "analysisExecutions", "analysisSettlements", "analysisLedger", "analysisDrafts", "aggregations", "reportPreferences", "reportRescans", "findingFeedback", "findingFeedbackHistory", "findingReviews", "provenance"].map(key => [key, []]));
+
 function mockSuccessfulExport() {
   const client = {
+    rpc: vi.fn().mockResolvedValue({ data: evidenceExport, error: null }),
     auth: {
       admin: {
         getUserById: vi.fn().mockResolvedValue({
@@ -74,7 +77,7 @@ describe("account.service", () => {
     it("returns correct shape with all user data", async () => {
       mockSuccessfulExport();
 
-      const result = await exportUserData("user-1");
+      const result = await exportUserData("00000000-0000-4000-8000-000000000001");
 
       expect(result.account.email).toBe("test@example.com");
       expect(result.account.metadata).toEqual({ display_name: "Test User" });
@@ -87,12 +90,13 @@ describe("account.service", () => {
       expect(result.credits).toEqual({ growth_balance: 3, eval_balance: 0 });
       expect(result.credit_transactions).toEqual([]);
       expect(result.exported_at).toBeDefined();
+      expect(result.evidence_analysis).toEqual(evidenceExport);
     });
 
     it("never exposes github_token in export", async () => {
       mockSuccessfulExport();
 
-      const result = await exportUserData("user-1");
+      const result = await exportUserData("00000000-0000-4000-8000-000000000001");
 
       const json = JSON.stringify(result);
       expect(json).not.toContain("github_token");
@@ -113,7 +117,7 @@ describe("account.service", () => {
       };
       mockGetSupabaseAdmin.mockReturnValue(client);
 
-      await expect(exportUserData("user-1")).rejects.toThrow("Failed to fetch user account");
+      await expect(exportUserData("00000000-0000-4000-8000-000000000001")).rejects.toThrow("Failed to fetch user account");
     });
   });
 
@@ -128,9 +132,9 @@ describe("account.service", () => {
       };
       mockGetSupabaseAdmin.mockReturnValue(client);
 
-      await deleteUserAccount("user-1");
+      await deleteUserAccount("00000000-0000-4000-8000-000000000001");
 
-      expect(client.auth.admin.deleteUser).toHaveBeenCalledWith("user-1");
+      expect(client.auth.admin.deleteUser).toHaveBeenCalledWith("00000000-0000-4000-8000-000000000001");
     });
 
     it("throws on deletion failure", async () => {
@@ -143,7 +147,7 @@ describe("account.service", () => {
       };
       mockGetSupabaseAdmin.mockReturnValue(client);
 
-      await expect(deleteUserAccount("user-1")).rejects.toThrow("Failed to delete user account");
+      await expect(deleteUserAccount("00000000-0000-4000-8000-000000000001")).rejects.toThrow("Failed to delete user account");
     });
   });
 });

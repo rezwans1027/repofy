@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "rootDir": ".",
+    "noEmit": true,
+    "declaration": false
+  },
+  "include": ["scripts/release/**/*.ts", "tests/e2e/readiness-server.ts"]
+}

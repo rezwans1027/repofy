@@ -1,0 +1,883 @@
+{
+  "bundle": {
+    "id": "tsjs_implementation",
+    "version": "1.0.0"
+  },
+  "coverageManifest": "1.1.0",
+  "taxonomy": {
+    "id": "engineering_capabilities",
+    "version": "1.0.0"
+  },
+  "calibration": "uncalibrated",
+  "humanReview": "sample_review_complete",
+  "humanReviewSample": {
+    "recordedAt": "2026-09-20T15:12:24Z",
+    "reviewer": "user_in_this_conversation",
+    "method": "unblinded_convenience_sample",
+    "record": "run09-human-review.md",
+    "labels": {
+      "A": "unsupported",
+      "B": "unsupported",
+      "C": "supported",
+      "D": "unsupported"
+    },
+    "determinateLabels": 4,
+    "matchingLabels": 4,
+    "disagreements": 0,
+    "uncertainLabels": 0,
+    "reviewerCount": 1,
+    "agreement": 1,
+    "broaderPrecisionCalibration": "pending"
+  },
+  "budgets": {
+    "files": 256,
+    "bytes": 2097152,
+    "nodes": 100000,
+    "graphSteps": 200000,
+    "resolutionDepth": 12,
+    "fileMs": 1000,
+    "durationMs": 15000,
+    "findingsPerFile": 100,
+    "aliasConfigs": 32
+  },
+  "detectors": [
+    {
+      "kind": "route_service",
+      "id": "tsjs.route_service",
+      "version": "1.0.0",
+      "capabilityIds": [
+        "api_design",
+        "architecture_modularity"
+      ],
+      "ecosystems": [
+        "express"
+      ],
+      "requiredObservations": "An Express factory-bound route callback directly calls an included local exported function.",
+      "observation": "An Express route callback calls a statically resolved local function boundary.",
+      "limitation": "Does not establish API stability, complete routing or separation of all responsibilities.",
+      "forbiddenOverclaims": [
+        "Execution or passing tests from source alone",
+        "System-wide security, correctness or concurrency safety",
+        "Authorship, proficiency or employment suitability"
+      ],
+      "confidenceBasis": "resolved_static_pattern",
+      "strength": 0.55,
+      "confidence": 0.55,
+      "fixtureExpectations": [
+        "positive",
+        "plausible_false_positive",
+        "limitation",
+        "mutation"
+      ],
+      "budgets": {
+        "files": 256,
+        "bytes": 2097152,
+        "nodes": 100000,
+        "graphSteps": 200000,
+        "resolutionDepth": 12,
+        "fileMs": 1000,
+        "durationMs": 15000,
+        "findingsPerFile": 100,
+        "aliasConfigs": 32
+      }
+    },
+    {
+      "kind": "request_validation",
+      "id": "tsjs.request_validation",
+      "version": "1.0.0",
+      "capabilityIds": [
+        "api_boundary_validation",
+        "security_input_handling"
+      ],
+      "ecosystems": [
+        "express",
+        "zod"
+      ],
+      "requiredObservations": "The first effect in a route callback parses request input with a local Zod object schema; a later local call consumes that parsed binding.",
+      "observation": "A route parses request input with a Zod object schema before passing the parsed value to a local function.",
+      "limitation": "Only a straight-line parse path is supported; schema completeness, error middleware and other routes are unknown.",
+      "forbiddenOverclaims": [
+        "Execution or passing tests from source alone",
+        "System-wide security, correctness or concurrency safety",
+        "Authorship, proficiency or employment suitability"
+      ],
+      "confidenceBasis": "resolved_static_pattern",
+      "strength": 0.55,
+      "confidence": 0.55,
+      "fixtureExpectations": [
+        "positive",
+        "plausible_false_positive",
+        "limitation",
+        "mutation"
+      ],
+      "budgets": {
+        "files": 256,
+        "bytes": 2097152,
+        "nodes": 100000,
+        "graphSteps": 200000,
+        "resolutionDepth": 12,
+        "fileMs": 1000,
+        "durationMs": 15000,
+        "findingsPerFile": 100,
+        "aliasConfigs": 32
+      }
+    },
+    {
+      "kind": "authentication_guard",
+      "id": "tsjs.authentication_guard",
+      "version": "1.0.0",
+      "capabilityIds": [
+        "api_boundary_validation"
+      ],
+      "ecosystems": [
+        "express"
+      ],
+      "requiredObservations": "A leading missing-user guard returns a 401 JSON response before a local call consumes that request user.",
+      "observation": "A route returns a 401 response when its request user is absent before a local call consumes that user.",
+      "limitation": "This is an authentication-state guard, not proof of credential verification or resource authorization.",
+      "forbiddenOverclaims": [
+        "Execution or passing tests from source alone",
+        "System-wide security, correctness or concurrency safety",
+        "Authorship, proficiency or employment suitability"
+      ],
+      "confidenceBasis": "resolved_static_pattern",
+      "strength": 0.55,
+      "confidence": 0.55,
+      "fixtureExpectations": [
+        "positive",
+        "plausible_false_positive",
+        "limitation",
+        "mutation"
+      ],
+      "budgets": {
+        "files": 256,
+        "bytes": 2097152,
+        "nodes": 100000,
+        "graphSteps": 200000,
+        "resolutionDepth": 12,
+        "fileMs": 1000,
+        "durationMs": 15000,
+        "findingsPerFile": 100,
+        "aliasConfigs": 32
+      }
+    },
+    {
+      "kind": "ownership_guard",
+      "id": "tsjs.ownership_guard",
+      "version": "1.0.0",
+      "capabilityIds": [
+        "security_authorization"
+      ],
+      "ecosystems": [
+        "express"
+      ],
+      "requiredObservations": "A direct actor-id versus loaded owner-id inequality guard returns 403 before a local operation consumes that same resource.",
+      "observation": "A route compares a loaded resource owner with its request actor and returns 403 before a subsequent local resource operation.",
+      "limitation": "Does not prove actor authenticity, safe loading, role authorization, race safety or protection of other routes.",
+      "forbiddenOverclaims": [
+        "Execution or passing tests from source alone",
+        "System-wide security, correctness or concurrency safety",
+        "Authorship, proficiency or employment suitability"
+      ],
+      "confidenceBasis": "resolved_static_pattern",
+      "strength": 0.55,
+      "confidence": 0.55,
+      "fixtureExpectations": [
+        "positive",
+        "plausible_false_positive",
+        "limitation",
+        "mutation"
+      ],
+      "budgets": {
+        "files": 256,
+        "bytes": 2097152,
+        "nodes": 100000,
+        "graphSteps": 200000,
+        "resolutionDepth": 12,
+        "fileMs": 1000,
+        "durationMs": 15000,
+        "findingsPerFile": 100,
+        "aliasConfigs": 32
+      }
+    },
+    {
+      "kind": "structured_error",
+      "id": "tsjs.structured_error",
+      "version": "1.0.0",
+      "capabilityIds": [
+        "api_design"
+      ],
+      "ecosystems": [
+        "express"
+      ],
+      "requiredObservations": "A route returns a literal 4xx/5xx status and an object with a literal error code through its response parameter.",
+      "observation": "A route returns an explicit error status with a structured literal error code.",
+      "limitation": "No claim about a universal error contract, safe message content or matching consumer behavior.",
+      "forbiddenOverclaims": [
+        "Execution or passing tests from source alone",
+        "System-wide security, correctness or concurrency safety",
+        "Authorship, proficiency or employment suitability"
+      ],
+      "confidenceBasis": "resolved_static_pattern",
+      "strength": 0.55,
+      "confidence": 0.55,
+      "fixtureExpectations": [
+        "positive",
+        "plausible_false_positive",
+        "limitation",
+        "mutation"
+      ],
+      "budgets": {
+        "files": 256,
+        "bytes": 2097152,
+        "nodes": 100000,
+        "graphSteps": 200000,
+        "resolutionDepth": 12,
+        "fileMs": 1000,
+        "durationMs": 15000,
+        "findingsPerFile": 100,
+        "aliasConfigs": 32
+      }
+    },
+    {
+      "kind": "form_validation",
+      "id": "tsjs.form_validation",
+      "version": "1.0.0",
+      "capabilityIds": [
+        "frontend_interaction",
+        "security_input_handling"
+      ],
+      "ecosystems": [
+        "react",
+        "zod"
+      ],
+      "requiredObservations": "A JSX form is connected to a local submit handler whose parsed React state value feeds a local function.",
+      "observation": "A form submit handler parses a React state value with a Zod object schema before passing it to a local function.",
+      "limitation": "Client validation alone is not a server trust boundary; field-level feedback, submission success and UX are unverified.",
+      "forbiddenOverclaims": [
+        "Execution or passing tests from source alone",
+        "System-wide security, correctness or concurrency safety",
+        "Authorship, proficiency or employment suitability"
+      ],
+      "confidenceBasis": "resolved_static_pattern",
+      "strength": 0.55,
+      "confidence": 0.55,
+      "fixtureExpectations": [
+        "positive",
+        "plausible_false_positive",
+        "limitation",
+        "mutation"
+      ],
+      "budgets": {
+        "files": 256,
+        "bytes": 2097152,
+        "nodes": 100000,
+        "graphSteps": 200000,
+        "resolutionDepth": 12,
+        "fileMs": 1000,
+        "durationMs": 15000,
+        "findingsPerFile": 100,
+        "aliasConfigs": 32
+      }
+    },
+    {
+      "kind": "request_state",
+      "id": "tsjs.request_state",
+      "version": "1.0.0",
+      "capabilityIds": [
+        "frontend_interaction"
+      ],
+      "ecosystems": [
+        "react"
+      ],
+      "requiredObservations": "A connected action uses React state setters around an awaited fetch in try/catch/finally and renders pending and error state.",
+      "observation": "A connected UI action wraps a fetch with rendered pending and error state and a finally reset; the action can be invoked again.",
+      "limitation": "No stale-response protection, retry policy, server success or complete state-management claim; fetch can resolve on HTTP errors.",
+      "forbiddenOverclaims": [
+        "Execution or passing tests from source alone",
+        "System-wide security, correctness or concurrency safety",
+        "Authorship, proficiency or employment suitability"
+      ],
+      "confidenceBasis": "resolved_static_pattern",
+      "strength": 0.55,
+      "confidence": 0.55,
+      "fixtureExpectations": [
+        "positive",
+        "plausible_false_positive",
+        "limitation",
+        "mutation"
+      ],
+      "budgets": {
+        "files": 256,
+        "bytes": 2097152,
+        "nodes": 100000,
+        "graphSteps": 200000,
+        "resolutionDepth": 12,
+        "fileMs": 1000,
+        "durationMs": 15000,
+        "findingsPerFile": 100,
+        "aliasConfigs": 32
+      }
+    },
+    {
+      "kind": "accessible_action",
+      "id": "tsjs.accessible_action",
+      "version": "1.0.0",
+      "capabilityIds": [
+        "frontend_accessibility"
+      ],
+      "ecosystems": [
+        "react"
+      ],
+      "requiredObservations": "A native JSX button has static nonempty text and an onClick reference to a local function with work.",
+      "observation": "A native button has a static text label and is wired to a local action function.",
+      "limitation": "This narrow markup observation does not verify computed accessible names, keyboard tests, CSS visibility, focus recovery or accessibility conformance.",
+      "forbiddenOverclaims": [
+        "Execution or passing tests from source alone",
+        "System-wide security, correctness or concurrency safety",
+        "Authorship, proficiency or employment suitability"
+      ],
+      "confidenceBasis": "resolved_static_pattern",
+      "strength": 0.4,
+      "confidence": 0.55,
+      "fixtureExpectations": [
+        "positive",
+        "plausible_false_positive",
+        "limitation",
+        "mutation"
+      ],
+      "budgets": {
+        "files": 256,
+        "bytes": 2097152,
+        "nodes": 100000,
+        "graphSteps": 200000,
+        "resolutionDepth": 12,
+        "fileMs": 1000,
+        "durationMs": 15000,
+        "findingsPerFile": 100,
+        "aliasConfigs": 32
+      }
+    },
+    {
+      "kind": "parameterized_query",
+      "id": "tsjs.parameterized_query",
+      "version": "1.0.0",
+      "capabilityIds": [
+        "security_input_handling"
+      ],
+      "ecosystems": [
+        "pg"
+      ],
+      "requiredObservations": "An awaited pg Pool/Client query supplies a literal SQL statement with numbered placeholders and a matching nonempty values array.",
+      "observation": "A pg query separates literal SQL text from an explicit parameter array.",
+      "limitation": "Does not establish identifier safety, authorization, successful execution or safety of other queries.",
+      "forbiddenOverclaims": [
+        "Execution or passing tests from source alone",
+        "System-wide security, correctness or concurrency safety",
+        "Authorship, proficiency or employment suitability"
+      ],
+      "confidenceBasis": "resolved_static_pattern",
+      "strength": 0.55,
+      "confidence": 0.55,
+      "fixtureExpectations": [
+        "positive",
+        "plausible_false_positive",
+        "limitation",
+        "mutation"
+      ],
+      "budgets": {
+        "files": 256,
+        "bytes": 2097152,
+        "nodes": 100000,
+        "graphSteps": 200000,
+        "resolutionDepth": 12,
+        "fileMs": 1000,
+        "durationMs": 15000,
+        "findingsPerFile": 100,
+        "aliasConfigs": 32
+      }
+    },
+    {
+      "kind": "transaction",
+      "id": "tsjs.transaction",
+      "version": "1.0.0",
+      "capabilityIds": [
+        "data_transactions"
+      ],
+      "ecosystems": [
+        "prisma"
+      ],
+      "requiredObservations": "An awaited Prisma interactive transaction contains at least two direct awaited writes using the callback transaction parameter.",
+      "observation": "A Prisma transaction callback issues multiple awaited writes through its transaction parameter.",
+      "limitation": "Does not prove related business invariants, conflict handling, all-write atomicity or rollback behavior under execution.",
+      "forbiddenOverclaims": [
+        "Execution or passing tests from source alone",
+        "System-wide security, correctness or concurrency safety",
+        "Authorship, proficiency or employment suitability"
+      ],
+      "confidenceBasis": "resolved_static_pattern",
+      "strength": 0.55,
+      "confidence": 0.55,
+      "fixtureExpectations": [
+        "positive",
+        "plausible_false_positive",
+        "limitation",
+        "mutation"
+      ],
+      "budgets": {
+        "files": 256,
+        "bytes": 2097152,
+        "nodes": 100000,
+        "graphSteps": 200000,
+        "resolutionDepth": 12,
+        "fileMs": 1000,
+        "durationMs": 15000,
+        "findingsPerFile": 100,
+        "aliasConfigs": 32
+      }
+    },
+    {
+      "kind": "schema_constraint",
+      "id": "tsjs.schema_constraint",
+      "version": "1.0.0",
+      "capabilityIds": [
+        "data_modeling"
+      ],
+      "ecosystems": [
+        "drizzle"
+      ],
+      "requiredObservations": "An exported pgTable declaration has a column using imported column factories with unique() or references() to another included table column.",
+      "observation": "An ORM table declaration includes an explicit uniqueness or foreign-key relationship constraint.",
+      "limitation": "A declared constraint does not prove a migration was applied or that deployed data satisfies it.",
+      "forbiddenOverclaims": [
+        "Execution or passing tests from source alone",
+        "System-wide security, correctness or concurrency safety",
+        "Authorship, proficiency or employment suitability"
+      ],
+      "confidenceBasis": "resolved_static_pattern",
+      "strength": 0.45,
+      "confidence": 0.55,
+      "fixtureExpectations": [
+        "positive",
+        "plausible_false_positive",
+        "limitation",
+        "mutation"
+      ],
+      "budgets": {
+        "files": 256,
+        "bytes": 2097152,
+        "nodes": 100000,
+        "graphSteps": 200000,
+        "resolutionDepth": 12,
+        "fileMs": 1000,
+        "durationMs": 15000,
+        "findingsPerFile": 100,
+        "aliasConfigs": 32
+      }
+    },
+    {
+      "kind": "bounded_retry",
+      "id": "tsjs.bounded_retry",
+      "version": "1.0.0",
+      "capabilityIds": [
+        "reliability_recovery",
+        "performance_resources"
+      ],
+      "ecosystems": [
+        "javascript"
+      ],
+      "requiredObservations": "A canonical bounded integer for-loop retries a resolved local awaited operation inside try/catch without changing its bound/counter in the body.",
+      "observation": "A loop with a literal attempt ceiling retries an awaited local operation after a caught failure.",
+      "limitation": "Only the loop attempt count is bounded; duration, recursive work, backoff and eventual recovery are unknown.",
+      "forbiddenOverclaims": [
+        "Execution or passing tests from source alone",
+        "System-wide security, correctness or concurrency safety",
+        "Authorship, proficiency or employment suitability"
+      ],
+      "confidenceBasis": "resolved_static_pattern",
+      "strength": 0.55,
+      "confidence": 0.55,
+      "fixtureExpectations": [
+        "positive",
+        "plausible_false_positive",
+        "limitation",
+        "mutation"
+      ],
+      "budgets": {
+        "files": 256,
+        "bytes": 2097152,
+        "nodes": 100000,
+        "graphSteps": 200000,
+        "resolutionDepth": 12,
+        "fileMs": 1000,
+        "durationMs": 15000,
+        "findingsPerFile": 100,
+        "aliasConfigs": 32
+      }
+    },
+    {
+      "kind": "state_guard",
+      "id": "tsjs.state_guard",
+      "version": "1.0.0",
+      "capabilityIds": [
+        "reliability_concurrency"
+      ],
+      "ecosystems": [
+        "javascript"
+      ],
+      "requiredObservations": "A function starts with a parameter-state inequality return guard before passing that same parameter to a local operation.",
+      "observation": "A function returns early for an unexpected input state before a subsequent local operation on that input.",
+      "limitation": "This local state guard does not establish durable idempotency, atomic compare-and-set or concurrency safety.",
+      "forbiddenOverclaims": [
+        "Execution or passing tests from source alone",
+        "System-wide security, correctness or concurrency safety",
+        "Authorship, proficiency or employment suitability"
+      ],
+      "confidenceBasis": "resolved_static_pattern",
+      "strength": 0.45,
+      "confidence": 0.55,
+      "fixtureExpectations": [
+        "positive",
+        "plausible_false_positive",
+        "limitation",
+        "mutation"
+      ],
+      "budgets": {
+        "files": 256,
+        "bytes": 2097152,
+        "nodes": 100000,
+        "graphSteps": 200000,
+        "resolutionDepth": 12,
+        "fileMs": 1000,
+        "durationMs": 15000,
+        "findingsPerFile": 100,
+        "aliasConfigs": 32
+      }
+    },
+    {
+      "kind": "failure_cleanup",
+      "id": "tsjs.failure_cleanup",
+      "version": "1.0.0",
+      "capabilityIds": [
+        "reliability_recovery"
+      ],
+      "ecosystems": [
+        "pg"
+      ],
+      "requiredObservations": "A client acquired by awaited pg Pool.connect is queried in try and released in its finally block.",
+      "observation": "A pg client is released in a finally block surrounding a query on that client.",
+      "limitation": "Does not prove all resources are released or that the query or release succeeds.",
+      "forbiddenOverclaims": [
+        "Execution or passing tests from source alone",
+        "System-wide security, correctness or concurrency safety",
+        "Authorship, proficiency or employment suitability"
+      ],
+      "confidenceBasis": "resolved_static_pattern",
+      "strength": 0.55,
+      "confidence": 0.55,
+      "fixtureExpectations": [
+        "positive",
+        "plausible_false_positive",
+        "limitation",
+        "mutation"
+      ],
+      "budgets": {
+        "files": 256,
+        "bytes": 2097152,
+        "nodes": 100000,
+        "graphSteps": 200000,
+        "resolutionDepth": 12,
+        "fileMs": 1000,
+        "durationMs": 15000,
+        "findingsPerFile": 100,
+        "aliasConfigs": 32
+      }
+    },
+    {
+      "kind": "asserted_call",
+      "id": "tsjs.asserted_call",
+      "version": "1.0.0",
+      "capabilityIds": [
+        "testing_behavior"
+      ],
+      "ecosystems": [
+        "vitest",
+        "@jest/globals"
+      ],
+      "requiredObservations": "An explicit test import connects a non-skipped callback assertion to the direct result of an included local implementation call.",
+      "observation": "A test assertion consumes the result of a statically resolved local implementation call.",
+      "limitation": "Source assertions are not passing results or coverage measurements; mocks weaken independence and external integration is unverified.",
+      "forbiddenOverclaims": [
+        "Execution or passing tests from source alone",
+        "System-wide security, correctness or concurrency safety",
+        "Authorship, proficiency or employment suitability"
+      ],
+      "confidenceBasis": "resolved_static_pattern",
+      "strength": 0.55,
+      "confidence": 0.55,
+      "fixtureExpectations": [
+        "positive",
+        "plausible_false_positive",
+        "limitation",
+        "mutation"
+      ],
+      "budgets": {
+        "files": 256,
+        "bytes": 2097152,
+        "nodes": 100000,
+        "graphSteps": 200000,
+        "resolutionDepth": 12,
+        "fileMs": 1000,
+        "durationMs": 15000,
+        "findingsPerFile": 100,
+        "aliasConfigs": 32
+      }
+    },
+    {
+      "kind": "bounded_model_output",
+      "id": "tsjs.bounded_model_output",
+      "version": "1.0.0",
+      "capabilityIds": [
+        "ai_integration"
+      ],
+      "ecosystems": [
+        "ai",
+        "zod"
+      ],
+      "requiredObservations": "An awaited ai.generateObject call supplies a Zod object schema, explicit bounded maxRetries and native AbortSignal.timeout.",
+      "observation": "A structured model call supplies an output schema, an explicit retry ceiling and a timeout signal.",
+      "limitation": "SDK enforcement, model availability, output quality, context authorization and prompt-injection defenses are unverified.",
+      "forbiddenOverclaims": [
+        "Execution or passing tests from source alone",
+        "System-wide security, correctness or concurrency safety",
+        "Authorship, proficiency or employment suitability"
+      ],
+      "confidenceBasis": "resolved_static_pattern",
+      "strength": 0.55,
+      "confidence": 0.55,
+      "fixtureExpectations": [
+        "positive",
+        "plausible_false_positive",
+        "limitation",
+        "mutation"
+      ],
+      "budgets": {
+        "files": 256,
+        "bytes": 2097152,
+        "nodes": 100000,
+        "graphSteps": 200000,
+        "resolutionDepth": 12,
+        "fileMs": 1000,
+        "durationMs": 15000,
+        "findingsPerFile": 100,
+        "aliasConfigs": 32
+      }
+    }
+  ],
+  "capabilities": [
+    {
+      "capabilityId": "language_presence",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "framework_presence",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "frontend_interaction",
+      "state": "partial",
+      "detectors": [
+        "tsjs.form_validation",
+        "tsjs.request_state"
+      ]
+    },
+    {
+      "capabilityId": "frontend_accessibility",
+      "state": "partial",
+      "detectors": [
+        "tsjs.accessible_action"
+      ]
+    },
+    {
+      "capabilityId": "frontend_state",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "mobile_lifecycle",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "mobile_navigation",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "mobile_offline",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "api_design",
+      "state": "partial",
+      "detectors": [
+        "tsjs.route_service",
+        "tsjs.structured_error"
+      ]
+    },
+    {
+      "capabilityId": "api_boundary_validation",
+      "state": "partial",
+      "detectors": [
+        "tsjs.request_validation",
+        "tsjs.authentication_guard"
+      ]
+    },
+    {
+      "capabilityId": "data_modeling",
+      "state": "partial",
+      "detectors": [
+        "tsjs.schema_constraint"
+      ]
+    },
+    {
+      "capabilityId": "data_transactions",
+      "state": "partial",
+      "detectors": [
+        "tsjs.transaction"
+      ]
+    },
+    {
+      "capabilityId": "architecture_modularity",
+      "state": "partial",
+      "detectors": [
+        "tsjs.route_service"
+      ]
+    },
+    {
+      "capabilityId": "architecture_boundaries",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "testing_behavior",
+      "state": "partial",
+      "detectors": [
+        "tsjs.asserted_call"
+      ]
+    },
+    {
+      "capabilityId": "testing_failures",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "reliability_recovery",
+      "state": "partial",
+      "detectors": [
+        "tsjs.bounded_retry",
+        "tsjs.failure_cleanup"
+      ]
+    },
+    {
+      "capabilityId": "reliability_concurrency",
+      "state": "partial",
+      "detectors": [
+        "tsjs.state_guard"
+      ]
+    },
+    {
+      "capabilityId": "performance_resources",
+      "state": "partial",
+      "detectors": [
+        "tsjs.bounded_retry"
+      ]
+    },
+    {
+      "capabilityId": "security_authorization",
+      "state": "partial",
+      "detectors": [
+        "tsjs.ownership_guard"
+      ]
+    },
+    {
+      "capabilityId": "security_input_handling",
+      "state": "partial",
+      "detectors": [
+        "tsjs.request_validation",
+        "tsjs.form_validation",
+        "tsjs.parameterized_query"
+      ]
+    },
+    {
+      "capabilityId": "security_secrets",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "delivery_automation",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "delivery_reproducibility",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "observability_diagnostics",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "observability_health",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "ai_integration",
+      "state": "partial",
+      "detectors": [
+        "tsjs.bounded_model_output"
+      ]
+    },
+    {
+      "capabilityId": "ai_context",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "ai_evaluation",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "ai_safety",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "documentation_operability",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "documentation_decisions",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "provenance_history",
+      "state": "unsupported",
+      "detectors": []
+    },
+    {
+      "capabilityId": "provenance_origin",
+      "state": "unsupported",
+      "detectors": []
+    }
+  ]
+}

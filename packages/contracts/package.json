@@ -1,0 +1,25 @@
+{
+  "name": "@repofy/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Runtime contracts for private project evidence and role readiness",
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./internal": { "types": "./dist/internal.d.ts", "default": "./dist/internal.js" },
+    "./testing": { "types": "./dist/testing.d.ts", "default": "./dist/testing.js" }
+  },
+  "typesVersions": {
+    "*": { "internal": ["dist/internal.d.ts"], "testing": ["dist/testing.d.ts"] }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && node --test tests/*.test.cjs"
+  },
+  "dependencies": { "zod": "4.3.6" },
+  "devDependencies": { "typescript": "~5.9.3" }
+}

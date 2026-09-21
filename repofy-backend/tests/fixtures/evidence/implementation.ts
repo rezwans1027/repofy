@@ -1,0 +1,77 @@
+import type { ImplementationKind } from '@repofy/contracts';
+// Invented minimal programs. No production repository source or credentials.
+export const service = `export function save(input) { return { saved: input }; }
+export function load(id) { return { id, ownerId: 'example' }; }
+export function add(value) { return value + 1; }
+export async function work() { return 1; }`;
+const express = `import express from 'express'; import { save, load } from './service'; const app = express();\n`;
+const zod = `import { z } from 'zod'; const schema = z.object({ title: z.string() });\n`;
+const react = `import React, { useState } from 'react'; import { save } from './service';\n`;
+const route = (body: string) => `${express}${zod}app.post('/example', async (req, res) => { ${body} });`;
+const deny = (n: number) => `return res.status(${n}).json({code: 'DENIED'});`;
+export interface DetectorCase { kind: ImplementationKind; path: string; positive: string; falsePositive: string; limitation: string; mutation: string }
+export const detectorCases: DetectorCase[] = [
+  { kind: 'route_service', path: 'route.ts', positive: route(`const result = save(req.body); return res.json(result);`),
+    falsePositive: `${express}app.post('/example', (req,res) => res.json({ok:true}));`,
+    limitation: `${express}app.post('/example', authenticate, (req,res) => save(req.body));`,
+    mutation: `const express = () => ({post(){}}); const app=express(); function save(x){return x;} app.post('/',(req,res)=>{save(req.body);});` },
+  { kind: 'request_validation', path: 'route.ts', positive: route(`const parsed = schema.parse(req.body); return save(parsed);`),
+    falsePositive: route(`const unused = () => schema.parse(req.body); return save(req.body);`),
+    limitation: route(`const parsed = schema.safeParse(req.body); if (!parsed.success) return; return save(parsed.data);`),
+    mutation: route(`const parsed = schema.parse(req.body); return save(req.body);`) },
+  { kind: 'authentication_guard', path: 'route.ts', positive: route(`if (!req.user) { ${deny(401)} } return save(req.user);`),
+    falsePositive: `${express}import authenticate from 'auth'; app.post('/', (req,res) => {return save(req.user);});`,
+    limitation: `${express}app.use(authenticate); app.post('/', (req,res) => save(req.user));`,
+    mutation: route(`if (!req.user) res.status(401).json({code:'DENIED'}); return save(req.user);`) },
+  { kind: 'ownership_guard', path: 'route.ts', positive: route(`const resource = load(req.params.id); if (resource.ownerId !== req.user.id) { ${deny(403)} } return save(resource.id);`),
+    falsePositive: route(`if (!req.user) { ${deny(401)} } return save(req.params.id);`),
+    limitation: route(`const resource = load(req.params.id); if (!canAccess(req.user,resource)) { ${deny(403)} } return save(resource.id);`),
+    mutation: route(`const resource = load(req.params.id); if (resource.ownerId !== req.user.id) { ${deny(403)} } return save(req.params.otherId);`) },
+  { kind: 'structured_error', path: 'route.js', positive: route(`if (!req.body) { ${deny(400)} } return save(req.body);`),
+    falsePositive: route(`res.status(400); return save(req.body);`), limitation: route(`return res.status(error.status).json(error.body);`),
+    mutation: route(`return res.status(200).json({code:'DENIED'});`) },
+  { kind: 'form_validation', path: 'Form.tsx', positive: `${react}${zod}export function Form(){ const [form,setForm]=useState({title:''}); function submit(e){e.preventDefault(); const data=schema.parse(form); save(data);} return <form onSubmit={submit}><input /></form>; }`,
+    falsePositive: `${react}${zod}export function Form(){ function validate(){schema.parse({});} return <form onSubmit={()=>save({})}><input /></form>; }`,
+    limitation: `${react}${zod}export function Form(){const [form,setForm]=useState({}); function submit(){const data=schema.parse(form);save(data);} return <form {...{onSubmit:submit}} />;}`,
+    mutation: `${react}${zod}export function Form(){const [form,setForm]=useState({}); function submit(){const data=schema.parse(form);save(form);} return <form onSubmit={submit}><input /></form>;}` },
+  { kind: 'request_state', path: 'Load.jsx', positive: `${react}export function Load(){const [pending,setPending]=useState(false);const [error,setError]=useState(false);async function reload(){setPending(true);try{await fetch('/example');}catch(e){setError(true);}finally{setPending(false);}} return <div><button onClick={reload}>Retry</button>{pending && <span>Loading</span>}{error && <span>Failed</span>}</div>;}`,
+    falsePositive: `${react}export function Load(){return <div>Loading Error Retry</div>;}`,
+    limitation: `${react}export function Load(){const query=useQuery();return <button onClick={query.refetch}>Retry</button>;}`,
+    mutation: `${react}export function Load(){const [pending,setPending]=useState(false);const [error,setError]=useState(false);async function reload(){setPending(true);try{await fetch('/');}catch(e){setError(true);}}return <div><button onClick={reload}>Retry</button>{pending&&<span>Loading</span>}{error&&<span>Failed</span>}</div>;}` },
+  { kind: 'accessible_action', path: 'Button.tsx', positive: `${react}export function Button(){function click(){save(1);}return <button onClick={click}>Save</button>;}`,
+    falsePositive: `${react}export function Button(){return <div onClick={()=>save(1)}>Save</div>;}`,
+    limitation: `${react}export function Button(){function click(){save(1);}return <button onClick={click}>{label}</button>;}`,
+    mutation: `${react}export function Button(){function click(){save(1);}return <button aria-hidden="true" onClick={click}>Save</button>;}` },
+  { kind: 'parameterized_query', path: 'query.ts', positive: `import {Pool} from 'pg'; const db=new Pool(); export async function read(id){return await db.query('SELECT id FROM things WHERE id=$1',[id]);}`,
+    falsePositive: `const db={query(){}}; export async function read(id){return await db.query('SELECT $1',[id]);}`,
+    limitation: `import {Pool} from 'pg'; const db=new Pool(); export async function read(id){return await db.query({text:'SELECT $1',values:[id]});}`,
+    mutation: "import {Pool} from 'pg'; const db=new Pool(); export async function read(id){return await db.query(`SELECT id FROM things WHERE id=${id}`);}" },
+  { kind: 'transaction', path: 'write.ts', positive: `import {PrismaClient} from '@prisma/client'; const db=new PrismaClient(); export async function write(){await db.$transaction(async tx=>{await tx.first.create({data:{}});await tx.second.create({data:{}});});}`,
+    falsePositive: `const db={$transaction:async f=>f({})}; export async function write(){await db.$transaction(async tx=>{await tx.first.create({});await tx.second.create({});});}`,
+    limitation: `import {PrismaClient} from '@prisma/client'; const db=new PrismaClient(); export async function write(){await db.$transaction([db.first.create({}),db.second.create({})]);}`,
+    mutation: `import {PrismaClient} from '@prisma/client'; const db=new PrismaClient(); export async function write(){await db.$transaction(async tx=>{await tx.first.create({});await db.second.create({});});}` },
+  { kind: 'schema_constraint', path: 'schema.ts', positive: `import {pgTable,integer} from 'drizzle-orm/pg-core'; export const things=pgTable('things',{id:integer().unique()});`,
+    falsePositive: `const pgTable=(name,columns)=>columns; const integer=()=>({unique(){}}); export const things=pgTable('things',{id:integer().unique()});`,
+    limitation: `import {pgTable,integer,uniqueIndex} from 'drizzle-orm/pg-core'; export const things=pgTable('things',{id:integer()},t=>({index:uniqueIndex().on(t.id)}));`,
+    mutation: `import {pgTable,integer} from 'drizzle-orm/pg-core'; export const things=pgTable('things',{id:integer()});` },
+  { kind: 'bounded_retry', path: 'retry.ts', positive: `import {work} from './service'; export async function retry(){for(let n=0;n<3;n++){try{return await work();}catch{}}}`,
+    falsePositive: `import retry from 'retry'; export async function run(){return 1;}`,
+    limitation: `import {work} from './service'; export async function retry(max){for(let n=0;n<max;n++){try{return await work();}catch{}}}`,
+    mutation: `import {work} from './service'; export async function retry(){while(true){try{return await work();}catch{}}}` },
+  { kind: 'state_guard', path: 'state.ts', positive: `import {save} from './service'; export function run(item){if(item.state!=='ready') return; return save(item);}`,
+    falsePositive: `import {save} from './service'; export function run(item){if(item.state!=='ready') console.log('stop'); return save(item);}`,
+    limitation: `import {save} from './service'; export function run(item){if(!ready(item)) return; return save(item);}`,
+    mutation: `import {save} from './service'; export function run(item){if(item.state!=='ready') return; return save(other);}` },
+  { kind: 'failure_cleanup', path: 'cleanup.ts', positive: `import {Pool} from 'pg';const pool=new Pool();export async function run(){const client=await pool.connect();try{await client.query('SELECT 1');}finally{client.release();}}`,
+    falsePositive: `const pool={connect:async()=>({query(){},release(){}})};export async function run(){const client=await pool.connect();try{await client.query('SELECT 1');}finally{client.release();}}`,
+    limitation: `import {Pool} from 'pg';const pool=new Pool();export async function run(){const client=await pool.connect();try{await client.query('SELECT 1');}finally{release(client);}}`,
+    mutation: `import {Pool} from 'pg';const pool=new Pool();export async function run(){const client=await pool.connect();try{await client.query('SELECT 1');client.release();}catch{}}` },
+  { kind: 'asserted_call', path: 'service.test.ts', positive: `import {test,expect} from 'vitest';import {add} from './service';test('example',()=>{expect(add(1)).toBe(2);});`,
+    falsePositive: `import {test,expect} from 'vitest';import {add} from './service';test('rejects unauthorized',()=>{add(1);expect(true).toBe(true);});`,
+    limitation: `import {add} from './service';test('example',()=>{expect(add(1)).toBe(2);});`,
+    mutation: `import {test,expect} from 'vitest';import {add} from './service';test.skip('example',()=>{expect(add(1)).toBe(2);});` },
+  { kind: 'bounded_model_output', path: 'model.ts', positive: `import {generateObject} from 'ai';${zod}export async function run(model){return await generateObject({model,schema,maxRetries:2,abortSignal:AbortSignal.timeout(5000),prompt:'Example'});}`,
+    falsePositive: `${zod}async function generateObject(x){return x;} export async function run(){return await generateObject({schema,maxRetries:2,abortSignal:AbortSignal.timeout(5000)});}`,
+    limitation: `import {generateObject} from 'ai';${zod}export async function run(model,signal){return await generateObject({model,schema,maxRetries:2,abortSignal:signal});}`,
+    mutation: `import {generateObject} from 'ai';${zod}export async function run(model){return await generateObject({model,schema,maxRetries:2});}` },
+];

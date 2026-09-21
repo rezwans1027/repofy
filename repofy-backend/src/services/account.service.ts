@@ -1,5 +1,6 @@
 import { getSupabaseAdmin } from "../config/supabase";
 import { throwIfDbError, DatabaseError } from "../lib/errors";
+import { EvidenceRepository, type EvidenceDataExport } from "../domain/analysis/persistence";
 
 export interface UserDataExport {
   account: {
@@ -47,6 +48,7 @@ export interface UserDataExport {
     created_at: string;
   }[];
   exported_at: string;
+  evidence_analysis: EvidenceDataExport;
 }
 
 export async function exportUserData(userId: string): Promise<UserDataExport> {
@@ -61,7 +63,7 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
   const user = authData.user;
 
   // Fetch all user data in parallel
-  const [githubResult, adviceResult, jobsResult, reportsResult, walletResult, transactionsResult] = await Promise.all([
+  const [githubResult, adviceResult, jobsResult, reportsResult, walletResult, transactionsResult, evidenceData] = await Promise.all([
     supabase
       .from("github_tokens")
       .select("github_username, github_avatar_url, updated_at")
@@ -89,6 +91,7 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
       .select("id, credit_type, amount, source, description, metadata, created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false }),
+    new EvidenceRepository(supabase).exportUserData(userId),
   ]);
 
   throwIfDbError(githubResult.error, "fetch github data");
@@ -117,10 +120,13 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
     credits: walletResult.data ?? { growth_balance: 0, eval_balance: 0 },
     credit_transactions: transactionsResult.data ?? [],
     exported_at: new Date().toISOString(),
+    evidence_analysis: evidenceData,
   };
 }
 
 export async function deleteUserAccount(userId: string): Promise<void> {
+  // Feature 1 memberships cascade through auth.users. A deferred database trigger
+  // prunes unreferenced canonical snapshots after every cascade has completed.
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.auth.admin.deleteUser(userId);
 

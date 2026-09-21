@@ -5,7 +5,7 @@ vi.mock("../../../src/config/stripe", () => ({
 }));
 
 vi.mock("../../../src/config/env", () => ({
-  env: { frontendUrl: "http://localhost:3000" },
+  env: { frontendUrl: "http://localhost:3100" },
 }));
 
 import { createCheckoutSession } from "../../../src/services/stripe.service";
@@ -57,8 +57,8 @@ describe("stripe.service", () => {
             quantity: 1,
           },
         ],
-        success_url: "http://localhost:3000/checkout-complete",
-        cancel_url: "http://localhost:3000/checkout-complete?canceled=true",
+        success_url: "http://localhost:3100/checkout-complete",
+        cancel_url: "http://localhost:3100/checkout-complete?canceled=true",
       });
     });
 
@@ -105,10 +105,10 @@ describe("stripe.service", () => {
 
       const args = createFn.mock.calls[0][0];
       expect(args.success_url).toBe(
-        "http://localhost:3000/checkout-complete",
+        "http://localhost:3100/checkout-complete",
       );
       expect(args.cancel_url).toBe(
-        "http://localhost:3000/checkout-complete?canceled=true",
+        "http://localhost:3100/checkout-complete?canceled=true",
       );
     });
   });

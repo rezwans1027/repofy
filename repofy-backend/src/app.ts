@@ -9,8 +9,10 @@ import { csrfProtection } from "./middleware/csrf";
 import { errorHandler } from "./middleware/errorHandler";
 import { notFound } from "./middleware/notFound";
 import { handleWebhook } from "./controllers/stripe.controller";
+import { handleGitHubWebhook } from "./controllers/github-webhook.controller";
 import { webhookRateLimit, globalRateLimit } from "./middleware/rateLimit";
 import { requestId } from "./middleware/requestId";
+import { v1Errors } from "./middleware/v1-errors";
 import routes from "./routes";
 
 export function createApp() {
@@ -23,6 +25,15 @@ export function createApp() {
 
   // Request ID for log correlation — must be first
   app.use(requestId);
+
+  // Apply before CSRF/rate limits so all v1 failures keep the additive error envelope.
+  app.use("/api/v1", (req, res, next) => {
+    res.locals.apiVersion = "v1";
+    res.locals.requestId = req.requestId;
+    res.setHeader("X-Request-Id", req.requestId);
+    res.setHeader("Cache-Control", "private, no-store");
+    next();
+  });
 
   // Global IP-based rate limit — applies to ALL routes as a safety net
   app.use(globalRateLimit);
@@ -75,6 +86,8 @@ export function createApp() {
     handleWebhook,
   );
 
+  app.post("/api/github-app/webhook", webhookRateLimit, express.raw({ type: "application/json", limit: "2mb" }), handleGitHubWebhook);
+
   app.use(corsMiddleware);
   app.use(cookieParser());
   app.use(express.json({ limit: "100kb" }));
@@ -83,6 +96,7 @@ export function createApp() {
   app.use("/api", routes);
 
   app.use(notFound);
+  app.use(v1Errors);
   Sentry.setupExpressErrorHandler(app);
   app.use(errorHandler);
 

@@ -1,0 +1,303 @@
+[
+  {
+    "id": "run15.fork",
+    "scenario": "Fork with substantial original implementation and tests",
+    "provider": {
+      "state": "available",
+      "fork": true,
+      "templateOrigin": "unknown",
+      "relationship": "current_repository_context"
+    },
+    "history": {
+      "state": "available",
+      "records": 2
+    },
+    "commits": [
+      {
+        "match": "connected_identity",
+        "relationship": "exact_commit",
+        "parents": 1
+      },
+      {
+        "match": "other_identity",
+        "relationship": "ancestor",
+        "parents": 1
+      }
+    ],
+    "totalFiles": 150,
+    "exclusions": {
+      "generated": 0,
+      "dependency": 0
+    },
+    "expectedSignals": [
+      "provider_fork",
+      "multiple_linked_identities"
+    ],
+    "absentSignals": [
+      "possible_bulk_initial_commit"
+    ],
+    "expectedContribution": "unknown",
+    "numericModifiers": null,
+    "generatedMarked": 0
+  },
+  {
+    "id": "run15.template",
+    "scenario": "Extensively modified template",
+    "provider": {
+      "state": "available",
+      "fork": false,
+      "templateOrigin": "declared",
+      "relationship": "current_repository_context"
+    },
+    "history": {
+      "state": "available",
+      "records": 2
+    },
+    "commits": [
+      {
+        "match": "connected_identity",
+        "relationship": "exact_commit",
+        "parents": 1
+      },
+      {
+        "match": "other_identity",
+        "relationship": "ancestor",
+        "parents": 1
+      }
+    ],
+    "totalFiles": 150,
+    "exclusions": {
+      "generated": 0,
+      "dependency": 0
+    },
+    "expectedSignals": [
+      "provider_template_origin"
+    ],
+    "absentSignals": [
+      "possible_bulk_initial_commit"
+    ],
+    "expectedContribution": "unknown",
+    "numericModifiers": null,
+    "generatedMarked": 0
+  },
+  {
+    "id": "run15.bulk",
+    "scenario": "Squashed project with one large root commit",
+    "provider": {
+      "state": "available",
+      "fork": false,
+      "templateOrigin": "unknown",
+      "relationship": "current_repository_context"
+    },
+    "history": {
+      "state": "available",
+      "records": 1
+    },
+    "commits": [
+      {
+        "match": "connected_identity",
+        "relationship": "exact_commit",
+        "parents": 0
+      }
+    ],
+    "totalFiles": 150,
+    "exclusions": {
+      "generated": 0,
+      "dependency": 0
+    },
+    "expectedSignals": [
+      "possible_bulk_initial_commit",
+      "limited_history"
+    ],
+    "absentSignals": [],
+    "expectedContribution": "unknown",
+    "numericModifiers": null,
+    "generatedMarked": 0
+  },
+  {
+    "id": "run15.bulk",
+    "scenario": "Bulk imported project with the same observable root shape",
+    "provider": {
+      "state": "available",
+      "fork": false,
+      "templateOrigin": "unknown",
+      "relationship": "current_repository_context"
+    },
+    "history": {
+      "state": "available",
+      "records": 1
+    },
+    "commits": [
+      {
+        "match": "connected_identity",
+        "relationship": "exact_commit",
+        "parents": 0
+      }
+    ],
+    "totalFiles": 150,
+    "exclusions": {
+      "generated": 0,
+      "dependency": 0
+    },
+    "expectedSignals": [
+      "possible_bulk_initial_commit",
+      "limited_history"
+    ],
+    "absentSignals": [],
+    "expectedContribution": "unknown",
+    "numericModifiers": null,
+    "generatedMarked": 0
+  },
+  {
+    "id": "run15.generated",
+    "scenario": "Generated and vendored files beside authored source",
+    "provider": {
+      "state": "available",
+      "fork": false,
+      "templateOrigin": "unknown",
+      "relationship": "current_repository_context"
+    },
+    "history": {
+      "state": "available",
+      "records": 2
+    },
+    "commits": [
+      {
+        "match": "connected_identity",
+        "relationship": "exact_commit",
+        "parents": 1
+      },
+      {
+        "match": "other_identity",
+        "relationship": "ancestor",
+        "parents": 1
+      }
+    ],
+    "totalFiles": 150,
+    "exclusions": {
+      "generated": 4,
+      "dependency": 7
+    },
+    "expectedSignals": [
+      "generated_files",
+      "vendor_files"
+    ],
+    "absentSignals": [],
+    "expectedContribution": "unknown",
+    "numericModifiers": null,
+    "generatedMarked": 1
+  },
+  {
+    "id": "run15.identities",
+    "scenario": "Multiple linked contributor identities",
+    "provider": {
+      "state": "available",
+      "fork": false,
+      "templateOrigin": "unknown",
+      "relationship": "current_repository_context"
+    },
+    "history": {
+      "state": "available",
+      "records": 2
+    },
+    "commits": [
+      {
+        "match": "connected_identity",
+        "relationship": "exact_commit",
+        "parents": 1
+      },
+      {
+        "match": "other_identity",
+        "relationship": "ancestor",
+        "parents": 1
+      }
+    ],
+    "totalFiles": 150,
+    "exclusions": {
+      "generated": 0,
+      "dependency": 0
+    },
+    "expectedSignals": [
+      "multiple_linked_identities",
+      "connected_identity_association",
+      "other_identity_association"
+    ],
+    "absentSignals": [],
+    "expectedContribution": "unknown",
+    "numericModifiers": null,
+    "generatedMarked": 0
+  },
+  {
+    "id": "run15.identities",
+    "scenario": "Mismatched and unlinked author identity",
+    "provider": {
+      "state": "available",
+      "fork": false,
+      "templateOrigin": "unknown",
+      "relationship": "current_repository_context"
+    },
+    "history": {
+      "state": "available",
+      "records": 2
+    },
+    "commits": [
+      {
+        "match": "other_identity",
+        "relationship": "exact_commit",
+        "parents": 1
+      },
+      {
+        "match": "unavailable",
+        "relationship": "ancestor",
+        "parents": 1
+      }
+    ],
+    "totalFiles": 150,
+    "exclusions": {
+      "generated": 0,
+      "dependency": 0
+    },
+    "expectedSignals": [
+      "other_identity_association",
+      "unlinked_commit_author"
+    ],
+    "absentSignals": [
+      "connected_identity_association",
+      "multiple_linked_identities"
+    ],
+    "expectedContribution": "unknown",
+    "numericModifiers": null,
+    "generatedMarked": 0
+  },
+  {
+    "id": "run15.unknown",
+    "scenario": "Private organization history unavailable",
+    "provider": {
+      "state": "available",
+      "fork": false,
+      "templateOrigin": "unknown",
+      "relationship": "current_repository_context"
+    },
+    "history": {
+      "state": "permission_denied",
+      "records": 0
+    },
+    "commits": [],
+    "totalFiles": 150,
+    "exclusions": {
+      "generated": 0,
+      "dependency": 0
+    },
+    "expectedSignals": [
+      "history_unavailable",
+      "limited_history"
+    ],
+    "absentSignals": [
+      "possible_bulk_initial_commit",
+      "connected_identity_association"
+    ],
+    "expectedContribution": "unknown",
+    "numericModifiers": null,
+    "generatedMarked": 0
+  }
+]

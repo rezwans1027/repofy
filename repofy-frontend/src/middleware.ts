@@ -82,6 +82,11 @@ export async function middleware(request: NextRequest) {
     ...(process.env.NODE_ENV === "production" ? ["upgrade-insecure-requests"] : []),
   ].join("; ");
   response.headers.set("Content-Security-Policy", csp);
+  if (pathname === "/readiness" || pathname.startsWith("/readiness/")) {
+    response.headers.set("Cache-Control", "private, no-store");
+    response.headers.set("Referrer-Policy", "no-referrer");
+    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+  }
 
   return response;
 }

@@ -9,8 +9,12 @@ import stripeRoutes from "./stripe.routes";
 import creditRoutes from "./credit.routes";
 import feedbackRoutes from "./feedback.routes";
 import authRoutes from "./auth.routes";
+import { DISABLED_FEATURE_FLAGS } from "@repofy/contracts";
+import { env } from "../config/env";
+import { createFeatureOneRoutes } from "./feature-one.routes";
 
 const router = Router();
+router.use("/v1", createFeatureOneRoutes(env.featureOne?.flags ?? DISABLED_FEATURE_FLAGS));
 
 router.use(healthRoutes);
 router.use(authRoutes);

@@ -1,0 +1,354 @@
+{
+  "contractVersion": "1.0.0",
+  "roleId": "backend",
+  "version": "1.0.0",
+  "taxonomyId": "engineering_capabilities",
+  "taxonomyVersion": "1.0.0",
+  "name": "Backend Software Engineer",
+  "calibration": "uncalibrated",
+  "weightOrigin": "prd_backend_starting_values",
+  "coveragePolicy": {
+    "denominator": "all_requirement_weights",
+    "unknownRequirements": "retain_weight_report_separately",
+    "allUnknown": "unknown_without_score",
+    "requiredRequirements": "report_each_unmet_or_unknown",
+    "disclosure": "Repository evidence is not a complete measure of job readiness. Unknown requirement weight stays visible and is never removed to inflate coverage."
+  },
+  "availability": {
+    "state": "definitions_only",
+    "externalRollout": false,
+    "plannedCoverage": [
+      {
+        "languages": [
+          "typescript",
+          "javascript",
+          "jsx",
+          "tsx",
+          "json",
+          "yaml",
+          "sql",
+          "markdown",
+          "dockerfile",
+          "github_actions",
+          "react",
+          "nextjs",
+          "nodejs",
+          "express"
+        ],
+        "depth": "deep",
+        "limitation": "Planned PRD target; extraction and semantic detectors are pending Runs 08\u201310. React or Express presence alone establishes no behavior."
+      },
+      {
+        "languages": [
+          "python",
+          "java"
+        ],
+        "depth": "baseline",
+        "limitation": "Planned structural and selected source analysis only; unsupported semantics must remain not assessable."
+      },
+      {
+        "languages": [
+          "other"
+        ],
+        "depth": "inventory_only",
+        "limitation": "Other languages have no promised semantic coverage. Inventory is not an implementation assessment."
+      }
+    ],
+    "limitations": [
+      "All weights and thresholds are uncalibrated starting hypotheses; human benchmark review is pending.",
+      "Every capability currently awaits detector coverage. No role assessment can be produced by this run.",
+      "Missing project evidence does not imply missing skill, seniority or employability."
+    ]
+  },
+  "requirements": [
+    {
+      "capabilityId": "api_design",
+      "requirementId": "api_design",
+      "version": "1.0.0",
+      "label": "API and service design",
+      "capabilityIds": [
+        "api_design",
+        "api_boundary_validation"
+      ],
+      "weight": 0.15,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "data_modeling",
+      "requirementId": "data_modeling",
+      "version": "1.0.0",
+      "label": "Data and database engineering",
+      "capabilityIds": [
+        "data_modeling",
+        "data_transactions"
+      ],
+      "weight": 0.15,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "reliability_recovery",
+      "requirementId": "reliability_recovery",
+      "version": "1.0.0",
+      "label": "Reliability and failure handling",
+      "capabilityIds": [
+        "reliability_recovery",
+        "reliability_concurrency"
+      ],
+      "weight": 0.13,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "testing_behavior",
+      "requirementId": "testing_behavior",
+      "version": "1.0.0",
+      "label": "Testing and quality",
+      "capabilityIds": [
+        "testing_behavior",
+        "testing_failures"
+      ],
+      "weight": 0.12,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "security_authorization",
+      "requirementId": "security_authorization",
+      "version": "1.0.0",
+      "label": "Security and authorization",
+      "capabilityIds": [
+        "security_authorization",
+        "security_input_handling"
+      ],
+      "weight": 0.1,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "architecture_modularity",
+      "requirementId": "architecture_modularity",
+      "version": "1.0.0",
+      "label": "Architecture and modularity",
+      "capabilityIds": [
+        "architecture_modularity",
+        "architecture_boundaries"
+      ],
+      "weight": 0.1,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "delivery_automation",
+      "requirementId": "delivery_automation",
+      "version": "1.0.0",
+      "label": "Delivery and CI/CD",
+      "capabilityIds": [
+        "delivery_automation",
+        "delivery_reproducibility"
+      ],
+      "weight": 0.08,
+      "minimumEvidence": 0.4,
+      "required": false,
+      "evidencePolicy": {
+        "minimumConfidence": "low",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 0,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "observability_diagnostics",
+      "requirementId": "observability_diagnostics",
+      "version": "1.0.0",
+      "label": "Observability and operations",
+      "capabilityIds": [
+        "observability_diagnostics",
+        "observability_health"
+      ],
+      "weight": 0.07,
+      "minimumEvidence": 0.4,
+      "required": false,
+      "evidencePolicy": {
+        "minimumConfidence": "low",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 0,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "performance_resources",
+      "requirementId": "performance_resources",
+      "version": "1.0.0",
+      "label": "Performance and scalability",
+      "capabilityIds": [
+        "performance_resources"
+      ],
+      "weight": 0.05,
+      "minimumEvidence": 0.4,
+      "required": false,
+      "evidencePolicy": {
+        "minimumConfidence": "low",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 0,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "documentation_operability",
+      "requirementId": "documentation_operability",
+      "version": "1.0.0",
+      "label": "Documentation and collaboration",
+      "capabilityIds": [
+        "documentation_operability",
+        "documentation_decisions"
+      ],
+      "weight": 0.05,
+      "minimumEvidence": 0.4,
+      "required": false,
+      "evidencePolicy": {
+        "minimumConfidence": "low",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 0,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    }
+  ]
+}

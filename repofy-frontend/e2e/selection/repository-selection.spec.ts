@@ -1,0 +1,42 @@
+import { test, expect } from '@playwright/test';
+import { createHmac, randomUUID } from 'node:crypto';
+
+test('synthetic GitHub discovery → keyboard selection across pages → save/revisit → signed revocation', async ({ page, context, request }) => {
+  const session = await (await request.get('http://127.0.0.1:3191/__test/session')).json();
+  await context.addCookies([{ name: 'access_token', value: session.token, domain: '127.0.0.1', path: '/' }]);
+  await page.goto('/readiness/new');
+  await expect(page.getByRole('heading', { name: 'Select repository access' })).toBeVisible();
+  await expect(page.getByRole('complementary', { name: 'Analyzer support' })).toBeVisible();
+  await expect(page.getByText('Coverage determined after scanning')).toBeVisible();
+  await expect(page.getByText(/256 TS\/JS files and 2 MiB/)).toBeVisible();
+  await page.getByLabel('GitHub identity').selectOption({ label: 'fixture-one — connected' });
+  await expect(page.getByLabel('Installation').getByRole('option', { name: /fixture-org/ })).toHaveCount(1);
+  await page.getByLabel('Installation', { exact: true }).selectOption({ label: 'fixture-org — Organization, active' });
+  const first = page.getByRole('checkbox', { name: /fixture-org\/synthetic-private-300/ });
+  await first.focus(); await page.keyboard.press('Space');
+  await page.getByRole('button', { name: 'Load more repositories' }).click();
+  await page.getByLabel('Search loaded repositories').fill('334');
+  await page.getByRole('checkbox', { name: /fixture-org\/synthetic-private-334/ }).check();
+  await expect(page.getByRole('heading', { name: 'Selection (2/5)' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save selection' })).toBeDisabled();
+  await page.getByRole('checkbox', { name: /I own or am authorized/ }).check();
+  await page.getByRole('button', { name: 'Save selection' }).click();
+  await expect(page.getByRole('button', { name: 'Remove access to fixture-org/synthetic-private-300' })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Selection (2/5)' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Start Analysis' })).toBeDisabled();
+  await page.screenshot({ path: 'test-results/selection-saved.png', fullPage: true });
+  const raw = JSON.stringify({ action: 'removed', installation: { id: 500 }, repositories_removed: [{ id: 300 }] });
+  const delivery = randomUUID();
+  const options = { data: raw, headers: { 'Content-Type': 'application/json', 'X-GitHub-Event': 'installation_repositories', 'X-GitHub-Delivery': delivery,
+    'X-Hub-Signature-256': 'sha256=' + createHmac('sha256', 'fixture-webhook-secret').update(raw).digest('hex') } };
+  const webhook = await request.post('http://127.0.0.1:3191/api/github-app/webhook', options); expect(webhook.status()).toBe(200);
+  expect((await (await request.post('http://127.0.0.1:3191/api/github-app/webhook', options)).json()).duplicate).toBe(true);
+  await page.getByRole('button', { name: 'Refresh access and saved selection' }).click();
+  await expect(page.getByText(/synthetic-private-300 — Access revoked/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Selection (1/5)' })).toBeVisible();
+  await page.getByRole('button', { name: 'Remove access to fixture-org/synthetic-private-300' }).click();
+  await expect(page.getByRole('button', { name: 'Remove access to fixture-org/synthetic-private-300' })).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: 'test-results/selection-mobile.png', fullPage: true });
+});

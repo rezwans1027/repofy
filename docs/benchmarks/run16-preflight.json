@@ -1,0 +1,44 @@
+{
+  "checkedAt": "2026-09-21T02:40:51.490Z",
+  "scope": "local_configuration_only",
+  "remoteDeploymentVerified": false,
+  "flags": {
+    "FEATURE_ONE_ENABLED": {
+      "value": false,
+      "source": "disabled_default"
+    },
+    "GITHUB_APP_REPOSITORIES_ENABLED": {
+      "value": false,
+      "source": "disabled_default"
+    },
+    "FEATURE_ONE_SYNTHESIS_ENABLED": {
+      "value": false,
+      "source": "disabled_default"
+    },
+    "RESCANS_ENABLED": {
+      "value": false,
+      "source": "disabled_default"
+    },
+    "FINDING_FEEDBACK_ENABLED": {
+      "value": false,
+      "source": "disabled_default"
+    },
+    "FEATURE_ONE_PROVENANCE_ENABLED": {
+      "value": false,
+      "source": "disabled_default"
+    }
+  },
+  "allowlistEntries": 0,
+  "credentialsPresent": {
+    "GITHUB_APP_ID": false,
+    "GITHUB_APP_SLUG": false,
+    "GITHUB_APP_PRIVATE_KEY": false,
+    "GITHUB_APP_WEBHOOK_SECRET": false,
+    "OPENAI_API_KEY": true
+  },
+  "pinnedModel": "gpt-4.1-mini-2025-04-14",
+  "pinnedModelConfigured": false,
+  "liveCallsMade": 0,
+  "environmentModified": false,
+  "note": "Presence does not prove credential validity, scopes, managed storage, retention acceptance or provider availability"
+}

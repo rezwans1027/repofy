@@ -6,7 +6,7 @@ setup("authenticate", async ({ page }) => {
   // GitHub OAuth cannot be automated in Playwright.
   // This setup loads a pre-saved storageState from a manual login session.
   // To generate it:
-  //   1. Run `npx playwright codegen http://localhost:3000/login`
+  //   1. Run `npx playwright codegen http://localhost:3100/login`
   //   2. Complete the GitHub OAuth flow manually
   //   3. Copy the resulting storageState to e2e/.auth/user.json
 

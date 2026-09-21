@@ -1,0 +1,389 @@
+{
+  "id": "run16_review",
+  "version": "1.0.0",
+  "corpusSha256": "f80ca10b4235986ea71de3254e8f738a5c870e54b54e96a619fcaabfb4250efe",
+  "rubricCasesSha256": "b9e1471512beaaa533f95789e82ee198f5df06f94d6b220a93766e6d8cd6723f",
+  "claimCards": [
+    {
+      "id": "C01",
+      "caseId": "backend_parse",
+      "roles": [
+        "backend",
+        "full_stack"
+      ],
+      "facts": "Straight-line static parsing; runtime requests and schema completeness unknown.",
+      "claim": "A route parses request input with a Zod object schema before passing the parsed value to a local function. Only a straight-line parse path is supported; schema completeness, error middleware and other routes are unknown. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.request_validation",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C02",
+      "caseId": "backend_owner",
+      "roles": [
+        "backend",
+        "full_stack"
+      ],
+      "facts": "Loaded-resource comparison only; actor verification and races unknown.",
+      "claim": "A route returns an explicit error status with a structured literal error code. No claim about a universal error contract, safe message content or matching consumer behavior. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.structured_error",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C03",
+      "caseId": "backend_auth",
+      "roles": [
+        "backend"
+      ],
+      "facts": "Request-user guard, not resource authorization.",
+      "claim": "A route returns a 401 response when its request user is absent before a local call consumes that user. This is an authentication-state guard, not proof of credential verification or resource authorization. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.authentication_guard",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C04",
+      "caseId": "frontend_form",
+      "roles": [
+        "frontend",
+        "full_stack"
+      ],
+      "facts": "Client validation; no field recovery, accessibility conformance or server trust claim.",
+      "claim": "A form submit handler parses a React state value with a Zod object schema before passing it to a local function. Client validation alone is not a server trust boundary; field-level feedback, submission success and UX are unverified. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.form_validation",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C05",
+      "caseId": "frontend_request",
+      "roles": [
+        "frontend",
+        "full_stack"
+      ],
+      "facts": "HTTP error status and stale-response races remain unchecked.",
+      "claim": "A native button has a static text label and is wired to a local action function. This narrow markup observation does not verify computed accessible names, keyboard tests, CSS visibility, focus recovery or accessibility conformance. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.accessible_action",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C06",
+      "caseId": "query_parameters",
+      "roles": [
+        "backend"
+      ],
+      "facts": "Value parameterization is not all-query security or ownership verification.",
+      "claim": "A pg query separates literal SQL text from an explicit parameter array. Does not establish identifier safety, authorization, successful execution or safety of other queries. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.parameterized_query",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C07",
+      "caseId": "transaction_writes",
+      "roles": [
+        "backend",
+        "full_stack"
+      ],
+      "facts": "Two transaction-bound source writes; execution and business invariants unknown.",
+      "claim": "A Prisma transaction callback issues multiple awaited writes through its transaction parameter. Does not prove related business invariants, conflict handling, all-write atomicity or rollback behavior under execution. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.transaction",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C08",
+      "caseId": "schema_declared",
+      "roles": [
+        "backend"
+      ],
+      "facts": "Declared constraint; no applied migration evidence.",
+      "claim": "An ORM table declaration includes an explicit uniqueness or foreign-key relationship constraint. A declared constraint does not prove a migration was applied or that deployed data satisfies it. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.schema_constraint",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C09",
+      "caseId": "retry_ceiling",
+      "roles": [
+        "backend",
+        "ai_application"
+      ],
+      "facts": "Four attempts do not bound operation duration or establish recovery.",
+      "claim": "A loop with a literal attempt ceiling retries an awaited local operation after a caught failure. Only the loop attempt count is bounded; duration, recursive work, backoff and eventual recovery are unknown. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.bounded_retry",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C10",
+      "caseId": "state_precondition",
+      "roles": [
+        "backend",
+        "mobile"
+      ],
+      "facts": "Local precondition; no durable or concurrent idempotency.",
+      "claim": "A function returns early for an unexpected input state before a subsequent local operation on that input. This local state guard does not establish durable idempotency, atomic compare-and-set or concurrency safety. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.state_guard",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C11",
+      "caseId": "client_cleanup",
+      "roles": [
+        "backend"
+      ],
+      "facts": "Finally release in source; release success and every resource unknown.",
+      "claim": "A pg client is released in a finally block surrounding a query on that client. Does not prove all resources are released or that the query or release succeeds. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.failure_cleanup",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C12",
+      "caseId": "linked_assertion",
+      "roles": [
+        "frontend",
+        "backend",
+        "full_stack"
+      ],
+      "facts": "Source assertion only, not executed or passing tests.",
+      "claim": "A test assertion consumes the result of a statically resolved local implementation call. Source assertions are not passing results or coverage measurements; mocks weaken independence and external integration is unverified. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.asserted_call",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C13",
+      "caseId": "model_adapter",
+      "roles": [
+        "ai_application"
+      ],
+      "facts": "Declared schema/retry/timeout; no model accuracy, retrieval permission or injection-safety claim.",
+      "claim": "A structured model call supplies an output schema, an explicit retry ceiling and a timeout signal. SDK enforcement, model availability, output quality, context authorization and prompt-injection defenses are unverified. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.bounded_model_output",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C14",
+      "caseId": "dependency_only",
+      "roles": [
+        "frontend",
+        "backend",
+        "full_stack",
+        "mobile",
+        "ai_application"
+      ],
+      "facts": "Declarations cannot satisfy implementation requirements.",
+      "claim": "A dependency declaration was observed. A declaration does not establish usage, working integration or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "observation.dependency_presence",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C15",
+      "caseId": "shadowed_decoys",
+      "roles": [
+        "backend",
+        "ai_application"
+      ],
+      "facts": "Locally named package-like functions are not imported provider operations.",
+      "claim": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+      "statementId": "observation.source_structure_only",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C16",
+      "caseId": "safe_parse_alternative",
+      "roles": [
+        "backend"
+      ],
+      "facts": "Valid alternative input-validation shape is outside the bounded parse detector.",
+      "claim": "An Express route callback calls a statically resolved local function boundary. Does not establish API stability, complete routing or separation of all responsibilities. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.route_service",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C17",
+      "caseId": "workspace_layers",
+      "roles": [
+        "frontend",
+        "backend",
+        "full_stack"
+      ],
+      "facts": "Layer boundaries, declared schema and CI do not prove end-to-end execution.",
+      "claim": "A native button has a static text label and is wired to a local action function. This narrow markup observation does not verify computed accessible names, keyboard tests, CSS visibility, focus recovery or accessibility conformance. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.accessible_action",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C18",
+      "caseId": "python_baseline",
+      "roles": [
+        "backend",
+        "ai_application"
+      ],
+      "facts": "Baseline syntax and dependency inventory; production API/AI semantics unassessable.",
+      "claim": "A dependency declaration was observed. A declaration does not establish usage, working integration or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "observation.dependency_presence",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C19",
+      "caseId": "java_baseline",
+      "roles": [
+        "backend",
+        "mobile"
+      ],
+      "facts": "Baseline Java syntax is not Android lifecycle or backend framework behavior.",
+      "claim": "A dependency declaration was observed. A declaration does not establish usage, working integration or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "observation.dependency_presence",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C20",
+      "caseId": "mobile_native_unknown",
+      "roles": [
+        "mobile"
+      ],
+      "facts": "Unsupported native mobile semantics stay unknown, not a zero skill score.",
+      "claim": "The covered implementation behavior is unassessable; no missing-skill conclusion follows.",
+      "statementId": null,
+      "majorClaim": false,
+      "expected": "unknown"
+    },
+    {
+      "id": "C21",
+      "caseId": "empty_unknown",
+      "roles": [
+        "frontend",
+        "backend",
+        "full_stack",
+        "mobile",
+        "ai_application"
+      ],
+      "facts": "Empty input cannot establish absent personal skills.",
+      "claim": "The covered implementation behavior is unassessable; no missing-skill conclusion follows.",
+      "statementId": null,
+      "majorClaim": false,
+      "expected": "unknown"
+    },
+    {
+      "id": "C22",
+      "caseId": "private_sentinels",
+      "roles": [
+        "backend"
+      ],
+      "facts": "Synthetic private text, credential pattern and ignored-path sentinels must not reach model/projections or execute.",
+      "claim": "Documentation structure was observed. Documentation does not establish implemented behavior or operational quality. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "observation.documentation_only",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C23",
+      "caseId": "fork_original_work",
+      "roles": [
+        "backend"
+      ],
+      "facts": "A fork with implementation has context but no authorship attribution or penalty.",
+      "claim": "A loop with a literal attempt ceiling retries an awaited local operation after a caught failure. Only the loop attempt count is bounded; duration, recursive work, backoff and eventual recovery are unknown. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.bounded_retry",
+      "majorClaim": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C24",
+      "caseId": "template_generated",
+      "roles": [
+        "frontend"
+      ],
+      "facts": "Template origin and generated/vendor exclusions do not prove personal contribution or misconduct.",
+      "claim": "A native button has a static text label and is wired to a local action function. This narrow markup observation does not verify computed accessible names, keyboard tests, CSS visibility, focus recovery or accessibility conformance. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+      "statementId": "tsjs.accessible_action",
+      "majorClaim": true,
+      "expected": "supported"
+    }
+  ],
+  "requiredIndependentRubricReviewers": 2,
+  "reviews": [
+    {
+      "reviewerId": "requesting_user",
+      "recordedDate": "2026-09-20",
+      "response": "Agree with all expected labels",
+      "reviewType": "unblinded_boundary_review",
+      "independentEngineeringRoleReviewConfirmed": false,
+      "claimLabels": {
+        "C01": "supported",
+        "C02": "supported",
+        "C03": "supported",
+        "C04": "supported",
+        "C05": "supported",
+        "C06": "supported",
+        "C07": "supported",
+        "C08": "supported",
+        "C09": "supported",
+        "C10": "supported",
+        "C11": "supported",
+        "C12": "supported",
+        "C13": "supported",
+        "C14": "supported",
+        "C15": "supported",
+        "C16": "supported",
+        "C17": "supported",
+        "C18": "supported",
+        "C19": "supported",
+        "C20": "unknown",
+        "C21": "unknown",
+        "C22": "supported",
+        "C23": "supported",
+        "C24": "supported"
+      },
+      "rubricAgreements": {
+        "R01": true,
+        "R02": true,
+        "R03": true,
+        "R04": true,
+        "R05": true,
+        "R06": true,
+        "R07": true,
+        "R08": true,
+        "R09": true,
+        "R10": true,
+        "R11": true,
+        "R12": true,
+        "R13": true,
+        "R14": true,
+        "R15": true,
+        "R16": true,
+        "R17": true,
+        "R18": true,
+        "R19": true,
+        "R20": true,
+        "R21": true,
+        "R22": true,
+        "R23": true,
+        "R24": true,
+        "R25": true,
+        "R26": true,
+        "R27": true,
+        "R28": true,
+        "R29": true,
+        "R30": true
+      },
+      "disagreements": [],
+      "uncertain": []
+    }
+  ],
+  "renderingSha256": "5a2397a2616c4961d6ac5bad817bec36788aaddc032d82997ca59b2befb11647"
+}

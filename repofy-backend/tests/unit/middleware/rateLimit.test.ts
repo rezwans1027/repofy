@@ -38,6 +38,18 @@ describe("aiRateLimit", () => {
       error: "Too many requests. Please try again later.",
     });
   });
+
+  it("adds machine-readable fields in a v1 response context", async () => {
+    const { aiRateLimit } = await import("../../../src/middleware/rateLimit");
+    const app = express();
+    app.use((_req, res, next) => { res.locals.apiVersion = "v1"; res.locals.requestId = "synthetic-request"; next(); });
+    app.use(aiRateLimit);
+    app.get("/test", (_req, res) => res.json({ ok: true }));
+    for (let i = 0; i < 5; i++) await request(app).get("/test");
+    const response = await request(app).get("/test");
+    expect(response.body).toEqual({ success: false, error: "Too many requests. Please try again later.",
+      code: "RATE_LIMITED", retryable: true, requestId: "synthetic-request" });
+  });
 });
 
 describe("githubRateLimit", () => {
@@ -132,4 +144,3 @@ describe("authRateLimit", () => {
     expect(blocked.status).toBe(429);
   });
 });
-

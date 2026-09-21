@@ -5,9 +5,24 @@ import { navState, navModule, resetNavState } from "@/__tests__/helpers/mock-nav
 vi.mock("next/navigation", () => navModule);
 
 import { AppSidebar } from "./app-sidebar";
+import { DISABLED_CLIENT_CAPABILITIES } from "@repofy/contracts";
 
 describe("AppSidebar", () => {
   afterEach(() => resetNavState());
+
+  it("hides readiness by default and when enabled but unfinished", () => {
+    const { rerender } = render(<AppSidebar />);
+    expect(screen.queryByRole("link", { name: /readiness/i })).not.toBeInTheDocument();
+    rerender(<AppSidebar capabilities={{ ...DISABLED_CLIENT_CAPABILITIES,
+      features: { ...DISABLED_CLIENT_CAPABILITIES.features, featureOneEnabled: true }, readinessAvailability: "not_implemented" }} />);
+    expect(screen.queryByRole("link", { name: /readiness/i })).not.toBeInTheDocument();
+  });
+
+  it("shows readiness only when the server advertises implemented availability", () => {
+    render(<AppSidebar capabilities={{ ...DISABLED_CLIENT_CAPABILITIES,
+      features: { ...DISABLED_CLIENT_CAPABILITIES.features, featureOneEnabled: true }, readinessAvailability: "available" }} />);
+    expect(screen.getAllByRole("link", { name: /readiness/i })).toHaveLength(2);
+  });
 
   it("renders all navigation links", () => {
     navState.pathname = "/dashboard";

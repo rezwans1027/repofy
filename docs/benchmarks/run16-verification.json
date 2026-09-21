@@ -1,0 +1,233 @@
+{
+  "startedAt": "2026-09-21T02:35:49.329Z",
+  "updatedAt": "2026-09-21T02:40:20.032Z",
+  "node": "v22.23.2",
+  "sourceSha256": "e58cf1c40932d9c105d34b8d2365f73b8a1457da44b8e555417ff09133c3c2f5",
+  "sourceUnchanged": true,
+  "expectedChecks": [
+    "contracts_typecheck",
+    "contracts",
+    "backend_typecheck",
+    "release_typecheck",
+    "backend_tests",
+    "postgres",
+    "ingestion",
+    "worker",
+    "extraction",
+    "detectors",
+    "coverage",
+    "aggregation",
+    "rubrics",
+    "benchmark",
+    "load",
+    "frontend_lint",
+    "frontend_typecheck",
+    "frontend_tests",
+    "frontend_build",
+    "readiness_routes",
+    "selection_browser",
+    "report_browser"
+  ],
+  "checks": [
+    {
+      "id": "contracts_typecheck",
+      "command": "npm --prefix packages/contracts run typecheck",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:35:49.387Z",
+      "finishedAt": "2026-09-21T02:35:50.573Z",
+      "durationMs": 1187
+    },
+    {
+      "id": "contracts",
+      "command": "npm --prefix packages/contracts test",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:35:50.620Z",
+      "finishedAt": "2026-09-21T02:35:52.425Z",
+      "durationMs": 1804
+    },
+    {
+      "id": "backend_typecheck",
+      "command": "npm --prefix repofy-backend run typecheck",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:35:52.469Z",
+      "finishedAt": "2026-09-21T02:35:55.221Z",
+      "durationMs": 2752
+    },
+    {
+      "id": "release_typecheck",
+      "command": "npm --prefix repofy-backend run release:typecheck",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:35:55.268Z",
+      "finishedAt": "2026-09-21T02:35:57.615Z",
+      "durationMs": 2347
+    },
+    {
+      "id": "backend_tests",
+      "command": "npm --prefix repofy-backend test -- --coverage --maxWorkers=1",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:35:57.661Z",
+      "finishedAt": "2026-09-21T02:36:51.423Z",
+      "durationMs": 53761
+    },
+    {
+      "id": "postgres",
+      "command": "npm --prefix repofy-backend run test:postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:36:51.474Z",
+      "finishedAt": "2026-09-21T02:36:57.578Z",
+      "durationMs": 6104
+    },
+    {
+      "id": "ingestion",
+      "command": "npm --prefix repofy-backend run ingestion:verify",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:36:57.628Z",
+      "finishedAt": "2026-09-21T02:36:58.650Z",
+      "durationMs": 1022
+    },
+    {
+      "id": "worker",
+      "command": "npm --prefix repofy-backend run worker:verify",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:36:58.699Z",
+      "finishedAt": "2026-09-21T02:37:02.800Z",
+      "durationMs": 4101
+    },
+    {
+      "id": "extraction",
+      "command": "npm --prefix repofy-backend run extraction:verify",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:37:02.850Z",
+      "finishedAt": "2026-09-21T02:37:06.537Z",
+      "durationMs": 3687
+    },
+    {
+      "id": "detectors",
+      "command": "npm --prefix repofy-backend run detectors:verify",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:37:06.582Z",
+      "finishedAt": "2026-09-21T02:37:10.508Z",
+      "durationMs": 3927
+    },
+    {
+      "id": "coverage",
+      "command": "npm --prefix repofy-backend run coverage:verify",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:37:10.556Z",
+      "finishedAt": "2026-09-21T02:37:14.194Z",
+      "durationMs": 3638
+    },
+    {
+      "id": "aggregation",
+      "command": "npm --prefix repofy-backend run aggregation:verify",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:37:14.239Z",
+      "finishedAt": "2026-09-21T02:37:19.997Z",
+      "durationMs": 5757
+    },
+    {
+      "id": "rubrics",
+      "command": "npm --prefix repofy-backend run rubrics:validate",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:37:20.044Z",
+      "finishedAt": "2026-09-21T02:37:20.510Z",
+      "durationMs": 466
+    },
+    {
+      "id": "benchmark",
+      "command": "npm --prefix repofy-backend run release:benchmark -- --record",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:37:20.556Z",
+      "finishedAt": "2026-09-21T02:37:22.127Z",
+      "durationMs": 1571
+    },
+    {
+      "id": "load",
+      "command": "npm --prefix repofy-backend run release:load -- --record",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:37:22.175Z",
+      "finishedAt": "2026-09-21T02:37:33.356Z",
+      "durationMs": 11180
+    },
+    {
+      "id": "frontend_lint",
+      "command": "npm --prefix repofy-frontend run lint",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:37:33.403Z",
+      "finishedAt": "2026-09-21T02:37:38.866Z",
+      "durationMs": 5463
+    },
+    {
+      "id": "frontend_typecheck",
+      "command": "npm --prefix repofy-frontend run typecheck",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:37:38.909Z",
+      "finishedAt": "2026-09-21T02:37:40.733Z",
+      "durationMs": 1824
+    },
+    {
+      "id": "frontend_tests",
+      "command": "npm --prefix repofy-frontend test -- --coverage --maxWorkers=1",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:37:40.781Z",
+      "finishedAt": "2026-09-21T02:38:32.990Z",
+      "durationMs": 52209
+    },
+    {
+      "id": "frontend_build",
+      "command": "npm --prefix repofy-frontend run build",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:38:33.037Z",
+      "finishedAt": "2026-09-21T02:38:45.813Z",
+      "durationMs": 12775
+    },
+    {
+      "id": "readiness_routes",
+      "command": "npm --prefix repofy-frontend run test:e2e:readiness",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:38:45.899Z",
+      "finishedAt": "2026-09-21T02:38:51.702Z",
+      "durationMs": 5804
+    },
+    {
+      "id": "selection_browser",
+      "command": "npm --prefix repofy-frontend run test:e2e:selection",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:38:51.751Z",
+      "finishedAt": "2026-09-21T02:39:11.272Z",
+      "durationMs": 19520
+    },
+    {
+      "id": "report_browser",
+      "command": "npm --prefix repofy-frontend run test:e2e:report",
+      "status": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T02:39:11.324Z",
+      "finishedAt": "2026-09-21T02:40:19.983Z",
+      "durationMs": 68659
+    }
+  ],
+  "allPassed": true,
+  "scope": "Local synthetic CI parity; no live provider, hosted account, human assistive-technology or deployed infrastructure verification"
+}

@@ -1,0 +1,2558 @@
+{
+  "id": "engineering_capabilities",
+  "version": "1.0.0",
+  "categories": [
+    {
+      "categoryId": "languages_frameworks",
+      "label": "Languages and framework usage",
+      "description": "Identifies technology declarations separately from demonstrated engineering behavior."
+    },
+    {
+      "categoryId": "frontend",
+      "label": "Frontend engineering",
+      "description": "Implements usable and accessible browser interactions and state transitions."
+    },
+    {
+      "categoryId": "mobile",
+      "label": "Mobile engineering",
+      "description": "Handles navigation, device lifecycle, permissions and interrupted connectivity."
+    },
+    {
+      "categoryId": "backend_api",
+      "label": "Backend and API design",
+      "description": "Defines service contracts and validates requests at trusted boundaries."
+    },
+    {
+      "categoryId": "data",
+      "label": "Data and database engineering",
+      "description": "Models data integrity and handles transactional changes."
+    },
+    {
+      "categoryId": "architecture",
+      "label": "Architecture and system design",
+      "description": "Separates responsibilities and enforces dependency boundaries."
+    },
+    {
+      "categoryId": "testing",
+      "label": "Testing and quality engineering",
+      "description": "Exercises useful behavior, failure cases and regressions."
+    },
+    {
+      "categoryId": "reliability",
+      "label": "Reliability, concurrency, and failure handling",
+      "description": "Bounds resource use and handles retries, races and interrupted work."
+    },
+    {
+      "categoryId": "security",
+      "label": "Security and privacy engineering",
+      "description": "Enforces access boundaries and limits exposure of untrusted or sensitive data."
+    },
+    {
+      "categoryId": "delivery",
+      "label": "DevOps and delivery",
+      "description": "Builds, verifies and releases reproducibly."
+    },
+    {
+      "categoryId": "observability",
+      "label": "Observability and operations",
+      "description": "Explains system failures through safe diagnostics and operational signals."
+    },
+    {
+      "categoryId": "ai_applications",
+      "label": "AI application engineering",
+      "description": "Integrates model behavior with evaluation, validation and bounded data access."
+    },
+    {
+      "categoryId": "documentation_collaboration",
+      "label": "Documentation and collaboration",
+      "description": "Makes project behavior, decisions and operation understandable to collaborators."
+    },
+    {
+      "categoryId": "provenance",
+      "label": "Project ownership and provenance",
+      "description": "Records contribution indicators and their uncertainty without assigning ownership."
+    }
+  ],
+  "capabilities": [
+    {
+      "capabilityId": "language_presence",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "languages_frameworks",
+      "label": "Declared languages",
+      "description": "Records a language from eligible files and build metadata.",
+      "kind": "technology_signal",
+      "observableBehaviors": [
+        "Records a language from eligible files and build metadata."
+      ],
+      "positiveEvidence": [
+        "Eligible source extensions agree with a language or compiler configuration."
+      ],
+      "weakEvidence": [
+        "A language badge or one generated file."
+      ],
+      "limitations": [
+        "Declarations do not prove fluency or implemented runtime behavior.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "dependency",
+        "config",
+        "code"
+      ],
+      "presencePolicy": {
+        "dependency": "limited_observation",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "technology_presence",
+          "boundary": "May state only that a technology is declared in the selected revision."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe a relevant configuration without asserting execution or proficiency."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "languages_frameworks_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "framework_presence",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "languages_frameworks",
+      "label": "Declared frameworks",
+      "description": "Records a named framework declaration and its version when available.",
+      "kind": "technology_signal",
+      "observableBehaviors": [
+        "Records a named framework declaration and its version when available."
+      ],
+      "positiveEvidence": [
+        "A dependency manifest declares a framework with a supported configuration."
+      ],
+      "weakEvidence": [
+        "An unused Express or React dependency."
+      ],
+      "limitations": [
+        "Framework presence cannot establish API validation, accessibility or architecture.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "dependency",
+        "config",
+        "code"
+      ],
+      "presencePolicy": {
+        "dependency": "limited_observation",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "technology_presence",
+          "boundary": "May state only that a technology is declared in the selected revision."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe a relevant configuration without asserting execution or proficiency."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "languages_frameworks_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "frontend_interaction",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "frontend",
+      "label": "User interaction and recovery",
+      "description": "Connects user actions to visible success, loading, empty and failure states.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Connects user actions to visible success, loading, empty and failure states."
+      ],
+      "positiveEvidence": [
+        "An exercised form or action covers successful submission and recovery after failure."
+      ],
+      "weakEvidence": [
+        "A static component screenshot or unused event handler."
+      ],
+      "limitations": [
+        "Static structure cannot establish usability for real users.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Connects user actions to visible success, loading, empty and failure states. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "frontend_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "frontend_accessibility",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "frontend",
+      "label": "Accessible interaction",
+      "description": "Provides semantic controls, accessible names, keyboard operation and focus recovery.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Provides semantic controls, accessible names, keyboard operation and focus recovery."
+      ],
+      "positiveEvidence": [
+        "Interaction tests exercise keyboard navigation and accessible names around a real flow."
+      ],
+      "weakEvidence": [
+        "An accessibility package or ARIA attribute without an exercised control."
+      ],
+      "limitations": [
+        "Automated checks do not establish complete accessibility or conformance.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Provides semantic controls, accessible names, keyboard operation and focus recovery. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "frontend_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "frontend_state",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "frontend",
+      "label": "Client state and data consistency",
+      "description": "Keeps server results, local changes and stale responses consistent across transitions.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Keeps server results, local changes and stale responses consistent across transitions."
+      ],
+      "positiveEvidence": [
+        "A state transition and test prevent stale responses from overwriting newer user input."
+      ],
+      "weakEvidence": [
+        "A state management dependency or a store with no consumers."
+      ],
+      "limitations": [
+        "A local state example does not establish distributed consistency.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Keeps server results, local changes and stale responses consistent across transitions. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "frontend_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "mobile_lifecycle",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "mobile",
+      "label": "Device lifecycle and permissions",
+      "description": "Handles foreground, background, permission denial and interrupted device work.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Handles foreground, background, permission denial and interrupted device work."
+      ],
+      "positiveEvidence": [
+        "Lifecycle handlers and tests exercise permission denial and resume recovery."
+      ],
+      "weakEvidence": [
+        "A mobile framework declaration or permission manifest entry."
+      ],
+      "limitations": [
+        "Native platform behavior needs platform-specific evidence and supported detectors.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Handles foreground, background, permission denial and interrupted device work. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "mobile_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "mobile_navigation",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "mobile",
+      "label": "Mobile navigation and restoration",
+      "description": "Maintains meaningful routes and restores navigation state after interruption.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Maintains meaningful routes and restores navigation state after interruption."
+      ],
+      "positiveEvidence": [
+        "A navigation flow tests a deep link, back action and state restoration."
+      ],
+      "weakEvidence": [
+        "A navigator dependency or a list of screen names."
+      ],
+      "limitations": [
+        "Route names alone do not prove that deep links or restoration work on a device.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Maintains meaningful routes and restores navigation state after interruption. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "mobile_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "mobile_offline",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "mobile",
+      "label": "Offline synchronization and recovery",
+      "description": "Persists pending work and resolves retry or synchronization conflicts after reconnecting.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Persists pending work and resolves retry or synchronization conflicts after reconnecting."
+      ],
+      "positiveEvidence": [
+        "A simulated disconnection and replay test show durable changes without duplication."
+      ],
+      "weakEvidence": [
+        "A local storage dependency or an online-only cache."
+      ],
+      "limitations": [
+        "Static evidence cannot establish field reliability across networks and devices.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Persists pending work and resolves retry or synchronization conflicts after reconnecting. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "mobile_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "api_design",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "backend_api",
+      "label": "API and service contracts",
+      "description": "Defines stable request, response and error contracts used by service consumers.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Defines stable request, response and error contracts used by service consumers."
+      ],
+      "positiveEvidence": [
+        "Handlers and consumer tests agree on success and bounded error responses."
+      ],
+      "weakEvidence": [
+        "An Express dependency or route registration without behavior."
+      ],
+      "limitations": [
+        "A route listing does not prove compatibility across deployed consumers.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Defines stable request, response and error contracts used by service consumers. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "backend_api_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "api_boundary_validation",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "backend_api",
+      "label": "API boundary validation",
+      "description": "Rejects malformed and unauthorized input before domain effects occur.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Rejects malformed and unauthorized input before domain effects occur."
+      ],
+      "positiveEvidence": [
+        "Boundary validation and negative request tests prove invalid inputs cause no writes."
+      ],
+      "weakEvidence": [
+        "A validation library that is imported but never invoked."
+      ],
+      "limitations": [
+        "Validation does not by itself establish authorization or safe database use.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Rejects malformed and unauthorized input before domain effects occur. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "backend_api_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "data_modeling",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "data",
+      "label": "Data integrity and modeling",
+      "description": "Expresses domain relationships and integrity constraints in persisted data.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Expresses domain relationships and integrity constraints in persisted data."
+      ],
+      "positiveEvidence": [
+        "Migrations and database tests reject invalid relationships and preserve valid records."
+      ],
+      "weakEvidence": [
+        "An ORM dependency or an unused schema file."
+      ],
+      "limitations": [
+        "A schema alone does not establish production data quality or scale.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Expresses domain relationships and integrity constraints in persisted data. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "data_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "data_transactions",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "data",
+      "label": "Transactional changes",
+      "description": "Keeps related writes atomic and handles conflicts or rollbacks.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Keeps related writes atomic and handles conflicts or rollbacks."
+      ],
+      "positiveEvidence": [
+        "A multi-write operation and failure test preserve invariants after rollback."
+      ],
+      "weakEvidence": [
+        "A transaction helper with no exercised multi-write operation."
+      ],
+      "limitations": [
+        "One atomic operation does not establish all-system consistency.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Keeps related writes atomic and handles conflicts or rollbacks. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "data_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "architecture_modularity",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "architecture",
+      "label": "Responsibility and module boundaries",
+      "description": "Separates domain responsibilities behind explicit interfaces.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Separates domain responsibilities behind explicit interfaces."
+      ],
+      "positiveEvidence": [
+        "Dependency paths and interface tests show independently replaceable responsibilities."
+      ],
+      "weakEvidence": [
+        "Folders named services or domain without enforced separation."
+      ],
+      "limitations": [
+        "Folder count and design-pattern names do not establish maintainability.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Separates domain responsibilities behind explicit interfaces. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "architecture_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "architecture_boundaries",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "architecture",
+      "label": "Integration and dependency boundaries",
+      "description": "Keeps adapters, consumers and domain contracts aligned without hidden coupling.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Keeps adapters, consumers and domain contracts aligned without hidden coupling."
+      ],
+      "positiveEvidence": [
+        "Adapter or contract tests exercise a boundary and reject incompatible input."
+      ],
+      "weakEvidence": [
+        "An interface declaration with no real implementations or consumers."
+      ],
+      "limitations": [
+        "A narrow boundary does not prove the entire system is decoupled.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Keeps adapters, consumers and domain contracts aligned without hidden coupling. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "architecture_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "testing_behavior",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "testing",
+      "label": "Behavioral regression tests",
+      "description": "Checks externally meaningful outcomes through representative success paths.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Checks externally meaningful outcomes through representative success paths."
+      ],
+      "positiveEvidence": [
+        "Assertions fail when an observable application behavior regresses."
+      ],
+      "weakEvidence": [
+        "Test framework dependencies or tests that only assert a mock was called."
+      ],
+      "limitations": [
+        "File counts and coverage percentages do not prove test quality.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Checks externally meaningful outcomes through representative success paths. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "testing_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "testing_failures",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "testing",
+      "label": "Failure and boundary tests",
+      "description": "Exercises invalid inputs, failures and boundary conditions with explicit expected effects.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Exercises invalid inputs, failures and boundary conditions with explicit expected effects."
+      ],
+      "positiveEvidence": [
+        "Negative tests verify rejection, cleanup and preserved invariants after failure."
+      ],
+      "weakEvidence": [
+        "A test title mentioning failure with no relevant assertions."
+      ],
+      "limitations": [
+        "Mocks alone may miss database, browser or provider behavior.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Exercises invalid inputs, failures and boundary conditions with explicit expected effects. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "testing_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "reliability_recovery",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "reliability",
+      "label": "Bounded recovery and retries",
+      "description": "Bounds retries and restores interrupted work to a defined recoverable state.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Bounds retries and restores interrupted work to a defined recoverable state."
+      ],
+      "positiveEvidence": [
+        "A retry implementation and injected-failure test show a terminal or recoverable outcome."
+      ],
+      "weakEvidence": [
+        "A queue dependency or an unbounded retry loop."
+      ],
+      "limitations": [
+        "Static recovery paths do not prove availability or a production service level.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Bounds retries and restores interrupted work to a defined recoverable state. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "reliability_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "reliability_concurrency",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "reliability",
+      "label": "Concurrency and idempotent effects",
+      "description": "Prevents concurrent or repeated operations from duplicating effects.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Prevents concurrent or repeated operations from duplicating effects."
+      ],
+      "positiveEvidence": [
+        "A database guard and concurrent replay test produce exactly one durable effect."
+      ],
+      "weakEvidence": [
+        "An in-process lock presented as cross-process coordination."
+      ],
+      "limitations": [
+        "Single-process tests cannot establish distributed race safety.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Prevents concurrent or repeated operations from duplicating effects. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "reliability_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "performance_resources",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "reliability",
+      "label": "Bounded performance and resource use",
+      "description": "Bounds memory, work, queries or payload size along a meaningful execution path.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Bounds memory, work, queries or payload size along a meaningful execution path."
+      ],
+      "positiveEvidence": [
+        "A measured or bounded test demonstrates pagination, batching or resource limits."
+      ],
+      "weakEvidence": [
+        "A cache dependency or an unmeasured claim of scalability."
+      ],
+      "limitations": [
+        "Repository evidence cannot predict production throughput or latency without measurements.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Bounds memory, work, queries or payload size along a meaningful execution path. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "reliability_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "security_authorization",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "security",
+      "label": "Authorization and data isolation",
+      "description": "Checks actor and object permissions before reading or modifying protected data.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Checks actor and object permissions before reading or modifying protected data."
+      ],
+      "positiveEvidence": [
+        "Distinct-user negative tests deny access to foreign objects and privileged operations."
+      ],
+      "weakEvidence": [
+        "Authentication middleware without per-object authorization."
+      ],
+      "limitations": [
+        "A login flow does not establish isolation of private resources.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Checks actor and object permissions before reading or modifying protected data. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "security_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "security_input_handling",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "security",
+      "label": "Untrusted input handling",
+      "description": "Validates or encodes untrusted content at the boundary where it can cause effects.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Validates or encodes untrusted content at the boundary where it can cause effects."
+      ],
+      "positiveEvidence": [
+        "Negative tests block injection, unsafe paths or invalid state transitions."
+      ],
+      "weakEvidence": [
+        "A sanitization package or an unexplained security header."
+      ],
+      "limitations": [
+        "One safe boundary does not imply comprehensive security.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Validates or encodes untrusted content at the boundary where it can cause effects. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "security_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "security_secrets",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "security",
+      "label": "Sensitive data handling",
+      "description": "Restricts retention, logging and disclosure of credentials or private data.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Restricts retention, logging and disclosure of credentials or private data."
+      ],
+      "positiveEvidence": [
+        "Tests prove sensitive sentinel values are redacted and retained data is scoped."
+      ],
+      "weakEvidence": [
+        "An environment variable name or an encryption dependency alone."
+      ],
+      "limitations": [
+        "Static checks cannot promise provider retention, legal compliance or absence of all leaks.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Restricts retention, logging and disclosure of credentials or private data. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "security_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "delivery_automation",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "delivery",
+      "label": "Exercised delivery checks",
+      "description": "Runs relevant validation before producing or releasing an artifact.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Runs relevant validation before producing or releasing an artifact."
+      ],
+      "positiveEvidence": [
+        "Workflow commands and attributable CI results show checks actually ran."
+      ],
+      "weakEvidence": [
+        "A workflow file whose jobs never run or ignore failures."
+      ],
+      "limitations": [
+        "Configuration presence alone cannot prove delivery gates are effective.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Runs relevant validation before producing or releasing an artifact. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "delivery_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "delivery_reproducibility",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "delivery",
+      "label": "Reproducible build and release",
+      "description": "Defines repeatable dependency installation, builds and reversible releases.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Defines repeatable dependency installation, builds and reversible releases."
+      ],
+      "positiveEvidence": [
+        "A clean build and release verification reproduce an artifact from a pinned revision."
+      ],
+      "weakEvidence": [
+        "A Dockerfile or lockfile with no successful clean build."
+      ],
+      "limitations": [
+        "One build does not prove reproducibility across all environments.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Defines repeatable dependency installation, builds and reversible releases. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "delivery_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "observability_diagnostics",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "observability",
+      "label": "Safe failure diagnostics",
+      "description": "Provides bounded structured context for understanding failures without leaking private data.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Provides bounded structured context for understanding failures without leaking private data."
+      ],
+      "positiveEvidence": [
+        "A failure path and tests show correlation fields and redacted diagnostics."
+      ],
+      "weakEvidence": [
+        "A logging package or an unstructured console call."
+      ],
+      "limitations": [
+        "Logs in source do not prove operational use or alert response.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Provides bounded structured context for understanding failures without leaking private data. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "observability_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "observability_health",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "observability",
+      "label": "Operational health signals",
+      "description": "Connects health or metrics signals to meaningful dependency and failure states.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Connects health or metrics signals to meaningful dependency and failure states."
+      ],
+      "positiveEvidence": [
+        "Tests exercise unhealthy dependencies and validate health or metric changes."
+      ],
+      "weakEvidence": [
+        "An always-successful health route or an unused metrics client."
+      ],
+      "limitations": [
+        "Signals alone cannot establish incident response quality.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Connects health or metrics signals to meaningful dependency and failure states. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "observability_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "ai_integration",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "ai_applications",
+      "label": "Bounded model integration",
+      "description": "Calls a model through timeouts, explicit contracts and validated results.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Calls a model through timeouts, explicit contracts and validated results."
+      ],
+      "positiveEvidence": [
+        "An adapter and controlled response tests reject malformed outputs and bound failures."
+      ],
+      "weakEvidence": [
+        "An AI SDK dependency or a prompt string without a called adapter."
+      ],
+      "limitations": [
+        "Mocked adapters do not establish real provider integration.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Calls a model through timeouts, explicit contracts and validated results. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "ai_applications_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "ai_context",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "ai_applications",
+      "label": "Grounded context and retrieval",
+      "description": "Selects scoped context and links generated claims to retrievable supporting evidence.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Selects scoped context and links generated claims to retrievable supporting evidence."
+      ],
+      "positiveEvidence": [
+        "Retrieval and citation tests reject foreign context and unsupported citations."
+      ],
+      "weakEvidence": [
+        "A vector database dependency or unverified model citations."
+      ],
+      "limitations": [
+        "Retrieval does not guarantee that a generated statement is entailed by its source.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Selects scoped context and links generated claims to retrievable supporting evidence. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "ai_applications_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "ai_evaluation",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "ai_applications",
+      "label": "Model behavior evaluation",
+      "description": "Measures representative output quality and regressions against recorded cases.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Measures representative output quality and regressions against recorded cases."
+      ],
+      "positiveEvidence": [
+        "An evaluation set includes expected outcomes, adversarial cases and measured results."
+      ],
+      "weakEvidence": [
+        "An evaluation script that prints outputs without checking them."
+      ],
+      "limitations": [
+        "A small evaluation set does not establish general model quality.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Measures representative output quality and regressions against recorded cases. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "ai_applications_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "ai_safety",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "ai_applications",
+      "label": "Model input and output boundaries",
+      "description": "Restricts untrusted instructions, tool effects and private context disclosure.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Restricts untrusted instructions, tool effects and private context disclosure."
+      ],
+      "positiveEvidence": [
+        "Adversarial tests reject unauthorized tool actions and private-context disclosure."
+      ],
+      "weakEvidence": [
+        "A prompt that merely asks the model to be safe."
+      ],
+      "limitations": [
+        "Finite tests cannot guarantee resistance to all prompt injection.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Restricts untrusted instructions, tool effects and private context disclosure. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "ai_applications_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "documentation_operability",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "documentation_collaboration",
+      "label": "Runnable setup and operations guidance",
+      "description": "Explains how to set up, verify, operate and recover the project.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Explains how to set up, verify, operate and recover the project."
+      ],
+      "positiveEvidence": [
+        "A clean setup follows documented commands and checks expected outcomes."
+      ],
+      "weakEvidence": [
+        "A generated README or a list of badges."
+      ],
+      "limitations": [
+        "Documentation needs verification; prose alone cannot prove an operation works.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Explains how to set up, verify, operate and recover the project. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "documentation_collaboration_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "documentation_decisions",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "documentation_collaboration",
+      "label": "Design decisions and collaboration",
+      "description": "Connects meaningful tradeoffs or reviewed changes to their implementation.",
+      "kind": "engineering_behavior",
+      "observableBehaviors": [
+        "Connects meaningful tradeoffs or reviewed changes to their implementation."
+      ],
+      "positiveEvidence": [
+        "A decision record or review explains alternatives and references exercised behavior."
+      ],
+      "weakEvidence": [
+        "Commit volume or a generic architecture diagram."
+      ],
+      "limitations": [
+        "Review metadata does not establish teamwork quality or individual ownership.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "code",
+        "test",
+        "config",
+        "docs",
+        "ci"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "repository_behavior",
+          "boundary": "Connects meaningful tradeoffs or reviewed changes to their implementation. State only what the cited implementation shows in the selected revision."
+        },
+        {
+          "scope": "tested_behavior",
+          "boundary": "May describe the cited exercised behavior only when independent relevant test or CI evidence corroborates it."
+        },
+        {
+          "scope": "configuration_observation",
+          "boundary": "May describe relevant declared configuration as a limited observation; never infer that an implementation runs or succeeds from configuration presence alone."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "documentation_collaboration_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          9,
+          10
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "provenance_history",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "provenance",
+      "label": "Contribution history indicators",
+      "description": "Records available commit or review relationships with explicit uncertainty.",
+      "kind": "provenance_signal",
+      "observableBehaviors": [
+        "Records available commit or review relationships with explicit uncertainty."
+      ],
+      "positiveEvidence": [
+        "Authorized provider metadata connects a bounded change to a verified account."
+      ],
+      "weakEvidence": [
+        "A display name, email string or total commit count."
+      ],
+      "limitations": [
+        "Accounts can share work; metadata does not prove individual authorship or legal ownership.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "commit",
+        "pull_request",
+        "config",
+        "code"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "contribution_indicator",
+          "boundary": "May report bounded provider or origin observations with uncertainty; never definitive authorship or ownership."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "provenance_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          15
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    },
+    {
+      "capabilityId": "provenance_origin",
+      "taxonomyVersion": "1.0.0",
+      "groupId": "provenance",
+      "label": "Repository origin and reuse indicators",
+      "description": "Records fork, template, generated-code and bulk-import signals as context.",
+      "kind": "provenance_signal",
+      "observableBehaviors": [
+        "Records fork, template, generated-code and bulk-import signals as context."
+      ],
+      "positiveEvidence": [
+        "Provider origin metadata and eligible file signals identify possible reuse."
+      ],
+      "weakEvidence": [
+        "A large initial commit treated as evidence of misconduct."
+      ],
+      "limitations": [
+        "Reuse is not misconduct; missing history must not be treated as a skill deficit.",
+        "Missing detector coverage is not evidence that the engineer lacks this capability."
+      ],
+      "evidenceFamilies": [
+        "commit",
+        "pull_request",
+        "config",
+        "code"
+      ],
+      "presencePolicy": {
+        "dependency": "insufficient",
+        "config": "limited_observation",
+        "maximumStrength": 0.39
+      },
+      "allowedClaimScopes": [
+        {
+          "scope": "contribution_indicator",
+          "boundary": "May report bounded provider or origin observations with uncertainty; never definitive authorship or ownership."
+        }
+      ],
+      "forbiddenClaims": [
+        "Employability probability, seniority, candidate ranking or an employment recommendation.",
+        "Definitive authorship, legal ownership or production reliability beyond cited observations."
+      ],
+      "improvementTemplateIds": [
+        "provenance_proof",
+        "coverage_review"
+      ],
+      "detectorCoverage": {
+        "state": "pending",
+        "plannedRuns": [
+          8,
+          15
+        ],
+        "limitation": "No production detector for this capability is delivered in Run 03."
+      }
+    }
+  ],
+  "strengthPolicy": {
+    "version": "1.0.0",
+    "bands": [
+      {
+        "key": "not_observed",
+        "label": "Not observed",
+        "lowerInclusive": 0,
+        "upperExclusive": 0.2
+      },
+      {
+        "key": "limited",
+        "label": "Limited evidence",
+        "lowerInclusive": 0.2,
+        "upperExclusive": 0.4
+      },
+      {
+        "key": "moderate",
+        "label": "Moderate evidence",
+        "lowerInclusive": 0.4,
+        "upperExclusive": 0.65
+      },
+      {
+        "key": "strong",
+        "label": "Strong evidence",
+        "lowerInclusive": 0.65,
+        "upperExclusive": 0.85
+      },
+      {
+        "key": "very_strong",
+        "label": "Very strong evidence",
+        "lowerInclusive": 0.85,
+        "upperExclusive": 1
+      }
+    ],
+    "maximumIsInclusive": true,
+    "presenceOnlyMaximum": 0.39,
+    "unknownLabel": "Not assessable",
+    "unknownHasScore": false
+  },
+  "confidencePolicy": {
+    "version": "1.0.0",
+    "high": {
+      "detectorValidation": "benchmark_validated",
+      "coverage": "complete",
+      "semanticMatch": "direct",
+      "independentCorroboration": true,
+      "provenance": "bounded"
+    },
+    "moderate": {
+      "detectorValidation": "fixture_validated_or_better",
+      "coverage": "complete",
+      "semanticMatch": "direct"
+    },
+    "otherwise": "low",
+    "unsupportedCoverage": "unknown",
+    "numericCalibration": "deferred_to_run_11",
+    "explanation": "Confidence describes trust in an observation, separately from its implementation strength. Incomplete coverage or unvalidated detectors cap confidence at low. Unknown coverage has no numeric confidence. Human rubric calibration remains a separate release gate."
+  },
+  "improvementTemplates": [
+    {
+      "templateId": "languages_frameworks_proof",
+      "categoryId": "languages_frameworks",
+      "title": "Demonstrate a useful technology behavior",
+      "gapStates": [
+        "not_observed",
+        "limited_evidence"
+      ],
+      "effort": "medium",
+      "rationale": "This produces observable project evidence for languages and framework usage.",
+      "projectBehavior": "Implement one project behavior using an already relevant declared technology.",
+      "expectedEvidence": [
+        "An exercised behavior and its integration test identify where the technology is actually used."
+      ],
+      "acceptanceCriteria": [
+        "An exercised behavior and its integration test identify where the technology is actually used.",
+        "Cite the affected behavior and verification result at the analyzed revision."
+      ]
+    },
+    {
+      "templateId": "frontend_proof",
+      "categoryId": "frontend",
+      "title": "Exercise a recoverable and accessible user flow",
+      "gapStates": [
+        "not_observed",
+        "limited_evidence"
+      ],
+      "effort": "medium",
+      "rationale": "This produces observable project evidence for frontend engineering.",
+      "projectBehavior": "Implement success, loading, failure and keyboard recovery for one real user action.",
+      "expectedEvidence": [
+        "Interaction tests verify names, keyboard behavior and recovery after a failed action."
+      ],
+      "acceptanceCriteria": [
+        "Interaction tests verify names, keyboard behavior and recovery after a failed action.",
+        "Cite the affected behavior and verification result at the analyzed revision."
+      ]
+    },
+    {
+      "templateId": "mobile_proof",
+      "categoryId": "mobile",
+      "title": "Exercise interrupted device work",
+      "gapStates": [
+        "not_observed",
+        "limited_evidence"
+      ],
+      "effort": "large",
+      "rationale": "This produces observable project evidence for mobile engineering.",
+      "projectBehavior": "Recover a useful device flow after permission denial, backgrounding or disconnection.",
+      "expectedEvidence": [
+        "Platform-appropriate tests show state restoration and a defined reconnect outcome."
+      ],
+      "acceptanceCriteria": [
+        "Platform-appropriate tests show state restoration and a defined reconnect outcome.",
+        "Cite the affected behavior and verification result at the analyzed revision."
+      ]
+    },
+    {
+      "templateId": "backend_api_proof",
+      "categoryId": "backend_api",
+      "title": "Exercise request validation failures",
+      "gapStates": [
+        "not_observed",
+        "limited_evidence"
+      ],
+      "effort": "small",
+      "rationale": "This produces observable project evidence for backend and api design.",
+      "projectBehavior": "Validate a real request boundary before effects occur and define its error response.",
+      "expectedEvidence": [
+        "Negative requests produce the documented error and leave persisted state unchanged."
+      ],
+      "acceptanceCriteria": [
+        "Negative requests produce the documented error and leave persisted state unchanged.",
+        "Cite the affected behavior and verification result at the analyzed revision."
+      ]
+    },
+    {
+      "templateId": "data_proof",
+      "categoryId": "data",
+      "title": "Prove a transactional invariant",
+      "gapStates": [
+        "not_observed",
+        "limited_evidence"
+      ],
+      "effort": "medium",
+      "rationale": "This produces observable project evidence for data and database engineering.",
+      "projectBehavior": "Keep a related set of persisted changes atomic under a deliberately injected failure.",
+      "expectedEvidence": [
+        "Real database tests reject invalid relationships and prove rollback of partial writes."
+      ],
+      "acceptanceCriteria": [
+        "Real database tests reject invalid relationships and prove rollback of partial writes.",
+        "Cite the affected behavior and verification result at the analyzed revision."
+      ]
+    },
+    {
+      "templateId": "architecture_proof",
+      "categoryId": "architecture",
+      "title": "Verify a meaningful module boundary",
+      "gapStates": [
+        "not_observed",
+        "limited_evidence"
+      ],
+      "effort": "medium",
+      "rationale": "This produces observable project evidence for architecture and system design.",
+      "projectBehavior": "Separate one coupled responsibility behind a contract used by a real consumer.",
+      "expectedEvidence": [
+        "Contract tests exercise the actual adapter and detect an incompatible response."
+      ],
+      "acceptanceCriteria": [
+        "Contract tests exercise the actual adapter and detect an incompatible response.",
+        "Cite the affected behavior and verification result at the analyzed revision."
+      ]
+    },
+    {
+      "templateId": "testing_proof",
+      "categoryId": "testing",
+      "title": "Protect an important behavior from regression",
+      "gapStates": [
+        "not_observed",
+        "limited_evidence"
+      ],
+      "effort": "small",
+      "rationale": "This produces observable project evidence for testing and quality engineering.",
+      "projectBehavior": "Exercise a real success case and a failure case with observable outcomes.",
+      "expectedEvidence": [
+        "Temporarily breaking the behavior makes the tests fail for the expected reason."
+      ],
+      "acceptanceCriteria": [
+        "Temporarily breaking the behavior makes the tests fail for the expected reason.",
+        "Cite the affected behavior and verification result at the analyzed revision."
+      ]
+    },
+    {
+      "templateId": "reliability_proof",
+      "categoryId": "reliability",
+      "title": "Prove bounded retries and replay safety",
+      "gapStates": [
+        "not_observed",
+        "limited_evidence"
+      ],
+      "effort": "large",
+      "rationale": "This produces observable project evidence for reliability, concurrency, and failure handling.",
+      "projectBehavior": "Recover one interrupted operation with bounded retries and idempotent effects.",
+      "expectedEvidence": [
+        "Failure and concurrent replay tests produce a defined terminal state and one durable effect."
+      ],
+      "acceptanceCriteria": [
+        "Failure and concurrent replay tests produce a defined terminal state and one durable effect.",
+        "Cite the affected behavior and verification result at the analyzed revision."
+      ]
+    },
+    {
+      "templateId": "security_proof",
+      "categoryId": "security",
+      "title": "Prove an access and disclosure boundary",
+      "gapStates": [
+        "not_observed",
+        "limited_evidence"
+      ],
+      "effort": "medium",
+      "rationale": "This produces observable project evidence for security and privacy engineering.",
+      "projectBehavior": "Reject a foreign actor and prevent sensitive input from entering logs or responses.",
+      "expectedEvidence": [
+        "Distinct-user and sensitive-sentinel tests deny foreign data and show bounded safe errors."
+      ],
+      "acceptanceCriteria": [
+        "Distinct-user and sensitive-sentinel tests deny foreign data and show bounded safe errors.",
+        "Cite the affected behavior and verification result at the analyzed revision."
+      ]
+    },
+    {
+      "templateId": "delivery_proof",
+      "categoryId": "delivery",
+      "title": "Verify a clean build through CI",
+      "gapStates": [
+        "not_observed",
+        "limited_evidence"
+      ],
+      "effort": "medium",
+      "rationale": "This produces observable project evidence for devops and delivery.",
+      "projectBehavior": "Run the documented checks and build from a clean pinned revision.",
+      "expectedEvidence": [
+        "Attributable CI results show required checks block a deliberately failing change."
+      ],
+      "acceptanceCriteria": [
+        "Attributable CI results show required checks block a deliberately failing change.",
+        "Cite the affected behavior and verification result at the analyzed revision."
+      ]
+    },
+    {
+      "templateId": "observability_proof",
+      "categoryId": "observability",
+      "title": "Explain a failure with safe diagnostics",
+      "gapStates": [
+        "not_observed",
+        "limited_evidence"
+      ],
+      "effort": "small",
+      "rationale": "This produces observable project evidence for observability and operations.",
+      "projectBehavior": "Connect a real failure and health change to bounded diagnostic context.",
+      "expectedEvidence": [
+        "Failure tests verify correlation, health state and absence of sensitive sentinel data."
+      ],
+      "acceptanceCriteria": [
+        "Failure tests verify correlation, health state and absence of sensitive sentinel data.",
+        "Cite the affected behavior and verification result at the analyzed revision."
+      ]
+    },
+    {
+      "templateId": "ai_applications_proof",
+      "categoryId": "ai_applications",
+      "title": "Evaluate a bounded grounded model flow",
+      "gapStates": [
+        "not_observed",
+        "limited_evidence"
+      ],
+      "effort": "large",
+      "rationale": "This produces observable project evidence for ai application engineering.",
+      "projectBehavior": "Validate model output and citations against a scoped context and recorded evaluation cases.",
+      "expectedEvidence": [
+        "Controlled and adversarial cases reject malformed output, unsupported claims and unauthorized context."
+      ],
+      "acceptanceCriteria": [
+        "Controlled and adversarial cases reject malformed output, unsupported claims and unauthorized context.",
+        "Cite the affected behavior and verification result at the analyzed revision."
+      ]
+    },
+    {
+      "templateId": "documentation_collaboration_proof",
+      "categoryId": "documentation_collaboration",
+      "title": "Verify setup and document a tradeoff",
+      "gapStates": [
+        "not_observed",
+        "limited_evidence"
+      ],
+      "effort": "small",
+      "rationale": "This produces observable project evidence for documentation and collaboration.",
+      "projectBehavior": "Reproduce setup from the guide and explain a consequential design decision.",
+      "expectedEvidence": [
+        "A clean setup succeeds and the decision record links to relevant implementation and checks."
+      ],
+      "acceptanceCriteria": [
+        "A clean setup succeeds and the decision record links to relevant implementation and checks.",
+        "Cite the affected behavior and verification result at the analyzed revision."
+      ]
+    },
+    {
+      "templateId": "provenance_proof",
+      "categoryId": "provenance",
+      "title": "Record contribution context with uncertainty",
+      "gapStates": [
+        "not_observed",
+        "limited_evidence"
+      ],
+      "effort": "small",
+      "rationale": "This produces observable project evidence for project ownership and provenance.",
+      "projectBehavior": "Describe relevant contributions and authorized repository origin facts without claiming ownership.",
+      "expectedEvidence": [
+        "Evidence distinguishes provider observations from candidate-reported context and identifies missing history."
+      ],
+      "acceptanceCriteria": [
+        "Evidence distinguishes provider observations from candidate-reported context and identifies missing history.",
+        "Cite the affected behavior and verification result at the analyzed revision."
+      ]
+    },
+    {
+      "templateId": "coverage_review",
+      "categoryId": "documentation_collaboration",
+      "title": "Clarify an analysis coverage limitation",
+      "gapStates": [
+        "not_assessable"
+      ],
+      "effort": "unknown",
+      "rationale": "Unavailable detectors or excluded files are not evidence of missing skill.",
+      "projectBehavior": "Check supported language and detector coverage and identify eligible evidence that the analyzer could not assess.",
+      "expectedEvidence": [
+        "A recorded coverage limitation or a future supported reanalysis."
+      ],
+      "acceptanceCriteria": [
+        "Explain the coverage limitation without asking the engineer to add a package or rewrite working code."
+      ]
+    }
+  ]
+}

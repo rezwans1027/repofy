@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
 
   // ── Exchange code via backend ─────────────────────────────────────
 
-  const backendUrl = process.env.API_BACKEND_URL || "http://localhost:3001/api";
+  const backendUrl = process.env.API_BACKEND_URL || "http://localhost:3101/api";
   const redirectUri = `${url.origin}/callback`;
 
   try {

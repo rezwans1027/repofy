@@ -1,0 +1,100 @@
+{
+  "assessedAt": "2026-09-21T02:40:52.037Z",
+  "scope": "Feature 1 private internal rollout; no authorization to deploy or enable",
+  "decision": "hold",
+  "blockers": [
+    "independent_calibration",
+    "live_github",
+    "live_model",
+    "deployment_operations",
+    "representative_capacity",
+    "manual_assistive_technology",
+    "hosted_app_regression",
+    "required_ci_protection"
+  ],
+  "automaticEnablement": false,
+  "gates": [
+    {
+      "id": "local_verification",
+      "status": "passed",
+      "evidence": "run16-verification.json: all 22 required checks must pass against the current implementation digest"
+    },
+    {
+      "id": "major_references",
+      "status": "passed",
+      "evidence": "run16-results.json: major claim evidence membership; file spans checked separately"
+    },
+    {
+      "id": "local_privacy_recovery",
+      "status": "passed",
+      "evidence": "Corpus, real PostgreSQL concurrency/ownership, process cleanup and browser sentinel checks; external surfaces remain pending"
+    },
+    {
+      "id": "detector_regression",
+      "status": "passed",
+      "evidence": "24 TP, 0 FP, 1 documented FN against frozen references; R16-Q01 remains a measured limitation"
+    },
+    {
+      "id": "human_boundary_sample",
+      "status": "passed",
+      "evidence": "One review: 22 major claims plus two unknown cards; descriptive small sample only. Empirical and independent calibration is a separate gate."
+    },
+    {
+      "id": "local_workload",
+      "status": "passed",
+      "evidence": "run16-load.json: synthetic loopback workload, separate queue/stage/API timings; no population or deployed SLA claim"
+    },
+    {
+      "id": "local_intake_disabled",
+      "status": "passed",
+      "evidence": "run16-preflight.json: local configuration only; no flags or remote resources changed"
+    },
+    {
+      "id": "independent_calibration",
+      "status": "pending",
+      "evidence": "One user approved C01–C24 and R01–R30. Second independent engineering review, confirmed role expertise, empirical weight/band calibration and improvement usefulness remain pending. See run16-human-review.md and rubric-calibration.md."
+    },
+    {
+      "id": "live_github",
+      "status": "pending",
+      "evidence": "Local preflight has no App ID, slug, private key or webhook secret. Installation, exact-commit archive, permission, revocation/reconnect and signed-delivery smoke need an approved development App. See ../github-app-setup.md."
+    },
+    {
+      "id": "live_model",
+      "status": "pending",
+      "evidence": "Historical run12-provider-smoke.json records HTTP 404 for gpt-4.1-mini-2025-04-14. Run 16 made no live requests; successful pinned-model access/schema/usage validation and reviewed retention configuration are still required. No model substitution authorized."
+    },
+    {
+      "id": "deployment_operations",
+      "status": "pending",
+      "evidence": "Remote migration compatibility, service supervision, bounded RSS/volume, managed secrets and rotation, 30-minute TTL during outages, deletion/backups, provider retention and incident drill are unverified. See ../analysis-worker-operations.md."
+    },
+    {
+      "id": "representative_capacity",
+      "status": "pending",
+      "evidence": "13 local synthetic jobs and a small generated archive do not establish provider/network latency, production completion, maximum byte-volume behavior or actual model cost. Start only with one worker and an internal owner allowlist after representative deployed measurements."
+    },
+    {
+      "id": "manual_assistive_technology",
+      "status": "pending",
+      "evidence": "Keyboard, accessible roles, axe/contrast and mobile overflow are automated. Human screen-reader traversal of selection/progress/report/evidence/role/comparison/feedback has not been completed."
+    },
+    {
+      "id": "hosted_app_regression",
+      "status": "pending",
+      "evidence": "Local auth/explorer/advice/credit/export/deletion regressions pass only when recorded by run16-verification.json. The opt-in dedicated hosted-account browser suite was not run; missing credentials or a skipped job is not a pass."
+    },
+    {
+      "id": "required_ci_protection",
+      "status": "pending",
+      "evidence": "Workflow defines a blocking feature-one-gate and rejects failed/cancelled/skipped dependencies. Remote CI execution and required branch-protection configuration were not changed or verified."
+    }
+  ],
+  "sourceSha256": "e58cf1c40932d9c105d34b8d2365f73b8a1457da44b8e555417ff09133c3c2f5",
+  "corpusSha256": "f80ca10b4235986ea71de3254e8f738a5c870e54b54e96a619fcaabfb4250efe",
+  "deferred": [
+    "ANA-020 GitHub issue creation",
+    "Features 2–6 and public/employer disclosure workflows"
+  ],
+  "note": "Local implementation and verification can be complete while rollout remains on hold. Missing checks and credentials are never passes."
+}

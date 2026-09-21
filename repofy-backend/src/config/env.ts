@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { validateSafeUrl } from "../lib/validators";
+import { readFeatureOneConfig } from "./feature-one";
 
 dotenv.config();
 
@@ -29,8 +30,9 @@ if (!process.env.NODE_ENV) {
 const _isProduction = (process.env.NODE_ENV ?? "production") === "production";
 
 export const env = {
-  port: parseInt(process.env.PORT || "3001", 10),
-  corsOrigin: _isProduction ? requireEnv("CORS_ORIGIN") : (process.env.CORS_ORIGIN || "http://localhost:3000"),
+  featureOne: readFeatureOneConfig(process.env),
+  port: parseInt(process.env.PORT || "3101", 10),
+  corsOrigin: _isProduction ? requireEnv("CORS_ORIGIN") : (process.env.CORS_ORIGIN || "http://localhost:3100"),
   nodeEnv: process.env.NODE_ENV ?? "production",
   isProduction: _isProduction,
   trustProxy: _isProduction ? process.env.TRUST_PROXY !== "false" : process.env.TRUST_PROXY === "true",
@@ -42,7 +44,7 @@ export const env = {
   adminSecret: requireEnv("ADMIN_SECRET"),
   frontendUrl: _isProduction
     ? (process.env.FRONTEND_URL || requireEnv("CORS_ORIGIN"))
-    : (process.env.FRONTEND_URL || process.env.CORS_ORIGIN || "http://localhost:3000"),
+    : (process.env.FRONTEND_URL || process.env.CORS_ORIGIN || "http://localhost:3100"),
   stripeSecretKey: requireEnv("STRIPE_SECRET_KEY"),
   stripeWebhookSecret: requireEnv("STRIPE_WEBHOOK_SECRET"),
   resendApiKey: requireEnv("RESEND_API_KEY"),

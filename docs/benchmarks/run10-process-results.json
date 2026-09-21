@@ -1,0 +1,15 @@
+{
+  "recordedAt": "2026-09-20",
+  "node": "22.23.2",
+  "synthetic": true,
+  "command": "npm run coverage:verify",
+  "status": "baseline-boundaries-ok",
+  "files": 300,
+  "observations": 400,
+  "elapsedMs": 61,
+  "maxRssMiB": 167,
+  "heapLimitMiB": 256,
+  "watchdogMs": 15000,
+  "calibration": "uncalibrated",
+  "limitations": ["One synthetic process measurement, not production latency or parser precision.", "Grammar structure is not compiler/interpreter validation or runtime behavior."]
+}

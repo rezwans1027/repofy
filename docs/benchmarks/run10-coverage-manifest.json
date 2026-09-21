@@ -1,0 +1,540 @@
+{
+  "version": "1.2.0",
+  "selection": {
+    "id": "all_safe_files_bounded_patterns_v1",
+    "order": "path_lexical",
+    "reducedScanOffered": false,
+    "ingestionLimitBehavior": "fail_entire_snapshot",
+    "maxFileBytes": 262144,
+    "maxParserNodes": 20000,
+    "maxParserDepth": 64,
+    "maxImplementationFiles": 256,
+    "maxImplementationBytes": 2097152,
+    "maxObservations": 2000
+  },
+  "disabledParsers": [],
+  "parsers": [
+    {
+      "id": "python",
+      "package": "lezer_python",
+      "version": "1.1.19"
+    },
+    {
+      "id": "java",
+      "package": "lezer_java",
+      "version": "1.1.4"
+    },
+    {
+      "id": "maven",
+      "package": "lezer_xml",
+      "version": "1.0.6"
+    }
+  ],
+  "entries": [
+    {
+      "id": "tsjs",
+      "languages": [
+        "typescript",
+        "javascript"
+      ],
+      "fileTypes": [
+        "ts",
+        "tsx",
+        "mts",
+        "cts",
+        "js",
+        "jsx",
+        "mjs",
+        "cjs"
+      ],
+      "extractors": [
+        "source",
+        "tests",
+        "tsjs_implementation"
+      ],
+      "capabilities": [
+        "ai_integration",
+        "api_boundary_validation",
+        "api_design",
+        "architecture_modularity",
+        "data_modeling",
+        "data_transactions",
+        "frontend_accessibility",
+        "frontend_interaction",
+        "performance_resources",
+        "reliability_concurrency",
+        "reliability_recovery",
+        "security_authorization",
+        "security_input_handling",
+        "testing_behavior"
+      ],
+      "depth": "bounded_patterns",
+      "confidenceCeiling": 0.55,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "unsupported_version"
+      ]
+    },
+    {
+      "id": "react",
+      "languages": [
+        "typescript",
+        "javascript"
+      ],
+      "fileTypes": [
+        "jsx",
+        "tsx"
+      ],
+      "extractors": [
+        "tsjs_implementation"
+      ],
+      "capabilities": [
+        "frontend_interaction",
+        "frontend_accessibility",
+        "security_input_handling"
+      ],
+      "depth": "bounded_patterns",
+      "confidenceCeiling": 0.55,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "unsupported_version"
+      ]
+    },
+    {
+      "id": "express_node",
+      "languages": [
+        "typescript",
+        "javascript"
+      ],
+      "fileTypes": [
+        "ts",
+        "js"
+      ],
+      "extractors": [
+        "tsjs_implementation"
+      ],
+      "capabilities": [
+        "api_design",
+        "api_boundary_validation",
+        "security_authorization",
+        "architecture_modularity"
+      ],
+      "depth": "bounded_patterns",
+      "confidenceCeiling": 0.55,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "unsupported_version"
+      ]
+    },
+    {
+      "id": "next",
+      "languages": [
+        "typescript",
+        "javascript"
+      ],
+      "fileTypes": [
+        "next.config",
+        "jsx",
+        "tsx"
+      ],
+      "extractors": [
+        "configuration",
+        "tsjs_implementation"
+      ],
+      "capabilities": [
+        "framework_presence",
+        "frontend_interaction"
+      ],
+      "depth": "baseline",
+      "confidenceCeiling": 0.5,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "dynamic_configuration",
+        "unsupported_depth",
+        "unsupported_version"
+      ]
+    },
+    {
+      "id": "node_manifests",
+      "languages": [
+        "json",
+        "yaml"
+      ],
+      "fileTypes": [
+        "package.json",
+        "package-lock.v2.v3",
+        "pnpm-lock.v6.v9"
+      ],
+      "extractors": [
+        "manifests"
+      ],
+      "capabilities": [
+        "framework_presence"
+      ],
+      "depth": "baseline",
+      "confidenceCeiling": 0.5,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "unsupported_version"
+      ]
+    },
+    {
+      "id": "static_configuration",
+      "languages": [
+        "json",
+        "yaml",
+        "toml",
+        "typescript",
+        "javascript"
+      ],
+      "fileTypes": [
+        "json",
+        "yaml",
+        "yml",
+        "toml",
+        "config.ts",
+        "config.js"
+      ],
+      "extractors": [
+        "configuration"
+      ],
+      "capabilities": [
+        "framework_presence"
+      ],
+      "depth": "baseline",
+      "confidenceCeiling": 0.5,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "dynamic_configuration"
+      ]
+    },
+    {
+      "id": "database",
+      "languages": [
+        "sql",
+        "prisma",
+        "typescript",
+        "javascript"
+      ],
+      "fileTypes": [
+        "sql",
+        "prisma",
+        "ts",
+        "js"
+      ],
+      "extractors": [
+        "schemas",
+        "tsjs_implementation"
+      ],
+      "capabilities": [
+        "data_modeling",
+        "data_transactions",
+        "security_input_handling"
+      ],
+      "depth": "baseline",
+      "confidenceCeiling": 0.5,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "unsupported_depth",
+        "unsupported_version"
+      ]
+    },
+    {
+      "id": "selected_tests",
+      "languages": [
+        "typescript",
+        "javascript"
+      ],
+      "fileTypes": [
+        "vitest",
+        "jest_globals",
+        "playwright",
+        "cypress",
+        "mocha"
+      ],
+      "extractors": [
+        "tests",
+        "tsjs_implementation"
+      ],
+      "capabilities": [
+        "testing_behavior"
+      ],
+      "depth": "bounded_patterns",
+      "confidenceCeiling": 0.55,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "unsupported_depth",
+        "unsupported_version"
+      ]
+    },
+    {
+      "id": "documentation",
+      "languages": [
+        "markdown",
+        "text"
+      ],
+      "fileTypes": [
+        "md",
+        "readme"
+      ],
+      "extractors": [
+        "documentation"
+      ],
+      "capabilities": [
+        "documentation_operability",
+        "documentation_decisions"
+      ],
+      "depth": "baseline",
+      "confidenceCeiling": 0.5,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated"
+      ]
+    },
+    {
+      "id": "containers",
+      "languages": [
+        "dockerfile"
+      ],
+      "fileTypes": [
+        "dockerfile"
+      ],
+      "extractors": [
+        "configuration"
+      ],
+      "capabilities": [
+        "delivery_reproducibility"
+      ],
+      "depth": "baseline",
+      "confidenceCeiling": 0.5,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "dynamic_configuration"
+      ]
+    },
+    {
+      "id": "github_actions",
+      "languages": [
+        "yaml"
+      ],
+      "fileTypes": [
+        "github_workflows"
+      ],
+      "extractors": [
+        "ci"
+      ],
+      "capabilities": [
+        "delivery_automation"
+      ],
+      "depth": "baseline",
+      "confidenceCeiling": 0.5,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "dynamic_configuration"
+      ]
+    },
+    {
+      "id": "python",
+      "languages": [
+        "python"
+      ],
+      "fileTypes": [
+        "py"
+      ],
+      "extractors": [
+        "python",
+        "tests"
+      ],
+      "capabilities": [
+        "language_presence"
+      ],
+      "depth": "baseline",
+      "confidenceCeiling": 0.5,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "unsupported_depth"
+      ]
+    },
+    {
+      "id": "python_manifests",
+      "languages": [
+        "toml",
+        "text"
+      ],
+      "fileTypes": [
+        "pyproject.pep621",
+        "pyproject.pep735",
+        "requirements.txt"
+      ],
+      "extractors": [
+        "manifests"
+      ],
+      "capabilities": [
+        "framework_presence"
+      ],
+      "depth": "baseline",
+      "confidenceCeiling": 0.5,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "dynamic_configuration"
+      ]
+    },
+    {
+      "id": "java",
+      "languages": [
+        "java"
+      ],
+      "fileTypes": [
+        "java",
+        "module-info.java"
+      ],
+      "extractors": [
+        "java",
+        "tests"
+      ],
+      "capabilities": [
+        "language_presence"
+      ],
+      "depth": "baseline",
+      "confidenceCeiling": 0.5,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "unsupported_depth"
+      ]
+    },
+    {
+      "id": "maven",
+      "languages": [
+        "xml"
+      ],
+      "fileTypes": [
+        "pom.xml.model4"
+      ],
+      "extractors": [
+        "maven"
+      ],
+      "capabilities": [
+        "framework_presence"
+      ],
+      "depth": "baseline",
+      "confidenceCeiling": 0.5,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "dynamic_configuration"
+      ]
+    },
+    {
+      "id": "build_scripts",
+      "languages": [
+        "python",
+        "kotlin",
+        "unknown"
+      ],
+      "fileTypes": [
+        "setup.py",
+        "build.gradle",
+        "build.gradle.kts"
+      ],
+      "extractors": [
+        "source"
+      ],
+      "capabilities": [],
+      "depth": "inventory",
+      "confidenceCeiling": 0.5,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "dynamic_configuration",
+        "unsupported_depth"
+      ]
+    },
+    {
+      "id": "provider_metadata",
+      "languages": [],
+      "fileTypes": [
+        "commits",
+        "pull_requests",
+        "checks",
+        "statuses",
+        "actions"
+      ],
+      "extractors": [
+        "provider_metadata"
+      ],
+      "capabilities": [
+        "provenance_history"
+      ],
+      "depth": "baseline",
+      "confidenceCeiling": 0.5,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "history_bounded"
+      ]
+    },
+    {
+      "id": "native_mobile",
+      "languages": [
+        "swift",
+        "kotlin",
+        "java"
+      ],
+      "fileTypes": [
+        "swift",
+        "kt",
+        "java"
+      ],
+      "extractors": [],
+      "capabilities": [],
+      "depth": "unsupported",
+      "confidenceCeiling": 0,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "native_mobile_not_assessed"
+      ]
+    },
+    {
+      "id": "ai_runtime",
+      "languages": [],
+      "fileTypes": [],
+      "extractors": [],
+      "capabilities": [],
+      "depth": "unsupported",
+      "confidenceCeiling": 0,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "ai_runtime_not_assessed"
+      ]
+    },
+    {
+      "id": "other_ecosystems",
+      "languages": [],
+      "fileTypes": [],
+      "extractors": [],
+      "capabilities": [],
+      "depth": "inventory",
+      "confidenceCeiling": 0.5,
+      "reasons": [
+        "runtime_not_assessed",
+        "uncalibrated",
+        "unsupported_depth"
+      ]
+    }
+  ]
+}

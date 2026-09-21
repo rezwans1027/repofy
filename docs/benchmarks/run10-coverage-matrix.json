@@ -1,0 +1,3375 @@
+{
+  "manifestVersion": "1.2.0",
+  "synthetic": true,
+  "calibration": "uncalibrated",
+  "cases": [
+    {
+      "name": "python_single",
+      "state": "partially_assessable",
+      "result": "evidence_available",
+      "counts": {
+        "totalFiles": 3,
+        "excludedFiles": 0,
+        "eligibleFiles": 3,
+        "analyzedFiles": 3,
+        "unparsedFiles": 0,
+        "analyzedFractionOfAllFiles": 1
+      },
+      "languages": [
+        {
+          "language": "python",
+          "depth": "baseline",
+          "eligibleFiles": 2,
+          "analyzedFiles": 2,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "unsupported_depth"
+          ]
+        },
+        {
+          "language": "toml",
+          "depth": "baseline",
+          "eligibleFiles": 1,
+          "analyzedFiles": 1,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": []
+        }
+      ],
+      "capabilities": [
+        {
+          "capabilityId": "language_presence",
+          "state": "assessable",
+          "observations": 2
+        },
+        {
+          "capabilityId": "framework_presence",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "frontend_interaction",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_accessibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_state",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_navigation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_offline",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_design",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_boundary_validation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_modeling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_transactions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_modularity",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_boundaries",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_behavior",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_failures",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_recovery",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_concurrency",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "performance_resources",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_authorization",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_input_handling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_secrets",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_automation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_reproducibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_diagnostics",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_health",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_integration",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_context",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_evaluation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_safety",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_operability",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_decisions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_history",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_origin",
+          "state": "not_assessable",
+          "observations": 0
+        }
+      ]
+    },
+    {
+      "name": "python_multi",
+      "state": "partially_assessable",
+      "result": "evidence_available",
+      "counts": {
+        "totalFiles": 4,
+        "excludedFiles": 0,
+        "eligibleFiles": 4,
+        "analyzedFiles": 4,
+        "unparsedFiles": 0,
+        "analyzedFractionOfAllFiles": 1
+      },
+      "languages": [
+        {
+          "language": "python",
+          "depth": "baseline",
+          "eligibleFiles": 2,
+          "analyzedFiles": 2,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "unsupported_depth"
+          ]
+        },
+        {
+          "language": "toml",
+          "depth": "baseline",
+          "eligibleFiles": 2,
+          "analyzedFiles": 2,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": []
+        }
+      ],
+      "capabilities": [
+        {
+          "capabilityId": "language_presence",
+          "state": "assessable",
+          "observations": 2
+        },
+        {
+          "capabilityId": "framework_presence",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "frontend_interaction",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_accessibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_state",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_navigation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_offline",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_design",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_boundary_validation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_modeling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_transactions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_modularity",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_boundaries",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_behavior",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_failures",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_recovery",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_concurrency",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "performance_resources",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_authorization",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_input_handling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_secrets",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_automation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_reproducibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_diagnostics",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_health",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_integration",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_context",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_evaluation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_safety",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_operability",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_decisions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_history",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_origin",
+          "state": "not_assessable",
+          "observations": 0
+        }
+      ]
+    },
+    {
+      "name": "java_single",
+      "state": "partially_assessable",
+      "result": "evidence_available",
+      "counts": {
+        "totalFiles": 3,
+        "excludedFiles": 0,
+        "eligibleFiles": 3,
+        "analyzedFiles": 3,
+        "unparsedFiles": 0,
+        "analyzedFractionOfAllFiles": 1
+      },
+      "languages": [
+        {
+          "language": "java",
+          "depth": "baseline",
+          "eligibleFiles": 2,
+          "analyzedFiles": 2,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "unsupported_depth"
+          ]
+        },
+        {
+          "language": "xml",
+          "depth": "baseline",
+          "eligibleFiles": 1,
+          "analyzedFiles": 1,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": []
+        }
+      ],
+      "capabilities": [
+        {
+          "capabilityId": "language_presence",
+          "state": "assessable",
+          "observations": 2
+        },
+        {
+          "capabilityId": "framework_presence",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "frontend_interaction",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_accessibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_state",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_navigation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_offline",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_design",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_boundary_validation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_modeling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_transactions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_modularity",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_boundaries",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_behavior",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_failures",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_recovery",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_concurrency",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "performance_resources",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_authorization",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_input_handling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_secrets",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_automation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_reproducibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_diagnostics",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_health",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_integration",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_context",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_evaluation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_safety",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_operability",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_decisions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_history",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_origin",
+          "state": "not_assessable",
+          "observations": 0
+        }
+      ]
+    },
+    {
+      "name": "java_multi",
+      "state": "partially_assessable",
+      "result": "evidence_available",
+      "counts": {
+        "totalFiles": 4,
+        "excludedFiles": 0,
+        "eligibleFiles": 4,
+        "analyzedFiles": 4,
+        "unparsedFiles": 0,
+        "analyzedFractionOfAllFiles": 1
+      },
+      "languages": [
+        {
+          "language": "java",
+          "depth": "baseline",
+          "eligibleFiles": 2,
+          "analyzedFiles": 2,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "unsupported_depth"
+          ]
+        },
+        {
+          "language": "xml",
+          "depth": "baseline",
+          "eligibleFiles": 2,
+          "analyzedFiles": 2,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": []
+        }
+      ],
+      "capabilities": [
+        {
+          "capabilityId": "language_presence",
+          "state": "assessable",
+          "observations": 2
+        },
+        {
+          "capabilityId": "framework_presence",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "frontend_interaction",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_accessibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_state",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_navigation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_offline",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_design",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_boundary_validation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_modeling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_transactions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_modularity",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_boundaries",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_behavior",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_failures",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_recovery",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_concurrency",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "performance_resources",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_authorization",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_input_handling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_secrets",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_automation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_reproducibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_diagnostics",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_health",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_integration",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_context",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_evaluation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_safety",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_operability",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_decisions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_history",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_origin",
+          "state": "not_assessable",
+          "observations": 0
+        }
+      ]
+    },
+    {
+      "name": "mixed",
+      "state": "partially_assessable",
+      "result": "evidence_available",
+      "counts": {
+        "totalFiles": 5,
+        "excludedFiles": 0,
+        "eligibleFiles": 5,
+        "analyzedFiles": 4,
+        "unparsedFiles": 1,
+        "analyzedFractionOfAllFiles": 0.8
+      },
+      "languages": [
+        {
+          "language": "markdown",
+          "depth": "baseline",
+          "eligibleFiles": 1,
+          "analyzedFiles": 1,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": []
+        },
+        {
+          "language": "python",
+          "depth": "baseline",
+          "eligibleFiles": 1,
+          "analyzedFiles": 1,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "unsupported_depth"
+          ]
+        },
+        {
+          "language": "sql",
+          "depth": "baseline",
+          "eligibleFiles": 1,
+          "analyzedFiles": 1,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "unsupported_depth"
+          ]
+        },
+        {
+          "language": "swift",
+          "depth": "inventory",
+          "eligibleFiles": 1,
+          "analyzedFiles": 0,
+          "unparsedFiles": 1,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "unsupported_depth"
+          ]
+        },
+        {
+          "language": "yaml",
+          "depth": "baseline",
+          "eligibleFiles": 1,
+          "analyzedFiles": 1,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": []
+        }
+      ],
+      "capabilities": [
+        {
+          "capabilityId": "language_presence",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "framework_presence",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_interaction",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_accessibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_state",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_navigation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_offline",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_design",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_boundary_validation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_modeling",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "data_transactions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_modularity",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_boundaries",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_behavior",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_failures",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_recovery",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_concurrency",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "performance_resources",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_authorization",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_input_handling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_secrets",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_automation",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "delivery_reproducibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_diagnostics",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_health",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_integration",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_context",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_evaluation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_safety",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_operability",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "documentation_decisions",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "provenance_history",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_origin",
+          "state": "not_assessable",
+          "observations": 0
+        }
+      ]
+    },
+    {
+      "name": "malformed",
+      "state": "not_assessable",
+      "result": "insufficient_evidence",
+      "counts": {
+        "totalFiles": 3,
+        "excludedFiles": 0,
+        "eligibleFiles": 3,
+        "analyzedFiles": 0,
+        "unparsedFiles": 3,
+        "analyzedFractionOfAllFiles": 0
+      },
+      "languages": [
+        {
+          "language": "java",
+          "depth": "inventory",
+          "eligibleFiles": 1,
+          "analyzedFiles": 0,
+          "unparsedFiles": 1,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "parser_failure",
+            "unsupported_depth"
+          ]
+        },
+        {
+          "language": "python",
+          "depth": "inventory",
+          "eligibleFiles": 1,
+          "analyzedFiles": 0,
+          "unparsedFiles": 1,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "parser_failure",
+            "unsupported_depth"
+          ]
+        },
+        {
+          "language": "xml",
+          "depth": "inventory",
+          "eligibleFiles": 1,
+          "analyzedFiles": 0,
+          "unparsedFiles": 1,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "parser_failure"
+          ]
+        }
+      ],
+      "capabilities": [
+        {
+          "capabilityId": "language_presence",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "framework_presence",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_interaction",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_accessibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_state",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_navigation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_offline",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_design",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_boundary_validation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_modeling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_transactions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_modularity",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_boundaries",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_behavior",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_failures",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_recovery",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_concurrency",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "performance_resources",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_authorization",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_input_handling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_secrets",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_automation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_reproducibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_diagnostics",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_health",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_integration",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_context",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_evaluation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_safety",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_operability",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_decisions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_history",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_origin",
+          "state": "not_assessable",
+          "observations": 0
+        }
+      ]
+    },
+    {
+      "name": "build_scripts",
+      "state": "partially_assessable",
+      "result": "evidence_available",
+      "counts": {
+        "totalFiles": 2,
+        "excludedFiles": 0,
+        "eligibleFiles": 2,
+        "analyzedFiles": 1,
+        "unparsedFiles": 1,
+        "analyzedFractionOfAllFiles": 0.5
+      },
+      "languages": [
+        {
+          "language": "python",
+          "depth": "baseline",
+          "eligibleFiles": 1,
+          "analyzedFiles": 1,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "dynamic_configuration",
+            "unsupported_depth"
+          ]
+        },
+        {
+          "language": "unknown",
+          "depth": "inventory",
+          "eligibleFiles": 1,
+          "analyzedFiles": 0,
+          "unparsedFiles": 1,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "dynamic_configuration",
+            "unsupported_depth"
+          ]
+        }
+      ],
+      "capabilities": [
+        {
+          "capabilityId": "language_presence",
+          "state": "assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "framework_presence",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_interaction",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_accessibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_state",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_navigation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_offline",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_design",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_boundary_validation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_modeling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_transactions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_modularity",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_boundaries",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_behavior",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_failures",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_recovery",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_concurrency",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "performance_resources",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_authorization",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_input_handling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_secrets",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_automation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_reproducibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_diagnostics",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_health",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_integration",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_context",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_evaluation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_safety",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_operability",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_decisions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_history",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_origin",
+          "state": "not_assessable",
+          "observations": 0
+        }
+      ]
+    },
+    {
+      "name": "native_mobile",
+      "state": "not_assessable",
+      "result": "insufficient_evidence",
+      "counts": {
+        "totalFiles": 2,
+        "excludedFiles": 0,
+        "eligibleFiles": 2,
+        "analyzedFiles": 0,
+        "unparsedFiles": 2,
+        "analyzedFractionOfAllFiles": 0
+      },
+      "languages": [
+        {
+          "language": "kotlin",
+          "depth": "inventory",
+          "eligibleFiles": 1,
+          "analyzedFiles": 0,
+          "unparsedFiles": 1,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "unsupported_depth"
+          ]
+        },
+        {
+          "language": "swift",
+          "depth": "inventory",
+          "eligibleFiles": 1,
+          "analyzedFiles": 0,
+          "unparsedFiles": 1,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "unsupported_depth"
+          ]
+        }
+      ],
+      "capabilities": [
+        {
+          "capabilityId": "language_presence",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "framework_presence",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_interaction",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_accessibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_state",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_navigation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_offline",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_design",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_boundary_validation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_modeling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_transactions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_modularity",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_boundaries",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_behavior",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_failures",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_recovery",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_concurrency",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "performance_resources",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_authorization",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_input_handling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_secrets",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_automation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_reproducibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_diagnostics",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_health",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_integration",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_context",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_evaluation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_safety",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_operability",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_decisions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_history",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_origin",
+          "state": "not_assessable",
+          "observations": 0
+        }
+      ]
+    },
+    {
+      "name": "generated",
+      "state": "partially_assessable",
+      "result": "evidence_available",
+      "counts": {
+        "totalFiles": 3,
+        "excludedFiles": 2,
+        "eligibleFiles": 1,
+        "analyzedFiles": 1,
+        "unparsedFiles": 0,
+        "analyzedFractionOfAllFiles": 0.3333333333333333
+      },
+      "languages": [
+        {
+          "language": "python",
+          "depth": "baseline",
+          "eligibleFiles": 1,
+          "analyzedFiles": 1,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "unsupported_depth"
+          ]
+        }
+      ],
+      "capabilities": [
+        {
+          "capabilityId": "language_presence",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "framework_presence",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_interaction",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_accessibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_state",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_navigation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_offline",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_design",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_boundary_validation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_modeling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_transactions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_modularity",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_boundaries",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_behavior",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_failures",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_recovery",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_concurrency",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "performance_resources",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_authorization",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_input_handling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_secrets",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_automation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_reproducibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_diagnostics",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_health",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_integration",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_context",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_evaluation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_safety",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_operability",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_decisions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_history",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_origin",
+          "state": "not_assessable",
+          "observations": 0
+        }
+      ]
+    },
+    {
+      "name": "empty",
+      "state": "not_assessable",
+      "result": "insufficient_evidence",
+      "counts": {
+        "totalFiles": 0,
+        "excludedFiles": 0,
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "analyzedFractionOfAllFiles": null
+      },
+      "languages": [],
+      "capabilities": [
+        {
+          "capabilityId": "language_presence",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "framework_presence",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_interaction",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_accessibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_state",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_navigation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_offline",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_design",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_boundary_validation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_modeling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_transactions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_modularity",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_boundaries",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_behavior",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_failures",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_recovery",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_concurrency",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "performance_resources",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_authorization",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_input_handling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_secrets",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_automation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_reproducibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_diagnostics",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_health",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_integration",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_context",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_evaluation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_safety",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_operability",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_decisions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_history",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_origin",
+          "state": "not_assessable",
+          "observations": 0
+        }
+      ]
+    },
+    {
+      "name": "excluded_only",
+      "state": "not_assessable",
+      "result": "insufficient_evidence",
+      "counts": {
+        "totalFiles": 1,
+        "excludedFiles": 1,
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "analyzedFractionOfAllFiles": 0
+      },
+      "languages": [],
+      "capabilities": [
+        {
+          "capabilityId": "language_presence",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "framework_presence",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_interaction",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_accessibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_state",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_navigation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_offline",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_design",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_boundary_validation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_modeling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_transactions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_modularity",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_boundaries",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_behavior",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_failures",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_recovery",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_concurrency",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "performance_resources",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_authorization",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_input_handling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_secrets",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_automation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_reproducibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_diagnostics",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_health",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_integration",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_context",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_evaluation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_safety",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_operability",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_decisions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_history",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_origin",
+          "state": "not_assessable",
+          "observations": 0
+        }
+      ]
+    },
+    {
+      "name": "no_meaningful_source",
+      "state": "evidence_not_observed_within_assessed_scope",
+      "result": "insufficient_evidence",
+      "counts": {
+        "totalFiles": 3,
+        "excludedFiles": 0,
+        "eligibleFiles": 3,
+        "analyzedFiles": 3,
+        "unparsedFiles": 0,
+        "analyzedFractionOfAllFiles": 1
+      },
+      "languages": [
+        {
+          "language": "java",
+          "depth": "baseline",
+          "eligibleFiles": 1,
+          "analyzedFiles": 1,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "unsupported_depth"
+          ]
+        },
+        {
+          "language": "markdown",
+          "depth": "baseline",
+          "eligibleFiles": 1,
+          "analyzedFiles": 1,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": []
+        },
+        {
+          "language": "python",
+          "depth": "baseline",
+          "eligibleFiles": 1,
+          "analyzedFiles": 1,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "unsupported_depth"
+          ]
+        }
+      ],
+      "capabilities": [
+        {
+          "capabilityId": "language_presence",
+          "state": "evidence_not_observed_within_assessed_scope",
+          "observations": 0
+        },
+        {
+          "capabilityId": "framework_presence",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_interaction",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_accessibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_state",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_navigation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_offline",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_design",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_boundary_validation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_modeling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_transactions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_modularity",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_boundaries",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_behavior",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_failures",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_recovery",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_concurrency",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "performance_resources",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_authorization",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_input_handling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_secrets",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_automation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_reproducibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_diagnostics",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_health",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_integration",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_context",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_evaluation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_safety",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_operability",
+          "state": "evidence_not_observed_within_assessed_scope",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_decisions",
+          "state": "evidence_not_observed_within_assessed_scope",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_history",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_origin",
+          "state": "not_assessable",
+          "observations": 0
+        }
+      ]
+    },
+    {
+      "name": "large_file",
+      "state": "partially_assessable",
+      "result": "evidence_available",
+      "counts": {
+        "totalFiles": 2,
+        "excludedFiles": 0,
+        "eligibleFiles": 2,
+        "analyzedFiles": 1,
+        "unparsedFiles": 1,
+        "analyzedFractionOfAllFiles": 0.5
+      },
+      "languages": [
+        {
+          "language": "python",
+          "depth": "baseline",
+          "eligibleFiles": 2,
+          "analyzedFiles": 1,
+          "unparsedFiles": 1,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "parse_budget_exhausted",
+            "unsupported_depth"
+          ]
+        }
+      ],
+      "capabilities": [
+        {
+          "capabilityId": "language_presence",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "framework_presence",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_interaction",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_accessibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_state",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_navigation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_offline",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_design",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_boundary_validation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_modeling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_transactions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_modularity",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_boundaries",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_behavior",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_failures",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_recovery",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_concurrency",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "performance_resources",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_authorization",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_input_handling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_secrets",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_automation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_reproducibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_diagnostics",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_health",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_integration",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_context",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_evaluation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_safety",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_operability",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_decisions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_history",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_origin",
+          "state": "not_assessable",
+          "observations": 0
+        }
+      ]
+    },
+    {
+      "name": "malformed_neighbor",
+      "state": "partially_assessable",
+      "result": "evidence_available",
+      "counts": {
+        "totalFiles": 2,
+        "excludedFiles": 0,
+        "eligibleFiles": 2,
+        "analyzedFiles": 1,
+        "unparsedFiles": 1,
+        "analyzedFractionOfAllFiles": 0.5
+      },
+      "languages": [
+        {
+          "language": "python",
+          "depth": "baseline",
+          "eligibleFiles": 2,
+          "analyzedFiles": 1,
+          "unparsedFiles": 1,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "parser_failure",
+            "unsupported_depth"
+          ]
+        }
+      ],
+      "capabilities": [
+        {
+          "capabilityId": "language_presence",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "framework_presence",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_interaction",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_accessibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_state",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_navigation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_offline",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_design",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_boundary_validation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_modeling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_transactions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_modularity",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_boundaries",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_behavior",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_failures",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_recovery",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_concurrency",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "performance_resources",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_authorization",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_input_handling",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_secrets",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_automation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_reproducibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_diagnostics",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_health",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_integration",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_context",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_evaluation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_safety",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_operability",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_decisions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_history",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_origin",
+          "state": "not_assessable",
+          "observations": 0
+        }
+      ]
+    },
+    {
+      "name": "tsjs_ecosystem",
+      "state": "partially_assessable",
+      "result": "evidence_available",
+      "counts": {
+        "totalFiles": 19,
+        "excludedFiles": 5,
+        "eligibleFiles": 14,
+        "analyzedFiles": 12,
+        "unparsedFiles": 2,
+        "analyzedFractionOfAllFiles": 0.631578947368421
+      },
+      "languages": [
+        {
+          "language": "dockerfile",
+          "depth": "baseline",
+          "eligibleFiles": 1,
+          "analyzedFiles": 1,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": []
+        },
+        {
+          "language": "go",
+          "depth": "inventory",
+          "eligibleFiles": 1,
+          "analyzedFiles": 0,
+          "unparsedFiles": 1,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "unsupported_depth"
+          ]
+        },
+        {
+          "language": "json",
+          "depth": "baseline",
+          "eligibleFiles": 5,
+          "analyzedFiles": 4,
+          "unparsedFiles": 1,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "parser_failure"
+          ]
+        },
+        {
+          "language": "markdown",
+          "depth": "baseline",
+          "eligibleFiles": 1,
+          "analyzedFiles": 1,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": []
+        },
+        {
+          "language": "prisma",
+          "depth": "baseline",
+          "eligibleFiles": 1,
+          "analyzedFiles": 1,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "unsupported_depth"
+          ]
+        },
+        {
+          "language": "sql",
+          "depth": "baseline",
+          "eligibleFiles": 1,
+          "analyzedFiles": 1,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": [
+            "unsupported_depth"
+          ]
+        },
+        {
+          "language": "typescript",
+          "depth": "bounded_patterns",
+          "eligibleFiles": 3,
+          "analyzedFiles": 3,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 2,
+          "reasons": [
+            "dynamic_configuration"
+          ]
+        },
+        {
+          "language": "yaml",
+          "depth": "baseline",
+          "eligibleFiles": 1,
+          "analyzedFiles": 1,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 0,
+          "reasons": []
+        }
+      ],
+      "capabilities": [
+        {
+          "capabilityId": "language_presence",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "framework_presence",
+          "state": "partially_assessable",
+          "observations": 5
+        },
+        {
+          "capabilityId": "frontend_interaction",
+          "state": "evidence_not_observed_within_assessed_scope",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_accessibility",
+          "state": "evidence_not_observed_within_assessed_scope",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_state",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_navigation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_offline",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_design",
+          "state": "evidence_not_observed_within_assessed_scope",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_boundary_validation",
+          "state": "evidence_not_observed_within_assessed_scope",
+          "observations": 0
+        },
+        {
+          "capabilityId": "data_modeling",
+          "state": "partially_assessable",
+          "observations": 2
+        },
+        {
+          "capabilityId": "data_transactions",
+          "state": "evidence_not_observed_within_assessed_scope",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_modularity",
+          "state": "evidence_not_observed_within_assessed_scope",
+          "observations": 0
+        },
+        {
+          "capabilityId": "architecture_boundaries",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_behavior",
+          "state": "evidence_not_observed_within_assessed_scope",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_failures",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_recovery",
+          "state": "evidence_not_observed_within_assessed_scope",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_concurrency",
+          "state": "evidence_not_observed_within_assessed_scope",
+          "observations": 0
+        },
+        {
+          "capabilityId": "performance_resources",
+          "state": "evidence_not_observed_within_assessed_scope",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_authorization",
+          "state": "evidence_not_observed_within_assessed_scope",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_input_handling",
+          "state": "evidence_not_observed_within_assessed_scope",
+          "observations": 0
+        },
+        {
+          "capabilityId": "security_secrets",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_automation",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "delivery_reproducibility",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "observability_diagnostics",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_health",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_integration",
+          "state": "evidence_not_observed_within_assessed_scope",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_context",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_evaluation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_safety",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_operability",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "documentation_decisions",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "provenance_history",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_origin",
+          "state": "not_assessable",
+          "observations": 0
+        }
+      ]
+    },
+    {
+      "name": "implementation_patterns",
+      "state": "partially_assessable",
+      "result": "evidence_available",
+      "counts": {
+        "totalFiles": 32,
+        "excludedFiles": 0,
+        "eligibleFiles": 32,
+        "analyzedFiles": 32,
+        "unparsedFiles": 0,
+        "analyzedFractionOfAllFiles": 1
+      },
+      "languages": [
+        {
+          "language": "javascript",
+          "depth": "bounded_patterns",
+          "eligibleFiles": 2,
+          "analyzedFiles": 2,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 2,
+          "reasons": []
+        },
+        {
+          "language": "typescript",
+          "depth": "bounded_patterns",
+          "eligibleFiles": 30,
+          "analyzedFiles": 30,
+          "unparsedFiles": 0,
+          "implementationAnalyzedFiles": 30,
+          "reasons": []
+        }
+      ],
+      "capabilities": [
+        {
+          "capabilityId": "language_presence",
+          "state": "assessable",
+          "observations": 31
+        },
+        {
+          "capabilityId": "framework_presence",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "frontend_interaction",
+          "state": "partially_assessable",
+          "observations": 2
+        },
+        {
+          "capabilityId": "frontend_accessibility",
+          "state": "partially_assessable",
+          "observations": 2
+        },
+        {
+          "capabilityId": "frontend_state",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_navigation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "mobile_offline",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "api_design",
+          "state": "partially_assessable",
+          "observations": 8
+        },
+        {
+          "capabilityId": "api_boundary_validation",
+          "state": "partially_assessable",
+          "observations": 2
+        },
+        {
+          "capabilityId": "data_modeling",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "data_transactions",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "architecture_modularity",
+          "state": "partially_assessable",
+          "observations": 5
+        },
+        {
+          "capabilityId": "architecture_boundaries",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "testing_behavior",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "testing_failures",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "reliability_recovery",
+          "state": "partially_assessable",
+          "observations": 2
+        },
+        {
+          "capabilityId": "reliability_concurrency",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "performance_resources",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "security_authorization",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "security_input_handling",
+          "state": "partially_assessable",
+          "observations": 3
+        },
+        {
+          "capabilityId": "security_secrets",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_automation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "delivery_reproducibility",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_diagnostics",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "observability_health",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_integration",
+          "state": "partially_assessable",
+          "observations": 1
+        },
+        {
+          "capabilityId": "ai_context",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_evaluation",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "ai_safety",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_operability",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "documentation_decisions",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_history",
+          "state": "not_assessable",
+          "observations": 0
+        },
+        {
+          "capabilityId": "provenance_origin",
+          "state": "not_assessable",
+          "observations": 0
+        }
+      ]
+    }
+  ]
+}

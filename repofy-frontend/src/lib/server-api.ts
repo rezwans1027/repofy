@@ -13,7 +13,7 @@ function getBaseUrl() {
   if (process.env.NODE_ENV === "production") {
     throw new Error("API_BACKEND_URL must be set in production");
   }
-  return "http://localhost:3001/api";
+  return "http://localhost:3101/api";
 }
 
 export async function serverFetch<T>(

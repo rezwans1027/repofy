@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    const backendUrl = process.env.API_BACKEND_URL || "http://localhost:3001/api";
+    const backendUrl = process.env.API_BACKEND_URL || "http://localhost:3101/api";
     return [{ source: "/api/:path*", destination: `${backendUrl}/:path*` }];
   },
   async headers() {

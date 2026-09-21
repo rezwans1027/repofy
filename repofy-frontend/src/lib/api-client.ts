@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ApiErrorEnvelopeSchema, type ApiErrorEnvelope, type ErrorCode } from "@repofy/contracts";
 
 function getBaseUrl() {
   // Browser: use relative path (goes through Next.js rewrites)
@@ -10,16 +11,24 @@ function getBaseUrl() {
   if (process.env.NODE_ENV === "production") {
     throw new Error("API_BACKEND_URL must be set in production for server-side calls");
   }
-  return "http://localhost:3001/api";
+  return "http://localhost:3101/api";
 }
 
 export class ApiError extends Error {
+  public code?: ErrorCode;
+  public retryable?: boolean;
+  public requestId?: string;
+
   constructor(
     message: string,
     public status: number,
+    details?: Pick<ApiErrorEnvelope, "code" | "retryable" | "requestId">,
   ) {
     super(message);
     this.name = "ApiError";
+    this.code = details?.code;
+    this.retryable = details?.retryable;
+    this.requestId = details?.requestId;
   }
 }
 
@@ -66,7 +75,7 @@ async function request<T>(
   path: string,
   opts: RequestOptions = {},
 ): Promise<T> {
-  const { body, signal, headers: callerHeaders, ...rest } = opts;
+  const { body, signal, headers: callerHeaders, schema, ...rest } = opts;
   const headers: Record<string, string> = {};
 
   if (body !== undefined) {
@@ -78,51 +87,26 @@ async function request<T>(
     headers["X-Requested-With"] = "XMLHttpRequest";
   }
 
-  const res = await fetch(`${getBaseUrl()}${path}`, {
+  const fetchOptions: RequestInit = {
     method,
     ...rest,
     credentials: "include",
     headers: { ...(callerHeaders as Record<string, string>), ...headers },
     body: body !== undefined ? JSON.stringify(body) : undefined,
     signal,
-  });
+  };
+  let res = await fetch(`${getBaseUrl()}${path}`, fetchOptions);
 
   // Auto-refresh on 401 (unless exempt path)
   if (res.status === 401 && !REFRESH_EXEMPT_PATHS.some((p) => path.startsWith(p))) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
       // Retry original request once
-      const retryRes = await fetch(`${getBaseUrl()}${path}`, {
-        method,
-        ...rest,
-        credentials: "include",
-        headers: { ...(callerHeaders as Record<string, string>), ...headers },
-        body: body !== undefined ? JSON.stringify(body) : undefined,
-        signal,
-      });
-
-      let retryJson: Record<string, unknown>;
-      try {
-        retryJson = await retryRes.json();
-      } catch {
-        throw new ApiError("Server returned non-JSON response", retryRes.status);
-      }
-
-      if (!retryRes.ok || retryJson.success === false) {
-        throw new ApiError(
-          (retryJson.error as string) || "Request failed",
-          retryRes.status,
-        );
-      }
-
-      if (opts.schema) {
-        return opts.schema.parse(retryJson.data) as T;
-      }
-      return retryJson.data as T;
+      res = await fetch(`${getBaseUrl()}${path}`, fetchOptions);
+    } else {
+      const original = ApiErrorEnvelopeSchema.safeParse(await res.json().catch(() => null));
+      throw new ApiError("Session expired", 401, original.success ? original.data : undefined);
     }
-
-    // Refresh failed — throw so callers can handle (middleware handles route protection)
-    throw new ApiError("Session expired", 401);
   }
 
   let json: Record<string, unknown>;
@@ -133,14 +117,16 @@ async function request<T>(
   }
 
   if (!res.ok || json.success === false) {
+    const structured = ApiErrorEnvelopeSchema.safeParse(json);
     throw new ApiError(
-      (json.error as string) || "Request failed",
+      (typeof json.error === "string" && json.error) || "Request failed",
       res.status,
+      structured.success ? structured.data : undefined,
     );
   }
 
-  if (opts.schema) {
-    return opts.schema.parse(json.data) as T;
+  if (schema) {
+    return schema.parse(json.data) as T;
   }
   return json.data as T;
 }
@@ -151,6 +137,9 @@ export const api = {
   },
   post<T>(path: string, opts?: RequestOptions) {
     return request<T>("POST", path, opts);
+  },
+  put<T>(path: string, opts?: RequestOptions) {
+    return request<T>("PUT", path, opts);
   },
   delete<T>(path: string, opts?: RequestOptions) {
     return request<T>("DELETE", path, opts);

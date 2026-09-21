@@ -1,0 +1,113 @@
+{
+  "description": "Ordered immutable historical baseline; new migrations live only in supabase/migrations.",
+  "omittedEmptyDuplicates": [
+    "repofy-backend/supabase/migrations/20260220195818_create_api_usage_table.sql",
+    "repofy-backend/supabase/migrations/20260220200714_reload_schema.sql"
+  ],
+  "migrations": [
+    {
+      "path": "supabase/migrations/001_profiles.sql",
+      "sha256": "8566b69ea236524a60061bb25df02b2223f12b0f905c1d29923b4e2615210abe"
+    },
+    {
+      "path": "supabase/migrations/002_reports_and_advice.sql",
+      "sha256": "8dd9357545bec13c1c29f12b76a1a5a44dd85910cd0aaec88b38ccda1159883c"
+    },
+    {
+      "path": "supabase/migrations/003_unique_report_advice_per_user.sql",
+      "sha256": "0c291c86bd6b1a154d340e8493d59623a6eed40326b07c6bba593979fa4c1dbd"
+    },
+    {
+      "path": "supabase/migrations/004_fix_unique_constraint_for_upsert.sql",
+      "sha256": "94976cbd92d3458003f5cd0370fd485f5d9796a9857a9e8f78d29c78933cbef2"
+    },
+    {
+      "path": "supabase/migrations/005_credit_wallets.sql",
+      "sha256": "8b0c65903a61c2543f9a51a49c87d7587d049513e51274022f8d0a2d30f4efba"
+    },
+    {
+      "path": "supabase/migrations/20260220195818_create_api_usage_table.sql",
+      "sha256": "90d9b078a3c36ab399a5d79584dc152d7fcb9e8ec9351134b5882f596973c9b6"
+    },
+    {
+      "path": "supabase/migrations/20260220200714_reload_schema.sql",
+      "sha256": "4c778244a95d19603d0b04370755fd83896858084c762bd80a3aeee57c99c868"
+    },
+    {
+      "path": "supabase/migrations/20260222000000_create_analysis_cache.sql",
+      "sha256": "edda7e2661473b633daad7cbab430b524111d8ce56445675f008b8888bdc213f"
+    },
+    {
+      "path": "supabase/migrations/20260228000000_enable_rls_analysis_cache.sql",
+      "sha256": "d3eaf806ffb0ac352d7734830b94ecca208e52618630e87750da6e85d18d8d79"
+    },
+    {
+      "path": "supabase/migrations/20260305000000_create_pending_signups.sql",
+      "sha256": "aa19552492be2188f31ace8150d87d23ac1f8e5dbbcfe0e727c1d177c686d1c8"
+    },
+    {
+      "path": "supabase/migrations/20260305100000_restrict_profiles_select.sql",
+      "sha256": "668fcac9d0899aecdbeceb774daf7a4a146dc6982aa1d56c5ccc3297fcb7833b"
+    },
+    {
+      "path": "supabase/migrations/20260306000000_add_email_exists_rpc.sql",
+      "sha256": "3aafbb3ea49596ecfae7a93230aa7b058bde891f94c0b8030d3412d1b1dce51d"
+    },
+    {
+      "path": "supabase/migrations/20260306100000_grant_email_exists_to_service_role.sql",
+      "sha256": "f41a218565ea3fb430394c4f16a92f2dcafd28db6449ea246c04f67629c66d57"
+    },
+    {
+      "path": "supabase/migrations/20260306200000_add_increment_otp_attempts_rpc.sql",
+      "sha256": "59e63b9a6b69bc4f288c4f5527e1f8a724ccf41af374ccc6bf16297fc0a4b9eb"
+    },
+    {
+      "path": "supabase/migrations/20260306300000_add_pending_signups_expiry_index.sql",
+      "sha256": "533059c9c9ca59b1eb2b958087246c527088b259d64463676108c51edb835257"
+    },
+    {
+      "path": "repofy-backend/supabase/migrations/20260320000000_create_github_tokens_table.sql",
+      "sha256": "4185442e74780998d75de4ff18e8716a78665fc100add5f309f3f770c3de6fc0"
+    },
+    {
+      "path": "repofy-backend/supabase/migrations/20260320000001_drop_pending_signups.sql",
+      "sha256": "53819b7908eeaf32b79e86ec0508f233c052e4cd519d08e85fde3aac5914330f"
+    },
+    {
+      "path": "repofy-backend/supabase/migrations/20260321000000_allow_multiple_advice_per_user.sql",
+      "sha256": "5b574da02b1a251c3cf1e4285cd7ad14da816ebe2736395714cfe3f938f8b015"
+    },
+    {
+      "path": "repofy-backend/supabase/migrations/20260321100000_create_advice_jobs_table.sql",
+      "sha256": "0e81a15679f2e9486deb05333be6e4808587c07bc42c94f875ea2d0e81590774"
+    },
+    {
+      "path": "repofy-backend/supabase/migrations/20260321200000_add_advice_jobs_user_fk.sql",
+      "sha256": "cd7aa04d1c44d1ae6fcd5cb50568fedc650c58a797cf30687cb8fe8de0868e31"
+    },
+    {
+      "path": "repofy-backend/supabase/migrations/20260321300000_add_advice_avatar_url.sql",
+      "sha256": "6682613a31c1c636be4444482cb7cc16a7b15a16f064d2600607f39697bb64d0"
+    },
+    {
+      "path": "repofy-backend/supabase/migrations/20260322000000_add_encrypted_token_comment.sql",
+      "sha256": "b84f5f57be01b8355d43a28a18cefdeed98c5538fd3f14d7ab2cd55decbdd038"
+    },
+    {
+      "path": "repofy-backend/supabase/migrations/20260323000000_add_request_id_to_advice_jobs.sql",
+      "sha256": "6d5e6c98d440df8ab63cbee97835afd9cf5395b94ce186f4f4f0e06b5c9719cc"
+    },
+    {
+      "path": "repofy-backend/supabase/migrations/20260323100000_enable_rls_advice_jobs.sql",
+      "sha256": "b7e70f458b70dc394518bc23a7215e22312bd5a9ffcb94c72e7791bd3382074f"
+    },
+    {
+      "path": "repofy-backend/supabase/migrations/20260323200000_create_feedback_table.sql",
+      "sha256": "87ce5e9f058d832c27c2ade3b45062105c27f77ee54bafb367ef051a15d33ec1"
+    },
+    {
+      "path": "repofy-backend/supabase/migrations/20260402000000_add_github_user_id.sql",
+      "sha256": "a9c552920b00eb046e3212b51e8e142a73a8c956af5d8511cd28dd0dd76507c7"
+    }
+  ]
+}

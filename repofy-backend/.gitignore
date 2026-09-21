@@ -1,6 +1,7 @@
 node_modules/
 dist/
-coverage/
+# Generated test reports, not source modules or verification scripts named coverage.
+/coverage/
 .env
 .env.local
 .env.production

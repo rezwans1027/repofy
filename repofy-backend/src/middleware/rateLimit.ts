@@ -24,6 +24,7 @@
  */
 import rateLimit from "express-rate-limit";
 import type { Request } from "express";
+import { sendError } from "../lib/response";
 
 /** Derive a per-user key from the authenticated user ID, falling back to IP. */
 function userKeyGenerator(req: Request): string {
@@ -63,6 +64,7 @@ function createLimiter({
     standardHeaders: true,
     legacyHeaders: false,
     message: { success: false, error: message },
+    handler: (_req, res) => sendError(res, 429, message),
   });
 }
 

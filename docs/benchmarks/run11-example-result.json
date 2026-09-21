@@ -1,0 +1,4132 @@
+{
+  "contractVersion": "1.0.0",
+  "policy": {
+    "id": "evidence_aggregation",
+    "version": "1.0.0"
+  },
+  "runId": "03a41de5-5770-45c7-ad5a-a5466137a45d",
+  "jobId": "83434137-b49b-48b1-9b8b-3d3a6e0369e0",
+  "ownerUserId": "b9f976ef-e5e5-4bd5-9391-3b521563cfad",
+  "visibility": "owner_only",
+  "versions": {
+    "contract": "1.0.0",
+    "snapshotIdentity": "1.0.0",
+    "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+    "extractorBundle": {
+      "id": "language_inventory",
+      "version": "1.0.0"
+    },
+    "detectorBundle": {
+      "id": "tsjs_implementation",
+      "version": "1.0.0"
+    },
+    "coverageManifest": "1.2.0",
+    "aggregationPolicy": {
+      "id": "evidence_aggregation",
+      "version": "1.0.0"
+    },
+    "taxonomy": {
+      "id": "engineering_capabilities",
+      "version": "1.0.0"
+    },
+    "roleRubrics": [
+      {
+        "roleId": "backend",
+        "version": "1.0.0"
+      },
+      {
+        "roleId": "frontend",
+        "version": "1.0.0"
+      },
+      {
+        "roleId": "full_stack",
+        "version": "1.0.0"
+      },
+      {
+        "roleId": "mobile",
+        "version": "1.0.0"
+      },
+      {
+        "roleId": "ai_application",
+        "version": "1.0.0"
+      }
+    ],
+    "disclosurePolicy": {
+      "id": "owner_only",
+      "version": "1.0.0"
+    },
+    "synthesis": {
+      "kind": "not_used"
+    }
+  },
+  "snapshotIds": [
+    "31f989b4-9313-58cd-8743-db0ba8504ce5"
+  ],
+  "inputHash": "sha256:316f569db08ba2d61eb0fc48a8db1d86e6dc0d9f80f4086e69f76a6d099cc67b",
+  "capabilities": [
+    {
+      "capabilityId": "ai_context",
+      "categoryId": "ai_applications",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "ai_runtime_not_assessed",
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "ai_evaluation",
+      "categoryId": "ai_applications",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "ai_runtime_not_assessed",
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "ai_integration",
+      "categoryId": "ai_applications",
+      "state": "not_observed",
+      "strength": 0,
+      "strengthBand": "not_observed",
+      "confidence": 0.55,
+      "confidenceLabel": "low",
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "evidence_not_observed_within_assessed_scope",
+            "analyzedFiles": 3,
+            "eligibleFiles": 3,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 1,
+            "confidenceCeiling": 0.55,
+            "reasons": [
+              "ai_runtime_not_assessed",
+              "no_observed_evidence",
+              "resolution_incomplete",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": {
+          "reliability": 0.55,
+          "coverageFraction": 1,
+          "coverageFactor": 1,
+          "independentSupportBonus": 0,
+          "ceiling": 0.55,
+          "provenanceMultiplier": null
+        }
+      }
+    },
+    {
+      "capabilityId": "ai_safety",
+      "categoryId": "ai_applications",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "ai_runtime_not_assessed",
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "api_boundary_validation",
+      "categoryId": "backend_api",
+      "state": "not_observed",
+      "strength": 0,
+      "strengthBand": "not_observed",
+      "confidence": 0.55,
+      "confidenceLabel": "low",
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "evidence_not_observed_within_assessed_scope",
+            "analyzedFiles": 3,
+            "eligibleFiles": 3,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 1,
+            "confidenceCeiling": 0.55,
+            "reasons": [
+              "no_observed_evidence",
+              "resolution_incomplete",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": {
+          "reliability": 0.55,
+          "coverageFraction": 1,
+          "coverageFactor": 1,
+          "independentSupportBonus": 0,
+          "ceiling": 0.55,
+          "provenanceMultiplier": null
+        }
+      }
+    },
+    {
+      "capabilityId": "api_design",
+      "categoryId": "backend_api",
+      "state": "not_observed",
+      "strength": 0,
+      "strengthBand": "not_observed",
+      "confidence": 0.55,
+      "confidenceLabel": "low",
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "evidence_not_observed_within_assessed_scope",
+            "analyzedFiles": 3,
+            "eligibleFiles": 3,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 1,
+            "confidenceCeiling": 0.55,
+            "reasons": [
+              "no_observed_evidence",
+              "resolution_incomplete",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": {
+          "reliability": 0.55,
+          "coverageFraction": 1,
+          "coverageFactor": 1,
+          "independentSupportBonus": 0,
+          "ceiling": 0.55,
+          "provenanceMultiplier": null
+        }
+      }
+    },
+    {
+      "capabilityId": "architecture_boundaries",
+      "categoryId": "architecture",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "architecture_modularity",
+      "categoryId": "architecture",
+      "state": "not_observed",
+      "strength": 0,
+      "strengthBand": "not_observed",
+      "confidence": 0.55,
+      "confidenceLabel": "low",
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "evidence_not_observed_within_assessed_scope",
+            "analyzedFiles": 3,
+            "eligibleFiles": 3,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 1,
+            "confidenceCeiling": 0.55,
+            "reasons": [
+              "no_observed_evidence",
+              "resolution_incomplete",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": {
+          "reliability": 0.55,
+          "coverageFraction": 1,
+          "coverageFactor": 1,
+          "independentSupportBonus": 0,
+          "ceiling": 0.55,
+          "provenanceMultiplier": null
+        }
+      }
+    },
+    {
+      "capabilityId": "data_modeling",
+      "categoryId": "data",
+      "state": "not_observed",
+      "strength": 0,
+      "strengthBand": "not_observed",
+      "confidence": 0.55,
+      "confidenceLabel": "low",
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "evidence_not_observed_within_assessed_scope",
+            "analyzedFiles": 3,
+            "eligibleFiles": 3,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 1,
+            "confidenceCeiling": 0.55,
+            "reasons": [
+              "no_observed_evidence",
+              "resolution_incomplete",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": {
+          "reliability": 0.55,
+          "coverageFraction": 1,
+          "coverageFactor": 1,
+          "independentSupportBonus": 0,
+          "ceiling": 0.55,
+          "provenanceMultiplier": null
+        }
+      }
+    },
+    {
+      "capabilityId": "data_transactions",
+      "categoryId": "data",
+      "state": "not_observed",
+      "strength": 0,
+      "strengthBand": "not_observed",
+      "confidence": 0.55,
+      "confidenceLabel": "low",
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "evidence_not_observed_within_assessed_scope",
+            "analyzedFiles": 3,
+            "eligibleFiles": 3,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 1,
+            "confidenceCeiling": 0.55,
+            "reasons": [
+              "no_observed_evidence",
+              "resolution_incomplete",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": {
+          "reliability": 0.55,
+          "coverageFraction": 1,
+          "coverageFactor": 1,
+          "independentSupportBonus": 0,
+          "ceiling": 0.55,
+          "provenanceMultiplier": null
+        }
+      }
+    },
+    {
+      "capabilityId": "delivery_automation",
+      "categoryId": "delivery",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "delivery_reproducibility",
+      "categoryId": "delivery",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "documentation_decisions",
+      "categoryId": "documentation_collaboration",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "documentation_operability",
+      "categoryId": "documentation_collaboration",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "framework_presence",
+      "categoryId": "languages_frameworks",
+      "state": "assessed",
+      "strength": 0.2,
+      "strengthBand": "limited",
+      "confidence": 0.5,
+      "confidenceLabel": "low",
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [
+        "d3923697-7c88-561c-841a-2bde55568b35"
+      ],
+      "support": [
+        {
+          "evidenceId": "d3923697-7c88-561c-841a-2bde55568b35",
+          "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+          "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+          "clusterId": "cluster.1e374526d55bfbdc68cf6e7fb4fc8caaa3220f727e1694fcf0b350a23e6b4046",
+          "sourceType": "dependency",
+          "basis": "presence",
+          "detector": {
+            "id": "structural.manifests.dependency",
+            "version": "1.0.0"
+          },
+          "boundary": "dependency_presence"
+        }
+      ],
+      "allowedClaimScopes": [
+        "technology_presence"
+      ],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "partially_assessable",
+            "analyzedFiles": 1,
+            "eligibleFiles": 1,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 1,
+            "confidenceCeiling": 0.5,
+            "reasons": [
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [
+          {
+            "clusterId": "cluster.1e374526d55bfbdc68cf6e7fb4fc8caaa3220f727e1694fcf0b350a23e6b4046",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "baseEvidenceId": "d3923697-7c88-561c-841a-2bde55568b35",
+            "evidenceIds": [
+              "d3923697-7c88-561c-841a-2bde55568b35"
+            ],
+            "baseStrength": 0.2,
+            "presenceCeiling": 0.39,
+            "corroboration": [],
+            "strength": 0.2
+          }
+        ],
+        "selectedClusterId": "cluster.1e374526d55bfbdc68cf6e7fb4fc8caaa3220f727e1694fcf0b350a23e6b4046",
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": {
+          "reliability": 0.5,
+          "coverageFraction": 1,
+          "coverageFactor": 1,
+          "independentSupportBonus": 0,
+          "ceiling": 0.5,
+          "provenanceMultiplier": null
+        }
+      }
+    },
+    {
+      "capabilityId": "frontend_accessibility",
+      "categoryId": "frontend",
+      "state": "not_observed",
+      "strength": 0,
+      "strengthBand": "not_observed",
+      "confidence": 0.55,
+      "confidenceLabel": "low",
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "evidence_not_observed_within_assessed_scope",
+            "analyzedFiles": 3,
+            "eligibleFiles": 3,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 1,
+            "confidenceCeiling": 0.55,
+            "reasons": [
+              "no_observed_evidence",
+              "resolution_incomplete",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": {
+          "reliability": 0.55,
+          "coverageFraction": 1,
+          "coverageFactor": 1,
+          "independentSupportBonus": 0,
+          "ceiling": 0.55,
+          "provenanceMultiplier": null
+        }
+      }
+    },
+    {
+      "capabilityId": "frontend_interaction",
+      "categoryId": "frontend",
+      "state": "not_observed",
+      "strength": 0,
+      "strengthBand": "not_observed",
+      "confidence": 0.55,
+      "confidenceLabel": "low",
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "evidence_not_observed_within_assessed_scope",
+            "analyzedFiles": 3,
+            "eligibleFiles": 3,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 1,
+            "confidenceCeiling": 0.55,
+            "reasons": [
+              "no_observed_evidence",
+              "resolution_incomplete",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": {
+          "reliability": 0.55,
+          "coverageFraction": 1,
+          "coverageFactor": 1,
+          "independentSupportBonus": 0,
+          "ceiling": 0.55,
+          "provenanceMultiplier": null
+        }
+      }
+    },
+    {
+      "capabilityId": "frontend_state",
+      "categoryId": "frontend",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "language_presence",
+      "categoryId": "languages_frameworks",
+      "state": "assessed",
+      "strength": 0.3,
+      "strengthBand": "limited",
+      "confidence": 0.5,
+      "confidenceLabel": "moderate",
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [
+        "6d558df7-7542-5be8-852a-d4730dd0cb70",
+        "735cab16-fd85-5e08-8fc8-d589a5405f0c"
+      ],
+      "support": [
+        {
+          "evidenceId": "6d558df7-7542-5be8-852a-d4730dd0cb70",
+          "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+          "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+          "clusterId": "cluster.d9de006a9da5d047bfe718c7b392b9d34885cde66cc521f03f729a578d82c15e",
+          "sourceType": "code",
+          "basis": "presence",
+          "detector": {
+            "id": "structural.source.structure",
+            "version": "1.0.0"
+          },
+          "boundary": "source_structure_only"
+        },
+        {
+          "evidenceId": "735cab16-fd85-5e08-8fc8-d589a5405f0c",
+          "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+          "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+          "clusterId": "cluster.14565770475e8313f6d3510e5a6b8bb0d03ddd6bc5107ad46aaebf3c97db63cb",
+          "sourceType": "code",
+          "basis": "presence",
+          "detector": {
+            "id": "structural.source.structure",
+            "version": "1.0.0"
+          },
+          "boundary": "source_structure_only"
+        }
+      ],
+      "allowedClaimScopes": [
+        "technology_presence"
+      ],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "assessable",
+            "analyzedFiles": 3,
+            "eligibleFiles": 3,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 1,
+            "confidenceCeiling": 0.5,
+            "reasons": [
+              "runtime_not_assessed",
+              "uncalibrated"
+            ]
+          }
+        ],
+        "clusters": [
+          {
+            "clusterId": "cluster.14565770475e8313f6d3510e5a6b8bb0d03ddd6bc5107ad46aaebf3c97db63cb",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "baseEvidenceId": "735cab16-fd85-5e08-8fc8-d589a5405f0c",
+            "evidenceIds": [
+              "735cab16-fd85-5e08-8fc8-d589a5405f0c"
+            ],
+            "baseStrength": 0.3,
+            "presenceCeiling": 0.39,
+            "corroboration": [],
+            "strength": 0.3
+          },
+          {
+            "clusterId": "cluster.d9de006a9da5d047bfe718c7b392b9d34885cde66cc521f03f729a578d82c15e",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "baseEvidenceId": "6d558df7-7542-5be8-852a-d4730dd0cb70",
+            "evidenceIds": [
+              "6d558df7-7542-5be8-852a-d4730dd0cb70"
+            ],
+            "baseStrength": 0.3,
+            "presenceCeiling": 0.39,
+            "corroboration": [],
+            "strength": 0.3
+          }
+        ],
+        "selectedClusterId": "cluster.14565770475e8313f6d3510e5a6b8bb0d03ddd6bc5107ad46aaebf3c97db63cb",
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": {
+          "reliability": 0.5,
+          "coverageFraction": 1,
+          "coverageFactor": 1,
+          "independentSupportBonus": 0,
+          "ceiling": 0.5,
+          "provenanceMultiplier": null
+        }
+      }
+    },
+    {
+      "capabilityId": "mobile_lifecycle",
+      "categoryId": "mobile",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "native_mobile_not_assessed",
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "mobile_navigation",
+      "categoryId": "mobile",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "native_mobile_not_assessed",
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "mobile_offline",
+      "categoryId": "mobile",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "native_mobile_not_assessed",
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "observability_diagnostics",
+      "categoryId": "observability",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "observability_health",
+      "categoryId": "observability",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "performance_resources",
+      "categoryId": "reliability",
+      "state": "assessed",
+      "strength": 0.65,
+      "strengthBand": "strong",
+      "confidence": 0.55,
+      "confidenceLabel": "low",
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [
+        "173508c0-3db5-5ca9-8422-7d3bed3cbccc",
+        "2958b5ef-5010-57f2-843f-20d645e91a55"
+      ],
+      "support": [
+        {
+          "evidenceId": "173508c0-3db5-5ca9-8422-7d3bed3cbccc",
+          "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+          "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+          "clusterId": "cluster.4288af4425819039a538528ee4baccc447d53b60b8b7287c4bbcd23eedd864ba",
+          "sourceType": "code",
+          "basis": "implementation",
+          "detector": {
+            "id": "tsjs.bounded_retry",
+            "version": "1.0.0"
+          },
+          "boundary": "observed_control"
+        },
+        {
+          "evidenceId": "2958b5ef-5010-57f2-843f-20d645e91a55",
+          "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+          "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+          "clusterId": "cluster.5e166b9a1fb9a7ecc975a6a2a03dfe4772b1e13382b0f5dc915f685578f67b29",
+          "sourceType": "test",
+          "basis": "corroboration",
+          "detector": {
+            "id": "tsjs.asserted_call",
+            "version": "1.0.0"
+          },
+          "boundary": "assertion_source"
+        }
+      ],
+      "allowedClaimScopes": [
+        "repository_behavior"
+      ],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "partially_assessable",
+            "analyzedFiles": 3,
+            "eligibleFiles": 3,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 1,
+            "confidenceCeiling": 0.55,
+            "reasons": [
+              "resolution_incomplete",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "clusters": [
+          {
+            "clusterId": "cluster.4288af4425819039a538528ee4baccc447d53b60b8b7287c4bbcd23eedd864ba",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "baseEvidenceId": "173508c0-3db5-5ca9-8422-7d3bed3cbccc",
+            "evidenceIds": [
+              "173508c0-3db5-5ca9-8422-7d3bed3cbccc"
+            ],
+            "baseStrength": 0.55,
+            "presenceCeiling": 1,
+            "corroboration": [
+              {
+                "sourceType": "test",
+                "evidenceId": "2958b5ef-5010-57f2-843f-20d645e91a55",
+                "rank": 1,
+                "bonus": 0.1
+              }
+            ],
+            "strength": 0.65
+          }
+        ],
+        "selectedClusterId": "cluster.4288af4425819039a538528ee4baccc447d53b60b8b7287c4bbcd23eedd864ba",
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": {
+          "reliability": 0.55,
+          "coverageFraction": 1,
+          "coverageFactor": 1,
+          "independentSupportBonus": 0.05,
+          "ceiling": 0.55,
+          "provenanceMultiplier": null
+        }
+      }
+    },
+    {
+      "capabilityId": "provenance_history",
+      "categoryId": "provenance",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "history_bounded",
+              "metadata_unavailable",
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "provenance_origin",
+      "categoryId": "provenance",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "reliability_concurrency",
+      "categoryId": "reliability",
+      "state": "not_observed",
+      "strength": 0,
+      "strengthBand": "not_observed",
+      "confidence": 0.55,
+      "confidenceLabel": "low",
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "evidence_not_observed_within_assessed_scope",
+            "analyzedFiles": 3,
+            "eligibleFiles": 3,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 1,
+            "confidenceCeiling": 0.55,
+            "reasons": [
+              "no_observed_evidence",
+              "resolution_incomplete",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": {
+          "reliability": 0.55,
+          "coverageFraction": 1,
+          "coverageFactor": 1,
+          "independentSupportBonus": 0,
+          "ceiling": 0.55,
+          "provenanceMultiplier": null
+        }
+      }
+    },
+    {
+      "capabilityId": "reliability_recovery",
+      "categoryId": "reliability",
+      "state": "assessed",
+      "strength": 0.65,
+      "strengthBand": "strong",
+      "confidence": 0.55,
+      "confidenceLabel": "low",
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [
+        "173508c0-3db5-5ca9-8422-7d3bed3cbccc",
+        "2958b5ef-5010-57f2-843f-20d645e91a55"
+      ],
+      "support": [
+        {
+          "evidenceId": "173508c0-3db5-5ca9-8422-7d3bed3cbccc",
+          "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+          "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+          "clusterId": "cluster.ae28c88d703b7b989af1958c0c89dfd4e61e9d8fa0854a30005054385cb49a65",
+          "sourceType": "code",
+          "basis": "implementation",
+          "detector": {
+            "id": "tsjs.bounded_retry",
+            "version": "1.0.0"
+          },
+          "boundary": "observed_control"
+        },
+        {
+          "evidenceId": "2958b5ef-5010-57f2-843f-20d645e91a55",
+          "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+          "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+          "clusterId": "cluster.5e166b9a1fb9a7ecc975a6a2a03dfe4772b1e13382b0f5dc915f685578f67b29",
+          "sourceType": "test",
+          "basis": "corroboration",
+          "detector": {
+            "id": "tsjs.asserted_call",
+            "version": "1.0.0"
+          },
+          "boundary": "assertion_source"
+        }
+      ],
+      "allowedClaimScopes": [
+        "repository_behavior"
+      ],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "partially_assessable",
+            "analyzedFiles": 3,
+            "eligibleFiles": 3,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 1,
+            "confidenceCeiling": 0.55,
+            "reasons": [
+              "resolution_incomplete",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "clusters": [
+          {
+            "clusterId": "cluster.ae28c88d703b7b989af1958c0c89dfd4e61e9d8fa0854a30005054385cb49a65",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "baseEvidenceId": "173508c0-3db5-5ca9-8422-7d3bed3cbccc",
+            "evidenceIds": [
+              "173508c0-3db5-5ca9-8422-7d3bed3cbccc"
+            ],
+            "baseStrength": 0.55,
+            "presenceCeiling": 1,
+            "corroboration": [
+              {
+                "sourceType": "test",
+                "evidenceId": "2958b5ef-5010-57f2-843f-20d645e91a55",
+                "rank": 1,
+                "bonus": 0.1
+              }
+            ],
+            "strength": 0.65
+          }
+        ],
+        "selectedClusterId": "cluster.ae28c88d703b7b989af1958c0c89dfd4e61e9d8fa0854a30005054385cb49a65",
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": {
+          "reliability": 0.55,
+          "coverageFraction": 1,
+          "coverageFactor": 1,
+          "independentSupportBonus": 0.05,
+          "ceiling": 0.55,
+          "provenanceMultiplier": null
+        }
+      }
+    },
+    {
+      "capabilityId": "security_authorization",
+      "categoryId": "security",
+      "state": "not_observed",
+      "strength": 0,
+      "strengthBand": "not_observed",
+      "confidence": 0.55,
+      "confidenceLabel": "low",
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "evidence_not_observed_within_assessed_scope",
+            "analyzedFiles": 3,
+            "eligibleFiles": 3,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 1,
+            "confidenceCeiling": 0.55,
+            "reasons": [
+              "no_observed_evidence",
+              "resolution_incomplete",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": {
+          "reliability": 0.55,
+          "coverageFraction": 1,
+          "coverageFactor": 1,
+          "independentSupportBonus": 0,
+          "ceiling": 0.55,
+          "provenanceMultiplier": null
+        }
+      }
+    },
+    {
+      "capabilityId": "security_input_handling",
+      "categoryId": "security",
+      "state": "not_observed",
+      "strength": 0,
+      "strengthBand": "not_observed",
+      "confidence": 0.55,
+      "confidenceLabel": "low",
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "evidence_not_observed_within_assessed_scope",
+            "analyzedFiles": 3,
+            "eligibleFiles": 3,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 1,
+            "confidenceCeiling": 0.55,
+            "reasons": [
+              "no_observed_evidence",
+              "resolution_incomplete",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": {
+          "reliability": 0.55,
+          "coverageFraction": 1,
+          "coverageFactor": 1,
+          "independentSupportBonus": 0,
+          "ceiling": 0.55,
+          "provenanceMultiplier": null
+        }
+      }
+    },
+    {
+      "capabilityId": "security_secrets",
+      "categoryId": "security",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    },
+    {
+      "capabilityId": "testing_behavior",
+      "categoryId": "testing",
+      "state": "assessed",
+      "strength": 0.55,
+      "strengthBand": "moderate",
+      "confidence": 0.55,
+      "confidenceLabel": "low",
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [
+        "2958b5ef-5010-57f2-843f-20d645e91a55"
+      ],
+      "support": [
+        {
+          "evidenceId": "2958b5ef-5010-57f2-843f-20d645e91a55",
+          "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+          "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+          "clusterId": "cluster.0252c2ff10c6ed29bcef20bb17722ca0715b190154c5c588508ef2ee19097f71",
+          "sourceType": "test",
+          "basis": "implementation",
+          "detector": {
+            "id": "tsjs.asserted_call",
+            "version": "1.0.0"
+          },
+          "boundary": "assertion_source"
+        }
+      ],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "partially_assessable",
+            "analyzedFiles": 3,
+            "eligibleFiles": 3,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 1,
+            "confidenceCeiling": 0.55,
+            "reasons": [
+              "resolution_incomplete",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "clusters": [
+          {
+            "clusterId": "cluster.0252c2ff10c6ed29bcef20bb17722ca0715b190154c5c588508ef2ee19097f71",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "baseEvidenceId": "2958b5ef-5010-57f2-843f-20d645e91a55",
+            "evidenceIds": [
+              "2958b5ef-5010-57f2-843f-20d645e91a55"
+            ],
+            "baseStrength": 0.55,
+            "presenceCeiling": 1,
+            "corroboration": [],
+            "strength": 0.55
+          }
+        ],
+        "selectedClusterId": "cluster.0252c2ff10c6ed29bcef20bb17722ca0715b190154c5c588508ef2ee19097f71",
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": {
+          "reliability": 0.55,
+          "coverageFraction": 1,
+          "coverageFactor": 1,
+          "independentSupportBonus": 0,
+          "ceiling": 0.55,
+          "provenanceMultiplier": null
+        }
+      }
+    },
+    {
+      "capabilityId": "testing_failures",
+      "categoryId": "testing",
+      "state": "unknown",
+      "strength": null,
+      "strengthBand": "unknown",
+      "confidence": null,
+      "confidenceLabel": null,
+      "provenance": {
+        "state": "unknown",
+        "value": null,
+        "policy": "not_inferred_v1"
+      },
+      "evidenceIds": [],
+      "support": [],
+      "allowedClaimScopes": [],
+      "uncertainty": [
+        "cross_repository_independence_unknown",
+        "partial_coverage",
+        "provenance_unknown",
+        "static_only",
+        "uncalibrated",
+        "unlinked_context_not_corroboration"
+      ],
+      "trace": {
+        "coverage": [
+          {
+            "snapshotId": "31f989b4-9313-58cd-8743-db0ba8504ce5",
+            "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+            "state": "not_assessable",
+            "analyzedFiles": 0,
+            "eligibleFiles": 0,
+            "excludedFiles": 0,
+            "metadataAssessed": false,
+            "fraction": 0,
+            "confidenceCeiling": 0,
+            "reasons": [
+              "no_eligible_source",
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth"
+            ]
+          }
+        ],
+        "clusters": [],
+        "selectedClusterId": null,
+        "combination": "maximum_cluster_no_repository_bonus",
+        "confidence": null
+      }
+    }
+  ],
+  "roles": [
+    {
+      "template": {
+        "roleId": "ai_application",
+        "version": "1.0.0"
+      },
+      "state": "assessed",
+      "coverage": 0,
+      "confidence": 0.198,
+      "denominator": 1,
+      "numerator": 0,
+      "assessableFraction": 0.36,
+      "unknownWeight": 0.64,
+      "requirements": [
+        {
+          "requirementId": "ai_context",
+          "capabilityIds": [
+            "ai_context"
+          ],
+          "required": true,
+          "weight": 0.15,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "ai_context",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "ai_evaluation",
+          "capabilityIds": [
+            "ai_evaluation"
+          ],
+          "required": true,
+          "weight": 0.15,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "ai_evaluation",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "ai_integration",
+          "capabilityIds": [
+            "ai_integration",
+            "api_boundary_validation"
+          ],
+          "required": true,
+          "weight": 0.18,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unmet",
+          "strength": 0,
+          "confidence": 0.55,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 1,
+          "failures": [
+            {
+              "capabilityId": "ai_integration",
+              "reasons": [
+                "not_observed"
+              ]
+            },
+            {
+              "capabilityId": "api_boundary_validation",
+              "reasons": [
+                "not_observed"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "ai_safety",
+          "capabilityIds": [
+            "ai_safety",
+            "security_secrets"
+          ],
+          "required": true,
+          "weight": 0.12,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "ai_safety",
+              "reasons": [
+                "not_assessable"
+              ]
+            },
+            {
+              "capabilityId": "security_secrets",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "data_modeling",
+          "capabilityIds": [
+            "data_modeling"
+          ],
+          "required": false,
+          "weight": 0.08,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "unmet",
+          "strength": 0,
+          "confidence": 0.55,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 1,
+          "failures": [
+            {
+              "capabilityId": "data_modeling",
+              "reasons": [
+                "not_observed"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "delivery_automation",
+          "capabilityIds": [
+            "delivery_automation"
+          ],
+          "required": false,
+          "weight": 0.04,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "delivery_automation",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "documentation_operability",
+          "capabilityIds": [
+            "documentation_decisions",
+            "documentation_operability"
+          ],
+          "required": false,
+          "weight": 0.04,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "documentation_operability",
+              "reasons": [
+                "not_assessable"
+              ]
+            },
+            {
+              "capabilityId": "documentation_decisions",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "observability_diagnostics",
+          "capabilityIds": [
+            "observability_diagnostics"
+          ],
+          "required": false,
+          "weight": 0.06,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "observability_diagnostics",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "reliability_recovery",
+          "capabilityIds": [
+            "reliability_recovery"
+          ],
+          "required": true,
+          "weight": 0.1,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unmet",
+          "strength": 0.65,
+          "confidence": 0.55,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 1,
+          "failures": [
+            {
+              "capabilityId": "reliability_recovery",
+              "reasons": [
+                "insufficient_confidence"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "testing_behavior",
+          "capabilityIds": [
+            "testing_behavior",
+            "testing_failures"
+          ],
+          "required": true,
+          "weight": 0.08,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "testing_failures",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        }
+      ],
+      "strongestCapabilityIds": [
+        "reliability_recovery",
+        "testing_behavior"
+      ],
+      "gaps": [
+        {
+          "requirementId": "ai_integration",
+          "state": "not_observed",
+          "required": true,
+          "impact": 0.18,
+          "capabilityIds": [
+            "ai_integration",
+            "api_boundary_validation"
+          ]
+        },
+        {
+          "requirementId": "ai_context",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.15,
+          "capabilityIds": [
+            "ai_context"
+          ]
+        },
+        {
+          "requirementId": "ai_evaluation",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.15,
+          "capabilityIds": [
+            "ai_evaluation"
+          ]
+        },
+        {
+          "requirementId": "ai_safety",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.12,
+          "capabilityIds": [
+            "ai_safety",
+            "security_secrets"
+          ]
+        },
+        {
+          "requirementId": "reliability_recovery",
+          "state": "limited_evidence",
+          "required": true,
+          "impact": 0.1,
+          "capabilityIds": [
+            "reliability_recovery"
+          ]
+        },
+        {
+          "requirementId": "testing_behavior",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.08,
+          "capabilityIds": [
+            "testing_behavior",
+            "testing_failures"
+          ]
+        },
+        {
+          "requirementId": "data_modeling",
+          "state": "not_observed",
+          "required": false,
+          "impact": 0.08,
+          "capabilityIds": [
+            "data_modeling"
+          ]
+        },
+        {
+          "requirementId": "observability_diagnostics",
+          "state": "not_assessable",
+          "required": false,
+          "impact": 0.06,
+          "capabilityIds": [
+            "observability_diagnostics"
+          ]
+        },
+        {
+          "requirementId": "delivery_automation",
+          "state": "not_assessable",
+          "required": false,
+          "impact": 0.04,
+          "capabilityIds": [
+            "delivery_automation"
+          ]
+        },
+        {
+          "requirementId": "documentation_operability",
+          "state": "not_assessable",
+          "required": false,
+          "impact": 0.04,
+          "capabilityIds": [
+            "documentation_decisions",
+            "documentation_operability"
+          ]
+        }
+      ],
+      "leadingRepositories": [
+        {
+          "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+          "contribution": 0,
+          "capabilityIds": [
+            "reliability_recovery",
+            "testing_behavior"
+          ]
+        }
+      ],
+      "limitations": [
+        "uncalibrated",
+        "partial_coverage",
+        "static_only",
+        "provenance_unknown",
+        "cross_repository_independence_unknown"
+      ]
+    },
+    {
+      "template": {
+        "roleId": "backend",
+        "version": "1.0.0"
+      },
+      "state": "assessed",
+      "coverage": 0.0325,
+      "confidence": 0.319,
+      "denominator": 1,
+      "numerator": 0.0325,
+      "assessableFraction": 0.58,
+      "unknownWeight": 0.42,
+      "requirements": [
+        {
+          "requirementId": "api_design",
+          "capabilityIds": [
+            "api_boundary_validation",
+            "api_design"
+          ],
+          "required": true,
+          "weight": 0.15,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unmet",
+          "strength": 0,
+          "confidence": 0.55,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 1,
+          "failures": [
+            {
+              "capabilityId": "api_design",
+              "reasons": [
+                "not_observed"
+              ]
+            },
+            {
+              "capabilityId": "api_boundary_validation",
+              "reasons": [
+                "not_observed"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "architecture_modularity",
+          "capabilityIds": [
+            "architecture_boundaries",
+            "architecture_modularity"
+          ],
+          "required": true,
+          "weight": 0.1,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "architecture_boundaries",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "data_modeling",
+          "capabilityIds": [
+            "data_modeling",
+            "data_transactions"
+          ],
+          "required": true,
+          "weight": 0.15,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unmet",
+          "strength": 0,
+          "confidence": 0.55,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 1,
+          "failures": [
+            {
+              "capabilityId": "data_modeling",
+              "reasons": [
+                "not_observed"
+              ]
+            },
+            {
+              "capabilityId": "data_transactions",
+              "reasons": [
+                "not_observed"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "delivery_automation",
+          "capabilityIds": [
+            "delivery_automation",
+            "delivery_reproducibility"
+          ],
+          "required": false,
+          "weight": 0.08,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "delivery_automation",
+              "reasons": [
+                "not_assessable"
+              ]
+            },
+            {
+              "capabilityId": "delivery_reproducibility",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "documentation_operability",
+          "capabilityIds": [
+            "documentation_decisions",
+            "documentation_operability"
+          ],
+          "required": false,
+          "weight": 0.05,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "documentation_operability",
+              "reasons": [
+                "not_assessable"
+              ]
+            },
+            {
+              "capabilityId": "documentation_decisions",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "observability_diagnostics",
+          "capabilityIds": [
+            "observability_diagnostics",
+            "observability_health"
+          ],
+          "required": false,
+          "weight": 0.07,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "observability_diagnostics",
+              "reasons": [
+                "not_assessable"
+              ]
+            },
+            {
+              "capabilityId": "observability_health",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "performance_resources",
+          "capabilityIds": [
+            "performance_resources"
+          ],
+          "required": false,
+          "weight": 0.05,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "satisfied",
+          "strength": 0.65,
+          "confidence": 0.55,
+          "satisfaction": 0.65,
+          "weightedContribution": 0.0325,
+          "assessableFraction": 1,
+          "failures": []
+        },
+        {
+          "requirementId": "reliability_recovery",
+          "capabilityIds": [
+            "reliability_concurrency",
+            "reliability_recovery"
+          ],
+          "required": true,
+          "weight": 0.13,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unmet",
+          "strength": 0,
+          "confidence": 0.55,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 1,
+          "failures": [
+            {
+              "capabilityId": "reliability_recovery",
+              "reasons": [
+                "insufficient_confidence"
+              ]
+            },
+            {
+              "capabilityId": "reliability_concurrency",
+              "reasons": [
+                "not_observed"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "security_authorization",
+          "capabilityIds": [
+            "security_authorization",
+            "security_input_handling"
+          ],
+          "required": true,
+          "weight": 0.1,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unmet",
+          "strength": 0,
+          "confidence": 0.55,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 1,
+          "failures": [
+            {
+              "capabilityId": "security_authorization",
+              "reasons": [
+                "not_observed"
+              ]
+            },
+            {
+              "capabilityId": "security_input_handling",
+              "reasons": [
+                "not_observed"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "testing_behavior",
+          "capabilityIds": [
+            "testing_behavior",
+            "testing_failures"
+          ],
+          "required": true,
+          "weight": 0.12,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "testing_failures",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        }
+      ],
+      "strongestCapabilityIds": [
+        "performance_resources",
+        "reliability_recovery",
+        "testing_behavior"
+      ],
+      "gaps": [
+        {
+          "requirementId": "api_design",
+          "state": "not_observed",
+          "required": true,
+          "impact": 0.15,
+          "capabilityIds": [
+            "api_boundary_validation",
+            "api_design"
+          ]
+        },
+        {
+          "requirementId": "data_modeling",
+          "state": "not_observed",
+          "required": true,
+          "impact": 0.15,
+          "capabilityIds": [
+            "data_modeling",
+            "data_transactions"
+          ]
+        },
+        {
+          "requirementId": "reliability_recovery",
+          "state": "not_observed",
+          "required": true,
+          "impact": 0.13,
+          "capabilityIds": [
+            "reliability_concurrency",
+            "reliability_recovery"
+          ]
+        },
+        {
+          "requirementId": "testing_behavior",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.12,
+          "capabilityIds": [
+            "testing_behavior",
+            "testing_failures"
+          ]
+        },
+        {
+          "requirementId": "architecture_modularity",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.1,
+          "capabilityIds": [
+            "architecture_boundaries",
+            "architecture_modularity"
+          ]
+        },
+        {
+          "requirementId": "security_authorization",
+          "state": "not_observed",
+          "required": true,
+          "impact": 0.1,
+          "capabilityIds": [
+            "security_authorization",
+            "security_input_handling"
+          ]
+        },
+        {
+          "requirementId": "delivery_automation",
+          "state": "not_assessable",
+          "required": false,
+          "impact": 0.08,
+          "capabilityIds": [
+            "delivery_automation",
+            "delivery_reproducibility"
+          ]
+        },
+        {
+          "requirementId": "observability_diagnostics",
+          "state": "not_assessable",
+          "required": false,
+          "impact": 0.07,
+          "capabilityIds": [
+            "observability_diagnostics",
+            "observability_health"
+          ]
+        },
+        {
+          "requirementId": "documentation_operability",
+          "state": "not_assessable",
+          "required": false,
+          "impact": 0.05,
+          "capabilityIds": [
+            "documentation_decisions",
+            "documentation_operability"
+          ]
+        }
+      ],
+      "leadingRepositories": [
+        {
+          "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+          "contribution": 0.0325,
+          "capabilityIds": [
+            "performance_resources",
+            "reliability_recovery",
+            "testing_behavior"
+          ]
+        }
+      ],
+      "limitations": [
+        "uncalibrated",
+        "partial_coverage",
+        "static_only",
+        "provenance_unknown",
+        "cross_repository_independence_unknown"
+      ]
+    },
+    {
+      "template": {
+        "roleId": "frontend",
+        "version": "1.0.0"
+      },
+      "state": "assessed",
+      "coverage": 0.052,
+      "confidence": 0.22,
+      "denominator": 1,
+      "numerator": 0.052,
+      "assessableFraction": 0.4,
+      "unknownWeight": 0.6,
+      "requirements": [
+        {
+          "requirementId": "architecture_modularity",
+          "capabilityIds": [
+            "architecture_boundaries",
+            "architecture_modularity"
+          ],
+          "required": true,
+          "weight": 0.1,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "architecture_boundaries",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "delivery_automation",
+          "capabilityIds": [
+            "delivery_automation"
+          ],
+          "required": false,
+          "weight": 0.05,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "delivery_automation",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "documentation_operability",
+          "capabilityIds": [
+            "documentation_decisions",
+            "documentation_operability"
+          ],
+          "required": false,
+          "weight": 0.05,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "documentation_operability",
+              "reasons": [
+                "not_assessable"
+              ]
+            },
+            {
+              "capabilityId": "documentation_decisions",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "frontend_accessibility",
+          "capabilityIds": [
+            "frontend_accessibility"
+          ],
+          "required": true,
+          "weight": 0.12,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unmet",
+          "strength": 0,
+          "confidence": 0.55,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 1,
+          "failures": [
+            {
+              "capabilityId": "frontend_accessibility",
+              "reasons": [
+                "not_observed"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "frontend_interaction",
+          "capabilityIds": [
+            "frontend_interaction"
+          ],
+          "required": true,
+          "weight": 0.2,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unmet",
+          "strength": 0,
+          "confidence": 0.55,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 1,
+          "failures": [
+            {
+              "capabilityId": "frontend_interaction",
+              "reasons": [
+                "not_observed"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "frontend_state",
+          "capabilityIds": [
+            "frontend_state"
+          ],
+          "required": true,
+          "weight": 0.15,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "frontend_state",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "observability_diagnostics",
+          "capabilityIds": [
+            "observability_diagnostics"
+          ],
+          "required": false,
+          "weight": 0.05,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "observability_diagnostics",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "performance_resources",
+          "capabilityIds": [
+            "performance_resources"
+          ],
+          "required": false,
+          "weight": 0.08,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "satisfied",
+          "strength": 0.65,
+          "confidence": 0.55,
+          "satisfaction": 0.65,
+          "weightedContribution": 0.052,
+          "assessableFraction": 1,
+          "failures": []
+        },
+        {
+          "requirementId": "security_input_handling",
+          "capabilityIds": [
+            "security_input_handling",
+            "security_secrets"
+          ],
+          "required": true,
+          "weight": 0.08,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "security_secrets",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "testing_behavior",
+          "capabilityIds": [
+            "testing_behavior",
+            "testing_failures"
+          ],
+          "required": true,
+          "weight": 0.12,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "testing_failures",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        }
+      ],
+      "strongestCapabilityIds": [
+        "performance_resources",
+        "testing_behavior"
+      ],
+      "gaps": [
+        {
+          "requirementId": "frontend_interaction",
+          "state": "not_observed",
+          "required": true,
+          "impact": 0.2,
+          "capabilityIds": [
+            "frontend_interaction"
+          ]
+        },
+        {
+          "requirementId": "frontend_state",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.15,
+          "capabilityIds": [
+            "frontend_state"
+          ]
+        },
+        {
+          "requirementId": "frontend_accessibility",
+          "state": "not_observed",
+          "required": true,
+          "impact": 0.12,
+          "capabilityIds": [
+            "frontend_accessibility"
+          ]
+        },
+        {
+          "requirementId": "testing_behavior",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.12,
+          "capabilityIds": [
+            "testing_behavior",
+            "testing_failures"
+          ]
+        },
+        {
+          "requirementId": "architecture_modularity",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.1,
+          "capabilityIds": [
+            "architecture_boundaries",
+            "architecture_modularity"
+          ]
+        },
+        {
+          "requirementId": "security_input_handling",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.08,
+          "capabilityIds": [
+            "security_input_handling",
+            "security_secrets"
+          ]
+        },
+        {
+          "requirementId": "delivery_automation",
+          "state": "not_assessable",
+          "required": false,
+          "impact": 0.05,
+          "capabilityIds": [
+            "delivery_automation"
+          ]
+        },
+        {
+          "requirementId": "documentation_operability",
+          "state": "not_assessable",
+          "required": false,
+          "impact": 0.05,
+          "capabilityIds": [
+            "documentation_decisions",
+            "documentation_operability"
+          ]
+        },
+        {
+          "requirementId": "observability_diagnostics",
+          "state": "not_assessable",
+          "required": false,
+          "impact": 0.05,
+          "capabilityIds": [
+            "observability_diagnostics"
+          ]
+        }
+      ],
+      "leadingRepositories": [
+        {
+          "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+          "contribution": 0.052,
+          "capabilityIds": [
+            "performance_resources",
+            "testing_behavior"
+          ]
+        }
+      ],
+      "limitations": [
+        "uncalibrated",
+        "partial_coverage",
+        "static_only",
+        "provenance_unknown",
+        "cross_repository_independence_unknown"
+      ]
+    },
+    {
+      "template": {
+        "roleId": "full_stack",
+        "version": "1.0.0"
+      },
+      "state": "assessed",
+      "coverage": 0,
+      "confidence": 0.264,
+      "denominator": 1,
+      "numerator": 0,
+      "assessableFraction": 0.48,
+      "unknownWeight": 0.52,
+      "requirements": [
+        {
+          "requirementId": "api_design",
+          "capabilityIds": [
+            "api_boundary_validation",
+            "api_design"
+          ],
+          "required": true,
+          "weight": 0.15,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unmet",
+          "strength": 0,
+          "confidence": 0.55,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 1,
+          "failures": [
+            {
+              "capabilityId": "api_design",
+              "reasons": [
+                "not_observed"
+              ]
+            },
+            {
+              "capabilityId": "api_boundary_validation",
+              "reasons": [
+                "not_observed"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "architecture_boundaries",
+          "capabilityIds": [
+            "architecture_boundaries",
+            "architecture_modularity"
+          ],
+          "required": true,
+          "weight": 0.12,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "architecture_boundaries",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "data_modeling",
+          "capabilityIds": [
+            "data_modeling",
+            "data_transactions"
+          ],
+          "required": true,
+          "weight": 0.13,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unmet",
+          "strength": 0,
+          "confidence": 0.55,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 1,
+          "failures": [
+            {
+              "capabilityId": "data_modeling",
+              "reasons": [
+                "not_observed"
+              ]
+            },
+            {
+              "capabilityId": "data_transactions",
+              "reasons": [
+                "not_observed"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "delivery_automation",
+          "capabilityIds": [
+            "delivery_automation",
+            "delivery_reproducibility"
+          ],
+          "required": false,
+          "weight": 0.05,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "delivery_automation",
+              "reasons": [
+                "not_assessable"
+              ]
+            },
+            {
+              "capabilityId": "delivery_reproducibility",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "documentation_operability",
+          "capabilityIds": [
+            "documentation_decisions",
+            "documentation_operability"
+          ],
+          "required": false,
+          "weight": 0.04,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "documentation_operability",
+              "reasons": [
+                "not_assessable"
+              ]
+            },
+            {
+              "capabilityId": "documentation_decisions",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "frontend_interaction",
+          "capabilityIds": [
+            "frontend_interaction",
+            "frontend_state"
+          ],
+          "required": true,
+          "weight": 0.15,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "frontend_state",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "observability_diagnostics",
+          "capabilityIds": [
+            "observability_diagnostics",
+            "observability_health"
+          ],
+          "required": false,
+          "weight": 0.04,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "observability_diagnostics",
+              "reasons": [
+                "not_assessable"
+              ]
+            },
+            {
+              "capabilityId": "observability_health",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "reliability_recovery",
+          "capabilityIds": [
+            "reliability_concurrency",
+            "reliability_recovery"
+          ],
+          "required": true,
+          "weight": 0.1,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unmet",
+          "strength": 0,
+          "confidence": 0.55,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 1,
+          "failures": [
+            {
+              "capabilityId": "reliability_recovery",
+              "reasons": [
+                "insufficient_confidence"
+              ]
+            },
+            {
+              "capabilityId": "reliability_concurrency",
+              "reasons": [
+                "not_observed"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "security_authorization",
+          "capabilityIds": [
+            "security_authorization",
+            "security_input_handling"
+          ],
+          "required": true,
+          "weight": 0.1,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unmet",
+          "strength": 0,
+          "confidence": 0.55,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 1,
+          "failures": [
+            {
+              "capabilityId": "security_authorization",
+              "reasons": [
+                "not_observed"
+              ]
+            },
+            {
+              "capabilityId": "security_input_handling",
+              "reasons": [
+                "not_observed"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "testing_behavior",
+          "capabilityIds": [
+            "testing_behavior",
+            "testing_failures"
+          ],
+          "required": true,
+          "weight": 0.12,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "testing_failures",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        }
+      ],
+      "strongestCapabilityIds": [
+        "reliability_recovery",
+        "testing_behavior"
+      ],
+      "gaps": [
+        {
+          "requirementId": "api_design",
+          "state": "not_observed",
+          "required": true,
+          "impact": 0.15,
+          "capabilityIds": [
+            "api_boundary_validation",
+            "api_design"
+          ]
+        },
+        {
+          "requirementId": "frontend_interaction",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.15,
+          "capabilityIds": [
+            "frontend_interaction",
+            "frontend_state"
+          ]
+        },
+        {
+          "requirementId": "data_modeling",
+          "state": "not_observed",
+          "required": true,
+          "impact": 0.13,
+          "capabilityIds": [
+            "data_modeling",
+            "data_transactions"
+          ]
+        },
+        {
+          "requirementId": "architecture_boundaries",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.12,
+          "capabilityIds": [
+            "architecture_boundaries",
+            "architecture_modularity"
+          ]
+        },
+        {
+          "requirementId": "testing_behavior",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.12,
+          "capabilityIds": [
+            "testing_behavior",
+            "testing_failures"
+          ]
+        },
+        {
+          "requirementId": "reliability_recovery",
+          "state": "not_observed",
+          "required": true,
+          "impact": 0.1,
+          "capabilityIds": [
+            "reliability_concurrency",
+            "reliability_recovery"
+          ]
+        },
+        {
+          "requirementId": "security_authorization",
+          "state": "not_observed",
+          "required": true,
+          "impact": 0.1,
+          "capabilityIds": [
+            "security_authorization",
+            "security_input_handling"
+          ]
+        },
+        {
+          "requirementId": "delivery_automation",
+          "state": "not_assessable",
+          "required": false,
+          "impact": 0.05,
+          "capabilityIds": [
+            "delivery_automation",
+            "delivery_reproducibility"
+          ]
+        },
+        {
+          "requirementId": "documentation_operability",
+          "state": "not_assessable",
+          "required": false,
+          "impact": 0.04,
+          "capabilityIds": [
+            "documentation_decisions",
+            "documentation_operability"
+          ]
+        },
+        {
+          "requirementId": "observability_diagnostics",
+          "state": "not_assessable",
+          "required": false,
+          "impact": 0.04,
+          "capabilityIds": [
+            "observability_diagnostics",
+            "observability_health"
+          ]
+        }
+      ],
+      "leadingRepositories": [
+        {
+          "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+          "contribution": 0,
+          "capabilityIds": [
+            "reliability_recovery",
+            "testing_behavior"
+          ]
+        }
+      ],
+      "limitations": [
+        "uncalibrated",
+        "partial_coverage",
+        "static_only",
+        "provenance_unknown",
+        "cross_repository_independence_unknown"
+      ]
+    },
+    {
+      "template": {
+        "roleId": "mobile",
+        "version": "1.0.0"
+      },
+      "state": "assessed",
+      "coverage": 0.052,
+      "confidence": 0.099,
+      "denominator": 1,
+      "numerator": 0.052,
+      "assessableFraction": 0.18,
+      "unknownWeight": 0.82,
+      "requirements": [
+        {
+          "requirementId": "architecture_modularity",
+          "capabilityIds": [
+            "architecture_boundaries",
+            "architecture_modularity"
+          ],
+          "required": false,
+          "weight": 0.06,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "architecture_boundaries",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "delivery_automation",
+          "capabilityIds": [
+            "delivery_automation",
+            "delivery_reproducibility"
+          ],
+          "required": false,
+          "weight": 0.05,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "delivery_automation",
+              "reasons": [
+                "not_assessable"
+              ]
+            },
+            {
+              "capabilityId": "delivery_reproducibility",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "documentation_operability",
+          "capabilityIds": [
+            "documentation_decisions",
+            "documentation_operability"
+          ],
+          "required": false,
+          "weight": 0.05,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "documentation_operability",
+              "reasons": [
+                "not_assessable"
+              ]
+            },
+            {
+              "capabilityId": "documentation_decisions",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "frontend_interaction",
+          "capabilityIds": [
+            "frontend_accessibility",
+            "frontend_interaction"
+          ],
+          "required": true,
+          "weight": 0.1,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unmet",
+          "strength": 0,
+          "confidence": 0.55,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 1,
+          "failures": [
+            {
+              "capabilityId": "frontend_interaction",
+              "reasons": [
+                "not_observed"
+              ]
+            },
+            {
+              "capabilityId": "frontend_accessibility",
+              "reasons": [
+                "not_observed"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "mobile_lifecycle",
+          "capabilityIds": [
+            "mobile_lifecycle"
+          ],
+          "required": true,
+          "weight": 0.16,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "mobile_lifecycle",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "mobile_navigation",
+          "capabilityIds": [
+            "mobile_navigation"
+          ],
+          "required": true,
+          "weight": 0.14,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "mobile_navigation",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "mobile_offline",
+          "capabilityIds": [
+            "mobile_offline",
+            "reliability_recovery"
+          ],
+          "required": true,
+          "weight": 0.14,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "mobile_offline",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "performance_resources",
+          "capabilityIds": [
+            "performance_resources"
+          ],
+          "required": false,
+          "weight": 0.08,
+          "minimumEvidence": 0.4,
+          "minimumConfidence": "low",
+          "state": "satisfied",
+          "strength": 0.65,
+          "confidence": 0.55,
+          "satisfaction": 0.65,
+          "weightedContribution": 0.052,
+          "assessableFraction": 1,
+          "failures": []
+        },
+        {
+          "requirementId": "security_authorization",
+          "capabilityIds": [
+            "security_authorization",
+            "security_secrets"
+          ],
+          "required": true,
+          "weight": 0.1,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "security_secrets",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        },
+        {
+          "requirementId": "testing_behavior",
+          "capabilityIds": [
+            "testing_behavior",
+            "testing_failures"
+          ],
+          "required": true,
+          "weight": 0.12,
+          "minimumEvidence": 0.55,
+          "minimumConfidence": "moderate",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "satisfaction": 0,
+          "weightedContribution": 0,
+          "assessableFraction": 0,
+          "failures": [
+            {
+              "capabilityId": "testing_failures",
+              "reasons": [
+                "not_assessable"
+              ]
+            }
+          ]
+        }
+      ],
+      "strongestCapabilityIds": [
+        "performance_resources",
+        "reliability_recovery",
+        "testing_behavior"
+      ],
+      "gaps": [
+        {
+          "requirementId": "mobile_lifecycle",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.16,
+          "capabilityIds": [
+            "mobile_lifecycle"
+          ]
+        },
+        {
+          "requirementId": "mobile_navigation",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.14,
+          "capabilityIds": [
+            "mobile_navigation"
+          ]
+        },
+        {
+          "requirementId": "mobile_offline",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.14,
+          "capabilityIds": [
+            "mobile_offline",
+            "reliability_recovery"
+          ]
+        },
+        {
+          "requirementId": "testing_behavior",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.12,
+          "capabilityIds": [
+            "testing_behavior",
+            "testing_failures"
+          ]
+        },
+        {
+          "requirementId": "frontend_interaction",
+          "state": "not_observed",
+          "required": true,
+          "impact": 0.1,
+          "capabilityIds": [
+            "frontend_accessibility",
+            "frontend_interaction"
+          ]
+        },
+        {
+          "requirementId": "security_authorization",
+          "state": "not_assessable",
+          "required": true,
+          "impact": 0.1,
+          "capabilityIds": [
+            "security_authorization",
+            "security_secrets"
+          ]
+        },
+        {
+          "requirementId": "architecture_modularity",
+          "state": "not_assessable",
+          "required": false,
+          "impact": 0.06,
+          "capabilityIds": [
+            "architecture_boundaries",
+            "architecture_modularity"
+          ]
+        },
+        {
+          "requirementId": "delivery_automation",
+          "state": "not_assessable",
+          "required": false,
+          "impact": 0.05,
+          "capabilityIds": [
+            "delivery_automation",
+            "delivery_reproducibility"
+          ]
+        },
+        {
+          "requirementId": "documentation_operability",
+          "state": "not_assessable",
+          "required": false,
+          "impact": 0.05,
+          "capabilityIds": [
+            "documentation_decisions",
+            "documentation_operability"
+          ]
+        }
+      ],
+      "leadingRepositories": [
+        {
+          "repositoryId": "23bda030-c054-4faf-8b4f-1ffb9c21aaca",
+          "contribution": 0.052,
+          "capabilityIds": [
+            "performance_resources",
+            "reliability_recovery",
+            "testing_behavior"
+          ]
+        }
+      ],
+      "limitations": [
+        "uncalibrated",
+        "partial_coverage",
+        "static_only",
+        "provenance_unknown",
+        "cross_repository_independence_unknown"
+      ]
+    }
+  ],
+  "validation": [],
+  "limitations": [
+    "cross_repository_independence_unknown",
+    "partial_coverage",
+    "provenance_unknown",
+    "static_only",
+    "uncalibrated",
+    "unlinked_context_not_corroboration"
+  ]
+}

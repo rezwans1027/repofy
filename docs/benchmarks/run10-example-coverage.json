@@ -1,0 +1,1615 @@
+{
+  "contractVersion": "1.0.0",
+  "snapshotId": "728c89a8-dcf9-5834-8c65-2ba08cd4909e",
+  "manifestVersion": "1.2.0",
+  "detectorBundle": {
+    "id": "tsjs_implementation",
+    "version": "1.0.0"
+  },
+  "languages": [
+    {
+      "state": "assessed",
+      "language": "yaml",
+      "depth": "structural",
+      "eligibleFiles": 1,
+      "analyzedFiles": 1,
+      "coverage": 1,
+      "limitations": [
+        "These file counts describe structural processing; the implementation manifest separately records bounded TS/JS pattern assessability."
+      ]
+    },
+    {
+      "state": "assessed",
+      "language": "markdown",
+      "depth": "structural",
+      "eligibleFiles": 1,
+      "analyzedFiles": 1,
+      "coverage": 1,
+      "limitations": [
+        "These file counts describe structural processing; the implementation manifest separately records bounded TS/JS pattern assessability."
+      ]
+    },
+    {
+      "state": "assessed",
+      "language": "python",
+      "depth": "structural",
+      "eligibleFiles": 1,
+      "analyzedFiles": 1,
+      "coverage": 1,
+      "limitations": [
+        "These file counts describe structural processing; the implementation manifest separately records bounded TS/JS pattern assessability."
+      ]
+    },
+    {
+      "state": "assessed",
+      "language": "swift",
+      "depth": "inventory",
+      "eligibleFiles": 1,
+      "analyzedFiles": 0,
+      "coverage": 0,
+      "limitations": [
+        "These file counts describe structural processing; the implementation manifest separately records bounded TS/JS pattern assessability.",
+        "Some eligible files were unsupported, failed parsing or exceeded a processing budget."
+      ]
+    },
+    {
+      "state": "assessed",
+      "language": "typescript",
+      "depth": "structural",
+      "eligibleFiles": 1,
+      "analyzedFiles": 1,
+      "coverage": 1,
+      "limitations": [
+        "These file counts describe structural processing; the implementation manifest separately records bounded TS/JS pattern assessability."
+      ]
+    },
+    {
+      "state": "assessed",
+      "language": "sql",
+      "depth": "structural",
+      "eligibleFiles": 1,
+      "analyzedFiles": 1,
+      "coverage": 1,
+      "limitations": [
+        "These file counts describe structural processing; the implementation manifest separately records bounded TS/JS pattern assessability."
+      ]
+    }
+  ],
+  "limitations": [
+    "Coverage combines structural inventory with explicitly supported, uncalibrated TS/JS static patterns.",
+    "Excluded files remain in total inventory. Language and source denominators cover eligible files only; excluded paths are not retained.",
+    "No observed signal is not evidence of a missing skill or of the author never testing."
+  ],
+  "structural": {
+    "sources": [
+      {
+        "source": "manifests",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "parseFailures": 0,
+        "unsupportedFiles": 0,
+        "limitedFiles": 0,
+        "noSignalFiles": 0
+      },
+      {
+        "source": "configuration",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "parseFailures": 0,
+        "unsupportedFiles": 0,
+        "limitedFiles": 0,
+        "noSignalFiles": 0
+      },
+      {
+        "source": "tests",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "parseFailures": 0,
+        "unsupportedFiles": 0,
+        "limitedFiles": 0,
+        "noSignalFiles": 0
+      },
+      {
+        "source": "ci",
+        "eligibleFiles": 1,
+        "analyzedFiles": 1,
+        "parseFailures": 0,
+        "unsupportedFiles": 0,
+        "limitedFiles": 0,
+        "noSignalFiles": 0
+      },
+      {
+        "source": "schemas",
+        "eligibleFiles": 1,
+        "analyzedFiles": 1,
+        "parseFailures": 0,
+        "unsupportedFiles": 0,
+        "limitedFiles": 0,
+        "noSignalFiles": 0
+      },
+      {
+        "source": "documentation",
+        "eligibleFiles": 1,
+        "analyzedFiles": 1,
+        "parseFailures": 0,
+        "unsupportedFiles": 0,
+        "limitedFiles": 0,
+        "noSignalFiles": 0
+      },
+      {
+        "source": "source",
+        "eligibleFiles": 3,
+        "analyzedFiles": 2,
+        "parseFailures": 0,
+        "unsupportedFiles": 1,
+        "limitedFiles": 0,
+        "noSignalFiles": 0
+      }
+    ],
+    "metadata": [
+      {
+        "source": "commits",
+        "state": "not_requested",
+        "records": 0,
+        "exactCommitRecords": 0
+      },
+      {
+        "source": "pullRequests",
+        "state": "not_requested",
+        "records": 0,
+        "exactCommitRecords": 0
+      },
+      {
+        "source": "checks",
+        "state": "not_requested",
+        "records": 0,
+        "exactCommitRecords": 0
+      },
+      {
+        "source": "statuses",
+        "state": "not_requested",
+        "records": 0,
+        "exactCommitRecords": 0
+      },
+      {
+        "source": "actions",
+        "state": "not_requested",
+        "records": 0,
+        "exactCommitRecords": 0
+      }
+    ],
+    "evidenceTruncated": false,
+    "disabledExtractors": []
+  },
+  "implementation": {
+    "bundle": {
+      "id": "tsjs_implementation",
+      "version": "1.0.0"
+    },
+    "calibration": "uncalibrated",
+    "scope": "bounded_patterns_only",
+    "eligibleFiles": 1,
+    "analyzedFiles": 1,
+    "parseFailures": 0,
+    "limitedFiles": 0,
+    "unsupportedFiles": 0,
+    "generatedFiles": 0,
+    "noSignalFiles": 1,
+    "unresolvedImports": 0,
+    "dynamicReferences": 0,
+    "ambiguousBindings": 0,
+    "indexedNodes": 8,
+    "indexedBytes": 23,
+    "aliasConfigurationsRejected": 0,
+    "evidenceTruncated": false,
+    "disabledDetectors": [],
+    "detectors": [
+      {
+        "kind": "route_service",
+        "version": "1.0.0",
+        "capabilityIds": [
+          "api_design",
+          "architecture_modularity"
+        ],
+        "state": "enabled",
+        "observations": 0
+      },
+      {
+        "kind": "request_validation",
+        "version": "1.0.0",
+        "capabilityIds": [
+          "api_boundary_validation",
+          "security_input_handling"
+        ],
+        "state": "enabled",
+        "observations": 0
+      },
+      {
+        "kind": "authentication_guard",
+        "version": "1.0.0",
+        "capabilityIds": [
+          "api_boundary_validation"
+        ],
+        "state": "enabled",
+        "observations": 0
+      },
+      {
+        "kind": "ownership_guard",
+        "version": "1.0.0",
+        "capabilityIds": [
+          "security_authorization"
+        ],
+        "state": "enabled",
+        "observations": 0
+      },
+      {
+        "kind": "structured_error",
+        "version": "1.0.0",
+        "capabilityIds": [
+          "api_design"
+        ],
+        "state": "enabled",
+        "observations": 0
+      },
+      {
+        "kind": "form_validation",
+        "version": "1.0.0",
+        "capabilityIds": [
+          "frontend_interaction",
+          "security_input_handling"
+        ],
+        "state": "enabled",
+        "observations": 0
+      },
+      {
+        "kind": "request_state",
+        "version": "1.0.0",
+        "capabilityIds": [
+          "frontend_interaction"
+        ],
+        "state": "enabled",
+        "observations": 0
+      },
+      {
+        "kind": "accessible_action",
+        "version": "1.0.0",
+        "capabilityIds": [
+          "frontend_accessibility"
+        ],
+        "state": "enabled",
+        "observations": 0
+      },
+      {
+        "kind": "parameterized_query",
+        "version": "1.0.0",
+        "capabilityIds": [
+          "security_input_handling"
+        ],
+        "state": "enabled",
+        "observations": 0
+      },
+      {
+        "kind": "transaction",
+        "version": "1.0.0",
+        "capabilityIds": [
+          "data_transactions"
+        ],
+        "state": "enabled",
+        "observations": 0
+      },
+      {
+        "kind": "schema_constraint",
+        "version": "1.0.0",
+        "capabilityIds": [
+          "data_modeling"
+        ],
+        "state": "enabled",
+        "observations": 0
+      },
+      {
+        "kind": "bounded_retry",
+        "version": "1.0.0",
+        "capabilityIds": [
+          "reliability_recovery",
+          "performance_resources"
+        ],
+        "state": "enabled",
+        "observations": 0
+      },
+      {
+        "kind": "state_guard",
+        "version": "1.0.0",
+        "capabilityIds": [
+          "reliability_concurrency"
+        ],
+        "state": "enabled",
+        "observations": 0
+      },
+      {
+        "kind": "failure_cleanup",
+        "version": "1.0.0",
+        "capabilityIds": [
+          "reliability_recovery"
+        ],
+        "state": "enabled",
+        "observations": 0
+      },
+      {
+        "kind": "asserted_call",
+        "version": "1.0.0",
+        "capabilityIds": [
+          "testing_behavior"
+        ],
+        "state": "enabled",
+        "observations": 0
+      },
+      {
+        "kind": "bounded_model_output",
+        "version": "1.0.0",
+        "capabilityIds": [
+          "ai_integration"
+        ],
+        "state": "enabled",
+        "observations": 0
+      }
+    ],
+    "limitations": [
+      "Only explicitly supported static patterns were assessed; no execution, whole-program correctness or candidate proficiency is established.",
+      "Confidence and strength are conservative uncalibrated policy values, not measured probabilities. Human precision review is pending.",
+      "External package identity follows literal imports; installed versions, runtime patching, middleware order and deployment behavior are unverified.",
+      "Generated headers, dynamic resolution, re-exports, global test APIs, JSX spreads, inherited compiler configuration and unsupported frameworks are not assessed."
+    ]
+  },
+  "assessment": {
+    "declaration": {
+      "version": "1.2.0",
+      "selection": {
+        "id": "all_safe_files_bounded_patterns_v1",
+        "order": "path_lexical",
+        "reducedScanOffered": false,
+        "ingestionLimitBehavior": "fail_entire_snapshot",
+        "maxFileBytes": 262144,
+        "maxParserNodes": 20000,
+        "maxParserDepth": 64,
+        "maxImplementationFiles": 256,
+        "maxImplementationBytes": 2097152,
+        "maxObservations": 2000
+      },
+      "disabledParsers": [],
+      "parsers": [
+        {
+          "id": "python",
+          "package": "lezer_python",
+          "version": "1.1.19"
+        },
+        {
+          "id": "java",
+          "package": "lezer_java",
+          "version": "1.1.4"
+        },
+        {
+          "id": "maven",
+          "package": "lezer_xml",
+          "version": "1.0.6"
+        }
+      ],
+      "entries": [
+        {
+          "id": "tsjs",
+          "languages": [
+            "typescript",
+            "javascript"
+          ],
+          "fileTypes": [
+            "ts",
+            "tsx",
+            "mts",
+            "cts",
+            "js",
+            "jsx",
+            "mjs",
+            "cjs"
+          ],
+          "extractors": [
+            "source",
+            "tests",
+            "tsjs_implementation"
+          ],
+          "capabilities": [
+            "ai_integration",
+            "api_boundary_validation",
+            "api_design",
+            "architecture_modularity",
+            "data_modeling",
+            "data_transactions",
+            "frontend_accessibility",
+            "frontend_interaction",
+            "performance_resources",
+            "reliability_concurrency",
+            "reliability_recovery",
+            "security_authorization",
+            "security_input_handling",
+            "testing_behavior"
+          ],
+          "depth": "bounded_patterns",
+          "confidenceCeiling": 0.55,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "unsupported_version"
+          ]
+        },
+        {
+          "id": "react",
+          "languages": [
+            "typescript",
+            "javascript"
+          ],
+          "fileTypes": [
+            "jsx",
+            "tsx"
+          ],
+          "extractors": [
+            "tsjs_implementation"
+          ],
+          "capabilities": [
+            "frontend_interaction",
+            "frontend_accessibility",
+            "security_input_handling"
+          ],
+          "depth": "bounded_patterns",
+          "confidenceCeiling": 0.55,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "unsupported_version"
+          ]
+        },
+        {
+          "id": "express_node",
+          "languages": [
+            "typescript",
+            "javascript"
+          ],
+          "fileTypes": [
+            "ts",
+            "js"
+          ],
+          "extractors": [
+            "tsjs_implementation"
+          ],
+          "capabilities": [
+            "api_design",
+            "api_boundary_validation",
+            "security_authorization",
+            "architecture_modularity"
+          ],
+          "depth": "bounded_patterns",
+          "confidenceCeiling": 0.55,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "unsupported_version"
+          ]
+        },
+        {
+          "id": "next",
+          "languages": [
+            "typescript",
+            "javascript"
+          ],
+          "fileTypes": [
+            "next.config",
+            "jsx",
+            "tsx"
+          ],
+          "extractors": [
+            "configuration",
+            "tsjs_implementation"
+          ],
+          "capabilities": [
+            "framework_presence",
+            "frontend_interaction"
+          ],
+          "depth": "baseline",
+          "confidenceCeiling": 0.5,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "dynamic_configuration",
+            "unsupported_depth",
+            "unsupported_version"
+          ]
+        },
+        {
+          "id": "node_manifests",
+          "languages": [
+            "json",
+            "yaml"
+          ],
+          "fileTypes": [
+            "package.json",
+            "package-lock.v2.v3",
+            "pnpm-lock.v6.v9"
+          ],
+          "extractors": [
+            "manifests"
+          ],
+          "capabilities": [
+            "framework_presence"
+          ],
+          "depth": "baseline",
+          "confidenceCeiling": 0.5,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "unsupported_version"
+          ]
+        },
+        {
+          "id": "static_configuration",
+          "languages": [
+            "json",
+            "yaml",
+            "toml",
+            "typescript",
+            "javascript"
+          ],
+          "fileTypes": [
+            "json",
+            "yaml",
+            "yml",
+            "toml",
+            "config.ts",
+            "config.js"
+          ],
+          "extractors": [
+            "configuration"
+          ],
+          "capabilities": [
+            "framework_presence"
+          ],
+          "depth": "baseline",
+          "confidenceCeiling": 0.5,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "dynamic_configuration"
+          ]
+        },
+        {
+          "id": "database",
+          "languages": [
+            "sql",
+            "prisma",
+            "typescript",
+            "javascript"
+          ],
+          "fileTypes": [
+            "sql",
+            "prisma",
+            "ts",
+            "js"
+          ],
+          "extractors": [
+            "schemas",
+            "tsjs_implementation"
+          ],
+          "capabilities": [
+            "data_modeling",
+            "data_transactions",
+            "security_input_handling"
+          ],
+          "depth": "baseline",
+          "confidenceCeiling": 0.5,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "unsupported_depth",
+            "unsupported_version"
+          ]
+        },
+        {
+          "id": "selected_tests",
+          "languages": [
+            "typescript",
+            "javascript"
+          ],
+          "fileTypes": [
+            "vitest",
+            "jest_globals",
+            "playwright",
+            "cypress",
+            "mocha"
+          ],
+          "extractors": [
+            "tests",
+            "tsjs_implementation"
+          ],
+          "capabilities": [
+            "testing_behavior"
+          ],
+          "depth": "bounded_patterns",
+          "confidenceCeiling": 0.55,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "unsupported_depth",
+            "unsupported_version"
+          ]
+        },
+        {
+          "id": "documentation",
+          "languages": [
+            "markdown",
+            "text"
+          ],
+          "fileTypes": [
+            "md",
+            "readme"
+          ],
+          "extractors": [
+            "documentation"
+          ],
+          "capabilities": [
+            "documentation_operability",
+            "documentation_decisions"
+          ],
+          "depth": "baseline",
+          "confidenceCeiling": 0.5,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated"
+          ]
+        },
+        {
+          "id": "containers",
+          "languages": [
+            "dockerfile"
+          ],
+          "fileTypes": [
+            "dockerfile"
+          ],
+          "extractors": [
+            "configuration"
+          ],
+          "capabilities": [
+            "delivery_reproducibility"
+          ],
+          "depth": "baseline",
+          "confidenceCeiling": 0.5,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "dynamic_configuration"
+          ]
+        },
+        {
+          "id": "github_actions",
+          "languages": [
+            "yaml"
+          ],
+          "fileTypes": [
+            "github_workflows"
+          ],
+          "extractors": [
+            "ci"
+          ],
+          "capabilities": [
+            "delivery_automation"
+          ],
+          "depth": "baseline",
+          "confidenceCeiling": 0.5,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "dynamic_configuration"
+          ]
+        },
+        {
+          "id": "python",
+          "languages": [
+            "python"
+          ],
+          "fileTypes": [
+            "py"
+          ],
+          "extractors": [
+            "python",
+            "tests"
+          ],
+          "capabilities": [
+            "language_presence"
+          ],
+          "depth": "baseline",
+          "confidenceCeiling": 0.5,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "unsupported_depth"
+          ]
+        },
+        {
+          "id": "python_manifests",
+          "languages": [
+            "toml",
+            "text"
+          ],
+          "fileTypes": [
+            "pyproject.pep621",
+            "pyproject.pep735",
+            "requirements.txt"
+          ],
+          "extractors": [
+            "manifests"
+          ],
+          "capabilities": [
+            "framework_presence"
+          ],
+          "depth": "baseline",
+          "confidenceCeiling": 0.5,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "dynamic_configuration"
+          ]
+        },
+        {
+          "id": "java",
+          "languages": [
+            "java"
+          ],
+          "fileTypes": [
+            "java",
+            "module-info.java"
+          ],
+          "extractors": [
+            "java",
+            "tests"
+          ],
+          "capabilities": [
+            "language_presence"
+          ],
+          "depth": "baseline",
+          "confidenceCeiling": 0.5,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "unsupported_depth"
+          ]
+        },
+        {
+          "id": "maven",
+          "languages": [
+            "xml"
+          ],
+          "fileTypes": [
+            "pom.xml.model4"
+          ],
+          "extractors": [
+            "maven"
+          ],
+          "capabilities": [
+            "framework_presence"
+          ],
+          "depth": "baseline",
+          "confidenceCeiling": 0.5,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "dynamic_configuration"
+          ]
+        },
+        {
+          "id": "build_scripts",
+          "languages": [
+            "python",
+            "kotlin",
+            "unknown"
+          ],
+          "fileTypes": [
+            "setup.py",
+            "build.gradle",
+            "build.gradle.kts"
+          ],
+          "extractors": [
+            "source"
+          ],
+          "capabilities": [],
+          "depth": "inventory",
+          "confidenceCeiling": 0.5,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "dynamic_configuration",
+            "unsupported_depth"
+          ]
+        },
+        {
+          "id": "provider_metadata",
+          "languages": [],
+          "fileTypes": [
+            "commits",
+            "pull_requests",
+            "checks",
+            "statuses",
+            "actions"
+          ],
+          "extractors": [
+            "provider_metadata"
+          ],
+          "capabilities": [
+            "provenance_history"
+          ],
+          "depth": "baseline",
+          "confidenceCeiling": 0.5,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "history_bounded"
+          ]
+        },
+        {
+          "id": "native_mobile",
+          "languages": [
+            "swift",
+            "kotlin",
+            "java"
+          ],
+          "fileTypes": [
+            "swift",
+            "kt",
+            "java"
+          ],
+          "extractors": [],
+          "capabilities": [],
+          "depth": "unsupported",
+          "confidenceCeiling": 0,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "native_mobile_not_assessed"
+          ]
+        },
+        {
+          "id": "ai_runtime",
+          "languages": [],
+          "fileTypes": [],
+          "extractors": [],
+          "capabilities": [],
+          "depth": "unsupported",
+          "confidenceCeiling": 0,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "ai_runtime_not_assessed"
+          ]
+        },
+        {
+          "id": "other_ecosystems",
+          "languages": [],
+          "fileTypes": [],
+          "extractors": [],
+          "capabilities": [],
+          "depth": "inventory",
+          "confidenceCeiling": 0.5,
+          "reasons": [
+            "runtime_not_assessed",
+            "uncalibrated",
+            "unsupported_depth"
+          ]
+        }
+      ]
+    },
+    "state": "partially_assessable",
+    "result": "evidence_available",
+    "reasons": [
+      "metadata_unavailable",
+      "runtime_not_assessed",
+      "uncalibrated",
+      "unsupported_depth"
+    ],
+    "counts": {
+      "totalFiles": 6,
+      "excludedFiles": 0,
+      "eligibleFiles": 6,
+      "analyzedFiles": 5,
+      "unparsedFiles": 1,
+      "analyzedFractionOfAllFiles": 0.8333333333333334
+    },
+    "languages": [
+      {
+        "language": "markdown",
+        "depth": "baseline",
+        "eligibleFiles": 1,
+        "analyzedFiles": 1,
+        "unparsedFiles": 0,
+        "implementationAnalyzedFiles": 0,
+        "reasons": []
+      },
+      {
+        "language": "python",
+        "depth": "baseline",
+        "eligibleFiles": 1,
+        "analyzedFiles": 1,
+        "unparsedFiles": 0,
+        "implementationAnalyzedFiles": 0,
+        "reasons": [
+          "unsupported_depth"
+        ]
+      },
+      {
+        "language": "sql",
+        "depth": "baseline",
+        "eligibleFiles": 1,
+        "analyzedFiles": 1,
+        "unparsedFiles": 0,
+        "implementationAnalyzedFiles": 0,
+        "reasons": [
+          "unsupported_depth"
+        ]
+      },
+      {
+        "language": "swift",
+        "depth": "inventory",
+        "eligibleFiles": 1,
+        "analyzedFiles": 0,
+        "unparsedFiles": 1,
+        "implementationAnalyzedFiles": 0,
+        "reasons": [
+          "unsupported_depth"
+        ]
+      },
+      {
+        "language": "typescript",
+        "depth": "bounded_patterns",
+        "eligibleFiles": 1,
+        "analyzedFiles": 1,
+        "unparsedFiles": 0,
+        "implementationAnalyzedFiles": 1,
+        "reasons": []
+      },
+      {
+        "language": "yaml",
+        "depth": "baseline",
+        "eligibleFiles": 1,
+        "analyzedFiles": 1,
+        "unparsedFiles": 0,
+        "implementationAnalyzedFiles": 0,
+        "reasons": []
+      }
+    ],
+    "capabilities": [
+      {
+        "capabilityId": "language_presence",
+        "state": "partially_assessable",
+        "depth": "baseline",
+        "eligibleFiles": 3,
+        "analyzedFiles": 2,
+        "unparsedFiles": 1,
+        "observations": 2,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.5,
+        "reasons": [
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "framework_presence",
+        "state": "not_assessable",
+        "depth": "baseline",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0,
+        "reasons": [
+          "no_eligible_source",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "frontend_interaction",
+        "state": "evidence_not_observed_within_assessed_scope",
+        "depth": "bounded_patterns",
+        "eligibleFiles": 3,
+        "analyzedFiles": 1,
+        "unparsedFiles": 2,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.55,
+        "reasons": [
+          "no_observed_evidence",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth",
+          "unsupported_version"
+        ]
+      },
+      {
+        "capabilityId": "frontend_accessibility",
+        "state": "evidence_not_observed_within_assessed_scope",
+        "depth": "bounded_patterns",
+        "eligibleFiles": 3,
+        "analyzedFiles": 1,
+        "unparsedFiles": 2,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.55,
+        "reasons": [
+          "no_observed_evidence",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth",
+          "unsupported_version"
+        ]
+      },
+      {
+        "capabilityId": "frontend_state",
+        "state": "not_assessable",
+        "depth": "unsupported",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0,
+        "reasons": [
+          "no_eligible_source",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "mobile_lifecycle",
+        "state": "not_assessable",
+        "depth": "unsupported",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0,
+        "reasons": [
+          "native_mobile_not_assessed",
+          "no_eligible_source",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "mobile_navigation",
+        "state": "not_assessable",
+        "depth": "unsupported",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0,
+        "reasons": [
+          "native_mobile_not_assessed",
+          "no_eligible_source",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "mobile_offline",
+        "state": "not_assessable",
+        "depth": "unsupported",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0,
+        "reasons": [
+          "native_mobile_not_assessed",
+          "no_eligible_source",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "api_design",
+        "state": "evidence_not_observed_within_assessed_scope",
+        "depth": "bounded_patterns",
+        "eligibleFiles": 3,
+        "analyzedFiles": 1,
+        "unparsedFiles": 2,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.55,
+        "reasons": [
+          "no_observed_evidence",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth",
+          "unsupported_version"
+        ]
+      },
+      {
+        "capabilityId": "api_boundary_validation",
+        "state": "evidence_not_observed_within_assessed_scope",
+        "depth": "bounded_patterns",
+        "eligibleFiles": 3,
+        "analyzedFiles": 1,
+        "unparsedFiles": 2,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.55,
+        "reasons": [
+          "no_observed_evidence",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth",
+          "unsupported_version"
+        ]
+      },
+      {
+        "capabilityId": "data_modeling",
+        "state": "partially_assessable",
+        "depth": "bounded_patterns",
+        "eligibleFiles": 4,
+        "analyzedFiles": 2,
+        "unparsedFiles": 2,
+        "observations": 1,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.55,
+        "reasons": [
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth",
+          "unsupported_version"
+        ]
+      },
+      {
+        "capabilityId": "data_transactions",
+        "state": "evidence_not_observed_within_assessed_scope",
+        "depth": "bounded_patterns",
+        "eligibleFiles": 3,
+        "analyzedFiles": 1,
+        "unparsedFiles": 2,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.55,
+        "reasons": [
+          "no_observed_evidence",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth",
+          "unsupported_version"
+        ]
+      },
+      {
+        "capabilityId": "architecture_modularity",
+        "state": "evidence_not_observed_within_assessed_scope",
+        "depth": "bounded_patterns",
+        "eligibleFiles": 3,
+        "analyzedFiles": 1,
+        "unparsedFiles": 2,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.55,
+        "reasons": [
+          "no_observed_evidence",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth",
+          "unsupported_version"
+        ]
+      },
+      {
+        "capabilityId": "architecture_boundaries",
+        "state": "not_assessable",
+        "depth": "unsupported",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0,
+        "reasons": [
+          "no_eligible_source",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "testing_behavior",
+        "state": "evidence_not_observed_within_assessed_scope",
+        "depth": "bounded_patterns",
+        "eligibleFiles": 3,
+        "analyzedFiles": 1,
+        "unparsedFiles": 2,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.55,
+        "reasons": [
+          "no_observed_evidence",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth",
+          "unsupported_version"
+        ]
+      },
+      {
+        "capabilityId": "testing_failures",
+        "state": "not_assessable",
+        "depth": "unsupported",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0,
+        "reasons": [
+          "no_eligible_source",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "reliability_recovery",
+        "state": "evidence_not_observed_within_assessed_scope",
+        "depth": "bounded_patterns",
+        "eligibleFiles": 3,
+        "analyzedFiles": 1,
+        "unparsedFiles": 2,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.55,
+        "reasons": [
+          "no_observed_evidence",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth",
+          "unsupported_version"
+        ]
+      },
+      {
+        "capabilityId": "reliability_concurrency",
+        "state": "evidence_not_observed_within_assessed_scope",
+        "depth": "bounded_patterns",
+        "eligibleFiles": 3,
+        "analyzedFiles": 1,
+        "unparsedFiles": 2,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.55,
+        "reasons": [
+          "no_observed_evidence",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth",
+          "unsupported_version"
+        ]
+      },
+      {
+        "capabilityId": "performance_resources",
+        "state": "evidence_not_observed_within_assessed_scope",
+        "depth": "bounded_patterns",
+        "eligibleFiles": 3,
+        "analyzedFiles": 1,
+        "unparsedFiles": 2,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.55,
+        "reasons": [
+          "no_observed_evidence",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth",
+          "unsupported_version"
+        ]
+      },
+      {
+        "capabilityId": "security_authorization",
+        "state": "evidence_not_observed_within_assessed_scope",
+        "depth": "bounded_patterns",
+        "eligibleFiles": 3,
+        "analyzedFiles": 1,
+        "unparsedFiles": 2,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.55,
+        "reasons": [
+          "no_observed_evidence",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth",
+          "unsupported_version"
+        ]
+      },
+      {
+        "capabilityId": "security_input_handling",
+        "state": "evidence_not_observed_within_assessed_scope",
+        "depth": "bounded_patterns",
+        "eligibleFiles": 3,
+        "analyzedFiles": 1,
+        "unparsedFiles": 2,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.55,
+        "reasons": [
+          "no_observed_evidence",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth",
+          "unsupported_version"
+        ]
+      },
+      {
+        "capabilityId": "security_secrets",
+        "state": "not_assessable",
+        "depth": "unsupported",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0,
+        "reasons": [
+          "no_eligible_source",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "delivery_automation",
+        "state": "partially_assessable",
+        "depth": "baseline",
+        "eligibleFiles": 1,
+        "analyzedFiles": 1,
+        "unparsedFiles": 0,
+        "observations": 1,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.5,
+        "reasons": [
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "delivery_reproducibility",
+        "state": "not_assessable",
+        "depth": "baseline",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0,
+        "reasons": [
+          "no_eligible_source",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "observability_diagnostics",
+        "state": "not_assessable",
+        "depth": "unsupported",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0,
+        "reasons": [
+          "no_eligible_source",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "observability_health",
+        "state": "not_assessable",
+        "depth": "unsupported",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0,
+        "reasons": [
+          "no_eligible_source",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "ai_integration",
+        "state": "evidence_not_observed_within_assessed_scope",
+        "depth": "bounded_patterns",
+        "eligibleFiles": 3,
+        "analyzedFiles": 1,
+        "unparsedFiles": 2,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.55,
+        "reasons": [
+          "ai_runtime_not_assessed",
+          "no_observed_evidence",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth",
+          "unsupported_version"
+        ]
+      },
+      {
+        "capabilityId": "ai_context",
+        "state": "not_assessable",
+        "depth": "unsupported",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0,
+        "reasons": [
+          "ai_runtime_not_assessed",
+          "no_eligible_source",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "ai_evaluation",
+        "state": "not_assessable",
+        "depth": "unsupported",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0,
+        "reasons": [
+          "ai_runtime_not_assessed",
+          "no_eligible_source",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "ai_safety",
+        "state": "not_assessable",
+        "depth": "unsupported",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0,
+        "reasons": [
+          "ai_runtime_not_assessed",
+          "no_eligible_source",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "documentation_operability",
+        "state": "partially_assessable",
+        "depth": "baseline",
+        "eligibleFiles": 1,
+        "analyzedFiles": 1,
+        "unparsedFiles": 0,
+        "observations": 1,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.5,
+        "reasons": [
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "documentation_decisions",
+        "state": "partially_assessable",
+        "depth": "baseline",
+        "eligibleFiles": 1,
+        "analyzedFiles": 1,
+        "unparsedFiles": 0,
+        "observations": 1,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0.5,
+        "reasons": [
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "provenance_history",
+        "state": "not_assessable",
+        "depth": "baseline",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0,
+        "reasons": [
+          "history_bounded",
+          "metadata_unavailable",
+          "no_eligible_source",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      },
+      {
+        "capabilityId": "provenance_origin",
+        "state": "not_assessable",
+        "depth": "unsupported",
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "observations": 0,
+        "metadataAssessed": false,
+        "metadataRecords": 0,
+        "confidenceCeiling": 0,
+        "reasons": [
+          "no_eligible_source",
+          "runtime_not_assessed",
+          "uncalibrated",
+          "unsupported_depth"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,1316 @@
+{
+  "id": "run16_rubric_boundaries",
+  "version": "1.0.0",
+  "taxonomy": "engineering_capabilities@1.0.0",
+  "rubricVersions": "all five 1.0.0",
+  "limitations": "Hypothetical normalized evidence inputs, not claims that current detectors assess these behaviors. Policy-boundary review cannot empirically calibrate weights or probabilities.",
+  "cases": [
+    {
+      "id": "R01",
+      "role": "frontend",
+      "requirement": "frontend_interaction",
+      "capabilityIds": [
+        "frontend_interaction"
+      ],
+      "kind": "implemented",
+      "description": "Every component has .70 strength, Moderate confidence, one code cluster and one independent test cluster.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "frontend_interaction",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "satisfied",
+        "strength": 0.7,
+        "weightedContribution": 0.14,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.2
+    },
+    {
+      "id": "R02",
+      "role": "frontend",
+      "requirement": "frontend_interaction",
+      "capabilityIds": [
+        "frontend_interaction"
+      ],
+      "kind": "weak",
+      "description": "Only dependency presence: .20 strength, Low confidence; no implementation or independent behavior proof.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "frontend_interaction",
+          "strength": 0.2,
+          "confidence": "low",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "dependency",
+              "basis": "presence"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unmet",
+        "strength": 0.2,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.2
+    },
+    {
+      "id": "R03",
+      "role": "frontend",
+      "requirement": "frontend_interaction",
+      "capabilityIds": [
+        "frontend_interaction"
+      ],
+      "kind": "unknown",
+      "description": "The required capability cannot be assessed in the supplied scope.",
+      "inputs": [
+        {
+          "state": "unknown",
+          "capabilityId": "frontend_interaction",
+          "reasons": [
+            "insufficient_coverage"
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unknown",
+        "strength": null,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0.2
+      },
+      "weight": 0.2
+    },
+    {
+      "id": "R04",
+      "role": "frontend",
+      "requirement": "frontend_interaction",
+      "capabilityIds": [
+        "frontend_interaction"
+      ],
+      "kind": "duplicate",
+      "description": "Strength .70/Moderate, but the claimed corroborating test reuses the implementation cluster.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "frontend_interaction",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "implementation",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unmet",
+        "strength": 0.7,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.2
+    },
+    {
+      "id": "R05",
+      "role": "frontend",
+      "requirement": "frontend_interaction",
+      "capabilityIds": [
+        "frontend_interaction"
+      ],
+      "kind": "low_confidence",
+      "description": "Strength .70, independent test present, but confidence remains Low.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "frontend_interaction",
+          "strength": 0.7,
+          "confidence": "low",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unmet",
+        "strength": 0.7,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.2
+    },
+    {
+      "id": "R06",
+      "role": "frontend",
+      "requirement": "testing_behavior",
+      "capabilityIds": [
+        "testing_behavior",
+        "testing_failures"
+      ],
+      "kind": "compound_unknown",
+      "description": "One component has .70/Moderate with independent proof; another required component is unassessable.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "testing_behavior",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        },
+        {
+          "state": "unknown",
+          "capabilityId": "testing_failures",
+          "reasons": [
+            "insufficient_coverage"
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unknown",
+        "strength": null,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0.12
+      },
+      "weight": 0.12
+    },
+    {
+      "id": "R07",
+      "role": "backend",
+      "requirement": "api_design",
+      "capabilityIds": [
+        "api_design",
+        "api_boundary_validation"
+      ],
+      "kind": "implemented",
+      "description": "Every component has .70 strength, Moderate confidence, one code cluster and one independent test cluster.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "api_design",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        },
+        {
+          "state": "assessed",
+          "capabilityId": "api_boundary_validation",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "satisfied",
+        "strength": 0.7,
+        "weightedContribution": 0.105,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.15
+    },
+    {
+      "id": "R08",
+      "role": "backend",
+      "requirement": "api_design",
+      "capabilityIds": [
+        "api_design",
+        "api_boundary_validation"
+      ],
+      "kind": "weak",
+      "description": "Only dependency presence: .20 strength, Low confidence; no implementation or independent behavior proof.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "api_design",
+          "strength": 0.2,
+          "confidence": "low",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "dependency",
+              "basis": "presence"
+            }
+          ]
+        },
+        {
+          "state": "assessed",
+          "capabilityId": "api_boundary_validation",
+          "strength": 0.2,
+          "confidence": "low",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "dependency",
+              "basis": "presence"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unmet",
+        "strength": 0.2,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.15
+    },
+    {
+      "id": "R09",
+      "role": "backend",
+      "requirement": "api_design",
+      "capabilityIds": [
+        "api_design",
+        "api_boundary_validation"
+      ],
+      "kind": "unknown",
+      "description": "The required capability cannot be assessed in the supplied scope.",
+      "inputs": [
+        {
+          "state": "unknown",
+          "capabilityId": "api_design",
+          "reasons": [
+            "insufficient_coverage"
+          ]
+        },
+        {
+          "state": "unknown",
+          "capabilityId": "api_boundary_validation",
+          "reasons": [
+            "insufficient_coverage"
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unknown",
+        "strength": null,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0.15
+      },
+      "weight": 0.15
+    },
+    {
+      "id": "R10",
+      "role": "backend",
+      "requirement": "api_design",
+      "capabilityIds": [
+        "api_design",
+        "api_boundary_validation"
+      ],
+      "kind": "duplicate",
+      "description": "Strength .70/Moderate, but the claimed corroborating test reuses the implementation cluster.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "api_design",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "implementation",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        },
+        {
+          "state": "assessed",
+          "capabilityId": "api_boundary_validation",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "implementation",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unmet",
+        "strength": 0.7,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.15
+    },
+    {
+      "id": "R11",
+      "role": "backend",
+      "requirement": "api_design",
+      "capabilityIds": [
+        "api_design",
+        "api_boundary_validation"
+      ],
+      "kind": "low_confidence",
+      "description": "Strength .70, independent test present, but confidence remains Low.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "api_design",
+          "strength": 0.7,
+          "confidence": "low",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        },
+        {
+          "state": "assessed",
+          "capabilityId": "api_boundary_validation",
+          "strength": 0.7,
+          "confidence": "low",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unmet",
+        "strength": 0.7,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.15
+    },
+    {
+      "id": "R12",
+      "role": "backend",
+      "requirement": "api_design",
+      "capabilityIds": [
+        "api_design",
+        "api_boundary_validation"
+      ],
+      "kind": "compound_unknown",
+      "description": "One component has .70/Moderate with independent proof; another required component is unassessable.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "api_design",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        },
+        {
+          "state": "unknown",
+          "capabilityId": "api_boundary_validation",
+          "reasons": [
+            "insufficient_coverage"
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unknown",
+        "strength": null,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0.15
+      },
+      "weight": 0.15
+    },
+    {
+      "id": "R13",
+      "role": "full_stack",
+      "requirement": "frontend_interaction",
+      "capabilityIds": [
+        "frontend_interaction",
+        "frontend_state"
+      ],
+      "kind": "implemented",
+      "description": "Every component has .70 strength, Moderate confidence, one code cluster and one independent test cluster.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "frontend_interaction",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        },
+        {
+          "state": "assessed",
+          "capabilityId": "frontend_state",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "satisfied",
+        "strength": 0.7,
+        "weightedContribution": 0.105,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.15
+    },
+    {
+      "id": "R14",
+      "role": "full_stack",
+      "requirement": "frontend_interaction",
+      "capabilityIds": [
+        "frontend_interaction",
+        "frontend_state"
+      ],
+      "kind": "weak",
+      "description": "Only dependency presence: .20 strength, Low confidence; no implementation or independent behavior proof.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "frontend_interaction",
+          "strength": 0.2,
+          "confidence": "low",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "dependency",
+              "basis": "presence"
+            }
+          ]
+        },
+        {
+          "state": "assessed",
+          "capabilityId": "frontend_state",
+          "strength": 0.2,
+          "confidence": "low",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "dependency",
+              "basis": "presence"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unmet",
+        "strength": 0.2,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.15
+    },
+    {
+      "id": "R15",
+      "role": "full_stack",
+      "requirement": "frontend_interaction",
+      "capabilityIds": [
+        "frontend_interaction",
+        "frontend_state"
+      ],
+      "kind": "unknown",
+      "description": "The required capability cannot be assessed in the supplied scope.",
+      "inputs": [
+        {
+          "state": "unknown",
+          "capabilityId": "frontend_interaction",
+          "reasons": [
+            "insufficient_coverage"
+          ]
+        },
+        {
+          "state": "unknown",
+          "capabilityId": "frontend_state",
+          "reasons": [
+            "insufficient_coverage"
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unknown",
+        "strength": null,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0.15
+      },
+      "weight": 0.15
+    },
+    {
+      "id": "R16",
+      "role": "full_stack",
+      "requirement": "frontend_interaction",
+      "capabilityIds": [
+        "frontend_interaction",
+        "frontend_state"
+      ],
+      "kind": "duplicate",
+      "description": "Strength .70/Moderate, but the claimed corroborating test reuses the implementation cluster.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "frontend_interaction",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "implementation",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        },
+        {
+          "state": "assessed",
+          "capabilityId": "frontend_state",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "implementation",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unmet",
+        "strength": 0.7,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.15
+    },
+    {
+      "id": "R17",
+      "role": "full_stack",
+      "requirement": "frontend_interaction",
+      "capabilityIds": [
+        "frontend_interaction",
+        "frontend_state"
+      ],
+      "kind": "low_confidence",
+      "description": "Strength .70, independent test present, but confidence remains Low.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "frontend_interaction",
+          "strength": 0.7,
+          "confidence": "low",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        },
+        {
+          "state": "assessed",
+          "capabilityId": "frontend_state",
+          "strength": 0.7,
+          "confidence": "low",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unmet",
+        "strength": 0.7,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.15
+    },
+    {
+      "id": "R18",
+      "role": "full_stack",
+      "requirement": "frontend_interaction",
+      "capabilityIds": [
+        "frontend_interaction",
+        "frontend_state"
+      ],
+      "kind": "compound_unknown",
+      "description": "One component has .70/Moderate with independent proof; another required component is unassessable.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "frontend_interaction",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        },
+        {
+          "state": "unknown",
+          "capabilityId": "frontend_state",
+          "reasons": [
+            "insufficient_coverage"
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unknown",
+        "strength": null,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0.15
+      },
+      "weight": 0.15
+    },
+    {
+      "id": "R19",
+      "role": "mobile",
+      "requirement": "mobile_lifecycle",
+      "capabilityIds": [
+        "mobile_lifecycle"
+      ],
+      "kind": "implemented",
+      "description": "Every component has .70 strength, Moderate confidence, one code cluster and one independent test cluster.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "mobile_lifecycle",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "satisfied",
+        "strength": 0.7,
+        "weightedContribution": 0.112,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.16
+    },
+    {
+      "id": "R20",
+      "role": "mobile",
+      "requirement": "mobile_lifecycle",
+      "capabilityIds": [
+        "mobile_lifecycle"
+      ],
+      "kind": "weak",
+      "description": "Only dependency presence: .20 strength, Low confidence; no implementation or independent behavior proof.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "mobile_lifecycle",
+          "strength": 0.2,
+          "confidence": "low",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "dependency",
+              "basis": "presence"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unmet",
+        "strength": 0.2,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.16
+    },
+    {
+      "id": "R21",
+      "role": "mobile",
+      "requirement": "mobile_lifecycle",
+      "capabilityIds": [
+        "mobile_lifecycle"
+      ],
+      "kind": "unknown",
+      "description": "The required capability cannot be assessed in the supplied scope.",
+      "inputs": [
+        {
+          "state": "unknown",
+          "capabilityId": "mobile_lifecycle",
+          "reasons": [
+            "insufficient_coverage"
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unknown",
+        "strength": null,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0.16
+      },
+      "weight": 0.16
+    },
+    {
+      "id": "R22",
+      "role": "mobile",
+      "requirement": "mobile_lifecycle",
+      "capabilityIds": [
+        "mobile_lifecycle"
+      ],
+      "kind": "duplicate",
+      "description": "Strength .70/Moderate, but the claimed corroborating test reuses the implementation cluster.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "mobile_lifecycle",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "implementation",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unmet",
+        "strength": 0.7,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.16
+    },
+    {
+      "id": "R23",
+      "role": "mobile",
+      "requirement": "mobile_lifecycle",
+      "capabilityIds": [
+        "mobile_lifecycle"
+      ],
+      "kind": "low_confidence",
+      "description": "Strength .70, independent test present, but confidence remains Low.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "mobile_lifecycle",
+          "strength": 0.7,
+          "confidence": "low",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unmet",
+        "strength": 0.7,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.16
+    },
+    {
+      "id": "R24",
+      "role": "mobile",
+      "requirement": "mobile_offline",
+      "capabilityIds": [
+        "mobile_offline",
+        "reliability_recovery"
+      ],
+      "kind": "compound_unknown",
+      "description": "One component has .70/Moderate with independent proof; another required component is unassessable.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "mobile_offline",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        },
+        {
+          "state": "unknown",
+          "capabilityId": "reliability_recovery",
+          "reasons": [
+            "insufficient_coverage"
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unknown",
+        "strength": null,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0.14
+      },
+      "weight": 0.14
+    },
+    {
+      "id": "R25",
+      "role": "ai_application",
+      "requirement": "ai_integration",
+      "capabilityIds": [
+        "ai_integration",
+        "api_boundary_validation"
+      ],
+      "kind": "implemented",
+      "description": "Every component has .70 strength, Moderate confidence, one code cluster and one independent test cluster.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "ai_integration",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        },
+        {
+          "state": "assessed",
+          "capabilityId": "api_boundary_validation",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "satisfied",
+        "strength": 0.7,
+        "weightedContribution": 0.126,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.18
+    },
+    {
+      "id": "R26",
+      "role": "ai_application",
+      "requirement": "ai_integration",
+      "capabilityIds": [
+        "ai_integration",
+        "api_boundary_validation"
+      ],
+      "kind": "weak",
+      "description": "Only dependency presence: .20 strength, Low confidence; no implementation or independent behavior proof.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "ai_integration",
+          "strength": 0.2,
+          "confidence": "low",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "dependency",
+              "basis": "presence"
+            }
+          ]
+        },
+        {
+          "state": "assessed",
+          "capabilityId": "api_boundary_validation",
+          "strength": 0.2,
+          "confidence": "low",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "dependency",
+              "basis": "presence"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unmet",
+        "strength": 0.2,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.18
+    },
+    {
+      "id": "R27",
+      "role": "ai_application",
+      "requirement": "ai_integration",
+      "capabilityIds": [
+        "ai_integration",
+        "api_boundary_validation"
+      ],
+      "kind": "unknown",
+      "description": "The required capability cannot be assessed in the supplied scope.",
+      "inputs": [
+        {
+          "state": "unknown",
+          "capabilityId": "ai_integration",
+          "reasons": [
+            "insufficient_coverage"
+          ]
+        },
+        {
+          "state": "unknown",
+          "capabilityId": "api_boundary_validation",
+          "reasons": [
+            "insufficient_coverage"
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unknown",
+        "strength": null,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0.18
+      },
+      "weight": 0.18
+    },
+    {
+      "id": "R28",
+      "role": "ai_application",
+      "requirement": "ai_integration",
+      "capabilityIds": [
+        "ai_integration",
+        "api_boundary_validation"
+      ],
+      "kind": "duplicate",
+      "description": "Strength .70/Moderate, but the claimed corroborating test reuses the implementation cluster.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "ai_integration",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "implementation",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        },
+        {
+          "state": "assessed",
+          "capabilityId": "api_boundary_validation",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "implementation",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unmet",
+        "strength": 0.7,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.18
+    },
+    {
+      "id": "R29",
+      "role": "ai_application",
+      "requirement": "ai_integration",
+      "capabilityIds": [
+        "ai_integration",
+        "api_boundary_validation"
+      ],
+      "kind": "low_confidence",
+      "description": "Strength .70, independent test present, but confidence remains Low.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "ai_integration",
+          "strength": 0.7,
+          "confidence": "low",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        },
+        {
+          "state": "assessed",
+          "capabilityId": "api_boundary_validation",
+          "strength": 0.7,
+          "confidence": "low",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unmet",
+        "strength": 0.7,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0
+      },
+      "weight": 0.18
+    },
+    {
+      "id": "R30",
+      "role": "ai_application",
+      "requirement": "ai_integration",
+      "capabilityIds": [
+        "ai_integration",
+        "api_boundary_validation"
+      ],
+      "kind": "compound_unknown",
+      "description": "One component has .70/Moderate with independent proof; another required component is unassessable.",
+      "inputs": [
+        {
+          "state": "assessed",
+          "capabilityId": "ai_integration",
+          "strength": 0.7,
+          "confidence": "moderate",
+          "evidence": [
+            {
+              "clusterId": "implementation",
+              "sourceType": "code",
+              "basis": "implementation"
+            },
+            {
+              "clusterId": "independent_test",
+              "sourceType": "test",
+              "basis": "corroboration"
+            }
+          ]
+        },
+        {
+          "state": "unknown",
+          "capabilityId": "api_boundary_validation",
+          "reasons": [
+            "insufficient_coverage"
+          ]
+        }
+      ],
+      "expected": {
+        "state": "unknown",
+        "strength": null,
+        "weightedContribution": 0,
+        "unknownWeightRetained": 0.18
+      },
+      "weight": 0.18
+    }
+  ]
+}

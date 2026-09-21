@@ -1,0 +1,107 @@
+{
+  "run": 15,
+  "status": "local_synthetic_verification_complete",
+  "verificationDate": "2026-09-20",
+  "requirements": ["ANA-017", "ANA-018", "ANA-019"],
+  "policies": {
+    "provenance": { "id": "provenance_context", "version": "1.0.0" },
+    "aggregation": { "id": "evidence_aggregation", "version": "1.1.0" },
+    "previousAggregation": "1.0.0",
+    "contributionConfidence": null,
+    "strengthModifier": null,
+    "confidenceModifier": null
+  },
+  "humanReview": {
+    "status": "complete",
+    "reviewers": 1,
+    "examples": 5,
+    "agreements": 5,
+    "disagreements": 0,
+    "response": "Agree with A–E",
+    "record": "run15-human-review.md",
+    "limitations": [
+      "Unblinded qualitative boundary review",
+      "Not authorship probability, detector precision or population fairness calibration"
+    ]
+  },
+  "environment": {
+    "nodeMajor": 22,
+    "postgresMajor": 17,
+    "frontend": "production Next.js build",
+    "browser": "Chromium",
+    "liveProviderCalls": false
+  },
+  "verification": {
+    "backend": {
+      "command": "npm run test:coverage -- --maxWorkers=1",
+      "files": 98,
+      "tests": 1190,
+      "failures": 0,
+      "coverage": { "statements": 88.04, "branches": 85.00, "functions": 89.62, "lines": 90.51 }
+    },
+    "frontend": {
+      "command": "npm run test:coverage -- --maxWorkers=1",
+      "files": 87,
+      "tests": 580,
+      "failures": 0,
+      "coverage": { "statements": 83.35, "branches": 75.50, "functions": 78.76, "lines": 83.97 }
+    },
+    "contracts": { "command": "npm test", "tests": 81, "failures": 0, "build": "passed" },
+    "postgres": { "command": "npm run test:postgres", "tests": 104, "failures": 0 },
+    "reportBrowser": { "command": "npm run test:e2e:report", "tests": 4, "failures": 0 },
+    "selectionBrowser": { "command": "npm run test:e2e:selection", "tests": 2, "failures": 0 },
+    "readinessRoutes": { "command": "npm run test:e2e:readiness", "tests": 8, "failures": 0 },
+    "backendBuild": "passed",
+    "frontendBuild": "passed",
+    "frontendTypecheck": "passed",
+    "frontendLint": "passed_with_existing_unused_vi_warning",
+    "processCommands": {
+      "npm run worker:verify": "passed",
+      "npm run ingestion:verify": "passed",
+      "npm run extraction:verify": "passed",
+      "npm run detectors:verify": "passed",
+      "npm run coverage:verify": "passed",
+      "npm run aggregation:verify": "passed",
+      "npm run rubrics:validate": "passed"
+    },
+    "aggregationLoad": {
+      "evidence": 20000,
+      "repositories": 10,
+      "elapsedMs": 1995,
+      "maxRssMiB": 475,
+      "resultBytes": 9642868
+    },
+    "accessibility": {
+      "panels": ["feedback", "provenance"],
+      "viewports": ["1280x1000", "390x844"],
+      "axeViolations": 0,
+      "mobileHorizontalOverflow": false,
+      "visualReview": "passed",
+      "captureNote": "Fixed application navigation hidden only for standalone provenance captures; assertions use the unmodified page.",
+      "captures": [
+        "run15-feedback-desktop.png",
+        "run15-feedback-mobile.png",
+        "run15-provenance-desktop.png",
+        "run15-provenance-mobile.png"
+      ]
+    }
+  },
+  "syntheticProvenanceFixtures": {
+    "path": "../../repofy-backend/tests/fixtures/evidence/provenance.json",
+    "scenarios": 8,
+    "registeredCaseIds": 6
+  },
+  "rollout": {
+    "defaultFeedbackEnabled": false,
+    "defaultProvenanceEnabled": false,
+    "remoteMigrationApplied": false,
+    "deployed": false,
+    "nextRun": 16,
+    "remainingGates": [
+      "Run 16 integrated calibration and release verification",
+      "Live GitHub installation and private archive checks",
+      "Pinned-model access and successful provider smoke",
+      "Deployment supervision and rollout review"
+    ]
+  }
+}

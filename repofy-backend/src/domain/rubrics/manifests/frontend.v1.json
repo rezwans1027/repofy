@@ -1,0 +1,349 @@
+{
+  "contractVersion": "1.0.0",
+  "roleId": "frontend",
+  "version": "1.0.0",
+  "taxonomyId": "engineering_capabilities",
+  "taxonomyVersion": "1.0.0",
+  "name": "Frontend Software Engineer",
+  "calibration": "uncalibrated",
+  "weightOrigin": "draft_hypothesis",
+  "coveragePolicy": {
+    "denominator": "all_requirement_weights",
+    "unknownRequirements": "retain_weight_report_separately",
+    "allUnknown": "unknown_without_score",
+    "requiredRequirements": "report_each_unmet_or_unknown",
+    "disclosure": "Repository evidence is not a complete measure of job readiness. Unknown requirement weight stays visible and is never removed to inflate coverage."
+  },
+  "availability": {
+    "state": "definitions_only",
+    "externalRollout": false,
+    "plannedCoverage": [
+      {
+        "languages": [
+          "typescript",
+          "javascript",
+          "jsx",
+          "tsx",
+          "json",
+          "yaml",
+          "sql",
+          "markdown",
+          "dockerfile",
+          "github_actions",
+          "react",
+          "nextjs",
+          "nodejs",
+          "express"
+        ],
+        "depth": "deep",
+        "limitation": "Planned PRD target; extraction and semantic detectors are pending Runs 08\u201310. React or Express presence alone establishes no behavior."
+      },
+      {
+        "languages": [
+          "python",
+          "java"
+        ],
+        "depth": "baseline",
+        "limitation": "Planned structural and selected source analysis only; unsupported semantics must remain not assessable."
+      },
+      {
+        "languages": [
+          "other"
+        ],
+        "depth": "inventory_only",
+        "limitation": "Other languages have no promised semantic coverage. Inventory is not an implementation assessment."
+      }
+    ],
+    "limitations": [
+      "All weights and thresholds are uncalibrated starting hypotheses; human benchmark review is pending.",
+      "Every capability currently awaits detector coverage. No role assessment can be produced by this run.",
+      "Missing project evidence does not imply missing skill, seniority or employability."
+    ]
+  },
+  "requirements": [
+    {
+      "capabilityId": "frontend_interaction",
+      "requirementId": "frontend_interaction",
+      "version": "1.0.0",
+      "label": "User interaction and recovery",
+      "capabilityIds": [
+        "frontend_interaction"
+      ],
+      "weight": 0.2,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "frontend_state",
+      "requirementId": "frontend_state",
+      "version": "1.0.0",
+      "label": "State and data consistency",
+      "capabilityIds": [
+        "frontend_state"
+      ],
+      "weight": 0.15,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "frontend_accessibility",
+      "requirementId": "frontend_accessibility",
+      "version": "1.0.0",
+      "label": "Accessible interaction",
+      "capabilityIds": [
+        "frontend_accessibility"
+      ],
+      "weight": 0.12,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "testing_behavior",
+      "requirementId": "testing_behavior",
+      "version": "1.0.0",
+      "label": "Testing and quality",
+      "capabilityIds": [
+        "testing_behavior",
+        "testing_failures"
+      ],
+      "weight": 0.12,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "architecture_modularity",
+      "requirementId": "architecture_modularity",
+      "version": "1.0.0",
+      "label": "Architecture and integration",
+      "capabilityIds": [
+        "architecture_modularity",
+        "architecture_boundaries"
+      ],
+      "weight": 0.1,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "security_input_handling",
+      "requirementId": "security_input_handling",
+      "version": "1.0.0",
+      "label": "Untrusted input and privacy",
+      "capabilityIds": [
+        "security_input_handling",
+        "security_secrets"
+      ],
+      "weight": 0.08,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "performance_resources",
+      "requirementId": "performance_resources",
+      "version": "1.0.0",
+      "label": "Rendering and resource bounds",
+      "capabilityIds": [
+        "performance_resources"
+      ],
+      "weight": 0.08,
+      "minimumEvidence": 0.4,
+      "required": false,
+      "evidencePolicy": {
+        "minimumConfidence": "low",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 0,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "delivery_automation",
+      "requirementId": "delivery_automation",
+      "version": "1.0.0",
+      "label": "Delivery verification",
+      "capabilityIds": [
+        "delivery_automation"
+      ],
+      "weight": 0.05,
+      "minimumEvidence": 0.4,
+      "required": false,
+      "evidencePolicy": {
+        "minimumConfidence": "low",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 0,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "observability_diagnostics",
+      "requirementId": "observability_diagnostics",
+      "version": "1.0.0",
+      "label": "Safe diagnostics",
+      "capabilityIds": [
+        "observability_diagnostics"
+      ],
+      "weight": 0.05,
+      "minimumEvidence": 0.4,
+      "required": false,
+      "evidencePolicy": {
+        "minimumConfidence": "low",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 0,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "documentation_operability",
+      "requirementId": "documentation_operability",
+      "version": "1.0.0",
+      "label": "Documentation and collaboration",
+      "capabilityIds": [
+        "documentation_operability",
+        "documentation_decisions"
+      ],
+      "weight": 0.05,
+      "minimumEvidence": 0.4,
+      "required": false,
+      "evidencePolicy": {
+        "minimumConfidence": "low",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 0,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    }
+  ]
+}

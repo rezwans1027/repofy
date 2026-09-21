@@ -1,0 +1,287 @@
+{
+  "measuredAt": "2026-09-21T02:37:33.160Z",
+  "corpus": {
+    "id": "feature_one_release",
+    "version": "1.0.0",
+    "sha256": "f80ca10b4235986ea71de3254e8f738a5c870e54b54e96a619fcaabfb4250efe"
+  },
+  "environment": {
+    "node": "v22.23.2",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M4 Pro",
+    "logicalCpus": 12,
+    "memoryGiB": 24,
+    "workerConcurrency": 1,
+    "maximumQueuedTogether": 2,
+    "maximumSelectedRepositories": 5,
+    "maximumEligibleFiles": 10000,
+    "database": "disposable PostgreSQL 17",
+    "providerTransports": "synthetic",
+    "host": "shared_local_development_machine"
+  },
+  "completion": {
+    "successes": 13,
+    "total": 13,
+    "rate": 1,
+    "interval95": [
+      0.7719046276458016,
+      0.9999999999999999
+    ]
+  },
+  "validWorkloads": [
+    {
+      "scenario": "backend_parse",
+      "status": "completed",
+      "failureCode": null,
+      "queueMs": 22,
+      "processingMs": 162,
+      "totalMs": 184
+    },
+    {
+      "scenario": "frontend_request",
+      "status": "completed",
+      "failureCode": null,
+      "queueMs": 94,
+      "processingMs": 115,
+      "totalMs": 209
+    },
+    {
+      "scenario": "model_adapter",
+      "status": "completed",
+      "failureCode": null,
+      "queueMs": 39,
+      "processingMs": 83,
+      "totalMs": 122
+    },
+    {
+      "scenario": "dependency_only",
+      "status": "completed",
+      "failureCode": null,
+      "queueMs": 61,
+      "processingMs": 90,
+      "totalMs": 151
+    },
+    {
+      "scenario": "python_baseline",
+      "status": "completed",
+      "failureCode": null,
+      "queueMs": 52,
+      "processingMs": 97,
+      "totalMs": 149
+    },
+    {
+      "scenario": "java_baseline",
+      "status": "completed",
+      "failureCode": null,
+      "queueMs": 66,
+      "processingMs": 90,
+      "totalMs": 156
+    },
+    {
+      "scenario": "mobile_native_unknown",
+      "status": "completed",
+      "failureCode": null,
+      "queueMs": 54,
+      "processingMs": 78,
+      "totalMs": 132
+    },
+    {
+      "scenario": "empty_unknown",
+      "status": "completed",
+      "failureCode": null,
+      "queueMs": 82,
+      "processingMs": 80,
+      "totalMs": 162
+    },
+    {
+      "scenario": "private_sentinels",
+      "status": "completed",
+      "failureCode": null,
+      "queueMs": 73,
+      "processingMs": 85,
+      "totalMs": 158
+    },
+    {
+      "scenario": "backend_parse+python_baseline+java_baseline+frontend_request+model_adapter",
+      "status": "completed",
+      "failureCode": null,
+      "queueMs": 54,
+      "processingMs": 242,
+      "totalMs": 296
+    },
+    {
+      "scenario": "queued_pair_1",
+      "status": "completed",
+      "failureCode": null,
+      "queueMs": 18,
+      "processingMs": 80,
+      "totalMs": 98
+    },
+    {
+      "scenario": "queued_pair_2",
+      "status": "completed",
+      "failureCode": null,
+      "queueMs": 118,
+      "processingMs": 78,
+      "totalMs": 196
+    },
+    {
+      "scenario": "limit_10000",
+      "status": "completed",
+      "failureCode": null,
+      "queueMs": 68,
+      "processingMs": 4379,
+      "totalMs": 4447
+    }
+  ],
+  "rejectedWorkloads": [
+    {
+      "scenario": "too_many_eligible",
+      "status": "failed",
+      "failureCode": "REPOSITORY_TOO_LARGE",
+      "queueMs": 43,
+      "processingMs": 255,
+      "totalMs": 298
+    }
+  ],
+  "latencyMs": {
+    "queue": {
+      "samples": 13,
+      "p50": 61,
+      "p95": 118,
+      "max": 118
+    },
+    "processing": {
+      "samples": 13,
+      "p50": 90,
+      "p95": 4379,
+      "max": 4379
+    },
+    "endToEnd": {
+      "samples": 13,
+      "p50": 158,
+      "p95": 4447,
+      "max": 4447
+    },
+    "api": {
+      "save_selection": {
+        "samples": 1,
+        "p50": 25.69,
+        "p95": 25.69,
+        "max": 25.69
+      },
+      "start": {
+        "samples": 15,
+        "p50": 7.26,
+        "p95": 14.24,
+        "max": 14.24
+      },
+      "job_read": {
+        "samples": 182,
+        "p50": 5.71,
+        "p95": 14.36,
+        "max": 151.15
+      },
+      "report_view": {
+        "samples": 60,
+        "p50": 14.51,
+        "p95": 15.76,
+        "max": 16.39
+      },
+      "history": {
+        "samples": 50,
+        "p50": 7.32,
+        "p95": 7.83,
+        "max": 8.02
+      },
+      "evidence": {
+        "samples": 50,
+        "p50": 6.94,
+        "p95": 7.66,
+        "max": 8.71
+      },
+      "foreign_denial": {
+        "samples": 2,
+        "p50": 3.8,
+        "p95": 5.36,
+        "max": 5.36
+      }
+    },
+    "stages": {
+      "downloading": {
+        "samples": 18,
+        "p50": 1,
+        "p95": 60,
+        "max": 60
+      },
+      "inventorying": {
+        "samples": 18,
+        "p50": 4,
+        "p95": 640,
+        "max": 640
+      },
+      "extracting": {
+        "samples": 17,
+        "p50": 15,
+        "p95": 3488,
+        "max": 3488
+      },
+      "aggregating": {
+        "samples": 13,
+        "p50": 25,
+        "p95": 148,
+        "max": 148
+      },
+      "synthesizing": {
+        "samples": 13,
+        "p50": 18,
+        "p95": 35,
+        "max": 35
+      },
+      "validating": {
+        "samples": 13,
+        "p50": 14,
+        "p95": 29,
+        "max": 29
+      }
+    }
+  },
+  "peakServerRssMiB": 444,
+  "peakGeneratedArchiveBytes": 105169,
+  "cleanup": {
+    "terminalWorkspacesRemaining": 0,
+    "emptyWorkspaceChecks": 13,
+    "terminalToEmptyCheckMs": {
+      "samples": 13,
+      "p50": 40,
+      "p95": 53,
+      "max": 53
+    },
+    "jobPollIntervalMs": 30,
+    "productionSweeperVerified": false
+  },
+  "cost": {
+    "actualProviderUsd": 0,
+    "syntheticUsage": {
+      "calls": 13,
+      "input_tokens": 13000,
+      "output_tokens": 13000,
+      "estimated_cost": 0.026
+    },
+    "configuredPerJobCapUsd": 0.1,
+    "productionProviderCostMeasured": false
+  },
+  "invariants": {
+    "duplicateStartCreatedOneJob": true,
+    "savedReadsDuringProviderOutage": true,
+    "foreignReportReadsDenied": true
+  },
+  "limitations": [
+    "Local synthetic transports exclude provider/auth network latency and rate limits",
+    "A small workload is not a production completion/latency SLA",
+    "Stage intervals include database bookkeeping and adjacent stage work; downloading includes some authorization",
+    "Archive bytes are not a measured container-volume high-water mark",
+    "Cleanup observed at terminal polling; deployed supervision and outage behavior remain external gates"
+  ]
+}

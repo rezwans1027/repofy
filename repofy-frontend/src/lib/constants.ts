@@ -15,6 +15,7 @@ export const SECTIONS = [
 export type SectionId = (typeof SECTIONS)[number]["id"];
 
 export const PROTECTED_ROUTES = [
+  "/readiness",
   "/dashboard",
   "/profile",
   "/settings",

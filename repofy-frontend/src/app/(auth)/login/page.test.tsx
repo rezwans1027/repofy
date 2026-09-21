@@ -29,14 +29,14 @@ describe("LoginPage", () => {
       writable: true,
       value: {
         ...originalLocation,
-        origin: "http://localhost:3000",
+        origin: "http://localhost:3100",
         protocol: "http:",
-        href: "http://localhost:3000/login",
+        href: "http://localhost:3100/login",
       },
     });
     Object.defineProperty(window.location, "href", {
       set(value: string) { capturedHref = value; },
-      get() { return "http://localhost:3000/login"; },
+      get() { return "http://localhost:3100/login"; },
       configurable: true,
     });
 
@@ -97,7 +97,7 @@ describe("LoginPage", () => {
     expect(url.origin).toBe("https://github.com");
     expect(url.pathname).toBe("/login/oauth/authorize");
     expect(url.searchParams.get("client_id")).toBe("test-client-id");
-    expect(url.searchParams.get("redirect_uri")).toBe("http://localhost:3000/callback");
+    expect(url.searchParams.get("redirect_uri")).toBe("http://localhost:3100/callback");
     expect(url.searchParams.get("state")).toBe("test-state-uuid");
     expect(url.searchParams.get("code_challenge_method")).toBe("S256");
     expect(url.searchParams.get("code_challenge")).toBeTruthy();

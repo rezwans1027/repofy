@@ -1,12 +1,14 @@
 import { Navbar } from "@/components/layout/navbar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { loadFeatureCapabilities } from "@/lib/feature-capabilities";
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const capabilities = await loadFeatureCapabilities();
   return (
     <QueryProvider>
       <Navbar />
-      <AppSidebar />
+      <AppSidebar capabilities={capabilities} />
       <main id="main-content" className="min-h-screen pt-14 lg:pl-48">
         {/* Extra top padding on mobile for the horizontal nav */}
         <div className="pt-10 lg:pt-0">

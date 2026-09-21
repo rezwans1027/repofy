@@ -37,6 +37,7 @@ export const handleGitHubCallback: RequestHandler = async (req, res) => {
     // 4. Resolve Supabase user
     let userId: string;
     let userEmail: string;
+    let customDisplayName: string | undefined;
 
     // 4a. Primary lookup: stable numeric GitHub user ID
     const { data: existingRow } = await supabase
@@ -50,6 +51,7 @@ export const handleGitHubCallback: RequestHandler = async (req, res) => {
       userId = existingRow.user_id;
       const { data: userData } = await supabase.auth.admin.getUserById(userId);
       userEmail = userData?.user?.email ?? email;
+      customDisplayName = userData?.user?.user_metadata?.display_name;
     } else {
       // 4b. Try to create a new Supabase user
       const { data: created, error: createErr } = await supabase.auth.admin.createUser({
@@ -78,6 +80,7 @@ export const handleGitHubCallback: RequestHandler = async (req, res) => {
 
         userId = linkData.user.id;
         userEmail = linkData.user.email ?? email;
+        customDisplayName = linkData.user.user_metadata?.display_name;
       } else {
         // Should not happen — createUser returned neither data nor error
         sendError(res, 500, "Unexpected error creating user account.");
@@ -129,11 +132,13 @@ export const handleGitHubCallback: RequestHandler = async (req, res) => {
       return;
     }
 
-    // 7. Update display_name
-    const displayName = ghUser.name || ghUser.login;
-    await supabase.auth.admin.updateUserById(userId, {
-      user_metadata: { display_name: displayName },
-    });
+    // Provider identity verification must not overwrite a customized profile name.
+    const displayName = customDisplayName || ghUser.name || ghUser.login;
+    if (!customDisplayName) {
+      await supabase.auth.admin.updateUserById(userId, {
+        user_metadata: { display_name: displayName },
+      });
+    }
 
     // 8. Set auth cookies
     setAuthCookies(res, access_token, refresh_token);

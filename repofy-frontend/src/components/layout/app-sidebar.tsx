@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Search, FileText, GitCompareArrows, Lightbulb, CreditCard, Settings, MessageSquare } from "lucide-react";
+import { DISABLED_CLIENT_CAPABILITIES, type ClientCapabilities } from "@repofy/contracts";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Search", icon: Search, number: 1 },
@@ -26,15 +27,20 @@ function isItemActive(href: string, pathname: string) {
   );
 }
 
-export function AppSidebar() {
+export function AppSidebar({ capabilities = DISABLED_CLIENT_CAPABILITIES }: { capabilities?: ClientCapabilities }) {
   const pathname = usePathname();
+  const items = capabilities.features.featureOneEnabled && capabilities.readinessAvailability === "available"
+    ? [...NAV_ITEMS, { href: "/readiness", label: "Readiness", icon: FileText, number: 8 }]
+    : capabilities.features.githubAppRepositoriesEnabled
+      ? [...NAV_ITEMS, { href: "/readiness/new", label: "Repository access", icon: FileText, number: 8 }]
+      : NAV_ITEMS;
 
   return (
     <>
       {/* Desktop: left rail */}
       <nav aria-label="Main navigation" className="fixed left-0 top-14 hidden h-[calc(100vh-3.5rem)] w-48 flex-col justify-center border-r border-border px-4 lg:flex">
         <ul className="space-y-1">
-          {NAV_ITEMS.map(({ href, label, icon: Icon, number }) => {
+          {items.map(({ href, label, icon: Icon, number }) => {
             const isActive = isItemActive(href, pathname);
 
             return (
@@ -103,14 +109,15 @@ export function AppSidebar() {
 
       {/* Mobile: horizontal sticky bar */}
       <nav aria-label="Main navigation" className="fixed top-14 left-0 right-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm lg:hidden">
-        <div className="relative flex justify-between px-4 py-1.5">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        <div className="relative flex justify-between overflow-x-auto px-4 py-1.5">
+          {items.map(({ href, label, icon: Icon }) => {
             const isActive = isItemActive(href, pathname);
 
             return (
               <Link
                 key={href}
                 href={href}
+                aria-label={label}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "relative flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 font-mono text-xs",

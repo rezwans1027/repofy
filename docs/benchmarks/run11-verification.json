@@ -1,0 +1,69 @@
+{
+  "policy": {
+    "id": "evidence_aggregation",
+    "version": "1.0.0"
+  },
+  "status": "synthetic_verification",
+  "process": {
+    "status": "aggregation-boundaries-ok",
+    "evidence": 20000,
+    "repositories": 10,
+    "elapsedMs": 2041,
+    "maxRssMiB": 507,
+    "resultBytes": 9642868
+  },
+  "humanReview": {
+    "status": "complete",
+    "reviewers": 1,
+    "examples": 4,
+    "agreements": 4,
+    "disagreements": 0,
+    "uncertain": 0,
+    "recordedAt": "2026-09-20T16:26:13Z",
+    "response": "Agree with all four calculations and interpretations",
+    "limitations": [
+      "Unblinded convenience sample",
+      "Arithmetic and interpretation review only",
+      "Not detector precision or rubric calibration"
+    ]
+  },
+  "fixtures": [
+    "run11-example-input.json",
+    "run11-example-result.json",
+    "run11-human-review.md"
+  ],
+  "verification": {
+    "backend": {
+      "files": 88,
+      "tests": 1085,
+      "coverage": {
+        "statements": 87.52,
+        "branches": 85.08,
+        "functions": 88.95,
+        "lines": 89.94
+      }
+    },
+    "frontend": {
+      "files": 84,
+      "tests": 557,
+      "coverage": {
+        "statements": 82.09,
+        "branches": 76.58,
+        "functions": 78.36,
+        "lines": 83.03
+      }
+    },
+    "contracts": {
+      "tests": 70
+    },
+    "postgres": {
+      "tests": 89
+    },
+    "backendBuild": "passed",
+    "frontendBuild": "passed",
+    "frontendTypecheck": "passed",
+    "frontendLint": "passed_with_existing_unused_vi_warning",
+    "aggregationReplayAndLoad": "passed"
+  },
+  "verificationDate": "2026-09-20"
+}

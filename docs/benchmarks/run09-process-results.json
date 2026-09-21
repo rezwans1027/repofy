@@ -1,0 +1,12 @@
+{
+  "date": "2026-09-20",
+  "runtime": "Node 22.23.2 / TypeScript 5.9.3",
+  "scope": "synthetic process verification; not precision calibration or production latency",
+  "status": "implementation-boundaries-ok",
+  "files": 256,
+  "observations": 510,
+  "nodes": 17105,
+  "bytes": 65878,
+  "elapsedMs": 242,
+  "maxRssMiB": 196
+}

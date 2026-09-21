@@ -111,7 +111,7 @@ const defaultGhUser = {
 function defaultBody() {
   return {
     code: "auth-code",
-    redirect_uri: "http://localhost:3000/callback",
+    redirect_uri: "http://localhost:3100/callback",
     code_verifier: "verifier123",
   };
 }
@@ -165,6 +165,16 @@ describe("handleGitHubCallback", () => {
     expect(res.status).toHaveBeenCalledWith(400);
   });
 
+  it("preserves a returning user's customized display name when verifying GitHub identity", async () => {
+    mocks.maybeSingle.mockResolvedValue({ data: { user_id: "u1" }, error: null });
+    mocks.getUserById.mockResolvedValue({ data: { user: { id: "u1", email: "test@example.com", user_metadata: { display_name: "My custom name" } } } });
+    const { req, res, next } = createControllerMocks();
+    req.body = { code: "abc", redirect_uri: "http://localhost:3100/callback", code_verifier: "verifier" };
+    await handleGitHubCallback(req, res, next);
+    expect(mocks.updateUserById).not.toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ user: expect.objectContaining({ display_name: "My custom name" }) }) }));
+  });
+
   it("returns 400 when redirect_uri is missing", async () => {
     const { req, res, next } = createControllerMocks();
     (req as any).body = { code: "abc", code_verifier: "v" };
@@ -176,7 +186,7 @@ describe("handleGitHubCallback", () => {
 
   it("returns 400 when code_verifier is missing", async () => {
     const { req, res, next } = createControllerMocks();
-    (req as any).body = { code: "abc", redirect_uri: "http://localhost:3000/callback" };
+    (req as any).body = { code: "abc", redirect_uri: "http://localhost:3100/callback" };
 
     await handleGitHubCallback(req, res, next);
 
@@ -190,7 +200,7 @@ describe("handleGitHubCallback", () => {
     await handleGitHubCallback(req, res, next);
 
     expect(mocks.exchangeCodeForToken).toHaveBeenCalledWith(
-      "auth-code", "http://localhost:3000/callback", "verifier123",
+      "auth-code", "http://localhost:3100/callback", "verifier123",
     );
     expect(mocks.createUser).toHaveBeenCalledWith({
       email: "test@example.com",

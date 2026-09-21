@@ -1,0 +1,362 @@
+{
+  "contractVersion": "1.0.0",
+  "roleId": "mobile",
+  "version": "1.0.0",
+  "taxonomyId": "engineering_capabilities",
+  "taxonomyVersion": "1.0.0",
+  "name": "Mobile Software Engineer",
+  "calibration": "uncalibrated",
+  "weightOrigin": "draft_hypothesis",
+  "coveragePolicy": {
+    "denominator": "all_requirement_weights",
+    "unknownRequirements": "retain_weight_report_separately",
+    "allUnknown": "unknown_without_score",
+    "requiredRequirements": "report_each_unmet_or_unknown",
+    "disclosure": "Repository evidence is not a complete measure of job readiness. Unknown requirement weight stays visible and is never removed to inflate coverage."
+  },
+  "availability": {
+    "state": "definitions_only",
+    "externalRollout": false,
+    "plannedCoverage": [
+      {
+        "languages": [
+          "typescript",
+          "javascript",
+          "jsx",
+          "tsx",
+          "json",
+          "yaml",
+          "sql",
+          "markdown",
+          "dockerfile",
+          "github_actions",
+          "react",
+          "nextjs",
+          "nodejs",
+          "express"
+        ],
+        "depth": "deep",
+        "limitation": "Planned PRD target; extraction and semantic detectors are pending Runs 08\u201310. React or Express presence alone establishes no behavior."
+      },
+      {
+        "languages": [
+          "python",
+          "java"
+        ],
+        "depth": "baseline",
+        "limitation": "Planned structural and selected source analysis only; unsupported semantics must remain not assessable."
+      },
+      {
+        "languages": [
+          "other"
+        ],
+        "depth": "inventory_only",
+        "limitation": "Other languages have no promised semantic coverage. Inventory is not an implementation assessment."
+      },
+      {
+        "languages": [
+          "swift",
+          "kotlin",
+          "dart",
+          "react_native"
+        ],
+        "depth": "inventory_only",
+        "limitation": "No native lifecycle, navigation or device test detector is delivered. TypeScript syntax support does not imply React Native or native platform semantics."
+      }
+    ],
+    "limitations": [
+      "All weights and thresholds are uncalibrated starting hypotheses; human benchmark review is pending.",
+      "Every capability currently awaits detector coverage. No role assessment can be produced by this run.",
+      "Missing project evidence does not imply missing skill, seniority or employability."
+    ]
+  },
+  "requirements": [
+    {
+      "capabilityId": "mobile_lifecycle",
+      "requirementId": "mobile_lifecycle",
+      "version": "1.0.0",
+      "label": "Lifecycle and permission recovery",
+      "capabilityIds": [
+        "mobile_lifecycle"
+      ],
+      "weight": 0.16,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "mobile_navigation",
+      "requirementId": "mobile_navigation",
+      "version": "1.0.0",
+      "label": "Navigation and restoration",
+      "capabilityIds": [
+        "mobile_navigation"
+      ],
+      "weight": 0.14,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "mobile_offline",
+      "requirementId": "mobile_offline",
+      "version": "1.0.0",
+      "label": "Offline synchronization",
+      "capabilityIds": [
+        "mobile_offline",
+        "reliability_recovery"
+      ],
+      "weight": 0.14,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "frontend_interaction",
+      "requirementId": "frontend_interaction",
+      "version": "1.0.0",
+      "label": "Accessible mobile interactions",
+      "capabilityIds": [
+        "frontend_interaction",
+        "frontend_accessibility"
+      ],
+      "weight": 0.1,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "testing_behavior",
+      "requirementId": "testing_behavior",
+      "version": "1.0.0",
+      "label": "Behavior and failure tests",
+      "capabilityIds": [
+        "testing_behavior",
+        "testing_failures"
+      ],
+      "weight": 0.12,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "security_authorization",
+      "requirementId": "security_authorization",
+      "version": "1.0.0",
+      "label": "Access and sensitive data",
+      "capabilityIds": [
+        "security_authorization",
+        "security_secrets"
+      ],
+      "weight": 0.1,
+      "minimumEvidence": 0.55,
+      "required": true,
+      "evidencePolicy": {
+        "minimumConfidence": "moderate",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 1,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "performance_resources",
+      "requirementId": "performance_resources",
+      "version": "1.0.0",
+      "label": "Device resource bounds",
+      "capabilityIds": [
+        "performance_resources"
+      ],
+      "weight": 0.08,
+      "minimumEvidence": 0.4,
+      "required": false,
+      "evidencePolicy": {
+        "minimumConfidence": "low",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 0,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "architecture_modularity",
+      "requirementId": "architecture_modularity",
+      "version": "1.0.0",
+      "label": "Architecture and platform boundaries",
+      "capabilityIds": [
+        "architecture_modularity",
+        "architecture_boundaries"
+      ],
+      "weight": 0.06,
+      "minimumEvidence": 0.4,
+      "required": false,
+      "evidencePolicy": {
+        "minimumConfidence": "low",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 0,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "delivery_automation",
+      "requirementId": "delivery_automation",
+      "version": "1.0.0",
+      "label": "Build and delivery verification",
+      "capabilityIds": [
+        "delivery_automation",
+        "delivery_reproducibility"
+      ],
+      "weight": 0.05,
+      "minimumEvidence": 0.4,
+      "required": false,
+      "evidencePolicy": {
+        "minimumConfidence": "low",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 0,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    },
+    {
+      "capabilityId": "documentation_operability",
+      "requirementId": "documentation_operability",
+      "version": "1.0.0",
+      "label": "Documentation and collaboration",
+      "capabilityIds": [
+        "documentation_operability",
+        "documentation_decisions"
+      ],
+      "weight": 0.05,
+      "minimumEvidence": 0.4,
+      "required": false,
+      "evidencePolicy": {
+        "minimumConfidence": "low",
+        "minimumImplementationClusters": 1,
+        "minimumCorroboratingClusters": 0,
+        "corroboratingFamilies": [
+          "test",
+          "ci"
+        ],
+        "assessability": "all_capabilities",
+        "presenceOnlyMaximumStrength": 0.39
+      },
+      "aggregation": {
+        "operator": "all",
+        "strength": "minimum",
+        "confidence": "minimum"
+      }
+    }
+  ]
+}

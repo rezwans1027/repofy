@@ -1,0 +1,11 @@
+{
+  "corpusVersion": "1.0.0",
+  "id": "R16-Q01",
+  "severity": "P2",
+  "status": "documented_scope_limitation",
+  "description": "The route/service detector does not recognize a concise expression-body route callback. The reference remains positive and is counted as a false negative. No score or semantic safety threshold is changed.",
+  "missing": [
+    { "detector": "tsjs.route_service", "path": "workspace_layers/packages/api/endpoint.ts" }
+  ],
+  "followUp": "Add support in a separately versioned detector/aggregation composition and rerun untouched corpus labels; do not rewrite historical observations."
+}

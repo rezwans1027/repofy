@@ -1,0 +1,1856 @@
+{
+  "corpusSha256": "f80ca10b4235986ea71de3254e8f738a5c870e54b54e96a619fcaabfb4250efe",
+  "domainSourceSha256": "c2f8e497394a42288d4432b79726dcce901443dac44f27bf4e18f2f0121cb816",
+  "renderedAt": "2026-09-21T02:29:51.433Z",
+  "scope": "Frozen actual renderer output matching all previously reviewed cards; contains no source or private identifiers. Only the selected C cards were human-reviewed. Fresh random fixture identities can select different equally ranked bounded observations.",
+  "cases": [
+    {
+      "id": "backend_parse",
+      "claims": [
+        {
+          "capability": "api_boundary_validation",
+          "text": "A route parses request input with a Zod object schema before passing the parsed value to a local function. Only a straight-line parse path is supported; schema completeness, error middleware and other routes are unknown. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.request_validation"
+        },
+        {
+          "capability": "api_design",
+          "text": "An Express route callback calls a statically resolved local function boundary. Does not establish API stability, complete routing or separation of all responsibilities. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.route_service"
+        },
+        {
+          "capability": "architecture_modularity",
+          "text": "An Express route callback calls a statically resolved local function boundary. Does not establish API stability, complete routing or separation of all responsibilities. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.route_service"
+        },
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        },
+        {
+          "capability": "security_input_handling",
+          "text": "A route parses request input with a Zod object schema before passing the parsed value to a local function. Only a straight-line parse path is supported; schema completeness, error middleware and other routes are unknown. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.request_validation"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "backend_owner",
+      "claims": [
+        {
+          "capability": "api_design",
+          "text": "A route returns an explicit error status with a structured literal error code. No claim about a universal error contract, safe message content or matching consumer behavior. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.structured_error"
+        },
+        {
+          "capability": "architecture_modularity",
+          "text": "An Express route callback calls a statically resolved local function boundary. Does not establish API stability, complete routing or separation of all responsibilities. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.route_service"
+        },
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        },
+        {
+          "capability": "security_authorization",
+          "text": "A route compares a loaded resource owner with its request actor and returns 403 before a subsequent local resource operation. Does not prove actor authenticity, safe loading, role authorization, race safety or protection of other routes. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.ownership_guard"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "backend_auth",
+      "claims": [
+        {
+          "capability": "api_boundary_validation",
+          "text": "A route returns a 401 response when its request user is absent before a local call consumes that user. This is an authentication-state guard, not proof of credential verification or resource authorization. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.authentication_guard"
+        },
+        {
+          "capability": "api_design",
+          "text": "A route returns an explicit error status with a structured literal error code. No claim about a universal error contract, safe message content or matching consumer behavior. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.structured_error"
+        },
+        {
+          "capability": "architecture_modularity",
+          "text": "An Express route callback calls a statically resolved local function boundary. Does not establish API stability, complete routing or separation of all responsibilities. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.route_service"
+        },
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "frontend_form",
+      "claims": [
+        {
+          "capability": "frontend_interaction",
+          "text": "A form submit handler parses a React state value with a Zod object schema before passing it to a local function. Client validation alone is not a server trust boundary; field-level feedback, submission success and UX are unverified. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.form_validation"
+        },
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        },
+        {
+          "capability": "security_input_handling",
+          "text": "A form submit handler parses a React state value with a Zod object schema before passing it to a local function. Client validation alone is not a server trust boundary; field-level feedback, submission success and UX are unverified. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.form_validation"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "frontend_request",
+      "claims": [
+        {
+          "capability": "frontend_accessibility",
+          "text": "A native button has a static text label and is wired to a local action function. This narrow markup observation does not verify computed accessible names, keyboard tests, CSS visibility, focus recovery or accessibility conformance. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.accessible_action"
+        },
+        {
+          "capability": "frontend_interaction",
+          "text": "A connected UI action wraps a fetch with rendered pending and error state and a finally reset; the action can be invoked again. No stale-response protection, retry policy, server success or complete state-management claim; fetch can resolve on HTTP errors. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.request_state"
+        },
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "query_parameters",
+      "claims": [
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        },
+        {
+          "capability": "security_input_handling",
+          "text": "A pg query separates literal SQL text from an explicit parameter array. Does not establish identifier safety, authorization, successful execution or safety of other queries. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.parameterized_query"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "transaction_writes",
+      "claims": [
+        {
+          "capability": "data_transactions",
+          "text": "A Prisma transaction callback issues multiple awaited writes through its transaction parameter. Does not prove related business invariants, conflict handling, all-write atomicity or rollback behavior under execution. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.transaction"
+        },
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "schema_declared",
+      "claims": [
+        {
+          "capability": "data_modeling",
+          "text": "An ORM table declaration includes an explicit uniqueness or foreign-key relationship constraint. A declared constraint does not prove a migration was applied or that deployed data satisfies it. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.schema_constraint"
+        },
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "retry_ceiling",
+      "claims": [
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        },
+        {
+          "capability": "performance_resources",
+          "text": "A loop with a literal attempt ceiling retries an awaited local operation after a caught failure. Only the loop attempt count is bounded; duration, recursive work, backoff and eventual recovery are unknown. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.bounded_retry"
+        },
+        {
+          "capability": "reliability_recovery",
+          "text": "A loop with a literal attempt ceiling retries an awaited local operation after a caught failure. Only the loop attempt count is bounded; duration, recursive work, backoff and eventual recovery are unknown. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.bounded_retry"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "state_precondition",
+      "claims": [
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        },
+        {
+          "capability": "reliability_concurrency",
+          "text": "A function returns early for an unexpected input state before a subsequent local operation on that input. This local state guard does not establish durable idempotency, atomic compare-and-set or concurrency safety. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.state_guard"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "client_cleanup",
+      "claims": [
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        },
+        {
+          "capability": "reliability_recovery",
+          "text": "A pg client is released in a finally block surrounding a query on that client. Does not prove all resources are released or that the query or release succeeds. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.failure_cleanup"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "linked_assertion",
+      "claims": [
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        },
+        {
+          "capability": "testing_behavior",
+          "text": "A test assertion consumes the result of a statically resolved local implementation call. Source assertions are not passing results or coverage measurements; mocks weaken independence and external integration is unverified. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.asserted_call"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "model_adapter",
+      "claims": [
+        {
+          "capability": "ai_integration",
+          "text": "A structured model call supplies an output schema, an explicit retry ceiling and a timeout signal. SDK enforcement, model availability, output quality, context authorization and prompt-injection defenses are unverified. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.bounded_model_output"
+        },
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "dependency_only",
+      "claims": [
+        {
+          "capability": "framework_presence",
+          "text": "A dependency declaration was observed. A declaration does not establish usage, working integration or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "observation.dependency_presence"
+        },
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "shadowed_decoys",
+      "claims": [
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "safe_parse_alternative",
+      "claims": [
+        {
+          "capability": "api_design",
+          "text": "A route returns an explicit error status with a structured literal error code. No claim about a universal error contract, safe message content or matching consumer behavior. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.structured_error"
+        },
+        {
+          "capability": "architecture_modularity",
+          "text": "An Express route callback calls a statically resolved local function boundary. Does not establish API stability, complete routing or separation of all responsibilities. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.route_service"
+        },
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "workspace_layers",
+      "claims": [
+        {
+          "capability": "data_modeling",
+          "text": "Static database schema structure was observed. This does not establish an applied migration or deployed data integrity. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "observation.schema_structure_only"
+        },
+        {
+          "capability": "delivery_automation",
+          "text": "A static configuration declaration was observed. Configuration does not establish successful execution or deployment. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "observation.configuration_presence"
+        },
+        {
+          "capability": "frontend_accessibility",
+          "text": "A native button has a static text label and is wired to a local action function. This narrow markup observation does not verify computed accessible names, keyboard tests, CSS visibility, focus recovery or accessibility conformance. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.accessible_action"
+        },
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "python_baseline",
+      "claims": [
+        {
+          "capability": "framework_presence",
+          "text": "A dependency declaration was observed. A declaration does not establish usage, working integration or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "observation.dependency_presence"
+        },
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "java_baseline",
+      "claims": [
+        {
+          "capability": "framework_presence",
+          "text": "A dependency declaration was observed. A declaration does not establish usage, working integration or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "observation.dependency_presence"
+        },
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "mobile_native_unknown",
+      "claims": [],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "empty_unknown",
+      "claims": [],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "private_sentinels",
+      "claims": [
+        {
+          "capability": "documentation_decisions",
+          "text": "Documentation structure was observed. Documentation does not establish implemented behavior or operational quality. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "observation.documentation_only"
+        },
+        {
+          "capability": "documentation_operability",
+          "text": "Documentation structure was observed. Documentation does not establish implemented behavior or operational quality. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "observation.documentation_only"
+        },
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "fork_original_work",
+      "claims": [
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        },
+        {
+          "capability": "performance_resources",
+          "text": "A loop with a literal attempt ceiling retries an awaited local operation after a caught failure. Only the loop attempt count is bounded; duration, recursive work, backoff and eventual recovery are unknown. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.bounded_retry"
+        },
+        {
+          "capability": "reliability_recovery",
+          "text": "A loop with a literal attempt ceiling retries an awaited local operation after a caught failure. Only the loop attempt count is bounded; duration, recursive work, backoff and eventual recovery are unknown. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.bounded_retry"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "template_generated",
+      "claims": [
+        {
+          "capability": "frontend_accessibility",
+          "text": "A native button has a static text label and is wired to a local action function. This narrow markup observation does not verify computed accessible names, keyboard tests, CSS visibility, focus recovery or accessibility conformance. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.accessible_action"
+        },
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        }
+      ],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
+          "version": "1.0.0"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.0"
+        },
+        "coverageManifest": "1.2.0",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    }
+  ]
+}

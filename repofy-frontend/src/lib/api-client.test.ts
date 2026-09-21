@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { api, ApiError } from "./api-client";
+import { ReadinessReportResponseSchema } from "@repofy/contracts";
+import { createSyntheticReportFixture } from "@repofy/contracts/testing";
 
 describe("ApiError", () => {
   it("creates error with status and message", () => {
@@ -160,5 +162,54 @@ describe("api - network errors", () => {
     );
 
     await expect(api.post("/offline")).rejects.toThrow("Failed to fetch");
+  });
+});
+
+describe("v1 errors and refresh compatibility", () => {
+  beforeEach(() => vi.restoreAllMocks());
+  const failure = { success: false, error: "Readiness unavailable", code: "FEATURE_DISABLED", retryable: false, requestId: "synthetic-request" };
+  const jsonResponse = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
+
+  it.each([false, true])("retains structured errors, including after refresh=%s", async (refresh) => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    if (refresh) fetchSpy.mockResolvedValueOnce(jsonResponse({ success: false, error: "Expired" }, 401))
+      .mockResolvedValueOnce(jsonResponse({ success: true }));
+    fetchSpy.mockResolvedValueOnce(jsonResponse(failure, 503));
+    await expect(api.post("/v1/analyses", { body: { idempotencyKey: "synthetic-request" }, headers: { "X-Request-Id": "synthetic-request" } }))
+      .rejects.toMatchObject({ message: failure.error, status: 503, code: failure.code, retryable: false, requestId: failure.requestId });
+    if (refresh) {
+      expect(fetchSpy.mock.calls[2]).toEqual(fetchSpy.mock.calls[0]);
+      expect(fetchSpy.mock.calls[1][1]).toMatchObject({ credentials: "include", headers: { "X-Requested-With": "XMLHttpRequest" } });
+    }
+    expect(fetchSpy.mock.calls[0][1]).toMatchObject({ headers: { "X-Requested-With": "XMLHttpRequest", "X-Request-Id": "synthetic-request" } });
+  });
+
+  it("parses shared success data on a refreshed request and does not pass schema to fetch", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(jsonResponse({ success: false, error: "Expired" }, 401))
+      .mockResolvedValueOnce(jsonResponse({ success: true }))
+      .mockResolvedValueOnce(jsonResponse({ success: true, data: createSyntheticReportFixture() }));
+    const report = await api.get("/v1/readiness-reports/synthetic", { schema: ReadinessReportResponseSchema });
+    expect(report).toEqual(createSyntheticReportFixture());
+    expect(fetchSpy.mock.calls[0][1]).not.toHaveProperty("schema");
+  });
+
+  it("rejects invalid success data after refresh", async () => {
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(jsonResponse({}, 401)).mockResolvedValueOnce(jsonResponse({ success: true }))
+      .mockResolvedValueOnce(jsonResponse({ success: true, data: { contractVersion: "2.0.0" } }));
+    await expect(api.get("/v1/readiness-reports/synthetic", { schema: ReadinessReportResponseSchema })).rejects.toThrow();
+  });
+
+  it("preserves the legacy session-expired message and retains v1 correlation when refresh fails", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(jsonResponse({ ...failure, code: "UNAUTHENTICATED" }, 401))
+      .mockResolvedValueOnce(jsonResponse({}, 401));
+    await expect(api.get("/v1/analyses/synthetic")).rejects.toMatchObject({ message: "Session expired", status: 401, requestId: "synthetic-request" });
+  });
+
+  it("handles a non-JSON retried response", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(jsonResponse({}, 401))
+      .mockResolvedValueOnce(jsonResponse({ success: true })).mockResolvedValueOnce(new Response("unavailable", { status: 502 }));
+    await expect(api.get("/v1/analyses/synthetic")).rejects.toMatchObject({ message: "Server returned non-JSON response", status: 502 });
   });
 });

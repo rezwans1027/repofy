@@ -5,6 +5,9 @@ on:
     paths:
       - "repofy-frontend/**"
       - "repofy-backend/**"
+      - "packages/contracts/**"
+      - "supabase/**"
+      - "docs/benchmarks/run*.json"
       - ".github/workflows/**"
   push:
     branches:
@@ -13,8 +16,17 @@ on:
     paths:
       - "repofy-frontend/**"
       - "repofy-backend/**"
+      - "packages/contracts/**"
+      - "supabase/**"
+      - "docs/benchmarks/run*.json"
       - ".github/workflows/**"
   workflow_dispatch:
+    inputs:
+      hosted_regression:
+        description: Run credentialed hosted app regression (fails if secrets are missing)
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -30,7 +42,9 @@ jobs:
     outputs:
       frontend: ${{ steps.filter.outputs.frontend }}
       backend: ${{ steps.filter.outputs.backend }}
+      contracts: ${{ steps.filter.outputs.contracts }}
       workflows: ${{ steps.filter.outputs.workflows }}
+      feature_one: ${{ steps.filter.outputs.feature_one }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,19 +54,73 @@ jobs:
         uses: dorny/paths-filter@v3
         with:
           filters: |
+            feature_one:
+              - "repofy-frontend/**"
+              - "repofy-backend/**"
+              - "packages/contracts/**"
+              - "supabase/**"
+              - "docs/benchmarks/run*.json"
+              - ".github/workflows/**"
             frontend:
               - "repofy-frontend/**"
+              - "packages/contracts/**"
+              - "docs/benchmarks/run*.json"
             backend:
               - "repofy-backend/**"
+              - "packages/contracts/**"
+              - "supabase/**"
+              - "docs/benchmarks/run*.json"
+            contracts:
+              - "packages/contracts/**"
+              - "docs/benchmarks/run*.json"
             workflows:
               - ".github/workflows/**"
+
+  contracts:
+    name: contracts
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.feature_one == 'true' }}
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: packages/contracts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: packages/contracts/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Test and build contracts
+        run: npm test
 
   backend:
     name: backend
     runs-on: ubuntu-latest
     needs: changes
-    if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.workflows == 'true' }}
-    timeout-minutes: 15
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.feature_one == 'true' }}
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     defaults:
       run:
         working-directory: repofy-backend
@@ -65,7 +133,17 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: repofy-backend/package-lock.json
+          cache-dependency-path: |
+            repofy-backend/package-lock.json
+            packages/contracts/package-lock.json
+
+      - name: Install contracts dependencies
+        working-directory: packages/contracts
+        run: npm ci
+
+      - name: Build shared contracts before application install
+        working-directory: packages/contracts
+        run: npm run build
 
       - name: Install dependencies
         run: npm ci
@@ -76,6 +154,44 @@ jobs:
       - name: Test with coverage
         run: npm test -- --coverage
 
+      - name: Typecheck release measurement and integrated fixture
+        run: npm run release:typecheck
+
+      - name: Verify frozen release corpus and reviewed claims
+        run: npm run release:benchmark
+
+      - name: Verify integrated workload and limits on PostgreSQL
+        run: npm run release:load
+        env:
+          TEST_PG_ADMIN_URL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
+
+      - name: Verify migrations, ownership and immutability on PostgreSQL
+        run: npm run test:postgres
+        env:
+          TEST_PG_ADMIN_URL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
+
+      - name: Verify bounded ingestion worker and crash cleanup
+        run: npm run ingestion:verify
+
+      - name: Verify analysis and maintenance process lifecycle
+        run: npm run worker:verify
+
+      - name: Verify structural parser process boundaries
+        run: npm run extraction:verify
+
+      - name: Verify bounded TypeScript and JavaScript detectors
+        working-directory: repofy-backend
+        run: npm run detectors:verify
+
+      - name: Verify bounded Python, Java and Maven parsing
+        run: npm run coverage:verify
+
+      - name: Verify bounded deterministic aggregation
+        run: npm run aggregation:verify
+
+      - name: Validate rubric manifests and immutable seed parity
+        run: npm run rubrics:validate
+
       - name: Build
         run: npm run build
 
@@ -83,8 +199,22 @@ jobs:
     name: frontend-unit
     runs-on: ubuntu-latest
     needs: changes
-    if: ${{ needs.changes.outputs.frontend == 'true' || needs.changes.outputs.workflows == 'true' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.feature_one == 'true' }}
     timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
       NEXT_TELEMETRY_DISABLED: 1
     defaults:
@@ -99,7 +229,17 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: repofy-frontend/package-lock.json
+          cache-dependency-path: |
+            repofy-frontend/package-lock.json
+            packages/contracts/package-lock.json
+
+      - name: Install contracts dependencies
+        working-directory: packages/contracts
+        run: npm ci
+
+      - name: Build shared contracts before application install
+        working-directory: packages/contracts
+        run: npm run build
 
       - name: Install dependencies
         run: npm ci
@@ -107,31 +247,69 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Test with coverage
         run: npm test -- --coverage
 
       - name: Build
         run: npm run build
+        env:
+          API_BACKEND_URL: http://127.0.0.1:3191/api
+
+      - name: Verify unavailable readiness routes
+        run: npm run test:e2e:readiness
+
+      - name: Install backend synthetic selection fixture
+        working-directory: repofy-backend
+        run: npm ci
+
+      - name: Install Chromium for repository selection
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify repository selection and signed revocation
+        run: npm run test:e2e:selection
+
+      - name: Verify private report UI with real worker and PostgreSQL
+        run: npm run test:e2e:report
+        env:
+          TEST_PG_ADMIN_URL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
+
+      - name: Upload synthetic readiness screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: private-readiness-synthetic
+          path: repofy-frontend/test-results
+          if-no-files-found: ignore
+          retention-days: 7
+
+  feature-one-gate:
+    name: feature-one-gate
+    runs-on: ubuntu-latest
+    needs: [changes, contracts, backend, frontend-unit]
+    if: ${{ always() }}
+    steps:
+      - name: Require every Feature 1 check to succeed
+        env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          CONTRACTS_RESULT: ${{ needs.contracts.result }}
+          BACKEND_RESULT: ${{ needs.backend.result }}
+          FRONTEND_RESULT: ${{ needs.frontend-unit.result }}
+        run: |
+          for result in "$CHANGES_RESULT" "$CONTRACTS_RESULT" "$BACKEND_RESULT" "$FRONTEND_RESULT"; do
+            if [ "$result" != "success" ]; then
+              echo "::error::A required Feature 1 job failed, was cancelled, or was skipped."
+              exit 1
+            fi
+          done
 
   frontend-e2e:
-    name: frontend-e2e
-    continue-on-error: true
+    name: hosted-app-regression (opt-in)
     runs-on: ubuntu-latest
-    needs:
-      - changes
-      - backend
-      - frontend-unit
-    if: >-
-      ${{
-        !cancelled() &&
-        (
-          needs.changes.outputs.frontend == 'true' ||
-          needs.changes.outputs.backend == 'true' ||
-          needs.changes.outputs.workflows == 'true'
-        ) &&
-        (needs.backend.result == 'success' || needs.backend.result == 'skipped') &&
-        (needs.frontend-unit.result == 'success' || needs.frontend-unit.result == 'skipped')
-      }}
+    needs: [backend, frontend-unit]
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.hosted_regression && needs.backend.result == 'success' && needs.frontend-unit.result == 'success' }}
     timeout-minutes: 25
     env:
       # Backend env vars
@@ -139,21 +317,22 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
       SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY }}
       GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}
+      GITHUB_APP_CLIENT_ID: ${{ secrets.E2E_GITHUB_APP_CLIENT_ID }}
+      GITHUB_APP_CLIENT_SECRET: ${{ secrets.E2E_GITHUB_APP_CLIENT_SECRET }}
       OPENAI_API_KEY: fake-openai-key
       ADMIN_SECRET: test-admin-secret
       STRIPE_SECRET_KEY: sk_test_fake_key
       STRIPE_WEBHOOK_SECRET: whsec_fake_secret
       RESEND_API_KEY: re_fake_resend_key
       OTP_HMAC_SECRET: test-otp-secret
-      CORS_ORIGIN: http://localhost:3000
-      FRONTEND_URL: http://localhost:3000
+      CORS_ORIGIN: http://localhost:3100
+      FRONTEND_URL: http://localhost:3100
       ENGINE_INTERNAL_KEY: test-engine-key
       FEEDBACK_NOTIFICATION_EMAIL: test@example.com
       TOKEN_ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
       NODE_ENV: test
       # Frontend env vars
-      E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
-      E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+      E2E_STORAGE_STATE: ${{ secrets.E2E_STORAGE_STATE }}
       NEXT_TELEMETRY_DISABLED: 1
     steps:
       - name: Checkout
@@ -167,6 +346,7 @@ jobs:
           cache-dependency-path: |
             repofy-backend/package-lock.json
             repofy-frontend/package-lock.json
+            packages/contracts/package-lock.json
 
       - name: Validate required secrets
         shell: bash
@@ -174,8 +354,10 @@ jobs:
           required=(
             SUPABASE_URL
             SUPABASE_ANON_KEY
-            E2E_TEST_EMAIL
-            E2E_TEST_PASSWORD
+            SUPABASE_SERVICE_ROLE_KEY
+            GITHUB_APP_CLIENT_ID
+            GITHUB_APP_CLIENT_SECRET
+            E2E_STORAGE_STATE
             GITHUB_TOKEN
           )
 
@@ -185,6 +367,26 @@ jobs:
               exit 1
             fi
           done
+
+      - name: Install dedicated development session for the existing OAuth setup
+        run: |
+          node --input-type=module <<'NODE'
+          import { mkdir, writeFile } from 'node:fs/promises';
+          try {
+            const state = JSON.parse(process.env.E2E_STORAGE_STATE);
+            if (!Array.isArray(state.cookies) || !Array.isArray(state.origins) || !state.cookies.some(c => c.name === 'access_token' && typeof c.value === 'string' && c.value)) throw new Error();
+            await mkdir('repofy-frontend/e2e/.auth', { recursive: true, mode: 0o700 });
+            await writeFile('repofy-frontend/e2e/.auth/user.json', JSON.stringify(state), { mode: 0o600, flag: 'wx' });
+          } catch { console.error('Dedicated E2E storage state is missing or invalid; no session contents were logged.'); process.exitCode = 1; }
+          NODE
+
+      - name: Install contracts dependencies
+        working-directory: packages/contracts
+        run: npm ci
+
+      - name: Build shared contracts before application install
+        working-directory: packages/contracts
+        run: npm run build
 
       - name: Install backend dependencies
         working-directory: repofy-backend
