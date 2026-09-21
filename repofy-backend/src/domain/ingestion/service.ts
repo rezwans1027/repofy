@@ -23,17 +23,19 @@ export interface SafeSnapshotContext {
 class FilteredContext implements SafeSnapshotContext {
   readonly snapshot; readonly policy; readonly summary;
   #contents; #files; #disposed = false; #guard; #cleanup;
-  constructor(pin: PinnedSnapshot, summary: ScanSummary, files: SafeFile[], contents: Map<string, string>, guard: () => Promise<void>, cleanup: () => Promise<void>) {
+  constructor(pin: PinnedSnapshot, summary: ScanSummary, files: SafeFile[], contents: Map<string, string>, guard: (fresh: boolean) => Promise<void>, cleanup: () => Promise<void>) {
     this.snapshot = Object.freeze({ pinId: pin.pinId, repositoryId: pin.repositoryId, commitSha: pin.commitSha,
       repositoryVisibility: pin.repositoryVisibility, resolvedAt: pin.resolvedAt, policyHash: pin.policyHash });
     this.policy = Object.freeze({ ...pin.policy, limits: Object.freeze({ ...pin.policy.limits }) }); this.summary = Object.freeze({ ...summary, excluded: Object.freeze({ ...summary.excluded }) });
     this.#files = Object.freeze(files.map(file => Object.freeze({ ...file, locator: Object.freeze({ ...file.locator }) })));
     this.#contents = contents; this.#guard = guard; this.#cleanup = cleanup; Object.freeze(this);
   }
-  async #check() { if (this.#disposed) throw new IngestionError("CONTEXT_DISPOSED"); await this.#guard(); }
-  async files() { await this.#check(); return this.#files; }
+  #assertOpen() { if (this.#disposed) throw new IngestionError("CONTEXT_DISPOSED"); }
+  // Disposal can race a pending authorization check. Check immediately after
+  // the final await, before returning retained file metadata or source.
+  async files() { this.#assertOpen(); await this.#guard(true); this.#assertOpen(); return this.#files; }
   async readText(locatorId: string) {
-    await this.#check(); const text = this.#contents.get(locatorId);
+    this.#assertOpen(); await this.#guard(false); this.#assertOpen(); const text = this.#contents.get(locatorId);
     if (text === undefined) throw new IngestionError("INVALID_REQUEST"); return text;
   }
   async dispose() { this.#disposed = true; this.#contents.clear(); await this.#cleanup(); }
@@ -85,10 +87,23 @@ export class SnapshotIngestionService {
     externalSignal?.addEventListener("abort", relay, { once: true }); if (externalSignal?.aborted) relay();
     const timeout = setTimeout(() => controller.abort(new IngestionError("TIMED_OUT")), pin.policy.limits.prepareTimeoutMs); timeout.unref();
     const deadline = setTimeout(() => controller.abort(new IngestionError("LEASE_LOST")), MAX_WORKSPACE_AGE_MS); deadline.unref();
-    const checkpoint = async () => {
+    let checkpointPending: Promise<void> | undefined; let checkpointStartedAt = -Infinity;
+    const checkpoint = async (fresh = true) => {
       checkSignal(signal);
-      try { await this.store.checkpoint(request.actor, attemptId, leaseToken!); }
-      catch (error) { controller.abort(safeError(error, "DATABASE_FAILURE")); }
+      // Preparation boundaries and files() always require a live check. File
+      // reads reuse it for at most the existing access-poll interval, avoiding
+      // one remote round trip per file. Stale reads and the heartbeat share an
+      // in-flight check, and failures/abort always invalidate the whole context.
+      // Measure from request start so RPC latency cannot extend the window.
+      if (!checkpointPending && (fresh || performance.now() - checkpointStartedAt >= ACCESS_POLL_MS)) {
+        const startedAt = performance.now();
+        checkpointPending = (async () => {
+          try { await this.store.checkpoint(request.actor, attemptId, leaseToken!); checkpointStartedAt = startedAt; }
+          catch (error) { controller.abort(safeError(error, "DATABASE_FAILURE")); }
+          checkSignal(signal);
+        })().finally(() => { checkpointPending = undefined; });
+      }
+      await checkpointPending;
       checkSignal(signal);
     };
     const cleanup = (): Promise<void> => {

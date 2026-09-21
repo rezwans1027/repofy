@@ -11,6 +11,7 @@ import type { LocatorCrypto } from "../evidence/locator-crypto";
 import { DETECTORS, implementationProfile } from "../detectors/registry";
 import { coverageProfile } from "../coverage/manifest";
 import { achievedCoverage } from "../coverage/achieved";
+import { extractionProfile, structuralDetectorVersion } from "../extraction/policy";
 
 export interface FeatureOneRpcClient {
   rpc(name: string, args: Record<string, unknown>): PromiseLike<{ data: unknown; error: { message?: string; code?: string } | null }>;
@@ -66,7 +67,7 @@ export const SnapshotBundleSchema = z.strictObject({
       || implementation.eligibleFiles !== bundle.files.filter(f => f.eligible && ["code", "test"].includes(f.classification) && ["typescript", "javascript"].includes(f.language)).length) fail();
     for (const row of implementation.detectors) {
       const definition = DETECTORS.find(d => d.kind === row.kind)!;
-      if (JSON.stringify(row.capabilityIds) !== JSON.stringify(definition.capabilityIds)
+      if (row.version !== definition.version || JSON.stringify(row.capabilityIds) !== JSON.stringify(definition.capabilityIds)
         || row.observations !== bundle.evidence.filter(e => e.implementation?.kind === row.kind).length) fail();
     }
   } else if (bundle.evidence.some(e => e.implementation || e.detector.id.startsWith("tsjs.")) || versions.detectorBundle.id === "tsjs_implementation") fail();
@@ -80,6 +81,11 @@ export const SnapshotBundleSchema = z.strictObject({
       for (const [counter, state] of Object.entries(states)) if (implementation[counter as keyof typeof states] !== bundle.files.filter(f => f.structure?.coverage?.implementation === state).length) fail();
     }
   } else if (versions.extractorBundle.id === "language_inventory" || bundle.files.some(f => f.structure?.coverage)) fail();
+  if (inventory.structural && !implementation && !coverage.assessment) {
+    const expected = extractionProfile(coverage.structural?.disabledExtractors ?? []);
+    if (JSON.stringify(versions.extractorBundle) !== JSON.stringify(expected.extractorBundle)
+      || JSON.stringify(versions.detectorBundle) !== JSON.stringify(expected.detectorBundle) || versions.coverageManifest !== expected.coverageManifest) fail();
+  }
   for (const item of bundle.evidence) {
     if (item.snapshotId !== snapshot.snapshotId || item.repositoryId !== snapshot.repositoryId || item.commitSha !== snapshot.commitSha
       || item.repositoryVisibility !== snapshot.repositoryVisibility) fail();
@@ -88,6 +94,7 @@ export const SnapshotBundleSchema = z.strictObject({
       if (!filesByPath.get(path)?.analyzed) fail();
     }
     if (item.structural?.associatedFileIds?.some(id => !filesById.get(id)?.eligible)) fail();
+    if (item.structural && item.detector.version !== structuralDetectorVersion(item.detector.id.split(".")[1])) fail();
     if (item.structural?.provider && (item.locator.kind !== "provider_metadata" || item.structural.provider.relationship !== item.locator.commitRelationship
       || (item.structural.provider.relationship === "exact_commit" && item.structural.provider.subjectSha !== snapshot.commitSha))) fail();
     if (item.implementation) {

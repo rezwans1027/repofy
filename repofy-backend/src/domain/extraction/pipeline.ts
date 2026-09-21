@@ -15,7 +15,7 @@ import { manifests } from "./manifests";
 import { source, tests } from "./source";
 import { boundedText } from "./parsers";
 import { emptyMetadata, METADATA_SOURCES, MetadataBatchSchema, requested, type MetadataBatch, type MetadataOptions } from "./metadata";
-import { EXTRACTION_LIMITS as LIMIT, extractionProfile, ParseFailure, type ExtractionResult, type Family } from "./policy";
+import { EXTRACTION_LIMITS as LIMIT, extractionProfile, structuralDetectorVersion, ParseFailure, type ExtractionResult, type Family } from "./policy";
 import { ImplementationPass } from "../detectors/pass";
 import { DETECTORS, implementationProfile } from "../detectors/registry";
 import type { ImplementationKind } from "@repofy/contracts";
@@ -43,9 +43,11 @@ export interface SnapshotExtractionInput {
  * and metadata facts; they have no filesystem, resolver, module loader, shell or provider client. */
 export async function extractSnapshot(context: SafeSnapshotContext, input: SnapshotExtractionInput): Promise<{ bundle: SnapshotBundle; metrics: ExtractionMetrics }> {
   const { pin, versions, options, crypto, signal } = input; const profile = input.profile ?? extractionProfile();
-  if ("implementation" in profile && (JSON.stringify(profile) !== JSON.stringify("coverage" in profile
-    ? coverageProfile(profile.coverage.disabledParsers, profile.implementation.disabled) : implementationProfile(profile.implementation.disabled))
-    || versions.taxonomy.id !== "engineering_capabilities" || versions.taxonomy.version !== "1.0.0")) throw new JobError("ANALYSIS_VALIDATION_FAILED");
+  const expectedProfile = "implementation" in profile ? "coverage" in profile
+    ? coverageProfile(profile.coverage.disabledParsers, profile.implementation.disabled) : implementationProfile(profile.implementation.disabled)
+    : extractionProfile(profile.disabled);
+  if (JSON.stringify(profile) !== JSON.stringify(expectedProfile) || "implementation" in profile
+    && (versions.taxonomy.id !== "engineering_capabilities" || versions.taxonomy.version !== "1.0.0")) throw new JobError("ANALYSIS_VALIDATION_FAILED");
   const createdAt = new Date(pin.resolvedAt).toISOString();
   if (JSON.stringify(versions.extractorBundle) !== JSON.stringify(profile.extractorBundle)
     || JSON.stringify(versions.detectorBundle) !== JSON.stringify(profile.detectorBundle) || versions.coverageManifest !== profile.coverageManifest
@@ -84,7 +86,7 @@ export async function extractSnapshot(context: SafeSnapshotContext, input: Snaps
     const naturalKey = [family, locator, detail.kind];
     evidence.push(InternalEvidenceObservationSchema.parse({ contractVersion: "1.0.0", evidenceId: id("evidence", naturalKey), snapshotId,
       repositoryId: pin.repositoryId, commitSha: pin.commitSha, repositoryVisibility: pin.repositoryVisibility, visibility: "owner_only", sourceType,
-      detector: { id: `structural.${family.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)}.${detail.kind}`, version: "1.0.0" },
+      detector: { id: `structural.${family.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)}.${detail.kind}`, version: structuralDetectorVersion(family) },
       capabilityIds: [], observations: [observation], relevance: 0.5, confidence: detail.confidenceBasis === "filename_only" ? 0.2 : 0.5,
       strength: sourceType === "dependency" || detail.confidenceBasis === "filename_only" ? 0.2 : 0.3,
       contribution: { state: "unknown", reasons: ["insufficient_evidence"], signals: [], limitations: ["Contribution and authorship have not been assessed."] },

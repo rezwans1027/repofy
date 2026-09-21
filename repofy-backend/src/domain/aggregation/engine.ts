@@ -9,6 +9,7 @@ import { JobError } from "../jobs/policy";
 import { AGGREGATION_POLICY as P, round, calculateStrength } from "./policy";
 import { AggregationInputSchema, AggregationEvidenceInputSchema, canonical, digest, clusterKey, type AggregationInput } from "./input";
 import { matchRole } from "./roles";
+import { structuralDetectorVersion } from "../extraction/policy";
 
 type Snapshot = AggregationInput["snapshots"][number];
 type Fact = { observation: OwnerEvidence; fileId: string | null; contentFingerprint: string | null; snapshot: Snapshot; capabilityIds: string[]; basis: "presence" | "implementation" };
@@ -124,7 +125,7 @@ export function aggregateEvidence(raw: unknown): AggregationResult {
     } else if (structural) {
       const providerFamily: Record<string, string> = { commit: "commits", pull_request: "pull_requests", check: "checks", status: "statuses", action: "actions" };
       const family = structural.provider ? `provider.${providerFamily[structural.kind]}` : file?.outcome?.source;
-      if (!family || e.detector.id !== `structural.${family}.${structural.kind}` || e.detector.version !== "1.0.0" || e.capabilityIds.length
+      if (!family || e.detector.id !== `structural.${family}.${structural.kind}` || e.detector.version !== structuralDetectorVersion(family) || e.capabilityIds.length
         || e.strength > (e.sourceType === "dependency" || structural.confidenceBasis === "filename_only" ? .2 : .3)
         || e.confidence > (structural.confidenceBasis === "filename_only" ? .2 : .5)) { exclude("unsupported_mapping"); continue; }
       if (structural.provider && item.fileId !== null || structural.provider?.relationship === "exact_commit" && structural.provider.subjectSha !== s.commitSha) { exclude("foreign_evidence"); continue; }

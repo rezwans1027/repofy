@@ -1015,3 +1015,5 @@ import { registerRescanTests } from "./rescans.cases";
 registerRescanTests(db, config);
 import { registerFeedbackProvenanceTests } from "./feedback-provenance.cases";
 registerFeedbackProvenanceTests(db, config);
+import { registerAnalyzerVersionTests } from "./analyzer-version.cases";
+registerAnalyzerVersionTests(db);

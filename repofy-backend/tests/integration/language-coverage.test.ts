@@ -27,8 +27,9 @@ it('seals new coverage with exact declaration, source counts and capability stat
     expect((await f.jobs.read(f.actor, job.jobId)).coverage).toEqual([bundle.coverage]);
     await expect(f.jobs.read(randomUUID(), job.jobId)).rejects.toMatchObject({ code: 'NOT_FOUND' });
     expect((await f.jobs.list(randomUUID()))).toEqual([]);
-    const rows = await db.db.query<{ declaration: unknown }>('SELECT declaration FROM feature_one_private.analyzer_coverage_manifests WHERE version=$1', ['1.2.0']);
-    expect(rows.rows[0].declaration).toEqual(coverageDeclaration());
+    const declaration = coverageDeclaration();
+    const rows = await db.db.query<{ declaration: unknown }>('SELECT declaration FROM feature_one_private.analyzer_coverage_manifests WHERE version=$1', [declaration.version]);
+    expect(rows.rows[0].declaration).toEqual(declaration);
     await expect(db.db.query("UPDATE feature_one_private.analyzer_coverage_manifests SET declaration='{}'")).rejects.toThrow('IMMUTABLE_CONTENT');
     expect(JSON.stringify(await f.evidence.exportUserData(f.actor))).not.toMatch(/def calculate|class Calculator|locator_encrypted|content_fingerprint/);
     await f.jobs.cancel(f.actor, job.jobId, randomUUID());

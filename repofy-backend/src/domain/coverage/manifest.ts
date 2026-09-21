@@ -37,8 +37,8 @@ export function coverageProfile(disabledParsers: readonly BaselineParser[] = [],
   if (new Set(disabledParsers).size !== disabledParsers.length || disabledParsers.some(p => !BASELINE_PARSERS.includes(p))) throw new Error("Invalid parser quarantine");
   const disabled = Object.freeze(BASELINE_PARSERS.filter(p => disabledParsers.includes(p)));
   const suffix = disabled.length ? `-p${BASELINE_PARSERS.map(p => disabled.includes(p) ? 1 : 0).join("")}` : "";
-  return Object.freeze({ ...implementationProfile(disabledDetectors), extractorBundle: { id: "language_inventory", version: `1.0.0${suffix}` },
-    coverageManifest: `1.2.0${suffix}`, coverage: Object.freeze({ disabledParsers: disabled, selection }) });
+  return Object.freeze({ ...implementationProfile(disabledDetectors), extractorBundle: { id: "language_inventory", version: `1.0.1${suffix}` },
+    coverageManifest: `1.2.1${suffix}`, coverage: Object.freeze({ disabledParsers: disabled, selection }) });
 }
 export function coverageDeclaration(disabled: readonly BaselineParser[] = []): CoverageDeclaration {
   const profile = coverageProfile(disabled);

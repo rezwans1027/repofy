@@ -22,3 +22,16 @@ test('every coverage reason has a trusted user label; runtime proof is not a dec
   const policy = structuredClone(fixture.assessment.declaration.selection); policy.reducedScanOffered = true;
   assert.equal(c.CoverageSelectionPolicySchema.safeParse(policy).success, false);
 });
+test('legacy and corrected analyzer coverage remain readable without mixing detector versions', () => {
+  const corrected = structuredClone(fixture);
+  corrected.manifestVersion = corrected.assessment.declaration.version = '1.2.1';
+  corrected.detectorBundle.version = corrected.implementation.bundle.version = '1.0.1';
+  corrected.implementation.detectors.forEach(d => { d.version = '1.0.1'; });
+  assert.ok(c.AnalyzerCoverageSchema.parse(fixture));
+  assert.ok(c.AnalyzerCoverageSchema.parse(corrected));
+  for (const value of [fixture, corrected]) {
+    const mixed = structuredClone(value);
+    mixed.implementation.detectors[0].version = value === fixture ? '1.0.1' : '1.0.0';
+    assert.equal(c.AnalyzerCoverageSchema.safeParse(mixed).success, false);
+  }
+});

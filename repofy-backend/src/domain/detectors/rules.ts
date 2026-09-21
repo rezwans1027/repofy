@@ -19,9 +19,36 @@ function directCall(statement: ts.Statement): ts.CallExpression | undefined {
   const value = expr && unwrap(expr); return value && ts.isCallExpression(value) ? value : undefined;
 }
 function awaited(file: IndexedFile, call: ts.CallExpression) { return ts.isAwaitExpression(file.parents.get(call) ?? file.ast); }
+// This is deliberately limited to syntactically known exits, not whole-program flow analysis.
+function stopsFallthrough(statement: ts.Statement): boolean {
+  if (ts.isReturnStatement(statement) || ts.isThrowStatement(statement) || ts.isBreakStatement(statement) || ts.isContinueStatement(statement)) return true;
+  if (ts.isBlock(statement)) return statement.statements.some(stopsFallthrough);
+  if (ts.isIfStatement(statement)) {
+    const condition = unwrap(statement.expression);
+    if (condition.kind === ts.SyntaxKind.TrueKeyword) return stopsFallthrough(statement.thenStatement);
+    if (condition.kind === ts.SyntaxKind.FalseKeyword) return !!statement.elseStatement && stopsFallthrough(statement.elseStatement);
+    return !!statement.elseStatement && stopsFallthrough(statement.thenStatement) && stopsFallthrough(statement.elseStatement);
+  }
+  if (ts.isTryStatement(statement)) return !!statement.finallyBlock && stopsFallthrough(statement.finallyBlock)
+    || stopsFallthrough(statement.tryBlock) && (!statement.catchClause || stopsFallthrough(statement.catchClause.block));
+  return false;
+}
+function reachableStatements(body: ts.Block) {
+  const statements: ts.Statement[] = [];
+  for (const statement of body.statements) { statements.push(statement); if (stopsFallthrough(statement)) break; }
+  return statements;
+}
 function localCalls(file: IndexedFile, body: ts.Block, start = 0) {
-  return body.statements.slice(start).flatMap(s => { const call = directCall(s); const target = call && file.localFunction(call.expression);
+  return reachableStatements(body).slice(start).flatMap(s => { const call = directCall(s); const target = call && file.localFunction(call.expression);
     return call && target ? [{ call, target }] : []; });
+}
+function firstEffect(body: ts.Block): ts.Statement | undefined {
+  for (const statement of body.statements) {
+    if (ts.isEmptyStatement(statement)) continue;
+    if (ts.isBlock(statement)) { const effect = firstEffect(statement); if (effect) return effect; }
+    else return statement;
+  }
+  return undefined;
 }
 function bodyOf(fn: FunctionNode): ts.Block | undefined { return fn.body && ts.isBlock(fn.body) ? fn.body : undefined; }
 function statusReturn(file: IndexedFile, statement: ts.Statement, response: ts.Identifier, status?: number) {
@@ -206,12 +233,15 @@ function database(file: IndexedFile, emit: (f: RawFinding) => void) {
     }
   }
   for (const node of file.nodes) if (ts.isTryStatement(node) && node.finallyBlock) {
-    const release = calls(file, node.finallyBlock).find(call => file.origin(call.expression)?.module === "pg"
-      && file.origin(call.expression)?.member === "Pool().connect().release" && call.arguments.length === 0);
-    if (!release || !ts.isPropertyAccessExpression(release.expression) || !ts.isIdentifier(release.expression.expression)) continue;
+    // A nested conditional or preceding effect can bypass cleanup. Support only an immediate,
+    // unconditional release (allowing inert empty blocks/statements), not arbitrary descendants.
+    const first = firstEffect(node.finallyBlock); const release = first && directCall(first);
+    const releaseOrigin = release && file.origin(release.expression);
+    if (!release || releaseOrigin?.module !== "pg" || releaseOrigin.member !== "Pool().connect().release" || release.arguments.length) continue;
+    if (!ts.isPropertyAccessExpression(release.expression) || !ts.isIdentifier(release.expression.expression)) continue;
     const client = release.expression.expression; const b = file.binding(client);
     if (!b?.initializer || !ts.isAwaitExpression(b.initializer) || !file.enclosing(node) || b.node.end > node.pos) continue;
-    if (calls(file, node.tryBlock).some(call => ts.isPropertyAccessExpression(call.expression) && call.expression.name.text === "query"
+    if (reachableStatements(node.tryBlock).map(directCall).some(call => call && ts.isPropertyAccessExpression(call.expression) && call.expression.name.text === "query"
       && ts.isIdentifier(call.expression.expression) && same(file, client, call.expression.expression))) emit({ kind: "failure_cleanup", node, concept: file.enclosing(node)! });
   }
 }

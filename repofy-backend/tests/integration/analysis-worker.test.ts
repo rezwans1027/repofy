@@ -15,6 +15,7 @@ import { IngestionError } from '../../src/domain/ingestion/errors';
 import { JobError, jobError } from '../../src/domain/jobs/policy';
 import { maintenance, schedule } from '../../src/domain/jobs/scheduler';
 import { JobRepository, type Claim } from '../../src/domain/jobs/repository';
+import { coverageProfile } from '../../src/domain/coverage/manifest';
 
 let db:Awaited<ReturnType<typeof selectionDatabase>>;let f:Awaited<ReturnType<typeof seedAnalysisFixture>>;let root:string;
 let handlers:AnalysisHandlers;let sources:number;let captures:unknown[];
@@ -52,8 +53,19 @@ it('a lost completion acknowledgement leaves the saved report completed and sett
   const j=await start();const real=f.jobs.complete.bind(f.jobs);vi.spyOn(f.jobs,'complete').mockImplementation(async c=>{await real(c);throw new JobError('DATABASE_FAILURE');});
   await worker().once();expect((await f.jobs.read(f.actor,j.jobId)).status).toBe('completed');expect(await worker().once()).toBe(false);
 });
-it('missing handlers and version mismatch fail explicitly before fetching source',async()=>{
+it('missing handlers fail explicitly before fetching source',async()=>{
   const j=await start();await new AnalysisWorker(f.jobs,null,ingest,()=>f.crypto).once();expect(await f.jobs.read(f.actor,j.jobId)).toMatchObject({status:'failed',failureCode:'FEATURE_NOT_IMPLEMENTED'});expect(sources).toBe(0);
+});
+it('rejects a job frozen to the earlier analyzer before acquiring source or invoking corrected handlers',async()=>{
+  Object.assign(f.policy.versions,{extractorBundle:{id:'language_inventory',version:'1.0.0'},
+    detectorBundle:{id:'tsjs_implementation',version:'1.0.0'},coverageManifest:'1.2.0'});
+  const current=coverageProfile();
+  handlers.policy=structuredClone(f.policy);
+  Object.assign(handlers.policy.versions,{extractorBundle:current.extractorBundle,detectorBundle:current.detectorBundle,coverageManifest:current.coverageManifest});
+  const ingestion=vi.fn(ingest);const j=await start();
+  await new AnalysisWorker(f.jobs,handlers,ingestion,()=>f.crypto).once();
+  expect(await f.jobs.read(f.actor,j.jobId)).toMatchObject({status:'failed',failureCode:'FEATURE_NOT_IMPLEMENTED',retryable:false});
+  expect(ingestion).not.toHaveBeenCalled();expect(handlers.extract).not.toHaveBeenCalled();expect(handlers.synthesize).not.toHaveBeenCalled();
 });
 it('cancellation during a handler cleans files and prevents publication',async()=>{
   const j=await start();vi.mocked(handlers.extract).mockImplementationOnce(async()=>{await f.jobs.cancel(f.actor,j.jobId,randomUUID());return f.bundles[0];});

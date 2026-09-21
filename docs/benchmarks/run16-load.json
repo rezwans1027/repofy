@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-09-21T02:37:33.160Z",
+  "measuredAt": "2026-09-21T17:47:21.922Z",
   "corpus": {
     "id": "feature_one_release",
     "version": "1.0.0",
@@ -34,105 +34,105 @@
       "scenario": "backend_parse",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 22,
-      "processingMs": 162,
-      "totalMs": 184
+      "queueMs": 65,
+      "processingMs": 174,
+      "totalMs": 239
     },
     {
       "scenario": "frontend_request",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 94,
-      "processingMs": 115,
-      "totalMs": 209
+      "queueMs": 91,
+      "processingMs": 127,
+      "totalMs": 218
     },
     {
       "scenario": "model_adapter",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 39,
-      "processingMs": 83,
-      "totalMs": 122
+      "queueMs": 26,
+      "processingMs": 97,
+      "totalMs": 123
     },
     {
       "scenario": "dependency_only",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 61,
-      "processingMs": 90,
-      "totalMs": 151
+      "queueMs": 38,
+      "processingMs": 97,
+      "totalMs": 135
     },
     {
       "scenario": "python_baseline",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 52,
-      "processingMs": 97,
-      "totalMs": 149
+      "queueMs": 61,
+      "processingMs": 106,
+      "totalMs": 167
     },
     {
       "scenario": "java_baseline",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 66,
-      "processingMs": 90,
-      "totalMs": 156
+      "queueMs": 53,
+      "processingMs": 92,
+      "totalMs": 145
     },
     {
       "scenario": "mobile_native_unknown",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 54,
-      "processingMs": 78,
-      "totalMs": 132
+      "queueMs": 71,
+      "processingMs": 82,
+      "totalMs": 153
     },
     {
       "scenario": "empty_unknown",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 82,
-      "processingMs": 80,
-      "totalMs": 162
+      "queueMs": 95,
+      "processingMs": 82,
+      "totalMs": 177
     },
     {
       "scenario": "private_sentinels",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 73,
-      "processingMs": 85,
-      "totalMs": 158
+      "queueMs": 91,
+      "processingMs": 94,
+      "totalMs": 185
     },
     {
       "scenario": "backend_parse+python_baseline+java_baseline+frontend_request+model_adapter",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 54,
-      "processingMs": 242,
-      "totalMs": 296
-    },
-    {
-      "scenario": "queued_pair_1",
-      "status": "completed",
-      "failureCode": null,
-      "queueMs": 18,
-      "processingMs": 80,
-      "totalMs": 98
+      "queueMs": 73,
+      "processingMs": 253,
+      "totalMs": 326
     },
     {
       "scenario": "queued_pair_2",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 118,
-      "processingMs": 78,
-      "totalMs": 196
+      "queueMs": 81,
+      "processingMs": 136,
+      "totalMs": 217
+    },
+    {
+      "scenario": "queued_pair_1",
+      "status": "completed",
+      "failureCode": null,
+      "queueMs": 282,
+      "processingMs": 88,
+      "totalMs": 370
     },
     {
       "scenario": "limit_10000",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 68,
-      "processingMs": 4379,
-      "totalMs": 4447
+      "queueMs": 96,
+      "processingMs": 2071,
+      "totalMs": 2167
     }
   ],
   "rejectedWorkloads": [
@@ -140,123 +140,123 @@
       "scenario": "too_many_eligible",
       "status": "failed",
       "failureCode": "REPOSITORY_TOO_LARGE",
-      "queueMs": 43,
-      "processingMs": 255,
-      "totalMs": 298
+      "queueMs": 7,
+      "processingMs": 265,
+      "totalMs": 272
     }
   ],
   "latencyMs": {
     "queue": {
       "samples": 13,
-      "p50": 61,
-      "p95": 118,
-      "max": 118
+      "p50": 73,
+      "p95": 282,
+      "max": 282
     },
     "processing": {
       "samples": 13,
-      "p50": 90,
-      "p95": 4379,
-      "max": 4379
+      "p50": 97,
+      "p95": 2071,
+      "max": 2071
     },
     "endToEnd": {
       "samples": 13,
-      "p50": 158,
-      "p95": 4447,
-      "max": 4447
+      "p50": 185,
+      "p95": 2167,
+      "max": 2167
     },
     "api": {
       "save_selection": {
         "samples": 1,
-        "p50": 25.69,
-        "p95": 25.69,
-        "max": 25.69
+        "p50": 28.4,
+        "p95": 28.4,
+        "max": 28.4
       },
       "start": {
         "samples": 15,
-        "p50": 7.26,
-        "p95": 14.24,
-        "max": 14.24
+        "p50": 7.74,
+        "p95": 15.94,
+        "max": 15.94
       },
       "job_read": {
-        "samples": 182,
-        "p50": 5.71,
-        "p95": 14.36,
-        "max": 151.15
+        "samples": 122,
+        "p50": 6.94,
+        "p95": 24.33,
+        "max": 196.57
       },
       "report_view": {
         "samples": 60,
-        "p50": 14.51,
-        "p95": 15.76,
-        "max": 16.39
+        "p50": 15.18,
+        "p95": 19.15,
+        "max": 21.44
       },
       "history": {
         "samples": 50,
-        "p50": 7.32,
-        "p95": 7.83,
-        "max": 8.02
+        "p50": 7.68,
+        "p95": 9.15,
+        "max": 9.84
       },
       "evidence": {
         "samples": 50,
-        "p50": 6.94,
-        "p95": 7.66,
-        "max": 8.71
+        "p50": 7.44,
+        "p95": 8.47,
+        "max": 9.59
       },
       "foreign_denial": {
         "samples": 2,
-        "p50": 3.8,
-        "p95": 5.36,
-        "max": 5.36
+        "p50": 6.18,
+        "p95": 6.36,
+        "max": 6.36
       }
     },
     "stages": {
       "downloading": {
         "samples": 18,
-        "p50": 1,
-        "p95": 60,
-        "max": 60
+        "p50": 2,
+        "p95": 62,
+        "max": 62
       },
       "inventorying": {
         "samples": 18,
-        "p50": 4,
-        "p95": 640,
-        "max": 640
+        "p50": 5,
+        "p95": 665,
+        "max": 665
       },
       "extracting": {
         "samples": 17,
-        "p50": 15,
-        "p95": 3488,
-        "max": 3488
+        "p50": 16,
+        "p95": 1143,
+        "max": 1143
       },
       "aggregating": {
         "samples": 13,
-        "p50": 25,
-        "p95": 148,
-        "max": 148
+        "p50": 27,
+        "p95": 162,
+        "max": 162
       },
       "synthesizing": {
         "samples": 13,
-        "p50": 18,
-        "p95": 35,
-        "max": 35
+        "p50": 20,
+        "p95": 37,
+        "max": 37
       },
       "validating": {
         "samples": 13,
-        "p50": 14,
+        "p50": 15,
         "p95": 29,
         "max": 29
       }
     }
   },
-  "peakServerRssMiB": 444,
+  "peakServerRssMiB": 432,
   "peakGeneratedArchiveBytes": 105169,
   "cleanup": {
     "terminalWorkspacesRemaining": 0,
     "emptyWorkspaceChecks": 13,
     "terminalToEmptyCheckMs": {
       "samples": 13,
-      "p50": 40,
-      "p95": 53,
-      "max": 53
+      "p50": 33,
+      "p95": 61,
+      "max": 61
     },
     "jobPollIntervalMs": 30,
     "productionSweeperVerified": false

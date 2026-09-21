@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { proportion } from './metrics';
+import { proportion, type Gate } from './metrics';
 
 type Label = 'supported' | 'unsupported' | 'unknown' | 'uncertain';
 export interface ReviewDocument {
@@ -72,4 +72,40 @@ export function measureReview(document: ReviewDocument, binding: ReviewBinding) 
       'Intervals are descriptive; authored correlated examples are not a random independent sample',
       'Agreement on hypothetical arithmetic does not calibrate detector coverage, role weights, strength bands or improvement usefulness'],
   };
+}
+
+/** Human judgments belong to the exact frozen rendering and implementation.
+ * A changed implementation may still run automated benchmarks, but cannot use
+ * the earlier judgments as evidence of its current semantic quality. */
+export function measureSourceBoundReview(document: ReviewDocument, binding: ReviewBinding,
+  source: { reviewedDomainSourceSha256: string; currentDomainSourceSha256: string }) {
+  assert.match(source.reviewedDomainSourceSha256, /^[a-f0-9]{64}$/, 'Missing or invalid reviewed domain digest');
+  assert.match(source.currentDomainSourceSha256, /^[a-f0-9]{64}$/, 'Missing or invalid current domain digest');
+  // Always validate the historical binding. Staleness must not conceal corrupted
+  // review cards, rendering hashes, corpus hashes or rubric judgments.
+  const historicalReview = measureReview(document, binding);
+  const sameSource = source.reviewedDomainSourceSha256 === source.currentDomainSourceSha256;
+  const hasJudgments = historicalReview.majorClaimsReviewed > 0 || historicalReview.unknownCards.total > 0
+    || historicalReview.rubricBoundaryReview.total > 0;
+  const status = !sameSource ? 'stale' as const : hasJudgments ? 'current' as const : 'unreviewed' as const;
+  // Empty judgments mean unmeasured, never unsupported or approved. This
+  // projection is not a new review record and does not modify the frozen one.
+  const current = sameSource ? historicalReview : measureReview({ ...document, reviews: [] }, binding);
+  return { ...current, status, ...source, historicalReview,
+    limitations: [...current.limitations, ...(sameSource ? [] : [
+      'The frozen human review predates the current domain implementation. Its judgments are historical only; current human metrics are unmeasured until a new bound review is recorded.',
+    ])] };
+}
+
+export function humanBoundaryGate(review: ReturnType<typeof measureSourceBoundReview>): Gate {
+  const support = review.humanClaimSupport?.rate ?? null;
+  const unsupported = review.unsupportedMajorClaimRate?.rate ?? null;
+  const passed = review.status === 'current' && review.completelyReviewed > 0 && support !== null && support >= .9
+    && unsupported !== null && unsupported < .02 && review.uncertainMajorClaims === 0 && review.claimDisagreements.length === 0;
+  return { id: 'human_boundary_sample', status: passed ? 'passed' : 'pending',
+    evidence: review.status === 'stale'
+      ? 'The frozen human review covers a previous domain implementation. Its approvals remain historical; the current implementation requires a new bound human review.'
+      : review.status === 'unreviewed'
+        ? 'No human judgments are recorded for this implementation. Expected labels and automated checks cannot satisfy the human boundary gate.'
+        : `${review.reviewCount} recorded review(s), ${review.majorClaimsReviewed} selected major claims and ${review.unknownCards.total} unknown cards; descriptive small sample only. Empirical and independent calibration is a separate gate.` };
 }

@@ -6,8 +6,8 @@
     "splitPolicy": "Evaluation cases authored and frozen before first execution; excluded from earlier detector development. Same implementation agent authored references: not independent or blinded calibration. Never revise labels to match results.",
     "measurementUnit": "Individual TS/JS detector/file observations; recall covers the annotated supported static patterns only. Out-of-scope valid alternatives reported separately."
   },
-  "measuredAt": "2026-09-21T02:37:22.108Z",
-  "domainSourceSha256": "c2f8e497394a42288d4432b79726dcce901443dac44f27bf4e18f2f0121cb816",
+  "measuredAt": "2026-09-21T17:47:12.625Z",
+  "domainSourceSha256": "dacb30a5017580294c56b89a0abe8d527a1312292d1991fe9cdb58cb9a7d2a35",
   "developmentSources": [
     {
       "path": "tests/fixtures/evidence/repositories.json",
@@ -238,28 +238,12 @@
     },
     "privateDisclosureFailures": 0,
     "contributionConfidenceErrors": 0,
-    "humanClaimSupport": {
-      "successes": 22,
-      "total": 22,
-      "rate": 1,
-      "interval95": [
-        0.8513451253913791,
-        1
-      ]
-    },
-    "unsupportedMajorClaimRate": {
-      "successes": 0,
-      "total": 22,
-      "rate": 0,
-      "interval95": [
-        0,
-        0.14865487460862087
-      ]
-    },
+    "humanClaimSupport": null,
+    "unsupportedMajorClaimRate": null,
     "roleRubricCalibration": null,
     "extractionThroughRenderingMs": {
-      "p50": 29,
-      "p95": 36
+      "p50": 30,
+      "p95": 39
     },
     "syntheticCasesCompleted": {
       "successes": 24,
@@ -270,7 +254,7 @@
         1
       ]
     },
-    "peakRssMiB": 261,
+    "peakRssMiB": 247,
     "actualProviderCostUsd": 0,
     "providerCalls": 0,
     "modelQualityMeasured": false,
@@ -283,91 +267,54 @@
     "Human semantics, role weights and production workload targets require separate evidence"
   ],
   "humanReview": {
-    "reviewCount": 1,
-    "completelyReviewed": 1,
-    "majorClaimsReviewed": 22,
-    "humanClaimSupport": {
-      "successes": 22,
-      "total": 22,
-      "rate": 1,
-      "interval95": [
-        0.8513451253913791,
-        1
-      ]
-    },
-    "unsupportedMajorClaimRate": {
-      "successes": 0,
-      "total": 22,
-      "rate": 0,
-      "interval95": [
-        0,
-        0.14865487460862087
-      ]
-    },
+    "reviewCount": 0,
+    "completelyReviewed": 0,
+    "majorClaimsReviewed": 0,
+    "humanClaimSupport": null,
+    "unsupportedMajorClaimRate": null,
     "uncertainMajorClaims": 0,
     "unknownCards": {
-      "successes": 2,
-      "total": 2,
-      "rate": 1,
-      "interval95": [
-        0.34238022750665303,
-        1
-      ]
+      "successes": 0,
+      "total": 0,
+      "rate": null,
+      "interval95": null
     },
     "claimDisagreements": [],
     "rubricBoundaryReview": {
-      "successes": 30,
-      "total": 30,
-      "rate": 1,
-      "interval95": [
-        0.8864866068260312,
-        0.9999999999999999
-      ],
+      "successes": 0,
+      "total": 0,
+      "rate": null,
+      "interval95": null,
       "byRole": {
         "frontend": {
-          "successes": 6,
-          "total": 6,
-          "rate": 1,
-          "interval95": [
-            0.6096657120978346,
-            1
-          ]
+          "successes": 0,
+          "total": 0,
+          "rate": null,
+          "interval95": null
         },
         "backend": {
-          "successes": 6,
-          "total": 6,
-          "rate": 1,
-          "interval95": [
-            0.6096657120978346,
-            1
-          ]
+          "successes": 0,
+          "total": 0,
+          "rate": null,
+          "interval95": null
         },
         "full_stack": {
-          "successes": 6,
-          "total": 6,
-          "rate": 1,
-          "interval95": [
-            0.6096657120978346,
-            1
-          ]
+          "successes": 0,
+          "total": 0,
+          "rate": null,
+          "interval95": null
         },
         "mobile": {
-          "successes": 6,
-          "total": 6,
-          "rate": 1,
-          "interval95": [
-            0.6096657120978346,
-            1
-          ]
+          "successes": 0,
+          "total": 0,
+          "rate": null,
+          "interval95": null
         },
         "ai_application": {
-          "successes": 6,
-          "total": 6,
-          "rate": 1,
-          "interval95": [
-            0.6096657120978346,
-            1
-          ]
+          "successes": 0,
+          "total": 0,
+          "rate": null,
+          "interval95": null
         }
       },
       "independentEngineeringReviewers": 0,
@@ -376,16 +323,120 @@
     },
     "limitations": [
       "Unblinded boundary review; role expertise and independent calibration are separate requirements",
-      "22 selected major claims and 2 explicit unknown cases do not represent all 58 rendered major claims or production prevalence",
+      "0 selected major claims and 0 explicit unknown cases do not represent all 58 rendered major claims or production prevalence",
       "Intervals are descriptive; authored correlated examples are not a random independent sample",
-      "Agreement on hypothetical arithmetic does not calibrate detector coverage, role weights, strength bands or improvement usefulness"
-    ]
+      "Agreement on hypothetical arithmetic does not calibrate detector coverage, role weights, strength bands or improvement usefulness",
+      "The frozen human review predates the current domain implementation. Its judgments are historical only; current human metrics are unmeasured until a new bound review is recorded."
+    ],
+    "status": "stale",
+    "reviewedDomainSourceSha256": "c2f8e497394a42288d4432b79726dcce901443dac44f27bf4e18f2f0121cb816",
+    "currentDomainSourceSha256": "dacb30a5017580294c56b89a0abe8d527a1312292d1991fe9cdb58cb9a7d2a35",
+    "historicalReview": {
+      "reviewCount": 1,
+      "completelyReviewed": 1,
+      "majorClaimsReviewed": 22,
+      "humanClaimSupport": {
+        "successes": 22,
+        "total": 22,
+        "rate": 1,
+        "interval95": [
+          0.8513451253913791,
+          1
+        ]
+      },
+      "unsupportedMajorClaimRate": {
+        "successes": 0,
+        "total": 22,
+        "rate": 0,
+        "interval95": [
+          0,
+          0.14865487460862087
+        ]
+      },
+      "uncertainMajorClaims": 0,
+      "unknownCards": {
+        "successes": 2,
+        "total": 2,
+        "rate": 1,
+        "interval95": [
+          0.34238022750665303,
+          1
+        ]
+      },
+      "claimDisagreements": [],
+      "rubricBoundaryReview": {
+        "successes": 30,
+        "total": 30,
+        "rate": 1,
+        "interval95": [
+          0.8864866068260312,
+          0.9999999999999999
+        ],
+        "byRole": {
+          "frontend": {
+            "successes": 6,
+            "total": 6,
+            "rate": 1,
+            "interval95": [
+              0.6096657120978346,
+              1
+            ]
+          },
+          "backend": {
+            "successes": 6,
+            "total": 6,
+            "rate": 1,
+            "interval95": [
+              0.6096657120978346,
+              1
+            ]
+          },
+          "full_stack": {
+            "successes": 6,
+            "total": 6,
+            "rate": 1,
+            "interval95": [
+              0.6096657120978346,
+              1
+            ]
+          },
+          "mobile": {
+            "successes": 6,
+            "total": 6,
+            "rate": 1,
+            "interval95": [
+              0.6096657120978346,
+              1
+            ]
+          },
+          "ai_application": {
+            "successes": 6,
+            "total": 6,
+            "rate": 1,
+            "interval95": [
+              0.6096657120978346,
+              1
+            ]
+          }
+        },
+        "independentEngineeringReviewers": 0,
+        "requiredIndependentEngineeringReviewers": 2,
+        "empiricallyCalibrated": false
+      },
+      "limitations": [
+        "Unblinded boundary review; role expertise and independent calibration are separate requirements",
+        "22 selected major claims and 2 explicit unknown cases do not represent all 58 rendered major claims or production prevalence",
+        "Intervals are descriptive; authored correlated examples are not a random independent sample",
+        "Agreement on hypothetical arithmetic does not calibrate detector coverage, role weights, strength bands or improvement usefulness"
+      ]
+    }
   },
   "reviewedRendering": {
     "sha256": "5a2397a2616c4961d6ac5bad817bec36788aaddc032d82997ca59b2befb11647",
+    "domainSourceSha256": "c2f8e497394a42288d4432b79726dcce901443dac44f27bf4e18f2f0121cb816",
     "renderedAt": "2026-09-21T02:29:51.433Z",
     "differingReviewCards": [],
-    "scope": "Human rates describe the frozen reviewed output only. Fresh identity tie selections listed here are not newly human-approved."
+    "scope": "Historical human rates describe the frozen reviewed output only. Current human metrics are null when the domain digest changes. Fresh identity tie selections listed here are not newly human-approved."
   },
   "rubricBoundaries": {
     "sha256": "b9e1471512beaaa533f95789e82ee198f5df06f94d6b220a93766e6d8cd6723f",
@@ -1067,13 +1118,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -1158,7 +1209,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 35,
+      "elapsedMs": 36,
       "capabilities": [
         {
           "id": "ai_context",
@@ -1459,13 +1510,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -1549,7 +1600,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 34,
+      "elapsedMs": 35,
       "capabilities": [
         {
           "id": "ai_context",
@@ -1830,8 +1881,8 @@
         },
         {
           "capability": "api_design",
-          "text": "An Express route callback calls a statically resolved local function boundary. Does not establish API stability, complete routing or separation of all responsibilities. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
-          "statementId": "tsjs.route_service"
+          "text": "A route returns an explicit error status with a structured literal error code. No claim about a universal error contract, safe message content or matching consumer behavior. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.structured_error"
         },
         {
           "capability": "architecture_modularity",
@@ -1850,13 +1901,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -1941,7 +1992,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 32,
+      "elapsedMs": 30,
       "capabilities": [
         {
           "id": "ai_context",
@@ -2237,13 +2288,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -2328,7 +2379,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 32,
+      "elapsedMs": 34,
       "capabilities": [
         {
           "id": "ai_context",
@@ -2624,13 +2675,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -3005,13 +3056,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -3096,7 +3147,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 29,
+      "elapsedMs": 32,
       "capabilities": [
         {
           "id": "ai_context",
@@ -3387,13 +3438,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -3768,13 +3819,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -3859,7 +3910,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 33,
+      "elapsedMs": 32,
       "capabilities": [
         {
           "id": "ai_context",
@@ -4155,13 +4206,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -4246,7 +4297,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 29,
+      "elapsedMs": 32,
       "capabilities": [
         {
           "id": "ai_context",
@@ -4537,13 +4588,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -4627,7 +4678,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 28,
+      "elapsedMs": 29,
       "capabilities": [
         {
           "id": "ai_context",
@@ -4918,13 +4969,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -5010,7 +5061,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 29,
+      "elapsedMs": 30,
       "capabilities": [
         {
           "id": "ai_context",
@@ -5301,13 +5352,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -5682,13 +5733,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -5776,7 +5827,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 29,
+      "elapsedMs": 31,
       "capabilities": [
         {
           "id": "ai_context",
@@ -6067,13 +6118,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -6158,7 +6209,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 25,
+      "elapsedMs": 28,
       "capabilities": [
         {
           "id": "ai_context",
@@ -6444,13 +6495,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -6536,7 +6587,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 28,
+      "elapsedMs": 30,
       "capabilities": [
         {
           "id": "ai_context",
@@ -6812,8 +6863,8 @@
       "claims": [
         {
           "capability": "api_design",
-          "text": "A route returns an explicit error status with a structured literal error code. No claim about a universal error contract, safe message content or matching consumer behavior. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
-          "statementId": "tsjs.structured_error"
+          "text": "An Express route callback calls a statically resolved local function boundary. Does not establish API stability, complete routing or separation of all responsibilities. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.route_service"
         },
         {
           "capability": "architecture_modularity",
@@ -6832,13 +6883,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -7230,13 +7281,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -7321,7 +7372,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 36,
+      "elapsedMs": 39,
       "capabilities": [
         {
           "id": "ai_context",
@@ -7612,13 +7663,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -7994,13 +8045,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -8364,13 +8415,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -8458,7 +8509,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 24,
+      "elapsedMs": 26,
       "capabilities": [
         {
           "id": "ai_context",
@@ -8738,13 +8789,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -9124,13 +9175,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -9215,7 +9266,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 26,
+      "elapsedMs": 28,
       "capabilities": [
         {
           "id": "ai_context",
@@ -9511,13 +9562,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"
@@ -9604,7 +9655,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 26,
+      "elapsedMs": 27,
       "capabilities": [
         {
           "id": "ai_context",
@@ -9895,13 +9946,13 @@
         "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
         "extractorBundle": {
           "id": "language_inventory",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.0"
+          "version": "1.0.1"
         },
-        "coverageManifest": "1.2.0",
+        "coverageManifest": "1.2.1",
         "aggregationPolicy": {
           "id": "evidence_aggregation",
           "version": "1.1.0"

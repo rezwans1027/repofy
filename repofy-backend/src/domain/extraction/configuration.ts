@@ -76,8 +76,40 @@ export function sqlStructure(text: string): string {
   }
   return out;
 }
+/** Prisma uses // documentation/line comments and double-quoted strings, not
+ * SQL's single-quoted literals. Mask these tokens before counting declarations. */
+function prismaStructure(text: string): string {
+  let out = ""; let index = 0;
+  while (index < text.length) {
+    if (text.startsWith("//", index)) {
+      const end = text.indexOf("\n", index); index = end < 0 ? text.length : end; out += " "; continue;
+    }
+    if (text.startsWith("/*", index)) {
+      const end = text.indexOf("*/", index + 2);
+      if (end < 0 || text.slice(index + 2, end).includes("/*")) throw new ParseFailure();
+      out += text.slice(index, end + 2).replace(/[^\r\n]/g, " "); index = end + 2; continue;
+    }
+    if (text[index] === '"') {
+      index++; let closed = false;
+      while (index < text.length) {
+        if (text[index] === '"') { index++; closed = true; break; }
+        if (text[index] === "\n" || text[index] === "\r") throw new ParseFailure();
+        if (text[index] === "\\") {
+          index++;
+          if (index >= text.length || text[index] === "\n" || text[index] === "\r") throw new ParseFailure();
+        }
+        index++;
+      }
+      // A string cannot become an identifier when the surrounding structure is matched.
+      if (!closed) throw new ParseFailure(); out += ' "" '; continue;
+    }
+    if (text[index] === "'" || text.startsWith("*/", index)) throw new ParseFailure();
+    out += text[index++];
+  }
+  return out;
+}
 export const schemas = extractor("schemas", ["SQL DDL token structure", "Prisma schema declarations"], input => {
-  const text = sqlStructure(input.text); let counts: StructuralObservation["counts"];
+  const text = input.language === "prisma" ? prismaStructure(input.text) : sqlStructure(input.text); let counts: StructuralObservation["counts"];
   if (input.language === "prisma") counts = { models: (text.match(/\bmodel\s+[A-Za-z_][A-Za-z0-9_]*\s*\{/g) ?? []).length };
   else counts = { tables: (text.match(/(?:^|;)\s*create\s+(?:(?:temporary|temp|unlogged)\s+)?table\b/gi) ?? []).length,
     indexes: (text.match(/(?:^|;)\s*create\s+(?:unique\s+)?index\b/gi) ?? []).length,

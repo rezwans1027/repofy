@@ -16,7 +16,7 @@ import { DETECTORS } from '../../src/domain/detectors/registry';
 import { initialRubricCatalog } from '../../src/domain/rubrics/catalog';
 import { evaluateRequirement } from '../../src/domain/rubrics/policy';
 import { observations, proportion, quantile, type Observation } from './metrics';
-import { measureReview } from './review';
+import { measureSourceBoundReview } from './review';
 
 const directory = dirname(fileURLToPath(import.meta.url)), backend = resolve(directory, '../..');
 const hash = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
@@ -128,9 +128,9 @@ export async function benchmark() {
   const reviewedBytes = await readFile(resolve(backend, '../docs/benchmarks/run16-reviewed-rendering.json'));
   const reviewed = JSON.parse(reviewedBytes.toString()), domainSourceSha256 = await sourceDigest();
   assert.equal(reviewed.corpusSha256, sha256);
-  assert.equal(reviewed.domainSourceSha256, domainSourceSha256, 'Reviewed rendering predates a domain change; review the new version');
-  const humanReview = measureReview(review, { corpusSha256: sha256, rubricCasesSha256: rubricSha256,
-    renderingSha256: hash(reviewedBytes), cases: reviewed.cases, rubricCases: rubricCases.cases });
+  const humanReview = measureSourceBoundReview(review, { corpusSha256: sha256, rubricCasesSha256: rubricSha256,
+    renderingSha256: hash(reviewedBytes), cases: reviewed.cases, rubricCases: rubricCases.cases },
+  { reviewedDomainSourceSha256: reviewed.domainSourceSha256, currentDomainSourceSha256: domainSourceSha256 });
   const differingReviewCards = review.claimCards.filter((c: any) => c.majorClaim && !cases.find(r => r.id === c.caseId)!.claims.some((claim: any) => claim.text === c.claim && claim.statementId === c.statementId)).map((c: any) => c.id);
   return {
     corpus: { id: corpus.id, version: corpus.version, sha256, splitPolicy: corpus.splitPolicy, measurementUnit: corpus.measurementUnit },
@@ -146,8 +146,9 @@ export async function benchmark() {
       actualProviderCostUsd: 0, providerCalls: 0, modelQualityMeasured: false, configuredJobCostCapUsd: NARRATIVE_POLICY.jobBudgetUsd },
     limitations: ['Authored synthetic evaluation, not independent calibration', 'Small per-detector counts; empty denominators are null',
       'No provider/network/queue/database cost or latency in this component benchmark', 'Human semantics, role weights and production workload targets require separate evidence'],
-    humanReview, reviewedRendering: { sha256: hash(reviewedBytes), renderedAt: reviewed.renderedAt, differingReviewCards,
-      scope: 'Human rates describe the frozen reviewed output only. Fresh identity tie selections listed here are not newly human-approved.' },
+    humanReview, reviewedRendering: { sha256: hash(reviewedBytes), domainSourceSha256: reviewed.domainSourceSha256,
+      renderedAt: reviewed.renderedAt, differingReviewCards,
+      scope: 'Historical human rates describe the frozen reviewed output only. Current human metrics are null when the domain digest changes. Fresh identity tie selections listed here are not newly human-approved.' },
     rubricBoundaries: { sha256: rubricSha256, passed: rubricResults.length, results: rubricResults, empiricallyCalibrated: false }, cases,
   };
 }

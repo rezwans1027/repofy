@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { getQueryClient, resetQueryClient, STALE_SHORT, STALE_MEDIUM, STALE_LONG } from "./query-client";
 
 describe("getQueryClient", () => {

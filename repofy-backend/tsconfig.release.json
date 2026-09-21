@@ -7,5 +7,5 @@
     "noEmit": true,
     "declaration": false
   },
-  "include": ["scripts/release/**/*.ts", "tests/e2e/readiness-server.ts"]
+  "include": ["scripts/release/**/*.ts", "scripts/aggregation/**/*.ts", "tests/e2e/readiness-server.ts"]
 }

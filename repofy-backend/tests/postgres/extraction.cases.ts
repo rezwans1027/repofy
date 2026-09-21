@@ -79,4 +79,18 @@ export function registerExtractionTests(db:pg.Client,config:pg.ClientConfig){
     await assert.rejects(f.evidence.storeSnapshot(randomUUID(),f.bindings[0].grantId,bundle,f.crypto));
     const exported=await f.evidence.exportUserData(randomUUID());assert.equal(exported.evidence.length,0);assert.equal(exported.files.length,0);
   }));
+  test('structural-only version mapping supports disabled extractors and rejects mixed policy identities',()=>fixture(async({f,context,input,rpc})=>{
+    const profile=extractionProfile(['documentation']);
+    const {bundle}=await extractSnapshot(context,{...input,profile,versions:{...input.versions,extractorBundle:profile.extractorBundle,
+      detectorBundle:profile.detectorBundle,coverageManifest:profile.coverageManifest}});
+    assert.equal(bundle.snapshot.extractionPolicyVersion,'1.0.1-disabled-0000010');
+    let submitted:any;const capture:FeatureOneRpcClient={async rpc(_name,args){submitted=structuredClone(args);return{data:bundle.snapshot.snapshotId,error:null};}};
+    await new EvidenceRepository(capture).storeSnapshot(f.actor,f.bindings[0].grantId,bundle,f.crypto);
+    for(const change of [
+      (b:any)=>{b.versions.detectorBundle.version=b.coverage.detectorBundle.version='1.0.0';},
+      (b:any)=>{b.versions.coverageManifest=b.coverage.manifestVersion='1.0.0';},
+      (b:any)=>{b.versions.extractorBundle.version=b.inventorySummary.extractorBundle.version=b.snapshot.extractionPolicyVersion='1.0.1-disabled-0000001';},
+    ]){const mixed=structuredClone(submitted);change(mixed.p_bundle);assert.equal((await rpc.rpc('feature_one_store_snapshot',mixed)).error?.message,'INCOMPLETE_ANALYSIS');}
+    assert.equal((await rpc.rpc('feature_one_store_snapshot',submitted)).error,null);
+  }));
 }

@@ -1,8 +1,9 @@
 {
-  "assessedAt": "2026-09-21T02:40:52.037Z",
+  "assessedAt": "2026-09-21T17:50:20.348Z",
   "scope": "Feature 1 private internal rollout; no authorization to deploy or enable",
   "decision": "hold",
   "blockers": [
+    "human_boundary_sample",
     "independent_calibration",
     "live_github",
     "live_model",
@@ -36,8 +37,8 @@
     },
     {
       "id": "human_boundary_sample",
-      "status": "passed",
-      "evidence": "One review: 22 major claims plus two unknown cards; descriptive small sample only. Empirical and independent calibration is a separate gate."
+      "status": "pending",
+      "evidence": "The frozen human review covers a previous domain implementation. Its approvals remain historical; the current implementation requires a new bound human review."
     },
     {
       "id": "local_workload",
@@ -90,7 +91,7 @@
       "evidence": "Workflow defines a blocking feature-one-gate and rejects failed/cancelled/skipped dependencies. Remote CI execution and required branch-protection configuration were not changed or verified."
     }
   ],
-  "sourceSha256": "e58cf1c40932d9c105d34b8d2365f73b8a1457da44b8e555417ff09133c3c2f5",
+  "sourceSha256": "5e4004819426fc6c372f50d27c77f6a4543accbc264487075db7711137c768f6",
   "corpusSha256": "f80ca10b4235986ea71de3254e8f738a5c870e54b54e96a619fcaabfb4250efe",
   "deferred": [
     "ANA-020 GitHub issue creation",
