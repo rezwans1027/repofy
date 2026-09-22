@@ -1,6 +1,6 @@
 # Branch review corrections
 
-The review corrections address four reproduced defects:
+The first review corrections address four reproduced defects:
 
 - Source reads share an authorization checkpoint for at most the existing two-second polling interval. Inventory and publication still request a fresh checkpoint, stale concurrent reads share one pending check, and abort/disposal closes the context. The 1,000-file regression models 65 ms database latency and requires two checkpoints instead of one per source file.
 - Straight-line implementation matching stops after known terminal statements. Unreachable local calls no longer support request validation, authentication, route/service, or form-validation evidence.
@@ -13,10 +13,19 @@ The aggregation process verifier extracts fresh synthetic evidence under the cur
 
 Production and development dependencies were updated within their existing major versions, including Next.js and Vitest security patches. The pinned extraction/parser dependencies remain unchanged.
 
+The follow-up review corrections address four additional reproduced defects:
+
+- All implementation detector emissions share bounded lexical reachability checks. Dead ownership/error guards, database calls, retry loops, AI calls, route registrations, JSX, and test assertions no longer support claims or test corroboration. Transaction credit requires at least two reachable direct awaited writes. Hoisted function declarations remain supported within reachable scopes; dead function creation and unreachable initializers are excluded.
+- Request-state evidence requires direct pending setup immediately before the request's `try`, an awaited fetch as its first effect, and immediate unconditional error/reset setters in `catch`/`finally`. State rendered only in unreachable JSX cannot establish displayed pending/error state.
+- `var` bindings are installed in their containing function, module, or class static block, including nested destructuring. A block or loop `var` shadow cannot resolve to an imported library; block-scoped bindings and declarations in other functions retain their separate scopes.
+- Comparisons include implementation limits and capability assessability in scope checks. Either scan's incomplete scope qualifies every evidence change and numeric delta, including equal limit counters that cannot establish identical assessed files. The database-backed regression adds 256 unrelated files and proves that unchanged retry source displaced by the detector budget is reported with limited comparability.
+
+The corrected implementation detector bundle is `1.0.2`; structural extractor `1.0.1` and coverage manifests `1.1.1`/`1.2.1` are unchanged. An additive migration registers the new detector definitions while preserving both historical detector versions. Mixed-version snapshots are rejected, and workers reject earlier execution policies before source acquisition. Comparison responses use `evidence-diff-1.0.1`; the contract also accepts the historical comparison version.
+
 Historical human approvals in the Run 16 review/rendering files remain intact. They are bound to the earlier domain implementation, so the corrected implementation has no transferred human labels. Automated benchmarking may continue, but current human-review metrics remain unavailable and release stays on hold until the required reviews and external gates are satisfied.
 
 Verification results are recorded in `run16-verification.json`, `run16-results.json`, and `run16-load.json`. These cover local synthetic behavior, not live providers or deployment readiness.
 
-The completed verification passes all 22 checks against one unchanged implementation digest: 82 contract tests, 1,273 backend tests, 108 PostgreSQL tests, 580 frontend tests, coverage thresholds, builds, process limits, and browser journeys. Both application dependency audits report zero production or development vulnerabilities. The recorded rollout decision remains HOLD with nine pending gates, including a new bound human review of the corrected implementation.
+The completed verification passes all 22 checks against one unchanged implementation digest: 83 contract tests, 1,338 backend tests, 109 PostgreSQL tests, 580 frontend tests, coverage thresholds, builds, process limits, and browser journeys. The first review's application dependency audits reported zero production or development vulnerabilities; this follow-up does not change dependencies. The recorded rollout decision remains HOLD with nine pending gates, including a new bound human review of the corrected implementation.
 
 The updated Next/Sentry proxy emits a nonblocking close-listener threshold warning. A minimal reproduction without Express or rate limiting found 11 listeners per response; all five response objects were collected after completion in WeakRef/GC probes. No retained-response accumulation was reproduced, and no warning suppression or application workaround was added.

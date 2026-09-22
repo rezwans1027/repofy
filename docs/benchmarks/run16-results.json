@@ -6,8 +6,8 @@
     "splitPolicy": "Evaluation cases authored and frozen before first execution; excluded from earlier detector development. Same implementation agent authored references: not independent or blinded calibration. Never revise labels to match results.",
     "measurementUnit": "Individual TS/JS detector/file observations; recall covers the annotated supported static patterns only. Out-of-scope valid alternatives reported separately."
   },
-  "measuredAt": "2026-09-21T17:47:12.625Z",
-  "domainSourceSha256": "dacb30a5017580294c56b89a0abe8d527a1312292d1991fe9cdb58cb9a7d2a35",
+  "measuredAt": "2026-09-22T03:48:40.194Z",
+  "domainSourceSha256": "6874db878ae220a24d90b0cbcf6c684a52abaf2c869a3a6bddc916f85f890699",
   "developmentSources": [
     {
       "path": "tests/fixtures/evidence/repositories.json",
@@ -242,8 +242,8 @@
     "unsupportedMajorClaimRate": null,
     "roleRubricCalibration": null,
     "extractionThroughRenderingMs": {
-      "p50": 30,
-      "p95": 39
+      "p50": 27,
+      "p95": 37
     },
     "syntheticCasesCompleted": {
       "successes": 24,
@@ -254,7 +254,7 @@
         1
       ]
     },
-    "peakRssMiB": 247,
+    "peakRssMiB": 246,
     "actualProviderCostUsd": 0,
     "providerCalls": 0,
     "modelQualityMeasured": false,
@@ -330,7 +330,7 @@
     ],
     "status": "stale",
     "reviewedDomainSourceSha256": "c2f8e497394a42288d4432b79726dcce901443dac44f27bf4e18f2f0121cb816",
-    "currentDomainSourceSha256": "dacb30a5017580294c56b89a0abe8d527a1312292d1991fe9cdb58cb9a7d2a35",
+    "currentDomainSourceSha256": "6874db878ae220a24d90b0cbcf6c684a52abaf2c869a3a6bddc916f85f890699",
     "historicalReview": {
       "reviewCount": 1,
       "completelyReviewed": 1,
@@ -435,7 +435,9 @@
     "sha256": "5a2397a2616c4961d6ac5bad817bec36788aaddc032d82997ca59b2befb11647",
     "domainSourceSha256": "c2f8e497394a42288d4432b79726dcce901443dac44f27bf4e18f2f0121cb816",
     "renderedAt": "2026-09-21T02:29:51.433Z",
-    "differingReviewCards": [],
+    "differingReviewCards": [
+      "C02"
+    ],
     "scope": "Historical human rates describe the frozen reviewed output only. Current human metrics are null when the domain digest changes. Fresh identity tie selections listed here are not newly human-approved."
   },
   "rubricBoundaries": {
@@ -812,7 +814,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 85,
+      "elapsedMs": 86,
       "capabilities": [
         {
           "id": "ai_context",
@@ -1122,7 +1124,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -1209,7 +1211,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 36,
+      "elapsedMs": 37,
       "capabilities": [
         {
           "id": "ai_context",
@@ -1485,8 +1487,8 @@
       "claims": [
         {
           "capability": "api_design",
-          "text": "A route returns an explicit error status with a structured literal error code. No claim about a universal error contract, safe message content or matching consumer behavior. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
-          "statementId": "tsjs.structured_error"
+          "text": "An Express route callback calls a statically resolved local function boundary. Does not establish API stability, complete routing or separation of all responsibilities. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.route_service"
         },
         {
           "capability": "architecture_modularity",
@@ -1514,7 +1516,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -1600,7 +1602,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 35,
+      "elapsedMs": 32,
       "capabilities": [
         {
           "id": "ai_context",
@@ -1881,8 +1883,8 @@
         },
         {
           "capability": "api_design",
-          "text": "A route returns an explicit error status with a structured literal error code. No claim about a universal error contract, safe message content or matching consumer behavior. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
-          "statementId": "tsjs.structured_error"
+          "text": "An Express route callback calls a statically resolved local function boundary. Does not establish API stability, complete routing or separation of all responsibilities. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.route_service"
         },
         {
           "capability": "architecture_modularity",
@@ -1905,7 +1907,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -1992,7 +1994,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 30,
+      "elapsedMs": 29,
       "capabilities": [
         {
           "id": "ai_context",
@@ -2292,7 +2294,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -2379,7 +2381,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 34,
+      "elapsedMs": 30,
       "capabilities": [
         {
           "id": "ai_context",
@@ -2679,7 +2681,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -2765,7 +2767,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 28,
+      "elapsedMs": 26,
       "capabilities": [
         {
           "id": "ai_context",
@@ -3060,7 +3062,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -3147,7 +3149,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 32,
+      "elapsedMs": 27,
       "capabilities": [
         {
           "id": "ai_context",
@@ -3442,7 +3444,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -3528,7 +3530,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 30,
+      "elapsedMs": 26,
       "capabilities": [
         {
           "id": "ai_context",
@@ -3823,7 +3825,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -3910,7 +3912,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 32,
+      "elapsedMs": 28,
       "capabilities": [
         {
           "id": "ai_context",
@@ -4210,7 +4212,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -4297,7 +4299,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 32,
+      "elapsedMs": 27,
       "capabilities": [
         {
           "id": "ai_context",
@@ -4592,7 +4594,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -4678,7 +4680,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 29,
+      "elapsedMs": 24,
       "capabilities": [
         {
           "id": "ai_context",
@@ -4973,7 +4975,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -5061,7 +5063,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 30,
+      "elapsedMs": 27,
       "capabilities": [
         {
           "id": "ai_context",
@@ -5356,7 +5358,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -5442,7 +5444,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 28,
+      "elapsedMs": 25,
       "capabilities": [
         {
           "id": "ai_context",
@@ -5737,7 +5739,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -5827,7 +5829,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 31,
+      "elapsedMs": 27,
       "capabilities": [
         {
           "id": "ai_context",
@@ -6122,7 +6124,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -6209,7 +6211,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 28,
+      "elapsedMs": 23,
       "capabilities": [
         {
           "id": "ai_context",
@@ -6499,7 +6501,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -6587,7 +6589,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 30,
+      "elapsedMs": 26,
       "capabilities": [
         {
           "id": "ai_context",
@@ -6863,8 +6865,8 @@
       "claims": [
         {
           "capability": "api_design",
-          "text": "An Express route callback calls a statically resolved local function boundary. Does not establish API stability, complete routing or separation of all responsibilities. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
-          "statementId": "tsjs.route_service"
+          "text": "A route returns an explicit error status with a structured literal error code. No claim about a universal error contract, safe message content or matching consumer behavior. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.structured_error"
         },
         {
           "capability": "architecture_modularity",
@@ -6887,7 +6889,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -6980,7 +6982,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 33,
+      "elapsedMs": 29,
       "capabilities": [
         {
           "id": "ai_context",
@@ -7285,7 +7287,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -7372,7 +7374,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 39,
+      "elapsedMs": 34,
       "capabilities": [
         {
           "id": "ai_context",
@@ -7667,7 +7669,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -7732,387 +7734,6 @@
         "analyzedFiles": 3,
         "unparsedFiles": 0,
         "analyzedFractionOfAllFiles": 1
-      },
-      "metrics": {
-        "tp": 0,
-        "fp": 0,
-        "fn": 0,
-        "missing": [],
-        "unexpected": [],
-        "precision": null,
-        "recall": null
-      },
-      "validAlternatives": [],
-      "signals": [
-        "limited_history",
-        "history_unavailable"
-      ],
-      "contribution": {
-        "state": "unknown",
-        "confidence": null,
-        "strengthModifier": null,
-        "confidenceModifier": null,
-        "basis": "context_only_uncalibrated"
-      },
-      "elapsedMs": 31,
-      "capabilities": [
-        {
-          "id": "ai_context",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "ai_evaluation",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "ai_integration",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "ai_safety",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "api_boundary_validation",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "api_design",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "architecture_boundaries",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "architecture_modularity",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "data_modeling",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "data_transactions",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "delivery_automation",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "delivery_reproducibility",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "documentation_decisions",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "documentation_operability",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "framework_presence",
-          "state": "assessed",
-          "strength": 0.2,
-          "confidence": 0.5,
-          "confidenceLabel": "low"
-        },
-        {
-          "id": "frontend_accessibility",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "frontend_interaction",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "frontend_state",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "language_presence",
-          "state": "assessed",
-          "strength": 0.3,
-          "confidence": 0.5,
-          "confidenceLabel": "moderate"
-        },
-        {
-          "id": "mobile_lifecycle",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "mobile_navigation",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "mobile_offline",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "observability_diagnostics",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "observability_health",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "performance_resources",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "provenance_history",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "provenance_origin",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "reliability_concurrency",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "reliability_recovery",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "security_authorization",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "security_input_handling",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "security_secrets",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "testing_behavior",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        },
-        {
-          "id": "testing_failures",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
-        }
-      ],
-      "rolesResult": [
-        {
-          "role": "ai_application",
-          "state": "unknown",
-          "coverage": null,
-          "unknownWeight": 1
-        },
-        {
-          "role": "backend",
-          "state": "unknown",
-          "coverage": null,
-          "unknownWeight": 1
-        },
-        {
-          "role": "frontend",
-          "state": "unknown",
-          "coverage": null,
-          "unknownWeight": 1
-        },
-        {
-          "role": "full_stack",
-          "state": "unknown",
-          "coverage": null,
-          "unknownWeight": 1
-        },
-        {
-          "role": "mobile",
-          "state": "unknown",
-          "coverage": null,
-          "unknownWeight": 1
-        }
-      ],
-      "claims": [
-        {
-          "capability": "framework_presence",
-          "text": "A dependency declaration was observed. A declaration does not establish usage, working integration or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
-          "statementId": "observation.dependency_presence"
-        },
-        {
-          "capability": "language_presence",
-          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
-          "statementId": "observation.source_structure_only"
-        }
-      ],
-      "versions": {
-        "contract": "1.0.0",
-        "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
-        "extractorBundle": {
-          "id": "language_inventory",
-          "version": "1.0.1"
-        },
-        "detectorBundle": {
-          "id": "tsjs_implementation",
-          "version": "1.0.1"
-        },
-        "coverageManifest": "1.2.1",
-        "aggregationPolicy": {
-          "id": "evidence_aggregation",
-          "version": "1.1.0"
-        },
-        "taxonomy": {
-          "id": "engineering_capabilities",
-          "version": "1.0.0"
-        },
-        "roleRubrics": [
-          {
-            "roleId": "backend",
-            "version": "1.0.0"
-          },
-          {
-            "roleId": "frontend",
-            "version": "1.0.0"
-          },
-          {
-            "roleId": "full_stack",
-            "version": "1.0.0"
-          },
-          {
-            "roleId": "mobile",
-            "version": "1.0.0"
-          },
-          {
-            "roleId": "ai_application",
-            "version": "1.0.0"
-          }
-        ],
-        "disclosurePolicy": {
-          "id": "candidate_private",
-          "version": "1.0.0"
-        },
-        "synthesis": {
-          "kind": "model",
-          "prompt": {
-            "id": "bounded_narrative",
-            "version": "1.0.0"
-          },
-          "model": {
-            "provider": "openai",
-            "identifier": "gpt-4.1-mini",
-            "version": "gpt-4.1-mini-2025-04-14"
-          }
-        }
-      }
-    },
-    {
-      "id": "mobile_native_unknown",
-      "roles": [
-        "mobile"
-      ],
-      "result": "insufficient_evidence",
-      "counts": {
-        "totalFiles": 2,
-        "excludedFiles": 0,
-        "eligibleFiles": 2,
-        "analyzedFiles": 0,
-        "unparsedFiles": 2,
-        "analyzedFractionOfAllFiles": 0
       },
       "metrics": {
         "tp": 0,
@@ -8237,10 +7858,10 @@
         },
         {
           "id": "framework_presence",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
+          "state": "assessed",
+          "strength": 0.2,
+          "confidence": 0.5,
+          "confidenceLabel": "low"
         },
         {
           "id": "frontend_accessibility",
@@ -8265,10 +7886,10 @@
         },
         {
           "id": "language_presence",
-          "state": "unknown",
-          "strength": null,
-          "confidence": null,
-          "confidenceLabel": null
+          "state": "assessed",
+          "strength": 0.3,
+          "confidence": 0.5,
+          "confidenceLabel": "moderate"
         },
         {
           "id": "mobile_lifecycle",
@@ -8408,7 +8029,18 @@
           "unknownWeight": 1
         }
       ],
-      "claims": [],
+      "claims": [
+        {
+          "capability": "framework_presence",
+          "text": "A dependency declaration was observed. A declaration does not establish usage, working integration or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "observation.dependency_presence"
+        },
+        {
+          "capability": "language_presence",
+          "text": "Parsed source structure was observed. Structure does not establish runtime behavior, correctness or proficiency. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is moderate; proficiency and authorship are unverified.",
+          "statementId": "observation.source_structure_only"
+        }
+      ],
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
@@ -8419,7 +8051,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -8471,22 +8103,18 @@
       }
     },
     {
-      "id": "empty_unknown",
+      "id": "mobile_native_unknown",
       "roles": [
-        "frontend",
-        "backend",
-        "full_stack",
-        "mobile",
-        "ai_application"
+        "mobile"
       ],
       "result": "insufficient_evidence",
       "counts": {
-        "totalFiles": 0,
+        "totalFiles": 2,
         "excludedFiles": 0,
-        "eligibleFiles": 0,
+        "eligibleFiles": 2,
         "analyzedFiles": 0,
-        "unparsedFiles": 0,
-        "analyzedFractionOfAllFiles": null
+        "unparsedFiles": 2,
+        "analyzedFractionOfAllFiles": 0
       },
       "metrics": {
         "tp": 0,
@@ -8509,7 +8137,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 26,
+      "elapsedMs": 23,
       "capabilities": [
         {
           "id": "ai_context",
@@ -8793,7 +8421,381 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
+          "version": "1.0.2"
+        },
+        "coverageManifest": "1.2.1",
+        "aggregationPolicy": {
+          "id": "evidence_aggregation",
+          "version": "1.1.0"
+        },
+        "taxonomy": {
+          "id": "engineering_capabilities",
+          "version": "1.0.0"
+        },
+        "roleRubrics": [
+          {
+            "roleId": "backend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "frontend",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "full_stack",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "mobile",
+            "version": "1.0.0"
+          },
+          {
+            "roleId": "ai_application",
+            "version": "1.0.0"
+          }
+        ],
+        "disclosurePolicy": {
+          "id": "candidate_private",
+          "version": "1.0.0"
+        },
+        "synthesis": {
+          "kind": "model",
+          "prompt": {
+            "id": "bounded_narrative",
+            "version": "1.0.0"
+          },
+          "model": {
+            "provider": "openai",
+            "identifier": "gpt-4.1-mini",
+            "version": "gpt-4.1-mini-2025-04-14"
+          }
+        }
+      }
+    },
+    {
+      "id": "empty_unknown",
+      "roles": [
+        "frontend",
+        "backend",
+        "full_stack",
+        "mobile",
+        "ai_application"
+      ],
+      "result": "insufficient_evidence",
+      "counts": {
+        "totalFiles": 0,
+        "excludedFiles": 0,
+        "eligibleFiles": 0,
+        "analyzedFiles": 0,
+        "unparsedFiles": 0,
+        "analyzedFractionOfAllFiles": null
+      },
+      "metrics": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": null,
+        "recall": null
+      },
+      "validAlternatives": [],
+      "signals": [
+        "limited_history",
+        "history_unavailable"
+      ],
+      "contribution": {
+        "state": "unknown",
+        "confidence": null,
+        "strengthModifier": null,
+        "confidenceModifier": null,
+        "basis": "context_only_uncalibrated"
+      },
+      "elapsedMs": 22,
+      "capabilities": [
+        {
+          "id": "ai_context",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "ai_evaluation",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "ai_integration",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "ai_safety",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "api_boundary_validation",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "api_design",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "architecture_boundaries",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "architecture_modularity",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "data_modeling",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "data_transactions",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "delivery_automation",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "delivery_reproducibility",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "documentation_decisions",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "documentation_operability",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "framework_presence",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "frontend_accessibility",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "frontend_interaction",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "frontend_state",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "language_presence",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "mobile_lifecycle",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "mobile_navigation",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "mobile_offline",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "observability_diagnostics",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "observability_health",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "performance_resources",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "provenance_history",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "provenance_origin",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "reliability_concurrency",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "reliability_recovery",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "security_authorization",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "security_input_handling",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "security_secrets",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "testing_behavior",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        },
+        {
+          "id": "testing_failures",
+          "state": "unknown",
+          "strength": null,
+          "confidence": null,
+          "confidenceLabel": null
+        }
+      ],
+      "rolesResult": [
+        {
+          "role": "ai_application",
+          "state": "unknown",
+          "coverage": null,
+          "unknownWeight": 1
+        },
+        {
+          "role": "backend",
+          "state": "unknown",
+          "coverage": null,
+          "unknownWeight": 1
+        },
+        {
+          "role": "frontend",
+          "state": "unknown",
+          "coverage": null,
+          "unknownWeight": 1
+        },
+        {
+          "role": "full_stack",
+          "state": "unknown",
+          "coverage": null,
+          "unknownWeight": 1
+        },
+        {
+          "role": "mobile",
+          "state": "unknown",
+          "coverage": null,
+          "unknownWeight": 1
+        }
+      ],
+      "claims": [],
+      "versions": {
+        "contract": "1.0.0",
+        "snapshotIdentity": "1.0.0",
+        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "extractorBundle": {
+          "id": "language_inventory",
           "version": "1.0.1"
+        },
+        "detectorBundle": {
+          "id": "tsjs_implementation",
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -8879,7 +8881,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 28,
+      "elapsedMs": 26,
       "capabilities": [
         {
           "id": "ai_context",
@@ -9179,7 +9181,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -9266,7 +9268,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 28,
+      "elapsedMs": 25,
       "capabilities": [
         {
           "id": "ai_context",
@@ -9566,7 +9568,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -9655,7 +9657,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 27,
+      "elapsedMs": 23,
       "capabilities": [
         {
           "id": "ai_context",
@@ -9950,7 +9952,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {

@@ -15,18 +15,18 @@ async function captured(fixture: Awaited<ReturnType<typeof coverageJobFixture>>)
   await new EvidenceRepository(capture).storeSnapshot(fixture.f.actor, fixture.f.bindings[0].grantId, fixture.bundle, fixture.f.crypto);
   return args;
 }
-function legacy(bundle: any, declaration: unknown) {
-  bundle.snapshot.extractionPolicyVersion = bundle.versions.extractorBundle.version = bundle.inventorySummary.extractorBundle.version = '1.0.0';
-  bundle.versions.detectorBundle.version = bundle.coverage.detectorBundle.version = bundle.coverage.implementation.bundle.version = '1.0.0';
-  bundle.versions.coverageManifest = bundle.coverage.manifestVersion = '1.2.0';
+function legacy(bundle: any, declaration: unknown, version: '1.0.0' | '1.0.1') {
+  bundle.snapshot.extractionPolicyVersion = bundle.versions.extractorBundle.version = bundle.inventorySummary.extractorBundle.version = version;
+  bundle.versions.detectorBundle.version = bundle.coverage.detectorBundle.version = bundle.coverage.implementation.bundle.version = version;
+  bundle.versions.coverageManifest = bundle.coverage.manifestVersion = version === '1.0.0' ? '1.2.0' : '1.2.1';
   bundle.coverage.assessment.declaration = declaration;
-  bundle.coverage.implementation.detectors.forEach((d: any) => { d.version = '1.0.0'; });
-  bundle.evidence.forEach((e: any) => { e.observation.detector.version = '1.0.0'; });
+  bundle.coverage.implementation.detectors.forEach((d: any) => { d.version = version; });
+  bundle.evidence.forEach(({ observation: e }: any) => { e.detector.version = e.implementation || e.structural?.kind === 'schema' ? version : '1.0.0'; });
 }
 export function registerAnalyzerVersionTests(db: pg.Client) {
   test('analyzer corrections append immutable definitions and preserve every legacy coverage declaration', async () => {
     const detectors = await db.query('SELECT bundle_version,count(*)::int n FROM feature_one_private.implementation_detectors GROUP BY bundle_version ORDER BY bundle_version');
-    assert.deepEqual(detectors.rows, [{ bundle_version: '1.0.0', n: 16 }, { bundle_version: '1.0.1', n: 16 }]);
+    assert.deepEqual(detectors.rows, [{ bundle_version: '1.0.0', n: 16 }, { bundle_version: '1.0.1', n: 16 }, { bundle_version: '1.0.2', n: 16 }]);
     const manifests = await db.query("SELECT old.declaration AS old, corrected.declaration AS corrected FROM feature_one_private.analyzer_coverage_manifests old JOIN feature_one_private.analyzer_coverage_manifests corrected ON corrected.version='1.2.1'||substring(old.version from 6) WHERE split_part(old.version,'-',1)='1.2.0'");
     assert.equal(manifests.rowCount, 8);
     for (const row of manifests.rows) assert.deepEqual(row.corrected, { ...row.old, version: row.old.version.replace('1.2.0', '1.2.1') });
@@ -39,8 +39,10 @@ export function registerAnalyzerVersionTests(db: pg.Client) {
       const args = await captured(fixture);
       for (const [mutate, code] of [
         [(b: any) => { b.evidence.find((e: any) => e.observation.implementation).observation.detector.version = '1.0.0'; }, 'UNSUPPORTED_CLAIM'],
+        [(b: any) => { b.evidence.find((e: any) => e.observation.implementation).observation.detector.version = '1.0.1'; }, 'UNSUPPORTED_CLAIM'],
         [(b: any) => { b.evidence.find((e: any) => e.observation.structural?.kind === 'schema').observation.detector.version = '1.0.0'; }, 'UNSUPPORTED_CLAIM'],
         [(b: any) => { b.coverage.implementation.detectors[0].version = '1.0.0'; }, 'INCOMPLETE_ANALYSIS'],
+        [(b: any) => { b.coverage.implementation.detectors[0].version = '1.0.1'; }, 'INCOMPLETE_ANALYSIS'],
         [(b: any) => { b.coverage.manifestVersion = b.versions.coverageManifest = b.coverage.assessment.declaration.version = '1.2.0'; }, 'INCOMPLETE_ANALYSIS'],
         [(b: any) => { b.versions.extractorBundle.version = b.inventorySummary.extractorBundle.version = b.snapshot.extractionPolicyVersion = '1.0.0';
           b.evidence.find((e: any) => e.observation.structural?.kind === 'schema').observation.detector.version = '1.0.0'; }, 'INCOMPLETE_ANALYSIS'],
@@ -54,21 +56,22 @@ export function registerAnalyzerVersionTests(db: pg.Client) {
       assert.equal(AnalyzerCoverageSchema.parse(stored).manifestVersion, '1.2.1');
     } finally { await fixture.cleanup(); }
   });
-  test('legacy snapshot and evidence versions remain valid while rejecting corrected rows under legacy policy', async () => {
+  for (const version of ['1.0.0', '1.0.1'] as const) test(`${version} snapshot and evidence remain readable while rejecting mismatched rows`, async () => {
     const fixture = await coverageJobFixture(db, jobsRpc(db), files);
     try {
       const args = await captured(fixture);
-      const declaration = (await db.query("SELECT declaration FROM feature_one_private.analyzer_coverage_manifests WHERE version='1.2.0'")).rows[0].declaration;
-      legacy(args.p_bundle, declaration);
+      const coverage = version === '1.0.0' ? '1.2.0' : '1.2.1';
+      const declaration = (await db.query('SELECT declaration FROM feature_one_private.analyzer_coverage_manifests WHERE version=$1', [coverage])).rows[0].declaration;
+      legacy(args.p_bundle, declaration, version);
       for (const kind of ['implementation', 'schema']) {
         const mixed = structuredClone(args);
         const observation = mixed.p_bundle.evidence.find((e: any) => kind === 'implementation' ? e.observation.implementation : e.observation.structural?.kind === 'schema').observation;
-        observation.detector.version = '1.0.1';
+        observation.detector.version = kind === 'implementation' ? '1.0.2' : version === '1.0.0' ? '1.0.1' : '1.0.0';
         assert.equal((await jobsRpc(db).rpc('feature_one_store_snapshot', mixed)).error?.message, 'UNSUPPORTED_CLAIM');
       }
       assert.equal((await jobsRpc(db).rpc('feature_one_store_snapshot', args)).error, null);
       const stored = (await db.query('SELECT coverage FROM public.repository_snapshots WHERE id=$1', [fixture.bundle.snapshot.snapshotId])).rows[0].coverage;
-      assert.equal(AnalyzerCoverageSchema.parse(stored).manifestVersion, '1.2.0');
+      assert.equal(AnalyzerCoverageSchema.parse(stored).manifestVersion, coverage);
       assert.ok((await fixture.f.evidence.exportUserData(fixture.f.actor)).evidence.length > 0);
     } finally { await fixture.cleanup(); }
   });

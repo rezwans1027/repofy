@@ -63,3 +63,15 @@ it('metadata signal changes do not invent a permission change', () => {
   input.target.report.coverage[0].structural = { evidenceTruncated: false, disabledExtractors: [], sources: [], metadata: [{ source: 'checks', state: 'no_signal', records: 0, exactCommitRecords: 0 }] };
   const diff = compare(); expect(diff.causes).toContain('scope_changed'); expect(diff.causes).not.toContain('metadata_permission_changed');
 });
+it('keeps equally incomplete scans qualified when counts cannot establish file membership', () => {
+  for (const view of [input.baseline, input.target]) {
+    view.report.coverage[0].structural = { evidenceTruncated: false, disabledExtractors: [], metadata: [], sources: [
+      { source: 'source', eligibleFiles: 10, analyzedFiles: 9, parseFailures: 0, limitedFiles: 1, unsupportedFiles: 0, noSignalFiles: 0 },
+    ] };
+  }
+  const diff = compare();
+  expect(diff.causes).toContain('scope_incomplete');
+  expect(diff.causes).not.toContain('scope_changed');
+  expect(diff.comparability).toBe('limited');
+  expect(diff.evidence.every(e => e.interpretation === 'limited_by_scope_or_versions')).toBe(true);
+});

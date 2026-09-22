@@ -114,6 +114,29 @@ it('removing a selected repository qualifies evidence losses and reuses the stil
     expect(f.counters.downloads).toBe(2); expect(f.counters.extracts).toBe(2); expect(f.counters.models).toBe(2);
   } finally { await f.cleanup(); }
 });
+it('qualifies unchanged implementation displaced by the detector file budget', async () => {
+  const f = await rescanFixture(db.db, db.rpc);
+  try {
+    const repo = f.bindings[0].repositoryId, files = f.files.get(repo)!;
+    const retrySource = files['retry.ts'];
+    for (let i = 0; i < 256; i++) files[`a${String(i).padStart(3, '0')}.ts`] = 'export const x=1;';
+    f.commits.set(repo, 'b'.repeat(40));
+    const started = await f.service.start(f.actor, f.baseline.report.reportId, f.request(), f.policy, 5);
+    if (started.state !== 'queued') throw new Error();
+    await f.worker.once(); const job = await f.jobs.read(f.actor, started.job.jobId);
+    if (job.status !== 'completed') throw new Error(JSON.stringify(job));
+    const target = await f.reader.view(f.actor, job.report.reportId);
+    expect(files['retry.ts']).toBe(retrySource);
+    expect(target.report.coverage[0].implementation).toMatchObject({ eligibleFiles: 258, analyzedFiles: 256, limitedFiles: 2 });
+    const diff = await f.service.compare(f.actor, f.baseline.report.reportId, { targetReportId: job.report.reportId, change: 'lost' });
+    expect(diff.algorithm).toBe('evidence-diff-1.0.1');
+    expect(diff.comparability).toBe('limited');
+    expect(diff.causes).toEqual(expect.arrayContaining(['scope_changed', 'scope_incomplete']));
+    expect(diff.evidence.find(e => e.detector === 'tsjs.bounded_retry')).toMatchObject({ change: 'lost', interpretation: 'limited_by_scope_or_versions' });
+    expect(diff.capabilities.find(c => c.capabilityId === 'reliability_recovery')).toMatchObject({ strengthDelta: -.55, assessabilityChanged: true });
+    expect(diff.notes.join(' ')).toContain('detector or evidence limit');
+  } finally { await f.cleanup(); }
+});
 it.each(['rename', 'moved module', 'deleted implementation', 'dependency only', 'excluded path', 'no content change'] as const)('compares a real two-commit history: %s', async scenario => {
   const f = await rescanFixture(db.db, db.rpc);
   try {

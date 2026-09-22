@@ -5,7 +5,6 @@ import { type IndexedFile, type FunctionNode, type FunctionRef, rootIdentifier, 
 export interface RawFinding { kind: ImplementationKind; node: ts.Node; concept: ts.Node; target?: FunctionRef; mocked?: boolean }
 type Route = { call: ts.CallExpression; handler: FunctionNode; request: ts.Identifier; response: ts.Identifier };
 function nodes(file: IndexedFile, root: ts.Node) { file.project.tick(file.nodes.length); return file.nodes.filter(n => file.contains(root, n)); }
-function calls(file: IndexedFile, root: ts.Node) { return nodes(file, root).filter(ts.isCallExpression).filter(n => file.enclosing(n) === file.enclosing(root)); }
 function same(file: IndexedFile, a: ts.Identifier, b: ts.Identifier) { const binding = file.binding(a); return !!binding && binding === file.binding(b) && !binding.written; }
 function rooted(file: IndexedFile, expression: ts.Expression, parameter: ts.Identifier) { const root = rootIdentifier(unwrap(expression)); return !!root && same(file, root, parameter); }
 function objectProperty(object: ts.ObjectLiteralExpression, name: string): ts.Expression | undefined {
@@ -19,27 +18,9 @@ function directCall(statement: ts.Statement): ts.CallExpression | undefined {
   const value = expr && unwrap(expr); return value && ts.isCallExpression(value) ? value : undefined;
 }
 function awaited(file: IndexedFile, call: ts.CallExpression) { return ts.isAwaitExpression(file.parents.get(call) ?? file.ast); }
-// This is deliberately limited to syntactically known exits, not whole-program flow analysis.
-function stopsFallthrough(statement: ts.Statement): boolean {
-  if (ts.isReturnStatement(statement) || ts.isThrowStatement(statement) || ts.isBreakStatement(statement) || ts.isContinueStatement(statement)) return true;
-  if (ts.isBlock(statement)) return statement.statements.some(stopsFallthrough);
-  if (ts.isIfStatement(statement)) {
-    const condition = unwrap(statement.expression);
-    if (condition.kind === ts.SyntaxKind.TrueKeyword) return stopsFallthrough(statement.thenStatement);
-    if (condition.kind === ts.SyntaxKind.FalseKeyword) return !!statement.elseStatement && stopsFallthrough(statement.elseStatement);
-    return !!statement.elseStatement && stopsFallthrough(statement.thenStatement) && stopsFallthrough(statement.elseStatement);
-  }
-  if (ts.isTryStatement(statement)) return !!statement.finallyBlock && stopsFallthrough(statement.finallyBlock)
-    || stopsFallthrough(statement.tryBlock) && (!statement.catchClause || stopsFallthrough(statement.catchClause.block));
-  return false;
-}
-function reachableStatements(body: ts.Block) {
-  const statements: ts.Statement[] = [];
-  for (const statement of body.statements) { statements.push(statement); if (stopsFallthrough(statement)) break; }
-  return statements;
-}
+function reachableStatements(file: IndexedFile, body: ts.Block) { return [...file.flow.statements(body)]; }
 function localCalls(file: IndexedFile, body: ts.Block, start = 0) {
-  return reachableStatements(body).slice(start).flatMap(s => { const call = directCall(s); const target = call && file.localFunction(call.expression);
+  return reachableStatements(file, body).slice(start).flatMap(s => { const call = directCall(s); const target = call && file.localFunction(call.expression);
     return call && target ? [{ call, target }] : []; });
 }
 function firstEffect(body: ts.Block): ts.Statement | undefined {
@@ -65,7 +46,7 @@ function routeContexts(file: IndexedFile): Route[] {
   return file.calls.flatMap(call => {
     const origin = file.origin(call.expression);
     if (origin?.module !== "express" || !/^(?:default|\*|Router|default\.Router)\(\)\.(?:get|post|put|patch|delete)$/.test(origin.member)
-      || call.arguments.length !== 2 || !ts.isStringLiteral(call.arguments[0]) || file.enclosing(call)) return [];
+      || call.arguments.length !== 2 || !ts.isStringLiteral(call.arguments[0]) || file.enclosing(call) || !file.flow.reachable(call)) return [];
     const target = file.localFunction(call.arguments[1]); if (!target || target.file !== file || target.node.parameters.length < 2) return [];
     const [request, response] = target.node.parameters.map(p => p.name);
     return ts.isIdentifier(request) && ts.isIdentifier(response) ? [{ call, handler: target.node, request, response }] : [];
@@ -144,7 +125,7 @@ function jsxAttribute(file: IndexedFile, node: ts.JsxOpeningElement | ts.JsxSelf
 }
 function statePairs(file: IndexedFile, component: FunctionNode) {
   return nodes(file, component).flatMap(node => {
-    if (!ts.isVariableDeclaration(node) || file.enclosing(node) !== component || !ts.isArrayBindingPattern(node.name) || node.name.elements.length !== 2 || !node.initializer) return [];
+    if (!ts.isVariableDeclaration(node) || file.enclosing(node) !== component || !ts.isArrayBindingPattern(node.name) || node.name.elements.length !== 2 || !node.initializer || !file.flow.reachable(node)) return [];
     const value = unwrap(node.initializer); if (!ts.isCallExpression(value)) return [];
     const origin = file.origin(value.expression); if (origin?.module !== "react" || !["useState", "default.useState"].includes(origin.member)) return [];
     const [valueElement, setterElement] = node.name.elements;
@@ -152,12 +133,15 @@ function statePairs(file: IndexedFile, component: FunctionNode) {
       ? [{ value: valueElement.name, setter: setterElement.name }] : [];
   });
 }
-function setter(file: IndexedFile, node: ts.Node, name: ts.Identifier, literal?: ts.SyntaxKind) {
-  return calls(file, node).some(call => ts.isIdentifier(call.expression) && same(file, call.expression, name) && call.arguments.length === 1
-    && (literal === undefined || call.arguments[0].kind === literal));
+function setter(file: IndexedFile, statement: ts.Statement | undefined, name: ts.Identifier, literal?: ts.SyntaxKind) {
+  const first = statement && (ts.isBlock(statement) ? firstEffect(statement) : statement);
+  const call = first && directCall(first);
+  return !!call && ts.isIdentifier(call.expression) && same(file, call.expression, name) && call.arguments.length === 1
+    && (literal === undefined || call.arguments[0].kind === literal);
 }
 function frontend(file: IndexedFile, emit: (f: RawFinding) => void) {
   for (const element of file.nodes.filter(ts.isJsxElement)) {
+    if (!file.flow.reachable(element)) continue;
     const opening = element.openingElement; if (!ts.isIdentifier(opening.tagName)) continue;
     const component = file.enclosing(element); if (!component) continue;
     const react = file.bindings.some(b => b.imported?.source === "react" && !b.imported.typeOnly); if (!react) continue;
@@ -176,14 +160,16 @@ function frontend(file: IndexedFile, emit: (f: RawFinding) => void) {
       if (parsed && ts.isIdentifier(parsed.call.arguments[0]) && pairs.some(p => same(file, parsed.call.arguments[0] as ts.Identifier, p.value)))
         emit({ kind: "form_validation", node: element, concept: target.node, target: parsed.consumed.target });
     }
-    for (const statement of body.statements) {
+    for (const statement of reachableStatements(file, body)) {
       if (!ts.isTryStatement(statement) || !statement.catchClause || !statement.finallyBlock) continue;
-      const fetch = calls(file, statement.tryBlock).find(c => ts.isIdentifier(c.expression) && c.expression.text === "fetch" && !file.hasBinding(c.expression) && awaited(file, c));
-      if (!fetch) continue;
+      const effect = firstEffect(statement.tryBlock), fetch = effect && directCall(effect);
+      if (!fetch || !ts.isIdentifier(fetch.expression) || fetch.expression.text !== "fetch" || file.hasBinding(fetch.expression) || !awaited(file, fetch)) continue;
       const before = body.statements.slice(0, body.statements.indexOf(statement));
-      const loading = pairs.find(p => before.some(s => setter(file, s, p.setter, ts.SyntaxKind.TrueKeyword)) && setter(file, statement.finallyBlock!, p.setter, ts.SyntaxKind.FalseKeyword));
+      // Direct effects establish setup/catch/reset; a setter anywhere inside a
+      // conditional or after an earlier effect cannot establish those guarantees.
+      const loading = pairs.find(p => setter(file, before.at(-1), p.setter, ts.SyntaxKind.TrueKeyword) && setter(file, statement.finallyBlock!, p.setter, ts.SyntaxKind.FalseKeyword));
       const failure = pairs.find(p => setter(file, statement.catchClause!.block, p.setter) && (!loading || !same(file, p.value, loading.value)));
-      const rendered = (value: ts.Identifier) => nodes(file, component).some(n => ts.isJsxExpression(n) && n.expression
+      const rendered = (value: ts.Identifier) => nodes(file, component).some(n => ts.isJsxExpression(n) && n.expression && file.flow.reachable(n)
         && nodes(file, n.expression).some(child => ts.isIdentifier(child) && same(file, child, value)));
       if (loading && failure && rendered(loading.value) && rendered(failure.value)) emit({ kind: "request_state", node: statement, concept: target.node });
     }
@@ -206,7 +192,8 @@ function database(file: IndexedFile, emit: (f: RawFinding) => void) {
     if (origin?.module === "@prisma/client" && origin.member === "PrismaClient().$transaction" && awaited(file, call)
       && call.arguments.length === 1 && (ts.isArrowFunction(call.arguments[0]) || ts.isFunctionExpression(call.arguments[0]))) {
       const fn = call.arguments[0]; const tx = fn.parameters[0]?.name; const body = bodyOf(fn);
-      if (body && tx && ts.isIdentifier(tx) && ts.getModifiers(fn)?.some(m => m.kind === ts.SyntaxKind.AsyncKeyword) && body.statements.length >= 2 && body.statements.every(s => {
+      const writes = body && reachableStatements(file, body);
+      if (writes && tx && ts.isIdentifier(tx) && ts.getModifiers(fn)?.some(m => m.kind === ts.SyntaxKind.AsyncKeyword) && writes.length >= 2 && writes.every(s => {
         const write = directCall(s); if (!write || !awaited(file, write) || !ts.isPropertyAccessExpression(write.expression)
           || !["create", "createMany", "update", "updateMany", "delete", "deleteMany", "upsert"].includes(write.expression.name.text)) return false;
         return ts.isPropertyAccessExpression(write.expression.expression) && ts.isIdentifier(write.expression.expression.expression)
@@ -241,7 +228,7 @@ function database(file: IndexedFile, emit: (f: RawFinding) => void) {
     if (!ts.isPropertyAccessExpression(release.expression) || !ts.isIdentifier(release.expression.expression)) continue;
     const client = release.expression.expression; const b = file.binding(client);
     if (!b?.initializer || !ts.isAwaitExpression(b.initializer) || !file.enclosing(node) || b.node.end > node.pos) continue;
-    if (reachableStatements(node.tryBlock).map(directCall).some(call => call && ts.isPropertyAccessExpression(call.expression) && call.expression.name.text === "query"
+    if (reachableStatements(file, node.tryBlock).map(directCall).some(call => call && ts.isPropertyAccessExpression(call.expression) && call.expression.name.text === "query"
       && ts.isIdentifier(call.expression.expression) && same(file, client, call.expression.expression))) emit({ kind: "failure_cleanup", node, concept: file.enclosing(node)! });
   }
 }
@@ -281,7 +268,7 @@ function testing(file: IndexedFile, emit: (f: RawFinding) => void) {
   });
   for (const call of file.calls) {
     const origin = file.origin(call.expression); if (!origin || !["vitest", "@jest/globals"].includes(origin.module)
-      || !["it", "test"].includes(origin.member) || call.arguments.length !== 2 || !ts.isStringLiteral(call.arguments[0])) continue;
+      || !["it", "test"].includes(origin.member) || call.arguments.length !== 2 || !ts.isStringLiteral(call.arguments[0]) || !file.flow.reachable(call)) continue;
     const callback = file.localFunction(call.arguments[1]); if (!callback || callback.file !== file) continue;
     let parent = file.parents.get(call); let skipped = false;
     while (parent) {
@@ -291,7 +278,7 @@ function testing(file: IndexedFile, emit: (f: RawFinding) => void) {
     }
     if (skipped) continue;
     const body = bodyOf(callback.node); if (!body) continue;
-    for (const statement of body.statements) {
+    for (const statement of reachableStatements(file, body)) {
       if (ts.isReturnStatement(statement) || ts.isThrowStatement(statement)) break;
       const assertion = directCall(statement); if (!assertion || !ts.isPropertyAccessExpression(assertion.expression)
         || !["toBe", "toEqual", "toStrictEqual", "toMatchObject", "toContain", "toHaveLength"].includes(assertion.expression.name.text) || assertion.arguments.length !== 1) continue;
@@ -321,7 +308,7 @@ function ai(file: IndexedFile, emit: (f: RawFinding) => void) {
   }
 }
 export function detect(file: IndexedFile): RawFinding[] {
-  const findings: RawFinding[] = []; const emit = (finding: RawFinding) => { findings.push(finding); };
+  const findings: RawFinding[] = []; const emit = (finding: RawFinding) => { if (file.flow.reachable(finding.node)) findings.push(finding); };
   if (file.input.classification === "test") testing(file, emit);
   else { backend(file, emit); frontend(file, emit); database(file, emit); reliability(file, emit); ai(file, emit); }
   const seen = new Set<string>();

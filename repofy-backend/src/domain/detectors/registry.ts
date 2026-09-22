@@ -30,7 +30,7 @@ const definitions: Record<ImplementationKind, Definition> = {
     required: "A JSX form is connected to a local submit handler whose parsed React state value feeds a local function.",
     observation: "A form submit handler parses a React state value with a Zod object schema before passing it to a local function.", limitation: "Client validation alone is not a server trust boundary; field-level feedback, submission success and UX are unverified." },
   request_state: { capabilities: ["frontend_interaction"], ecosystems: ["react"],
-    required: "A connected action uses React state setters around an awaited fetch in try/catch/finally and renders pending and error state.",
+    required: "A connected action directly sets pending before a try whose first effect awaits fetch, with immediate error and pending-reset setters in catch/finally and rendered state.",
     observation: "A connected UI action wraps a fetch with rendered pending and error state and a finally reset; the action can be invoked again.", limitation: "No stale-response protection, retry policy, server success or complete state-management claim; fetch can resolve on HTTP errors." },
   accessible_action: { capabilities: ["frontend_accessibility"], ecosystems: ["react"], strength: 0.4,
     required: "A native JSX button has static nonempty text and an onClick reference to a local function with work.",
@@ -60,7 +60,7 @@ const definitions: Record<ImplementationKind, Definition> = {
     required: "An awaited ai.generateObject call supplies a Zod object schema, explicit bounded maxRetries and native AbortSignal.timeout.",
     observation: "A structured model call supplies an output schema, an explicit retry ceiling and a timeout signal.", limitation: "SDK enforcement, model availability, output quality, context authorization and prompt-injection defenses are unverified." },
 };
-export const DETECTORS = Object.freeze(IMPLEMENTATION_KINDS.map(kind => Object.freeze({ kind, id: `tsjs.${kind}`, version: "1.0.1" as const,
+export const DETECTORS = Object.freeze(IMPLEMENTATION_KINDS.map(kind => Object.freeze({ kind, id: `tsjs.${kind}`, version: "1.0.2" as const,
   capabilityIds: Object.freeze([...definitions[kind].capabilities]), ecosystems: Object.freeze([...definitions[kind].ecosystems]),
   requiredObservations: definitions[kind].required, observation: definitions[kind].observation, limitation: definitions[kind].limitation,
   forbiddenOverclaims: Object.freeze(["Execution or passing tests from source alone", "System-wide security, correctness or concurrency safety", "Authorship, proficiency or employment suitability"]),
@@ -78,6 +78,6 @@ export const CAPABILITY_COVERAGE = Object.freeze(initialRubricCatalog.taxonomy.c
 export function implementationProfile(disabled: readonly ImplementationKind[] = []) {
   if (new Set(disabled).size !== disabled.length || disabled.some(id => !IMPLEMENTATION_KINDS.includes(id))) throw new Error("Invalid detector quarantine");
   const quarantine = Object.freeze(IMPLEMENTATION_KINDS.filter(k => disabled.includes(k)));
-  return Object.freeze({ ...extractionProfile(), detectorBundle: { id: "tsjs_implementation", version: `1.0.1${disabled.length ? `-q${IMPLEMENTATION_KINDS.map(k => disabled.includes(k) ? 1 : 0).join("")}` : ""}` },
+  return Object.freeze({ ...extractionProfile(), detectorBundle: { id: "tsjs_implementation", version: `1.0.2${disabled.length ? `-q${IMPLEMENTATION_KINDS.map(k => disabled.includes(k) ? 1 : 0).join("")}` : ""}` },
     coverageManifest: "1.1.1", implementation: Object.freeze({ disabled: quarantine }) });
 }

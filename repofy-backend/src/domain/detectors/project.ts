@@ -3,6 +3,7 @@ import { sourceFile, dataDocument } from "../extraction/parsers";
 import { ParseFailure } from "../extraction/policy";
 import { directory } from "../extraction/inventory";
 import { DETECTOR_LIMITS as LIMIT } from "./registry";
+import { ControlFlow } from "./control-flow";
 
 export type FunctionNode = ts.FunctionDeclaration | ts.FunctionExpression | ts.ArrowFunction;
 export const isFunction = (n: ts.Node): n is FunctionNode => ts.isFunctionDeclaration(n) || ts.isFunctionExpression(n) || ts.isArrowFunction(n);
@@ -15,7 +16,7 @@ export function rootIdentifier(n: ts.Node): ts.Identifier | undefined {
   if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) return rootIdentifier(n.expression);
   return undefined;
 }
-interface Scope { parent?: Scope; declarations: Map<string, Binding | null> }
+interface Scope { parent?: Scope; declarations: Map<string, Binding | null>; functionScope?: boolean }
 export interface Binding { name: string; node: ts.Node; scope: Scope; initializer?: ts.Expression;
   imported?: { source: string; name: string; typeOnly: boolean }; written: boolean; mutable: boolean }
 export interface SourceInput { path: string; text: string; fileId: string; classification: string }
@@ -33,7 +34,8 @@ export class IndexedFile {
   readonly bindings: Binding[] = [];
   readonly references = new Map<Binding, ts.Identifier[]>();
   readonly exports = new Map<string, Binding | null>();
-  readonly root: Scope = { declarations: new Map() };
+  readonly root: Scope = { declarations: new Map(), functionScope: true };
+  readonly flow = new ControlFlow(this.parents, () => this.project.tick());
   constructor(readonly input: SourceInput, readonly project: ProjectIndex) {
     const started = performance.now(); this.ast = sourceFile(input.text, input.path);
     const stack: { node: ts.Node; scope: Scope; parent?: ts.Node }[] = [{ node: this.ast, scope: this.root }];
@@ -50,24 +52,37 @@ export class IndexedFile {
       if (++project.stats.indexedNodes > LIMIT.nodes || performance.now() - started > LIMIT.fileMs) throw new ParseFailure("limited");
       this.nodes.push(node); if (ts.isCallExpression(node)) this.calls.push(node);
       let scope = outer;
-      if (isFunction(node)) {
+      if (ts.isFunctionLike(node) || ts.isClassStaticBlockDeclaration(node)) {
         if (ts.isFunctionDeclaration(node) && node.name) bind(node.name, node, outer);
-        scope = { parent: outer, declarations: new Map() }; this.functions.push(node);
+        scope = { parent: outer, declarations: new Map(), functionScope: true };
+        if (isFunction(node)) this.functions.push(node);
         if (ts.isFunctionExpression(node) && node.name) bind(node.name, node, scope);
       } else if (ts.isBlock(node) || ts.isForStatement(node) || ts.isForOfStatement(node) || ts.isForInStatement(node)
         || ts.isCatchClause(node) || ts.isClassDeclaration(node)) scope = { parent: outer, declarations: new Map() };
       this.scopes.set(node, scope);
       if (ts.isVariableDeclaration(node) || ts.isParameter(node)) {
         const isConst = !!parent && ts.isVariableDeclarationList(parent) && !!(parent.flags & ts.NodeFlags.Const);
-        if (ts.isIdentifier(node.name)) bind(node.name, node, scope, { initializer: node.initializer, mutable: !isConst && !ts.isParameter(node) });
-        else for (const element of node.name.elements) if (ts.isBindingElement(element) && ts.isIdentifier(element.name)) {
-          const b = bind(element.name, element, scope);
-          // Literal destructured CommonJS imports only; React tuple bindings are inspected separately.
-          if (node.initializer && ts.isCallExpression(node.initializer) && ts.isIdentifier(node.initializer.expression)
-            && node.initializer.expression.text === "require" && node.initializer.arguments.length === 1
-            && ts.isStringLiteral(node.initializer.arguments[0]) && ts.isObjectBindingPattern(node.name) && !element.dotDotDotToken
-            && (!element.propertyName || ts.isIdentifier(element.propertyName))) {
-            b.imported = { source: node.initializer.arguments[0].text, name: element.propertyName?.getText(this.ast) ?? element.name.text, typeOnly: false };
+        // var is hoisted to the containing function/module even inside a block,
+        // loop or catch. Keep identifier lookup in its lexical scope, but install
+        // the declaration in that function scope so local shadows fail closed.
+        let declarationScope = scope;
+        if (parent && ts.isVariableDeclarationList(parent) && !(parent.flags & ts.NodeFlags.BlockScoped)) {
+          while (!declarationScope.functionScope && declarationScope.parent) declarationScope = declarationScope.parent;
+        }
+        if (ts.isIdentifier(node.name)) bind(node.name, node, declarationScope, { initializer: node.initializer, mutable: !isConst && !ts.isParameter(node) });
+        else {
+          const elements = [...node.name.elements];
+          while (elements.length) {
+            const element = elements.pop()!; if (!ts.isBindingElement(element)) continue;
+            if (!ts.isIdentifier(element.name)) { elements.push(...element.name.elements); continue; }
+            const b = bind(element.name, element, declarationScope, { mutable: !isConst && !ts.isParameter(node) });
+            // Literal destructured CommonJS imports only; React tuple bindings are inspected separately.
+            if (node.initializer && ts.isCallExpression(node.initializer) && ts.isIdentifier(node.initializer.expression)
+              && node.initializer.expression.text === "require" && node.initializer.arguments.length === 1
+              && ts.isStringLiteral(node.initializer.arguments[0]) && ts.isObjectBindingPattern(node.name) && node.name.elements.includes(element) && !element.dotDotDotToken
+              && (!element.propertyName || ts.isIdentifier(element.propertyName))) {
+              b.imported = { source: node.initializer.arguments[0].text, name: element.propertyName?.getText(this.ast) ?? element.name.text, typeOnly: false };
+            }
           }
         }
       }
@@ -152,11 +167,12 @@ export class IndexedFile {
   shape(node: ts.Node) { return this.nodes.filter(n => this.contains(node, n)).map(n => n.kind).join(","); }
   resolveValue(expression: ts.Expression, depth = 0): ts.Expression {
     this.project.tick(); const node = unwrap(expression); if (depth >= LIMIT.resolutionDepth) return node;
-    if (ts.isIdentifier(node)) { const b = this.binding(node); if (b && !b.written && !b.mutable && b.initializer) return this.resolveValue(b.initializer, depth + 1); }
+    if (ts.isIdentifier(node)) { const b = this.binding(node); if (b && !b.written && !b.mutable && b.initializer && this.flow.reachable(b.initializer)) return this.resolveValue(b.initializer, depth + 1); }
     return node;
   }
   origin(expression: ts.Expression, depth = 0): Origin | undefined {
     this.project.tick(); if (depth >= LIMIT.resolutionDepth) return undefined; const node = unwrap(expression);
+    if (!this.flow.reachable(node)) return undefined;
     if (ts.isIdentifier(node)) {
       const b = this.binding(node); if (!b || b.written || b.mutable) return undefined;
       if (b.imported && !b.imported.typeOnly) {
@@ -185,14 +201,14 @@ export class IndexedFile {
   }
   localFunction(expression: ts.Expression, depth = 0): FunctionRef | undefined {
     this.project.tick(); if (depth >= LIMIT.resolutionDepth) return undefined; const node = unwrap(expression);
-    if (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) return { file: this, node };
+    if (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) return this.flow.reachable(node) ? { file: this, node } : undefined;
     if (ts.isIdentifier(node)) {
       const b = this.binding(node); if (!b || b.written || b.mutable) return undefined;
-      if (isFunction(b.node) && b.node.body) return { file: this, node: b.node };
+      if (isFunction(b.node) && b.node.body) return this.flow.reachable(b.node) ? { file: this, node: b.node } : undefined;
       if (b.imported && !b.imported.typeOnly) {
         const target = this.project.resolve(this.input.path, b.imported.source); const file = target && this.project.files.get(target); const exported = file && file.exports.get(b.imported.name);
         if (file && exported && !exported.written && !exported.mutable) {
-          if (isFunction(exported.node) && exported.node.body) return { file, node: exported.node };
+          if (isFunction(exported.node) && exported.node.body) return file.flow.reachable(exported.node) ? { file, node: exported.node } : undefined;
           if (exported.initializer) return file.localFunction(exported.initializer, depth + 1);
         }
       }

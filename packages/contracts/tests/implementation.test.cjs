@@ -22,3 +22,15 @@ test('implementation sources and detector identifiers cannot be confused with st
     assert.equal(InternalEvidenceObservationSchema.safeParse(changed).success,false);
   }
 });
+test('old and corrected detector coverage stays readable, with mixed versions rejected', () => {
+  const coverage = version => ({ bundle: { id: 'tsjs_implementation', version }, calibration: 'uncalibrated', scope: 'bounded_patterns_only',
+    eligibleFiles: 0, analyzedFiles: 0, parseFailures: 0, limitedFiles: 0, unsupportedFiles: 0, generatedFiles: 0, noSignalFiles: 0,
+    unresolvedImports: 0, dynamicReferences: 0, ambiguousBindings: 0, indexedNodes: 0, indexedBytes: 0, aliasConfigurationsRejected: 0,
+    evidenceTruncated: false, disabledDetectors: [], limitations: ['Static only.'],
+    detectors: c.IMPLEMENTATION_KINDS.map(kind => ({ kind, version, capabilityIds: ['api_design'], state: 'enabled', observations: 0 })),
+  });
+  for (const version of ['1.0.0', '1.0.1', '1.0.2']) assert.ok(c.ImplementationCoverageSchema.parse(coverage(version)));
+  const mixed = coverage('1.0.2'); mixed.detectors[0].version = '1.0.1';
+  assert.equal(c.ImplementationCoverageSchema.safeParse(mixed).success, false);
+  assert.equal(c.ImplementationCoverageSchema.safeParse(coverage('1.0.3')).success, false);
+});

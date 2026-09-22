@@ -8,10 +8,10 @@ import { SnapshotBundleSchema } from '../../../src/domain/analysis/persistence';
 
 it('pins corrected semantics to distinct structural, implementation, and language analyzer profiles', () => {
   expect(extractionProfile()).toMatchObject({ extractorBundle: { version: '1.0.1' }, detectorBundle: { version: '1.0.1' }, coverageManifest: '1.0.1' });
-  expect(implementationProfile()).toMatchObject({ extractorBundle: { version: '1.0.1' }, detectorBundle: { version: '1.0.1' }, coverageManifest: '1.1.1' });
-  expect(coverageProfile()).toMatchObject({ extractorBundle: { version: '1.0.1' }, detectorBundle: { version: '1.0.1' }, coverageManifest: '1.2.1' });
+  expect(implementationProfile()).toMatchObject({ extractorBundle: { version: '1.0.1' }, detectorBundle: { version: '1.0.2' }, coverageManifest: '1.1.1' });
+  expect(coverageProfile()).toMatchObject({ extractorBundle: { version: '1.0.1' }, detectorBundle: { version: '1.0.2' }, coverageManifest: '1.2.1' });
   expect(coverageProfile(['python'], ['request_validation'])).toMatchObject({ extractorBundle: { version: '1.0.1-p100' },
-    detectorBundle: { version: '1.0.1-q0100000000000000' }, coverageManifest: '1.2.1-p100' });
+    detectorBundle: { version: '1.0.2-q0100000000000000' }, coverageManifest: '1.2.1-p100' });
 });
 it('rejects an old structural profile before interpreting source with corrected semantics', async () => {
   const fixture = await extractionFixture({ 'schema.prisma': 'model Person {\n id Int @id\n}\n' });

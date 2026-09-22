@@ -20,7 +20,7 @@ export const RescanHistorySchema = z.strictObject({ parent: z.discriminatedUnion
   state: z.enum(["unchanged", "queued", "running", "completed", "failed", "canceled", "expired", "deleted"]),
 })).max(50), nextId: z.uuid().nullable() });
 export const EVIDENCE_CHANGES = ["gained", "lost", "changed", "relocated", "unchanged", "uncertain"] as const;
-export const COMPARISON_CAUSES = ["commit_changed", "repository_added", "repository_removed", "security_policy_changed", "scope_changed",
+export const COMPARISON_CAUSES = ["commit_changed", "repository_added", "repository_removed", "security_policy_changed", "scope_changed", "scope_incomplete",
   "extractor_changed", "detector_changed", "coverage_policy_changed", "rubric_changed", "aggregation_changed", "narrative_policy_changed",
   "permission_unavailable", "metadata_permission_changed", "locator_unavailable"] as const;
 export const ComparisonQuerySchema = z.strictObject({ targetReportId: z.uuid(), repositoryId: z.uuid().optional(),
@@ -37,7 +37,7 @@ export const ComparisonEvidenceSchema = z.strictObject({ repositoryId: z.uuid(),
   basis: z.enum(["identity", "content_and_concept", "path_and_concept", "unmatched", "ambiguous"]),
   interpretation: z.enum(["comparable_observation", "limited_by_scope_or_versions", "uncertain_identity"]),
 }).refine(v => !!(v.baselineEvidenceId || v.targetEvidenceId) && (v.change !== "gained" || !v.baselineEvidenceId) && (v.change !== "lost" || !v.targetEvidenceId));
-export const ComparisonSchema = z.strictObject({ algorithm: z.literal("evidence-diff-1.0.0"), baseline: side, target: side,
+export const ComparisonSchema = z.strictObject({ algorithm: z.enum(["evidence-diff-1.0.0", "evidence-diff-1.0.1"]), baseline: side, target: side,
   comparability: z.enum(["comparable", "limited"]), causes: uniqueArray(z.enum(COMPARISON_CAUSES), COMPARISON_CAUSES.length),
   notes: z.array(z.string().max(600)).min(1).max(25),
   repositories: z.array(z.strictObject({ repositoryId: z.uuid(), label: z.string().max(80), baseline: snapshot.nullable(), target: snapshot.nullable() })).max(20),
