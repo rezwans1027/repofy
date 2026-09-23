@@ -758,6 +758,43 @@ test('verified repository removal revokes grants/revisions, clears discoveries a
   assert.equal(await count('audit_events', "action = 'repository_deselected'"), 1);
 }));
 
+for (const [event, action] of [['installation_repositories', 'added'], ['installation', 'created'], ['installation', 'unsuspend']]) {
+  test(`${event} ${action} preserves active selections and their repository locators`, () => isolated(async () => {
+    const { service, request, github, discovery } = await selectionFixture();
+    const saved = await service.save(user1, request, requestId);
+    await webhook(event, action, randomUUID(), { repositories_removed: [], repositories_added: [{ id: 301 }] });
+    assert.deepEqual(await service.read(user1), saved);
+    const grant = saved.repositories[0];
+    await service.checkGrant(user1, grant.grantId, grant.accessRevision);
+    // Workers must still resolve the saved repository without another discovery request.
+    assert.equal((await github.resolveDefaultCommit(user1, discovery.account, discovery.installation, grant.repositoryId)).commitSha, 'a'.repeat(40));
+    assert.equal(await count('github_discovered_repositories'), 1);
+    assert.equal(await count('audit_events', "action = 'grant_revoked'"), 0);
+  }));
+}
+
+for (const [event, action] of [['installation_repositories', 'removed'], ['repository', 'privatized'], ['member', 'removed']]) {
+  test(`${event} ${action} invalidates only the affected repository`, () => isolated(async () => {
+    const { service, request, github, discovery } = await selectionFixture();
+    const listed = await github.repositories(user1, discovery.account, discovery.installation);
+    const saved = await service.save(user1, { ...request,
+      repositories: listed.repositories.map(({ repositoryId, accountId, installationId }) => ({ repositoryId, accountId, installationId })),
+    }, requestId);
+    const affected = saved.repositories.find(item => item.repositoryId === discovery.repository)!;
+    const unaffected = saved.repositories.find(item => item.repositoryId !== discovery.repository)!;
+    await webhook(event, action, randomUUID(), { repository: { id: 300 } });
+    const current = await service.read(user1);
+    assert.equal(current.repositories.find(item => item.grantId === affected.grantId)!.status, 'revoked');
+    assert.deepEqual(current.repositories.find(item => item.grantId === unaffected.grantId), unaffected);
+    await assert.rejects(service.checkGrant(user1, affected.grantId, affected.accessRevision), /access changed/);
+    await assert.rejects(githubRepository.repository(user1, discovery.account, discovery.installation, affected.repositoryId), /not found/);
+    await service.checkGrant(user1, unaffected.grantId, unaffected.accessRevision);
+    assert.equal((await github.resolveDefaultCommit(user1, discovery.account, discovery.installation, unaffected.repositoryId)).commitSha, 'a'.repeat(40));
+    assert.equal(await count('github_discovered_repositories'), 1);
+    assert.equal(await count('audit_events', "action = 'grant_revoked'"), 1);
+  }));
+}
+
 test('revocation during provider verification prevents selection commit even when provider returns stale allowed access', () => isolated(async () => {
   const { provider, service, request } = await selectionFixture();
   const original = provider.getRepositoryInstallation.bind(provider);
@@ -781,24 +818,41 @@ test('old additions and unsuspensions never reactivate revoked grants; new selec
   await assert.rejects(service.checkGrant(user1, saved.repositories[0].grantId, saved.repositories[0].accessRevision));
 }));
 
-for (const event of ['deleted', 'new_permissions_accepted']) test(`installation ${event} revokes all scoped grants`, () => isolated(async () => {
-  const { service, request } = await selectionFixture(); await service.save(user1, request, requestId);
-  await webhook('installation', event);
-  assert.equal((await service.read(user1)).repositories[0].status, 'revoked');
-}));
+for (const [event, action] of [['installation', 'deleted'], ['installation', 'suspend'], ['installation', 'new_permissions_accepted'],
+  ['membership', 'removed'], ['organization', 'member_removed']]) {
+  test(`${event} ${action} revokes all installation grants and discoveries`, () => isolated(async () => {
+    const { service, request, github, discovery } = await selectionFixture();
+    const listed = await github.repositories(user1, discovery.account, discovery.installation);
+    const saved = await service.save(user1, { ...request,
+      repositories: listed.repositories.map(({ repositoryId, accountId, installationId }) => ({ repositoryId, accountId, installationId })),
+    }, requestId);
+    assert.equal(saved.repositories.length, 2);
+    await webhook(event, action);
+    assert.ok((await service.read(user1)).repositories.every(item => item.status === 'revoked'));
+    assert.equal(await count('github_discovered_repositories'), 0);
+    assert.equal(await count('audit_events', "action = 'grant_revoked'"), 2);
+  }));
+}
 test('GitHub authorization revocation removes credentials/connections and blocks token use', () => isolated(async () => {
   const { service, request, discovery } = await selectionFixture(); await service.save(user1, request, requestId);
+  const other = await githubDiscovery(user2, '101');
   await webhook('github_app_authorization', 'revoked', randomUUID(), { sender: { id: 100 } });
   assert.equal((await service.read(user1)).repositories[0].status, 'revoked');
   await assert.rejects(githubRepository.credential(user1, discovery.account), /Reconnect/);
-  assert.equal(await count('github_installation_connections'), 0);
+  assert.equal(await count('github_installation_connections'), 1);
+  assert.equal(await count('github_discovered_repositories'), 1);
+  assert.equal((await githubRepository.repository(user2, other.account, other.installation, other.repository)).providerRepositoryId, '300');
 }));
 test('selection security tables and RPCs are service-only; account deletion removes selection metadata', () => isolated(async () => {
   const { service, request } = await selectionFixture(); await service.save(user1, request, requestId);
   for (const role of ['anon', 'authenticated', 'service_role'] as const) {
     for (const table of ['public.repository_selections', 'feature_one_private.repository_selection_items', 'feature_one_private.repository_selection_requests', 'feature_one_private.github_webhook_receipts'])
       await assert.rejects(asRole(role, user1, `SELECT * FROM ${table}`), /permission denied/);
-    if (role !== 'service_role') await assert.rejects(asRole(role, user1, 'SELECT feature_one_selection_read($1)', [user1]), /permission denied/);
+    if (role !== 'service_role') {
+      await assert.rejects(asRole(role, user1, 'SELECT feature_one_selection_read($1)', [user1]), /permission denied/);
+      await assert.rejects(asRole(role, user1, 'SELECT feature_one_github_webhook($1,$2,$3,$4,$5,$6,$7)',
+        [randomUUID(), 'synthetic', 'installation', 'deleted', '500', [], null]), /permission denied/);
+    }
   }
   await db.query('DELETE FROM auth.users WHERE id = $1', [user1]); await db.query('SET CONSTRAINTS ALL IMMEDIATE');
   assert.equal(await count('repository_selections'), 0);

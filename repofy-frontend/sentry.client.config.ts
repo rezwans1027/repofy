@@ -7,7 +7,10 @@ Sentry.init({
   tracesSampleRate: 1.0,
   beforeSend: event => isRepositoryAccessTelemetry(event.request?.url) || isRepositoryAccessTelemetry(window.location.pathname) ? null : event,
   beforeSendTransaction: event => isRepositoryAccessTelemetry(event.request?.url) || isRepositoryAccessTelemetry(window.location.pathname) || isRepositoryAccessTelemetry(event.transaction) ? null : event,
-  beforeBreadcrumb: breadcrumb => isRepositoryAccessTelemetry(breadcrumb.data?.url as string | undefined)
+  // DOM breadcrumbs include aria-label text even inside replay-blocked elements.
+  beforeBreadcrumb: breadcrumb => isRepositoryAccessTelemetry(window.location.pathname)
+    || isRepositoryAccessTelemetry(breadcrumb.data?.url as string | undefined)
+    || isRepositoryAccessTelemetry(breadcrumb.data?.from as string | undefined)
     || isRepositoryAccessTelemetry(breadcrumb.data?.to as string | undefined) ? null : breadcrumb,
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
