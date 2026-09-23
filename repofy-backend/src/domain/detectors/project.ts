@@ -13,7 +13,8 @@ export function unwrap(n: ts.Expression): ts.Expression {
 }
 export function rootIdentifier(n: ts.Node): ts.Identifier | undefined {
   if (ts.isIdentifier(n)) return n;
-  if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) return rootIdentifier(n.expression);
+  if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n) || ts.isParenthesizedExpression(n)
+    || ts.isAsExpression(n) || ts.isTypeAssertionExpression(n) || ts.isNonNullExpression(n) || ts.isSatisfiesExpression(n)) return rootIdentifier(n.expression);
   return undefined;
 }
 interface Scope { parent?: Scope; declarations: Map<string, Binding | null>; functionScope?: boolean }
@@ -58,7 +59,10 @@ export class IndexedFile {
         if (isFunction(node)) this.functions.push(node);
         if (ts.isFunctionExpression(node) && node.name) bind(node.name, node, scope);
       } else if (ts.isBlock(node) || ts.isForStatement(node) || ts.isForOfStatement(node) || ts.isForInStatement(node)
-        || ts.isCatchClause(node) || ts.isClassDeclaration(node)) scope = { parent: outer, declarations: new Map() };
+        || ts.isCatchClause(node) || ts.isClassDeclaration(node) || ts.isClassExpression(node)) scope = { parent: outer, declarations: new Map() };
+      // A class expression's name exists only inside that class, including its
+      // methods, field initializers and heritage. It must shadow outer imports.
+      if (ts.isClassExpression(node) && node.name) bind(node.name, node, scope);
       this.scopes.set(node, scope);
       if (ts.isVariableDeclaration(node) || ts.isParameter(node)) {
         const isConst = !!parent && ts.isVariableDeclarationList(parent) && !!(parent.flags & ts.NodeFlags.Const);
@@ -106,13 +110,14 @@ export class IndexedFile {
           const b = this.binding(node); if (b) { const references = this.references.get(b) ?? []; references.push(node); this.references.set(b, references); }
         }
       }
+      if (ts.isBinaryExpression(node) && node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && node.operatorToken.kind <= ts.SyntaxKind.LastAssignment) this.markAssignment(node.left);
+      if ((ts.isForOfStatement(node) || ts.isForInStatement(node)) && !ts.isVariableDeclarationList(node.initializer)) this.markAssignment(node.initializer);
       let written: ts.Node | undefined;
-      if (ts.isBinaryExpression(node) && node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && node.operatorToken.kind <= ts.SyntaxKind.LastAssignment) written = node.left;
       if ((ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) && [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(node.operator)) written = node.operand;
       if (ts.isDeleteExpression(node)) written = node.expression;
       if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression) && ts.isIdentifier(node.expression.expression)
         && ["Object", "Reflect"].includes(node.expression.expression.text) && ["assign", "defineProperty", "defineProperties", "set", "deleteProperty"].includes(node.expression.name.text)) written = node.arguments[0];
-      if (written) { const root = rootIdentifier(written); const b = root && this.binding(root); if (b) b.written = true; }
+      if (written) this.markWritten(written);
       if (ts.isCallExpression(node) && (node.expression.kind === ts.SyntaxKind.ImportKeyword || ts.isIdentifier(node.expression) && node.expression.text === "eval"
         || ts.isIdentifier(node.expression) && node.expression.text === "require" && !node.arguments.every(ts.isStringLiteral))) project.stats.dynamicReferences++;
       if (ts.isWithStatement(node)) project.stats.dynamicReferences++;
@@ -152,6 +157,29 @@ export class IndexedFile {
       const pattern = this.parents.get(b.node); const declaration = pattern && this.parents.get(pattern);
       if (declaration && ts.isVariableDeclaration(declaration) && declaration.initializer && ts.isCallExpression(declaration.initializer)
         && ts.isIdentifier(declaration.initializer.expression) && this.hasBinding(declaration.initializer.expression)) b.imported = undefined;
+    }
+  }
+  private markWritten(node: ts.Node) {
+    const root = rootIdentifier(node), binding = root && this.binding(root);
+    if (binding) binding.written = true;
+  }
+  private markAssignment(target: ts.Node) {
+    // Visit write targets only: defaults, computed property names and ordinary
+    // object values can read a library binding without mutating it.
+    const pending = [target];
+    while (pending.length) {
+      this.project.tick();
+      const node = pending.pop()!;
+      if (ts.isObjectLiteralExpression(node)) {
+        for (const property of node.properties) {
+          if (ts.isPropertyAssignment(property)) pending.push(property.initializer);
+          else if (ts.isShorthandPropertyAssignment(property)) pending.push(property.name);
+          else if (ts.isSpreadAssignment(property)) pending.push(property.expression);
+        }
+      } else if (ts.isArrayLiteralExpression(node)) pending.push(...node.elements);
+      else if (ts.isSpreadElement(node)) pending.push(node.expression);
+      else if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsToken) pending.push(node.left);
+      else this.markWritten(node);
     }
   }
   private addExport(name: string, binding: Binding | undefined) { this.exports.set(name, this.exports.has(name) ? null : binding ?? null); }

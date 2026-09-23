@@ -56,8 +56,8 @@ it('a lost completion acknowledgement leaves the saved report completed and sett
 it('missing handlers fail explicitly before fetching source',async()=>{
   const j=await start();await new AnalysisWorker(f.jobs,null,ingest,()=>f.crypto).once();expect(await f.jobs.read(f.actor,j.jobId)).toMatchObject({status:'failed',failureCode:'FEATURE_NOT_IMPLEMENTED'});expect(sources).toBe(0);
 });
-it.each(['1.0.0','1.0.1'])('rejects a job frozen to analyzer %s before acquiring source or invoking corrected handlers',async version=>{
-  Object.assign(f.policy.versions,{extractorBundle:{id:'language_inventory',version},
+it.each(['1.0.0','1.0.1','1.0.2'])('rejects a job frozen to analyzer %s before acquiring source or invoking corrected handlers',async version=>{
+  Object.assign(f.policy.versions,{extractorBundle:{id:'language_inventory',version:version==='1.0.0'?'1.0.0':'1.0.1'},
     detectorBundle:{id:'tsjs_implementation',version},coverageManifest:version==='1.0.0'?'1.2.0':'1.2.1'});
   const current=coverageProfile();
   handlers.policy=structuredClone(f.policy);

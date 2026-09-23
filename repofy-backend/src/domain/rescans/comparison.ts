@@ -30,7 +30,9 @@ function scope(coverage: ReportView["report"]["coverage"][number] | undefined) {
   return coverage && { truncated: coverage.structural?.evidenceTruncated || coverage.implementation?.evidenceTruncated,
     sources: coverage.structural?.sources.map(s => [s.source, s.parseFailures, s.limitedFiles, s.unsupportedFiles]),
     implementation: coverage.implementation && { parseFailures: coverage.implementation.parseFailures, limitedFiles: coverage.implementation.limitedFiles,
-      unsupportedFiles: coverage.implementation.unsupportedFiles, generatedFiles: coverage.implementation.generatedFiles },
+      unsupportedFiles: coverage.implementation.unsupportedFiles, generatedFiles: coverage.implementation.generatedFiles,
+      unresolvedImports: coverage.implementation.unresolvedImports, dynamicReferences: coverage.implementation.dynamicReferences,
+      ambiguousBindings: coverage.implementation.ambiguousBindings, aliasConfigurationsRejected: coverage.implementation.aliasConfigurationsRejected },
     assessability: coverage.assessment?.capabilities.map(c => [c.capabilityId, c.depth,
       c.eligibleFiles ? c.analyzedFiles / c.eligibleFiles : null, c.metadataAssessed]),
     disabled: coverage.structural?.disabledExtractors, detectors: coverage.implementation?.disabledDetectors,
@@ -40,7 +42,8 @@ function incomplete(coverage: ReportView["report"]["coverage"][number]) {
   const i = coverage.implementation, s = coverage.structural;
   return !!(s?.evidenceTruncated || i?.evidenceTruncated || coverage.assessment?.counts.excludedFiles
     || s?.sources.some(row => row.parseFailures || row.limitedFiles || row.unsupportedFiles)
-    || i && (i.parseFailures || i.limitedFiles || i.unsupportedFiles || i.generatedFiles));
+    || i && (i.parseFailures || i.limitedFiles || i.unsupportedFiles || i.generatedFiles
+      || i.unresolvedImports || i.dynamicReferences || i.ambiguousBindings || i.aliasConfigurationsRejected));
 }
 export function compareReports(input: ComparisonInput, query: ComparisonQuery): Comparison {
   const { baseline: a, target: b } = input;
@@ -85,8 +88,8 @@ export function compareReports(input: ComparisonInput, query: ComparisonQuery): 
   const limited = [...causes].some(c => !["commit_changed", "narrative_policy_changed", "locator_unavailable"].includes(c));
   if (limited) notes.push("Scope is incomplete or scope, access or measurement versions differ. Gained/lost observations and numeric deltas cannot by themselves establish improvement or regression; each side retains its own coverage and rubric.");
   if (causes.has("commit_changed")) notes.push("The pinned commit changed. A commit alone does not establish that a supported behavior improved.");
-  if (causes.has("scope_changed")) notes.push("Exclusions, parser limits, metadata availability or assessability changed. A missing observation may be outside the new scan scope; excluded source is not reconstructed.");
-  if (causes.has("scope_incomplete")) notes.push("At least one scan excluded files, could not analyze some files, or reached a parser, detector or evidence limit. Unchanged source can fall outside the assessed set; a lost observation does not establish removal of its implementation.");
+  if (causes.has("scope_changed")) notes.push("Exclusions, parser limits, binding resolution, metadata availability or assessability changed. A missing observation may be outside the new scan scope; excluded source is not reconstructed.");
+  if (causes.has("scope_incomplete")) notes.push("At least one scan excluded files, could not fully analyze files or resolve bindings, or reached a parser, detector or evidence limit. Unchanged source can fall outside the assessed set; a lost observation does not establish removal of its implementation.");
   if (causes.has("rubric_changed") || causes.has("detector_changed") || causes.has("coverage_policy_changed") || causes.has("extractor_changed")) notes.push("Recorded analyzer or rubric versions differ. Values are displayed as recorded; old source and old analyzers are not rerun.");
   if (causes.has("permission_unavailable") || causes.has("metadata_permission_changed")) notes.push("Current repository access or captured metadata availability differs. Saved observations remain owner-only; no prior source permission is inferred.");
   if (causes.has("narrative_policy_changed")) notes.push("Narrative/model policy differs. Wording changes do not count as evidence gained.");
@@ -136,7 +139,7 @@ export function compareReports(input: ComparisonInput, query: ComparisonQuery): 
   for (const row of rows) row.capabilityIds = [...new Set([...row.capabilityIds, ...support.get(row.baselineEvidenceId ?? "") ?? [], ...support.get(row.targetEvidenceId ?? "") ?? []])].sort();
   const filtered = rows.filter(r => (!query.repositoryId || r.repositoryId === query.repositoryId) && (!query.change || r.change === query.change) && (!query.capabilityId || r.capabilityIds.includes(query.capabilityId)))
     .sort((x, y) => x.repositoryId.localeCompare(y.repositoryId) || (x.baselineEvidenceId ?? x.targetEvidenceId!).localeCompare(y.baselineEvidenceId ?? y.targetEvidenceId!));
-  return ComparisonSchema.parse({ algorithm: "evidence-diff-1.0.1", baseline: { reportId: a.report.reportId, createdAt: a.report.createdAt, versions: av },
+  return ComparisonSchema.parse({ algorithm: "evidence-diff-1.0.2", baseline: { reportId: a.report.reportId, createdAt: a.report.createdAt, versions: av },
     target: { reportId: b.report.reportId, createdAt: b.report.createdAt, versions: bv }, comparability: limited ? "limited" : "comparable", causes: [...causes].sort(), notes,
     repositories, counts, capabilities, roles, evidence: filtered.slice(query.offset, query.offset + query.limit), filteredCount: filtered.length,
     nextOffset: query.offset + query.limit < filtered.length ? query.offset + query.limit : null });

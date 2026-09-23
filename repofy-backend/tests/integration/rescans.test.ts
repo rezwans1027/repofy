@@ -90,6 +90,32 @@ it('new test commit creates immutable lineage, reuses the other repository and r
     expect((await f.reader.view(f.actor, job.report.reportId)).report.reportId).toBe(job.report.reportId);
   } finally { await f.cleanup(); }
 });
+it('qualifies unchanged source when inherited compiler configuration prevents resolving its library calls', async () => {
+  const source = "import {Pool} from 'pg';const db=new Pool();export async function read(id){return await db.query('SELECT id FROM items WHERE id=$1',[id]);}";
+  const f = await rescanFixture(db.db, db.rpc, 1, { 'query.ts': source, 'tsconfig.json': '{"compilerOptions":{}}' });
+  try {
+    const repository = f.bindings[0].repositoryId, files = f.files.get(repository)!;
+    expect(f.baseline.report.coverage[0].implementation!.aliasConfigurationsRejected).toBe(0);
+    const saved = JSON.stringify(f.baseline.report);
+    files['tsconfig.json'] = '{"extends":"@tsconfig/node22/tsconfig.json","compilerOptions":{}}';
+    f.commits.set(repository, 'b'.repeat(40));
+    const started = await f.service.start(f.actor, f.baseline.report.reportId, f.request(), f.policy, 5);
+    if (started.state !== 'queued') throw new Error();
+    await f.worker.once();
+    const job = await f.jobs.read(f.actor, started.job.jobId);
+    if (job.status !== 'completed') throw new Error(JSON.stringify(job));
+    const target = await f.reader.view(f.actor, job.report.reportId);
+    expect(target.report.coverage[0].implementation!.aliasConfigurationsRejected).toBe(1);
+    const diff = await f.service.compare(f.actor, f.baseline.report.reportId, { targetReportId: job.report.reportId, limit: 100 });
+    expect(diff.evidence.some(e => e.change === 'lost' && e.detector.startsWith('tsjs.'))).toBe(true);
+    expect(diff.comparability).toBe('limited');
+    expect(diff.causes).toEqual(expect.arrayContaining(['scope_changed', 'scope_incomplete']));
+    expect(diff.capabilities.find(c => c.capabilityId === 'security_input_handling')!.strengthDelta).toBe(-0.55);
+    expect(diff.evidence.filter(e => e.change === 'lost').every(e => e.interpretation === 'limited_by_scope_or_versions')).toBe(true);
+    expect(JSON.stringify((await f.reader.view(f.actor, f.baseline.report.reportId)).report)).toBe(saved);
+    expect(files['query.ts']).toBe(source);
+  } finally { await f.cleanup(); }
+});
 it('rejects foreign baselines, target reports, selections and grant changes during preflight', async () => {
   const a = await rescanFixture(db.db, db.rpc), b = await rescanFixture(db.db, db.rpc);
   try {
@@ -129,7 +155,7 @@ it('qualifies unchanged implementation displaced by the detector file budget', a
     expect(files['retry.ts']).toBe(retrySource);
     expect(target.report.coverage[0].implementation).toMatchObject({ eligibleFiles: 258, analyzedFiles: 256, limitedFiles: 2 });
     const diff = await f.service.compare(f.actor, f.baseline.report.reportId, { targetReportId: job.report.reportId, change: 'lost' });
-    expect(diff.algorithm).toBe('evidence-diff-1.0.1');
+    expect(diff.algorithm).toBe('evidence-diff-1.0.2');
     expect(diff.comparability).toBe('limited');
     expect(diff.causes).toEqual(expect.arrayContaining(['scope_changed', 'scope_incomplete']));
     expect(diff.evidence.find(e => e.detector === 'tsjs.bounded_retry')).toMatchObject({ change: 'lost', interpretation: 'limited_by_scope_or_versions' });

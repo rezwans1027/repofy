@@ -23,10 +23,11 @@ import type { ExecutionPolicy } from '../../src/domain/jobs/policy';
 import type { GitHubConnectionService } from '../../src/domain/github-app/service';
 import type { Claim } from '../../src/domain/jobs/repository';
 
-export async function rescanFixture(db: Parameters<typeof seedAnalysisFixture>[0], rpc: FeatureOneRpcClient, count = 1) {
+export async function rescanFixture(db: Parameters<typeof seedAnalysisFixture>[0], rpc: FeatureOneRpcClient, count = 1, initialFiles?: Record<string, string>) {
   const f = await seedAnalysisFixture(db, rpc, count), policy = narrativeExecutionPolicy(), root = await mkdtemp(join(tmpdir(), 'repofy-rescan-test-'));
   const commits = new Map(f.bindings.map(b => [b.repositoryId, 'a'.repeat(40)]));
-  const initial = { ...aggregationFiles }; delete (initial as Partial<typeof initial>)['retry.test.ts'];
+  const initial: Record<string, string> = { ...(initialFiles ?? aggregationFiles) };
+  if (!initialFiles) delete initial['retry.test.ts'];
   const files = new Map(f.bindings.map(b => [b.repositoryId, { ...initial } as Record<string, string>]));
   const counters = { downloads: 0, models: 0, extracts: 0, resolves: 0 };
   const source: SnapshotSource = {

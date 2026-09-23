@@ -3,6 +3,8 @@ import { randomUUID } from 'node:crypto';
 import { createSyntheticReportFixture } from '@repofy/contracts/testing';
 import { ComparisonQuerySchema, ReportViewSchema } from '@repofy/contracts';
 import { compareReports, type ComparisonInput, type ComparisonFact } from '../../../src/domain/rescans/comparison';
+import { ImplementationPass } from '../../../src/domain/detectors/pass';
+import { implementationProfile } from '../../../src/domain/detectors/registry';
 let input: ComparisonInput;
 beforeEach(() => {
   const report = createSyntheticReportFixture();
@@ -75,3 +77,17 @@ it('keeps equally incomplete scans qualified when counts cannot establish file m
   expect(diff.comparability).toBe('limited');
   expect(diff.evidence.every(e => e.interpretation === 'limited_by_scope_or_versions')).toBe(true);
 });
+it.each(['aliasConfigurationsRejected', 'ambiguousBindings', 'dynamicReferences', 'unresolvedImports'] as const)(
+  'qualifies changed and equally incomplete resolution scope: %s', counter => {
+    const coverage = new ImplementationPass(implementationProfile(), () => randomUUID()).coverage;
+    for (const view of [input.baseline, input.target]) view.report.coverage[0].implementation = structuredClone(coverage);
+    input.target.report.coverage[0].implementation![counter] = 1;
+    const changed = compare();
+    expect(changed.causes).toEqual(expect.arrayContaining(['scope_changed', 'scope_incomplete']));
+    expect(changed.comparability).toBe('limited');
+    input.baseline.report.coverage[0].implementation![counter] = 1;
+    const equallyIncomplete = compare();
+    expect(equallyIncomplete.causes).toContain('scope_incomplete');
+    expect(equallyIncomplete.causes).not.toContain('scope_changed');
+    expect(equallyIncomplete.evidence.every(e => e.interpretation === 'limited_by_scope_or_versions')).toBe(true);
+  });

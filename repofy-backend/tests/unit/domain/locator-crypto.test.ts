@@ -61,4 +61,43 @@ describe("encrypted evidence locators", () => {
     const crypto = locatorCryptoFromEnvironment({ EVIDENCE_LOCATOR_KEY_VERSION: "1.0.0", EVIDENCE_LOCATOR_ENCRYPTION_KEY: "11".repeat(32), EVIDENCE_FINGERPRINT_KEY: "22".repeat(32) });
     expect(crypto.decryptLocator(crypto.protectLocator(locator, context).locatorEncrypted, context)).toEqual(locator);
   });
+  it("rotates through the production environment loader while retaining old locator and branch reads", () => {
+    const oldValues = { EVIDENCE_LOCATOR_KEY_VERSION: "1.0.0", EVIDENCE_LOCATOR_ENCRYPTION_KEY: "11".repeat(32), EVIDENCE_FINGERPRINT_KEY: "22".repeat(32) };
+    const old = locatorCryptoFromEnvironment(oldValues);
+    const stored = old.protectLocator(locator, context), branch = old.encryptBranch("synthetic-branch", context);
+    const values = { EVIDENCE_LOCATOR_KEY_VERSION: "2.0.0", EVIDENCE_LOCATOR_ENCRYPTION_KEY: "33".repeat(32), EVIDENCE_FINGERPRINT_KEY: "44".repeat(32),
+      EVIDENCE_LOCATOR_READ_KEYS: JSON.stringify([{ version: oldValues.EVIDENCE_LOCATOR_KEY_VERSION,
+        encryptionKey: oldValues.EVIDENCE_LOCATOR_ENCRYPTION_KEY, fingerprintKey: oldValues.EVIDENCE_FINGERPRINT_KEY }]) };
+    // Recreate the runtime as after a process restart; old keys are not held in a test-only ring.
+    const rotated = locatorCryptoFromEnvironment(values);
+    expect(rotated.decryptLocator(stored.locatorEncrypted, context)).toEqual(locator);
+    expect(rotated.decryptBranch(branch, context)).toBe("synthetic-branch");
+    const fresh = rotated.protectLocator(locator, context);
+    expect(fresh.fingerprintKeyVersion).toBe("2.0.0");
+    expect(fresh.locatorEncrypted).toMatch(/^v1\.2\.0\.0\./);
+    expect(locatorCryptoFromEnvironment(values).decryptLocator(fresh.locatorEncrypted, context)).toEqual(locator);
+    const stagedReader = locatorCryptoFromEnvironment({ ...oldValues, EVIDENCE_LOCATOR_READ_KEYS: JSON.stringify([
+      { version: values.EVIDENCE_LOCATOR_KEY_VERSION, encryptionKey: values.EVIDENCE_LOCATOR_ENCRYPTION_KEY, fingerprintKey: values.EVIDENCE_FINGERPRINT_KEY },
+    ]) });
+    expect(stagedReader.decryptLocator(fresh.locatorEncrypted, context)).toEqual(locator);
+    expect(stagedReader.protectLocator(locator, context).fingerprintKeyVersion).toBe("1.0.0");
+    expect(() => rotated.decryptLocator(stored.locatorEncrypted, { ...context, repositoryId: randomUUID() })).toThrow("Locator could not be decrypted");
+    expect(() => locatorCryptoFromEnvironment({ ...values, EVIDENCE_LOCATOR_READ_KEYS: undefined }).decryptLocator(stored.locatorEncrypted, context)).toThrow("Locator could not be decrypted");
+  });
+  const readKey = { version: "1.0.0", encryptionKey: "11".repeat(32), fingerprintKey: "22".repeat(32) };
+  it.each([
+    ["invalid JSON", "synthetic-secret-not-json"], ["empty configuration", ""], ["null", "null"], ["object instead of array", "{}"],
+    ["invalid version", JSON.stringify([{ ...readKey, version: "private-key-reference" }])],
+    ["missing key", JSON.stringify([{ version: readKey.version, encryptionKey: readKey.encryptionKey }])],
+    ["invalid key", JSON.stringify([{ ...readKey, encryptionKey: "private-secret" }])],
+    ["shared encryption/fingerprint key", JSON.stringify([{ ...readKey, fingerprintKey: readKey.encryptionKey }])],
+    ["unknown property", JSON.stringify([{ ...readKey, source: "private-secret" }])],
+    ["duplicate version", JSON.stringify([readKey, readKey])],
+    ["active version collision", JSON.stringify([{ ...readKey, version: "2.0.0" }])],
+    ["too many keys", JSON.stringify(Array.from({ length: 33 }, (_, i) => ({ ...readKey, version: `1.0.${i}` })))],
+    ["oversized configuration", " ".repeat(16385)],
+  ])("rejects %s without exposing key configuration", (_label, value) => {
+    expect(() => locatorCryptoFromEnvironment({ EVIDENCE_LOCATOR_KEY_VERSION: "2.0.0", EVIDENCE_LOCATOR_ENCRYPTION_KEY: "33".repeat(32),
+      EVIDENCE_FINGERPRINT_KEY: "44".repeat(32), EVIDENCE_LOCATOR_READ_KEYS: value })).toThrow(/^Invalid locator key configuration$/);
+  });
 });

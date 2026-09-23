@@ -1,4 +1,5 @@
 import { createCipheriv, createDecipheriv, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { z } from "zod";
 import { InternalLocatorSchema, type InternalLocator } from "@repofy/contracts/internal";
 
 export interface LocatorKeyring {
@@ -72,7 +73,14 @@ export class LocatorCrypto {
   }
 }
 
-/** Lazy: disabled applications do not need locator secrets at startup. No OAuth key reuse. */
+const retainedKeysSchema = z.array(z.strictObject({
+  version: z.string().max(64).regex(/^\d+\.\d+\.\d+$/),
+  encryptionKey: z.string().regex(/^[a-fA-F0-9]{64}$/),
+  fingerprintKey: z.string().regex(/^[a-fA-F0-9]{64}$/),
+})).max(32);
+
+/** Lazy: disabled applications do not need locator secrets at startup. No OAuth key reuse.
+ * Retained keys decrypt immutable artifacts; only the active version is used for writes. */
 export function locatorCryptoFromEnvironment(values: Record<string, string | undefined>): LocatorCrypto {
   const version = values.EVIDENCE_LOCATOR_KEY_VERSION;
   const encryption = values.EVIDENCE_LOCATOR_ENCRYPTION_KEY;
@@ -80,5 +88,21 @@ export function locatorCryptoFromEnvironment(values: Record<string, string | und
   if (!version || !encryption || !fingerprint || !/^[a-fA-F0-9]{64}$/.test(encryption) || !/^[a-fA-F0-9]{64}$/.test(fingerprint)) {
     throw new Error("Locator key configuration is required for evidence persistence");
   }
-  return new LocatorCrypto({ activeVersion: version, keys: { [version]: { encryptionKey: Buffer.from(encryption, "hex"), fingerprintKey: Buffer.from(fingerprint, "hex") } } });
+  try {
+    const keys: LocatorKeyring["keys"] = { [version]: { encryptionKey: Buffer.from(encryption, "hex"), fingerprintKey: Buffer.from(fingerprint, "hex") } };
+    const retained = values.EVIDENCE_LOCATOR_READ_KEYS;
+    if (retained !== undefined) {
+      if (Buffer.byteLength(retained, "utf8") > 16384) throw new Error();
+      for (const key of retainedKeysSchema.parse(JSON.parse(retained))) {
+        // An active-version collision or duplicate retained version is ambiguous
+        // configuration, even if the provided key bytes happen to be identical.
+        if (Object.hasOwn(keys, key.version)) throw new Error();
+        keys[key.version] = { encryptionKey: Buffer.from(key.encryptionKey, "hex"), fingerprintKey: Buffer.from(key.fingerprintKey, "hex") };
+      }
+    }
+    return new LocatorCrypto({ activeVersion: version, keys });
+  } catch {
+    // JSON/schema errors can include key material. Expose only this fixed code.
+    throw new Error("Invalid locator key configuration");
+  }
 }

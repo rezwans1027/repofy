@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-09-22T03:48:48.451Z",
+  "measuredAt": "2026-09-23T15:57:12.842Z",
   "corpus": {
     "id": "feature_one_release",
     "version": "1.0.0",
@@ -34,105 +34,105 @@
       "scenario": "backend_parse",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 32,
+      "queueMs": 74,
       "processingMs": 162,
-      "totalMs": 194
+      "totalMs": 236
     },
     {
       "scenario": "frontend_request",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 96,
-      "processingMs": 86,
-      "totalMs": 182
+      "queueMs": 98,
+      "processingMs": 96,
+      "totalMs": 194
     },
     {
       "scenario": "model_adapter",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 89,
-      "processingMs": 109,
-      "totalMs": 198
+      "queueMs": 47,
+      "processingMs": 90,
+      "totalMs": 137
     },
     {
       "scenario": "dependency_only",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 48,
-      "processingMs": 80,
-      "totalMs": 128
+      "queueMs": 74,
+      "processingMs": 92,
+      "totalMs": 166
     },
     {
       "scenario": "python_baseline",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 81,
-      "processingMs": 90,
-      "totalMs": 171
+      "queueMs": 70,
+      "processingMs": 94,
+      "totalMs": 164
     },
     {
       "scenario": "java_baseline",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 69,
-      "processingMs": 73,
-      "totalMs": 142
+      "queueMs": 63,
+      "processingMs": 92,
+      "totalMs": 155
     },
     {
       "scenario": "mobile_native_unknown",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 99,
-      "processingMs": 73,
-      "totalMs": 172
+      "queueMs": 48,
+      "processingMs": 90,
+      "totalMs": 138
     },
     {
       "scenario": "empty_unknown",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 96,
-      "processingMs": 73,
-      "totalMs": 169
+      "queueMs": 76,
+      "processingMs": 79,
+      "totalMs": 155
     },
     {
       "scenario": "private_sentinels",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 94,
-      "processingMs": 83,
-      "totalMs": 177
+      "queueMs": 99,
+      "processingMs": 93,
+      "totalMs": 192
     },
     {
       "scenario": "backend_parse+python_baseline+java_baseline+frontend_request+model_adapter",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 86,
-      "processingMs": 205,
-      "totalMs": 291
-    },
-    {
-      "scenario": "queued_pair_2",
-      "status": "completed",
-      "failureCode": null,
-      "queueMs": 52,
-      "processingMs": 72,
-      "totalMs": 124
+      "queueMs": 45,
+      "processingMs": 219,
+      "totalMs": 264
     },
     {
       "scenario": "queued_pair_1",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 152,
-      "processingMs": 66,
-      "totalMs": 218
+      "queueMs": 46,
+      "processingMs": 76,
+      "totalMs": 122
+    },
+    {
+      "scenario": "queued_pair_2",
+      "status": "completed",
+      "failureCode": null,
+      "queueMs": 146,
+      "processingMs": 78,
+      "totalMs": 224
     },
     {
       "scenario": "limit_10000",
       "status": "completed",
       "failureCode": null,
-      "queueMs": 15,
-      "processingMs": 1869,
-      "totalMs": 1884
+      "queueMs": 96,
+      "processingMs": 1935,
+      "totalMs": 2031
     }
   ],
   "rejectedWorkloads": [
@@ -140,123 +140,123 @@
       "scenario": "too_many_eligible",
       "status": "failed",
       "failureCode": "REPOSITORY_TOO_LARGE",
-      "queueMs": 62,
-      "processingMs": 236,
-      "totalMs": 298
+      "queueMs": 11,
+      "processingMs": 249,
+      "totalMs": 260
     }
   ],
   "latencyMs": {
     "queue": {
       "samples": 13,
-      "p50": 86,
-      "p95": 152,
-      "max": 152
+      "p50": 74,
+      "p95": 146,
+      "max": 146
     },
     "processing": {
       "samples": 13,
-      "p50": 83,
-      "p95": 1869,
-      "max": 1869
+      "p50": 92,
+      "p95": 1935,
+      "max": 1935
     },
     "endToEnd": {
       "samples": 13,
-      "p50": 177,
-      "p95": 1884,
-      "max": 1884
+      "p50": 166,
+      "p95": 2031,
+      "max": 2031
     },
     "api": {
       "save_selection": {
         "samples": 1,
-        "p50": 22.74,
-        "p95": 22.74,
-        "max": 22.74
+        "p50": 25.64,
+        "p95": 25.64,
+        "max": 25.64
       },
       "start": {
         "samples": 15,
-        "p50": 6.53,
-        "p95": 13.36,
-        "max": 13.36
+        "p50": 6.84,
+        "p95": 12.08,
+        "max": 12.08
       },
       "job_read": {
-        "samples": 112,
-        "p50": 5.93,
-        "p95": 30.1,
-        "max": 81.84
+        "samples": 115,
+        "p50": 6.25,
+        "p95": 22.22,
+        "max": 162.54
       },
       "report_view": {
         "samples": 60,
-        "p50": 13.27,
-        "p95": 15.97,
-        "max": 17.8
+        "p50": 14.07,
+        "p95": 15.55,
+        "max": 17.31
       },
       "history": {
         "samples": 50,
-        "p50": 6.87,
-        "p95": 7.83,
-        "max": 8.04
+        "p50": 7.19,
+        "p95": 8.05,
+        "max": 8.85
       },
       "evidence": {
         "samples": 50,
-        "p50": 6.32,
-        "p95": 7.79,
-        "max": 8.83
+        "p50": 6.77,
+        "p95": 7.33,
+        "max": 8.09
       },
       "foreign_denial": {
         "samples": 2,
-        "p50": 3.96,
-        "p95": 4.84,
-        "max": 4.84
+        "p50": 5.09,
+        "p95": 5.42,
+        "max": 5.42
       }
     },
     "stages": {
       "downloading": {
         "samples": 18,
-        "p50": 2,
-        "p95": 57,
-        "max": 57
+        "p50": 1,
+        "p95": 64,
+        "max": 64
       },
       "inventorying": {
         "samples": 18,
-        "p50": 3,
-        "p95": 596,
-        "max": 596
+        "p50": 4,
+        "p95": 622,
+        "max": 622
       },
       "extracting": {
         "samples": 17,
-        "p50": 14,
-        "p95": 1033,
-        "max": 1033
+        "p50": 15,
+        "p95": 1055,
+        "max": 1055
       },
       "aggregating": {
         "samples": 13,
-        "p50": 22,
-        "p95": 145,
-        "max": 145
+        "p50": 24,
+        "p95": 152,
+        "max": 152
       },
       "synthesizing": {
         "samples": 13,
-        "p50": 16,
-        "p95": 28,
-        "max": 28
+        "p50": 18,
+        "p95": 33,
+        "max": 33
       },
       "validating": {
         "samples": 13,
-        "p50": 13,
+        "p50": 15,
         "p95": 27,
         "max": 27
       }
     }
   },
-  "peakServerRssMiB": 446,
+  "peakServerRssMiB": 449,
   "peakGeneratedArchiveBytes": 105169,
   "cleanup": {
     "terminalWorkspacesRemaining": 0,
     "emptyWorkspaceChecks": 13,
     "terminalToEmptyCheckMs": {
       "samples": 13,
-      "p50": 25,
-      "p95": 37,
-      "max": 37
+      "p50": 34,
+      "p95": 55,
+      "max": 55
     },
     "jobPollIntervalMs": 30,
     "productionSweeperVerified": false

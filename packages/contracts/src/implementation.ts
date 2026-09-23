@@ -35,14 +35,14 @@ export const ImplementationCoverageSchema = z.strictObject({
   unresolvedImports: CountSchema, dynamicReferences: CountSchema, ambiguousBindings: CountSchema,
   indexedNodes: CountSchema, indexedBytes: CountSchema, aliasConfigurationsRejected: CountSchema,
   evidenceTruncated: z.boolean(), disabledDetectors: uniqueArray(ImplementationKindSchema, IMPLEMENTATION_KINDS.length),
-  detectors: z.array(z.strictObject({ kind: ImplementationKindSchema, version: z.enum(["1.0.0", "1.0.1", "1.0.2"]),
+  detectors: z.array(z.strictObject({ kind: ImplementationKindSchema, version: z.enum(["1.0.0", "1.0.1", "1.0.2", "1.0.3"]),
     capabilityIds: uniqueArray(KeySchema, 4, 1), state: z.enum(["enabled", "quarantined"]), observations: CountSchema })).length(IMPLEMENTATION_KINDS.length),
   limitations: LimitationsSchema.min(1),
 }).refine(v => v.eligibleFiles === v.analyzedFiles + v.parseFailures + v.limitedFiles + v.unsupportedFiles + v.generatedFiles
   && v.noSignalFiles <= v.analyzedFiles && new Set(v.detectors.map(d => d.kind)).size === IMPLEMENTATION_KINDS.length
   && v.detectors.every(d => (d.state === "quarantined") === v.disabledDetectors.includes(d.kind)
     && (d.state !== "quarantined" || d.observations === 0)), "Implementation coverage counters mismatch")
-  .refine(v => v.bundle.id === "tsjs_implementation" && /^1\.0\.[012](?:-q[01]{16})?$/.test(v.bundle.version)
+  .refine(v => v.bundle.id === "tsjs_implementation" && /^1\.0\.[0123](?:-q[01]{16})?$/.test(v.bundle.version)
     && v.detectors.every(d => d.version === v.bundle.version.split("-")[0]), "Implementation coverage versions mismatch");
 export type ImplementationObservation = z.infer<typeof ImplementationObservationSchema>;
 export type ImplementationCoverage = z.infer<typeof ImplementationCoverageSchema>;

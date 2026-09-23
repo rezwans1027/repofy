@@ -37,7 +37,7 @@ export const ComparisonEvidenceSchema = z.strictObject({ repositoryId: z.uuid(),
   basis: z.enum(["identity", "content_and_concept", "path_and_concept", "unmatched", "ambiguous"]),
   interpretation: z.enum(["comparable_observation", "limited_by_scope_or_versions", "uncertain_identity"]),
 }).refine(v => !!(v.baselineEvidenceId || v.targetEvidenceId) && (v.change !== "gained" || !v.baselineEvidenceId) && (v.change !== "lost" || !v.targetEvidenceId));
-export const ComparisonSchema = z.strictObject({ algorithm: z.enum(["evidence-diff-1.0.0", "evidence-diff-1.0.1"]), baseline: side, target: side,
+export const ComparisonSchema = z.strictObject({ algorithm: z.enum(["evidence-diff-1.0.0", "evidence-diff-1.0.1", "evidence-diff-1.0.2"]), baseline: side, target: side,
   comparability: z.enum(["comparable", "limited"]), causes: uniqueArray(z.enum(COMPARISON_CAUSES), COMPARISON_CAUSES.length),
   notes: z.array(z.string().max(600)).min(1).max(25),
   repositories: z.array(z.strictObject({ repositoryId: z.uuid(), label: z.string().max(80), baseline: snapshot.nullable(), target: snapshot.nullable() })).max(20),

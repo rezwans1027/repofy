@@ -11,6 +11,7 @@ import { ReadinessReader } from '../../src/domain/readiness/reader';
 import { createReadinessRoutes } from '../../src/routes/readiness.routes';
 import { getSupabaseAdmin } from '../../src/config/supabase';
 import { csrfProtection } from '../../src/middleware/csrf';
+import { locatorCryptoFromEnvironment } from '../../src/domain/evidence/locator-crypto';
 vi.mock('../../src/config/supabase', () => ({ getSupabaseAdmin: vi.fn() }));
 let db: Awaited<ReturnType<typeof selectionDatabase>>;
 beforeAll(async () => { db = await selectionDatabase(); await seedJobRubrics(db.db); }, 20000);
@@ -78,6 +79,24 @@ it('constructs only exact-commit public links and hides links for current privat
     const view = await f.reader.view(f.actor, f.report.reportId); expect(view.report.snapshots[0].repositoryVisibility).toBe('private'); expect(view.report.evidence[0].repositoryVisibility).toBe('private');
     const location = await f.reader.location(f.actor, f.report.reportId, id); expect(location).toMatchObject({ state: 'available', visibility: 'private' }); expect(location).not.toHaveProperty('url');
     expect((await f.f.evidence.readReport(f.actor, f.report.reportId))!.snapshots[0].repositoryVisibility).toBe('public');
+  } finally { await f.cleanup(); }
+});
+it('retains authorized historical locations after runtime key rotation without relaxing revocation', async () => {
+  const f = await saved();
+  try {
+    const id = f.report.evidence[0].evidenceId;
+    const location = await f.reader.location(f.actor, f.report.reportId, id);
+    expect(location.state).toBe('available');
+    const values = { EVIDENCE_LOCATOR_KEY_VERSION: '2.0.0', EVIDENCE_LOCATOR_ENCRYPTION_KEY: '33'.repeat(32), EVIDENCE_FINGERPRINT_KEY: '44'.repeat(32),
+      EVIDENCE_LOCATOR_READ_KEYS: JSON.stringify([{ version: '1.0.0', encryptionKey: Buffer.alloc(32,17).toString('hex'), fingerprintKey: Buffer.alloc(32,29).toString('hex') }]) };
+    const rotated = new ReadinessReader(db.rpc, () => locatorCryptoFromEnvironment(values), { verifyRepository: f.verifyRepository });
+    expect(await rotated.location(f.actor, f.report.reportId, id)).toEqual(location);
+    const before = JSON.stringify(f.report);
+    await f.f.evidence.revokeGrant(f.actor, f.f.bindings[0].grantId, randomUUID());
+    f.verifyRepository.mockClear();
+    expect(await rotated.location(f.actor, f.report.reportId, id)).toEqual({ state: 'access_revoked', evidenceId: id });
+    expect(f.verifyRepository).not.toHaveBeenCalled();
+    expect(JSON.stringify(await f.f.evidence.readReport(f.actor, f.report.reportId))).toBe(before);
   } finally { await f.cleanup(); }
 });
 it('fences revoked locations before and after provider verification, while retaining bounded report reads', async () => {

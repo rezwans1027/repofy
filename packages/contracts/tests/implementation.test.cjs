@@ -29,8 +29,10 @@ test('old and corrected detector coverage stays readable, with mixed versions re
     evidenceTruncated: false, disabledDetectors: [], limitations: ['Static only.'],
     detectors: c.IMPLEMENTATION_KINDS.map(kind => ({ kind, version, capabilityIds: ['api_design'], state: 'enabled', observations: 0 })),
   });
-  for (const version of ['1.0.0', '1.0.1', '1.0.2']) assert.ok(c.ImplementationCoverageSchema.parse(coverage(version)));
-  const mixed = coverage('1.0.2'); mixed.detectors[0].version = '1.0.1';
-  assert.equal(c.ImplementationCoverageSchema.safeParse(mixed).success, false);
-  assert.equal(c.ImplementationCoverageSchema.safeParse(coverage('1.0.3')).success, false);
+  for (const version of ['1.0.0', '1.0.1', '1.0.2', '1.0.3']) assert.ok(c.ImplementationCoverageSchema.parse(coverage(version)));
+  for (const version of ['1.0.0', '1.0.1', '1.0.2']) {
+    const mixed = coverage('1.0.3'); mixed.detectors[0].version = version;
+    assert.equal(c.ImplementationCoverageSchema.safeParse(mixed).success, false);
+  }
+  assert.equal(c.ImplementationCoverageSchema.safeParse(coverage('1.0.4')).success, false);
 });

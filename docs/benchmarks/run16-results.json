@@ -6,8 +6,8 @@
     "splitPolicy": "Evaluation cases authored and frozen before first execution; excluded from earlier detector development. Same implementation agent authored references: not independent or blinded calibration. Never revise labels to match results.",
     "measurementUnit": "Individual TS/JS detector/file observations; recall covers the annotated supported static patterns only. Out-of-scope valid alternatives reported separately."
   },
-  "measuredAt": "2026-09-22T03:48:40.194Z",
-  "domainSourceSha256": "6874db878ae220a24d90b0cbcf6c684a52abaf2c869a3a6bddc916f85f890699",
+  "measuredAt": "2026-09-23T15:57:04.320Z",
+  "domainSourceSha256": "9f61a9b697ed242711672024363f5fe40ba9764a01081e4969b3a79116222ab7",
   "developmentSources": [
     {
       "path": "tests/fixtures/evidence/repositories.json",
@@ -242,8 +242,8 @@
     "unsupportedMajorClaimRate": null,
     "roleRubricCalibration": null,
     "extractionThroughRenderingMs": {
-      "p50": 27,
-      "p95": 37
+      "p50": 28,
+      "p95": 38
     },
     "syntheticCasesCompleted": {
       "successes": 24,
@@ -254,7 +254,7 @@
         1
       ]
     },
-    "peakRssMiB": 246,
+    "peakRssMiB": 248,
     "actualProviderCostUsd": 0,
     "providerCalls": 0,
     "modelQualityMeasured": false,
@@ -330,7 +330,7 @@
     ],
     "status": "stale",
     "reviewedDomainSourceSha256": "c2f8e497394a42288d4432b79726dcce901443dac44f27bf4e18f2f0121cb816",
-    "currentDomainSourceSha256": "6874db878ae220a24d90b0cbcf6c684a52abaf2c869a3a6bddc916f85f890699",
+    "currentDomainSourceSha256": "9f61a9b697ed242711672024363f5fe40ba9764a01081e4969b3a79116222ab7",
     "historicalReview": {
       "reviewCount": 1,
       "completelyReviewed": 1,
@@ -435,9 +435,7 @@
     "sha256": "5a2397a2616c4961d6ac5bad817bec36788aaddc032d82997ca59b2befb11647",
     "domainSourceSha256": "c2f8e497394a42288d4432b79726dcce901443dac44f27bf4e18f2f0121cb816",
     "renderedAt": "2026-09-21T02:29:51.433Z",
-    "differingReviewCards": [
-      "C02"
-    ],
+    "differingReviewCards": [],
     "scope": "Historical human rates describe the frozen reviewed output only. Current human metrics are null when the domain digest changes. Fresh identity tie selections listed here are not newly human-approved."
   },
   "rubricBoundaries": {
@@ -814,7 +812,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 86,
+      "elapsedMs": 88,
       "capabilities": [
         {
           "id": "ai_context",
@@ -1124,7 +1122,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -1211,7 +1209,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 37,
+      "elapsedMs": 33,
       "capabilities": [
         {
           "id": "ai_context",
@@ -1487,8 +1485,8 @@
       "claims": [
         {
           "capability": "api_design",
-          "text": "An Express route callback calls a statically resolved local function boundary. Does not establish API stability, complete routing or separation of all responsibilities. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
-          "statementId": "tsjs.route_service"
+          "text": "A route returns an explicit error status with a structured literal error code. No claim about a universal error contract, safe message content or matching consumer behavior. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.structured_error"
         },
         {
           "capability": "architecture_modularity",
@@ -1516,7 +1514,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -1602,7 +1600,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 32,
+      "elapsedMs": 38,
       "capabilities": [
         {
           "id": "ai_context",
@@ -1907,7 +1905,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -1994,7 +1992,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 29,
+      "elapsedMs": 32,
       "capabilities": [
         {
           "id": "ai_context",
@@ -2294,7 +2292,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -2381,7 +2379,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 30,
+      "elapsedMs": 31,
       "capabilities": [
         {
           "id": "ai_context",
@@ -2681,7 +2679,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -2767,7 +2765,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 26,
+      "elapsedMs": 27,
       "capabilities": [
         {
           "id": "ai_context",
@@ -3062,7 +3060,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -3149,7 +3147,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 27,
+      "elapsedMs": 28,
       "capabilities": [
         {
           "id": "ai_context",
@@ -3444,7 +3442,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -3825,7 +3823,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -3912,7 +3910,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 28,
+      "elapsedMs": 30,
       "capabilities": [
         {
           "id": "ai_context",
@@ -4212,7 +4210,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -4594,7 +4592,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -4680,7 +4678,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 24,
+      "elapsedMs": 26,
       "capabilities": [
         {
           "id": "ai_context",
@@ -4975,7 +4973,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -5358,7 +5356,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -5444,7 +5442,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 25,
+      "elapsedMs": 26,
       "capabilities": [
         {
           "id": "ai_context",
@@ -5739,7 +5737,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -5829,7 +5827,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 27,
+      "elapsedMs": 29,
       "capabilities": [
         {
           "id": "ai_context",
@@ -6124,7 +6122,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -6211,7 +6209,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 23,
+      "elapsedMs": 25,
       "capabilities": [
         {
           "id": "ai_context",
@@ -6501,7 +6499,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -6589,7 +6587,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 26,
+      "elapsedMs": 27,
       "capabilities": [
         {
           "id": "ai_context",
@@ -6865,8 +6863,8 @@
       "claims": [
         {
           "capability": "api_design",
-          "text": "A route returns an explicit error status with a structured literal error code. No claim about a universal error contract, safe message content or matching consumer behavior. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
-          "statementId": "tsjs.structured_error"
+          "text": "An Express route callback calls a statically resolved local function boundary. Does not establish API stability, complete routing or separation of all responsibilities. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.route_service"
         },
         {
           "capability": "architecture_modularity",
@@ -6889,7 +6887,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -6982,7 +6980,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 29,
+      "elapsedMs": 31,
       "capabilities": [
         {
           "id": "ai_context",
@@ -7287,7 +7285,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -7374,7 +7372,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 34,
+      "elapsedMs": 37,
       "capabilities": [
         {
           "id": "ai_context",
@@ -7669,7 +7667,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -7756,7 +7754,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 27,
+      "elapsedMs": 29,
       "capabilities": [
         {
           "id": "ai_context",
@@ -8051,7 +8049,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -8137,7 +8135,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 23,
+      "elapsedMs": 24,
       "capabilities": [
         {
           "id": "ai_context",
@@ -8421,7 +8419,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -8511,7 +8509,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 22,
+      "elapsedMs": 24,
       "capabilities": [
         {
           "id": "ai_context",
@@ -8795,7 +8793,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -8881,7 +8879,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 26,
+      "elapsedMs": 28,
       "capabilities": [
         {
           "id": "ai_context",
@@ -9181,7 +9179,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -9268,7 +9266,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 25,
+      "elapsedMs": 32,
       "capabilities": [
         {
           "id": "ai_context",
@@ -9568,7 +9566,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -9657,7 +9655,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 23,
+      "elapsedMs": 28,
       "capabilities": [
         {
           "id": "ai_context",
@@ -9952,7 +9950,7 @@
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.2"
+          "version": "1.0.3"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
