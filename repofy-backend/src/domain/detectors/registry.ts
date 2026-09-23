@@ -48,8 +48,8 @@ const definitions: Record<ImplementationKind, Definition> = {
     required: "A canonical bounded integer for-loop retries a resolved local awaited operation inside try/catch without changing its bound/counter in the body.",
     observation: "A loop with a literal attempt ceiling retries an awaited local operation after a caught failure.", limitation: "Only the loop attempt count is bounded; duration, recursive work, backoff and eventual recovery are unknown." },
   state_guard: { capabilities: ["reliability_concurrency"], ecosystems: ["javascript"], strength: 0.45,
-    required: "A function starts with a parameter-state inequality return guard before passing that same parameter to a local operation.",
-    observation: "A function returns early for an unexpected input state before a subsequent local operation on that input.", limitation: "This local state guard does not establish durable idempotency, atomic compare-and-set or concurrency safety." },
+    required: "A function starts with a parameter-state inequality guard that exits with no value, a primitive literal, or an unshadowed Error with literal arguments before a local operation consumes that parameter.",
+    observation: "A function exits early for an unexpected input state before a subsequent local operation on that input.", limitation: "Only inert exits and literal Error construction are supported. This local state guard does not establish durable idempotency, atomic compare-and-set or concurrency safety." },
   failure_cleanup: { capabilities: ["reliability_recovery"], ecosystems: ["pg"],
     required: "A client acquired by awaited pg Pool.connect has a reachable direct query in try and an immediate unconditional release as the first effect in finally.",
     observation: "A pg client is released in a finally block surrounding a query on that client.", limitation: "Does not prove all resources are released or that the query or release succeeds." },
@@ -60,7 +60,7 @@ const definitions: Record<ImplementationKind, Definition> = {
     required: "An awaited ai.generateObject call supplies a Zod object schema, explicit bounded maxRetries and native AbortSignal.timeout.",
     observation: "A structured model call supplies an output schema, an explicit retry ceiling and a timeout signal.", limitation: "SDK enforcement, model availability, output quality, context authorization and prompt-injection defenses are unverified." },
 };
-export const DETECTORS = Object.freeze(IMPLEMENTATION_KINDS.map(kind => Object.freeze({ kind, id: `tsjs.${kind}`, version: "1.0.3" as const,
+export const DETECTORS = Object.freeze(IMPLEMENTATION_KINDS.map(kind => Object.freeze({ kind, id: `tsjs.${kind}`, version: "1.0.4" as const,
   capabilityIds: Object.freeze([...definitions[kind].capabilities]), ecosystems: Object.freeze([...definitions[kind].ecosystems]),
   requiredObservations: definitions[kind].required, observation: definitions[kind].observation, limitation: definitions[kind].limitation,
   forbiddenOverclaims: Object.freeze(["Execution or passing tests from source alone", "System-wide security, correctness or concurrency safety", "Authorship, proficiency or employment suitability"]),
@@ -78,6 +78,6 @@ export const CAPABILITY_COVERAGE = Object.freeze(initialRubricCatalog.taxonomy.c
 export function implementationProfile(disabled: readonly ImplementationKind[] = []) {
   if (new Set(disabled).size !== disabled.length || disabled.some(id => !IMPLEMENTATION_KINDS.includes(id))) throw new Error("Invalid detector quarantine");
   const quarantine = Object.freeze(IMPLEMENTATION_KINDS.filter(k => disabled.includes(k)));
-  return Object.freeze({ ...extractionProfile(), detectorBundle: { id: "tsjs_implementation", version: `1.0.3${disabled.length ? `-q${IMPLEMENTATION_KINDS.map(k => disabled.includes(k) ? 1 : 0).join("")}` : ""}` },
+  return Object.freeze({ ...extractionProfile(), detectorBundle: { id: "tsjs_implementation", version: `1.0.4${disabled.length ? `-q${IMPLEMENTATION_KINDS.map(k => disabled.includes(k) ? 1 : 0).join("")}` : ""}` },
     coverageManifest: "1.1.1", implementation: Object.freeze({ disabled: quarantine }) });
 }

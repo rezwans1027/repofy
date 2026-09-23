@@ -152,7 +152,7 @@ export class SnapshotIngestionService {
         const text = decoded.text;
         if (sensitive(entry.path) || sensitive(text)) { excluded.secret_or_sensitive_data++; return; }
         // Only schema/migration structure is eligible. Data-bearing SQL is never handed to an extractor.
-        if (pin.policy.version === "1.1.0" && entry.path.toLowerCase().endsWith(".sql")
+        if (entry.path.toLowerCase().endsWith(".sql")
           && containsSqlData(text)) { excluded.secret_or_sensitive_data++; return; }
         if (/[@#]generated\b|\bDO NOT EDIT\b/.test(text.slice(0, 4096))) { excluded.generated++; return; }
         const lines = text ? text.split("\n").length : 0;

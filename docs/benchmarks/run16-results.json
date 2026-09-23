@@ -6,8 +6,8 @@
     "splitPolicy": "Evaluation cases authored and frozen before first execution; excluded from earlier detector development. Same implementation agent authored references: not independent or blinded calibration. Never revise labels to match results.",
     "measurementUnit": "Individual TS/JS detector/file observations; recall covers the annotated supported static patterns only. Out-of-scope valid alternatives reported separately."
   },
-  "measuredAt": "2026-09-23T15:57:04.320Z",
-  "domainSourceSha256": "9f61a9b697ed242711672024363f5fe40ba9764a01081e4969b3a79116222ab7",
+  "measuredAt": "2026-09-23T20:19:09.420Z",
+  "domainSourceSha256": "e503b28cb1215fc4f25a158a00556f63c7253dd34cea526a0f6edaa9127cbe27",
   "developmentSources": [
     {
       "path": "tests/fixtures/evidence/repositories.json",
@@ -242,8 +242,8 @@
     "unsupportedMajorClaimRate": null,
     "roleRubricCalibration": null,
     "extractionThroughRenderingMs": {
-      "p50": 28,
-      "p95": 38
+      "p50": 27,
+      "p95": 34
     },
     "syntheticCasesCompleted": {
       "successes": 24,
@@ -254,7 +254,7 @@
         1
       ]
     },
-    "peakRssMiB": 248,
+    "peakRssMiB": 247,
     "actualProviderCostUsd": 0,
     "providerCalls": 0,
     "modelQualityMeasured": false,
@@ -330,7 +330,7 @@
     ],
     "status": "stale",
     "reviewedDomainSourceSha256": "c2f8e497394a42288d4432b79726dcce901443dac44f27bf4e18f2f0121cb816",
-    "currentDomainSourceSha256": "9f61a9b697ed242711672024363f5fe40ba9764a01081e4969b3a79116222ab7",
+    "currentDomainSourceSha256": "e503b28cb1215fc4f25a158a00556f63c7253dd34cea526a0f6edaa9127cbe27",
     "historicalReview": {
       "reviewCount": 1,
       "completelyReviewed": 1,
@@ -435,7 +435,10 @@
     "sha256": "5a2397a2616c4961d6ac5bad817bec36788aaddc032d82997ca59b2befb11647",
     "domainSourceSha256": "c2f8e497394a42288d4432b79726dcce901443dac44f27bf4e18f2f0121cb816",
     "renderedAt": "2026-09-21T02:29:51.433Z",
-    "differingReviewCards": [],
+    "differingReviewCards": [
+      "C02",
+      "C10"
+    ],
     "scope": "Historical human rates describe the frozen reviewed output only. Current human metrics are null when the domain digest changes. Fresh identity tie selections listed here are not newly human-approved."
   },
   "rubricBoundaries": {
@@ -812,7 +815,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 88,
+      "elapsedMs": 81,
       "capabilities": [
         {
           "id": "ai_context",
@@ -1115,14 +1118,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -1485,8 +1488,8 @@
       "claims": [
         {
           "capability": "api_design",
-          "text": "A route returns an explicit error status with a structured literal error code. No claim about a universal error contract, safe message content or matching consumer behavior. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
-          "statementId": "tsjs.structured_error"
+          "text": "An Express route callback calls a statically resolved local function boundary. Does not establish API stability, complete routing or separation of all responsibilities. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "statementId": "tsjs.route_service"
         },
         {
           "capability": "architecture_modularity",
@@ -1507,14 +1510,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -1600,7 +1603,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 38,
+      "elapsedMs": 33,
       "capabilities": [
         {
           "id": "ai_context",
@@ -1898,14 +1901,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -1992,7 +1995,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 32,
+      "elapsedMs": 29,
       "capabilities": [
         {
           "id": "ai_context",
@@ -2285,14 +2288,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -2379,7 +2382,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 31,
+      "elapsedMs": 29,
       "capabilities": [
         {
           "id": "ai_context",
@@ -2672,14 +2675,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -3053,14 +3056,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -3147,7 +3150,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 28,
+      "elapsedMs": 27,
       "capabilities": [
         {
           "id": "ai_context",
@@ -3435,14 +3438,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -3816,14 +3819,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -3910,7 +3913,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 30,
+      "elapsedMs": 29,
       "capabilities": [
         {
           "id": "ai_context",
@@ -4203,14 +4206,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -4297,7 +4300,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 27,
+      "elapsedMs": 26,
       "capabilities": [
         {
           "id": "ai_context",
@@ -4578,21 +4581,21 @@
         },
         {
           "capability": "reliability_concurrency",
-          "text": "A function returns early for an unexpected input state before a subsequent local operation on that input. This local state guard does not establish durable idempotency, atomic compare-and-set or concurrency safety. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
+          "text": "A function exits early for an unexpected input state before a subsequent local operation on that input. Only inert exits and literal Error construction are supported. This local state guard does not establish durable idempotency, atomic compare-and-set or concurrency safety. Contribution confidence remains unknown under the recorded provenance policy; context signals do not change these capability measurements. Evidence confidence is low; proficiency and authorship are unverified.",
           "statementId": "tsjs.state_guard"
         }
       ],
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -4678,7 +4681,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 26,
+      "elapsedMs": 25,
       "capabilities": [
         {
           "id": "ai_context",
@@ -4966,14 +4969,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -5061,7 +5064,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 27,
+      "elapsedMs": 29,
       "capabilities": [
         {
           "id": "ai_context",
@@ -5349,14 +5352,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -5442,7 +5445,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 26,
+      "elapsedMs": 28,
       "capabilities": [
         {
           "id": "ai_context",
@@ -5730,14 +5733,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -5827,7 +5830,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 29,
+      "elapsedMs": 34,
       "capabilities": [
         {
           "id": "ai_context",
@@ -6115,14 +6118,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -6492,14 +6495,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -6587,7 +6590,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 27,
+      "elapsedMs": 25,
       "capabilities": [
         {
           "id": "ai_context",
@@ -6880,14 +6883,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -6980,7 +6983,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 31,
+      "elapsedMs": 30,
       "capabilities": [
         {
           "id": "ai_context",
@@ -7278,14 +7281,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -7372,7 +7375,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 37,
+      "elapsedMs": 34,
       "capabilities": [
         {
           "id": "ai_context",
@@ -7660,14 +7663,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -7754,7 +7757,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 29,
+      "elapsedMs": 27,
       "capabilities": [
         {
           "id": "ai_context",
@@ -8042,14 +8045,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -8412,14 +8415,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -8509,7 +8512,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 24,
+      "elapsedMs": 22,
       "capabilities": [
         {
           "id": "ai_context",
@@ -8786,14 +8789,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -8879,7 +8882,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 28,
+      "elapsedMs": 26,
       "capabilities": [
         {
           "id": "ai_context",
@@ -9172,14 +9175,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -9266,7 +9269,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 32,
+      "elapsedMs": 24,
       "capabilities": [
         {
           "id": "ai_context",
@@ -9559,14 +9562,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -9655,7 +9658,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 28,
+      "elapsedMs": 23,
       "capabilities": [
         {
           "id": "ai_context",
@@ -9943,14 +9946,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:85947eb75d05fa4faa3aa7fbbbea64a646a57f63abccb509c4275681073ba7ef",
+        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.3"
+          "version": "1.0.4"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {

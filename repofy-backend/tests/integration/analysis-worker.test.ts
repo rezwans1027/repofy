@@ -16,6 +16,7 @@ import { JobError, jobError } from '../../src/domain/jobs/policy';
 import { maintenance, schedule } from '../../src/domain/jobs/scheduler';
 import { JobRepository, type Claim } from '../../src/domain/jobs/repository';
 import { coverageProfile } from '../../src/domain/coverage/manifest';
+import { policyHash, structuralSecurityPolicy } from '../../src/domain/ingestion/policy';
 
 let db:Awaited<ReturnType<typeof selectionDatabase>>;let f:Awaited<ReturnType<typeof seedAnalysisFixture>>;let root:string;
 let handlers:AnalysisHandlers;let sources:number;let captures:unknown[];
@@ -56,7 +57,7 @@ it('a lost completion acknowledgement leaves the saved report completed and sett
 it('missing handlers fail explicitly before fetching source',async()=>{
   const j=await start();await new AnalysisWorker(f.jobs,null,ingest,()=>f.crypto).once();expect(await f.jobs.read(f.actor,j.jobId)).toMatchObject({status:'failed',failureCode:'FEATURE_NOT_IMPLEMENTED'});expect(sources).toBe(0);
 });
-it.each(['1.0.0','1.0.1','1.0.2'])('rejects a job frozen to analyzer %s before acquiring source or invoking corrected handlers',async version=>{
+it.each(['1.0.0','1.0.1','1.0.2','1.0.3'])('rejects a job frozen to analyzer %s before acquiring source or invoking corrected handlers',async version=>{
   Object.assign(f.policy.versions,{extractorBundle:{id:'language_inventory',version:version==='1.0.0'?'1.0.0':'1.0.1'},
     detectorBundle:{id:'tsjs_implementation',version},coverageManifest:version==='1.0.0'?'1.2.0':'1.2.1'});
   const current=coverageProfile();
@@ -66,6 +67,18 @@ it.each(['1.0.0','1.0.1','1.0.2'])('rejects a job frozen to analyzer %s before a
   await new AnalysisWorker(f.jobs,handlers,ingestion,()=>f.crypto).once();
   expect(await f.jobs.read(f.actor,j.jobId)).toMatchObject({status:'failed',failureCode:'FEATURE_NOT_IMPLEMENTED',retryable:false});
   expect(ingestion).not.toHaveBeenCalled();expect(handlers.extract).not.toHaveBeenCalled();expect(handlers.synthesize).not.toHaveBeenCalled();
+});
+it('rejects a job pinned to earlier SQL screening before acquiring source', async () => {
+  const current = structuralSecurityPolicy();
+  f.policy.security = { ...current, version: '1.1.0', exclusions: 'repofy-exclusions-1.1.0' };
+  f.policy.versions.ingestionPolicyHash = policyHash(f.policy.security);
+  handlers.policy = structuredClone(f.policy);
+  handlers.policy.security = current;
+  handlers.policy.versions.ingestionPolicyHash = policyHash(current);
+  const ingestion = vi.fn(ingest), job = await start();
+  await new AnalysisWorker(f.jobs, handlers, ingestion, () => f.crypto).once();
+  expect(await f.jobs.read(f.actor, job.jobId)).toMatchObject({ status: 'failed', failureCode: 'FEATURE_NOT_IMPLEMENTED', retryable: false });
+  expect(ingestion).not.toHaveBeenCalled(); expect(handlers.synthesize).not.toHaveBeenCalled();
 });
 it('cancellation during a handler cleans files and prevents publication',async()=>{
   const j=await start();vi.mocked(handlers.extract).mockImplementationOnce(async()=>{await f.jobs.cancel(f.actor,j.jobId,randomUUID());return f.bundles[0];});

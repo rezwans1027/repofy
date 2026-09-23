@@ -79,8 +79,20 @@ function memberOf(file: IndexedFile, expression: ts.Expression, parameter: ts.Id
   for (let i = path.length - 1; i >= 0; i--) { if (!ts.isPropertyAccessExpression(current) || current.questionDotToken || current.name.text !== path[i]) return false; current = current.expression; }
   return ts.isIdentifier(current) && same(file, current, parameter);
 }
-function terminal(statement: ts.Statement) { return ts.isReturnStatement(statement) || ts.isThrowStatement(statement)
-  || ts.isBlock(statement) && statement.statements.length === 1 && (ts.isReturnStatement(statement.statements[0]) || ts.isThrowStatement(statement.statements[0])); }
+function rejectingStateExit(file: IndexedFile, statement: ts.Statement): boolean {
+  if (ts.isBlock(statement)) { if (statement.statements.length !== 1) return false; statement = statement.statements[0]; }
+  if (!ts.isReturnStatement(statement) && !ts.isThrowStatement(statement)) return false;
+  if (!statement.expression) return ts.isReturnStatement(statement);
+  const literal = (value: ts.Expression) => ts.isStringLiteral(value) || ts.isNumericLiteral(value)
+    || [ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(value.kind)
+    || ts.isIdentifier(value) && value.text === "undefined" && !file.hasBinding(value);
+  const value = unwrap(statement.expression);
+  // A terminal expression may itself perform the protected operation. Only
+  // inert returns/throws and a known, unshadowed Error construction are supported.
+  return literal(value) || ts.isThrowStatement(statement) && ts.isNewExpression(value)
+    && ts.isIdentifier(value.expression) && value.expression.text === "Error" && !file.hasBinding(value.expression)
+    && (!value.arguments || value.arguments.every(literal));
+}
 
 function backend(file: IndexedFile, emit: (finding: RawFinding) => void) {
   for (const route of routeContexts(file)) {
@@ -252,7 +264,7 @@ function reliability(file: IndexedFile, emit: (f: RawFinding) => void) {
   }
   for (const fn of file.functions) {
     const body = bodyOf(fn); const parameter = fn.parameters[0]?.name; const guard = body?.statements[0];
-    if (!body || !parameter || !ts.isIdentifier(parameter) || !guard || !ts.isIfStatement(guard) || guard.elseStatement || !terminal(guard.thenStatement)
+    if (!body || !parameter || !ts.isIdentifier(parameter) || !guard || !ts.isIfStatement(guard) || guard.elseStatement || !rejectingStateExit(file, guard.thenStatement)
       || !ts.isBinaryExpression(guard.expression) || guard.expression.operatorToken.kind !== ts.SyntaxKind.ExclamationEqualsEqualsToken
       || !ts.isStringLiteral(guard.expression.right) || !memberOf(file, guard.expression.left, parameter, ["state"])) continue;
     const operation = body.statements[1] && directCall(body.statements[1]); const target = operation && file.localFunction(operation.expression);

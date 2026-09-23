@@ -17,8 +17,8 @@ export const IngestionLimitsSchema = z.strictObject({
 });
 export type IngestionLimits = z.infer<typeof IngestionLimitsSchema>;
 export const SecurityPolicySchema = z.strictObject({
-  version: z.enum(["1.0.0", "1.1.0"]), scanner: z.literal("repofy-static-secrets-1.0.0"),
-  exclusions: z.enum(["repofy-exclusions-1.0.0", "repofy-exclusions-1.1.0"]), ignore: z.literal("ignore-7.0.9-subset-1.0.0"),
+  version: z.enum(["1.0.0", "1.1.0", "1.1.1"]), scanner: z.literal("repofy-static-secrets-1.0.0"),
+  exclusions: z.enum(["repofy-exclusions-1.0.0", "repofy-exclusions-1.1.0", "repofy-exclusions-1.1.1"]), ignore: z.literal("ignore-7.0.9-subset-1.0.0"),
   parser: z.literal("tar-7.5.22-guards-1.0.0"), coverage: z.literal("utf8-static-1.0.0"),
   limits: IngestionLimitsSchema,
 }).refine(p => p.exclusions === `repofy-exclusions-${p.version}`);
@@ -31,7 +31,7 @@ export function securityPolicy(limits: Partial<IngestionLimits> = {}): Readonly<
 }
 /** Explicit opt-in for new structural runs; old pinned jobs retain v1.0 behavior. */
 export function structuralSecurityPolicy(limits: Partial<IngestionLimits> = {}): Readonly<SecurityPolicy> {
-  const policy = SecurityPolicySchema.parse({ ...securityPolicy(limits), version: "1.1.0", exclusions: "repofy-exclusions-1.1.0" });
+  const policy = SecurityPolicySchema.parse({ ...securityPolicy(limits), version: "1.1.1", exclusions: "repofy-exclusions-1.1.1" });
   Object.freeze(policy.limits); return Object.freeze(policy);
 }
 export function policyHash(policy: SecurityPolicy): string {

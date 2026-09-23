@@ -23,6 +23,32 @@ const stops = [
   'try {} finally { return; }',
 ];
 
+describe('state guards reject input before performing work', () => {
+  it.each([
+    'return save(item);', 'return await save(item);', 'throw save(item);',
+    'return (save(item), false);', 'return item.reject();', 'throw new Error(save(item));',
+    '{ return save(item); }',
+  ])('does not credit a rejecting branch with unproven effects: %s', exit => {
+    const source = `import {save} from './service'; export async function run(item){if(item.state!=='ready') ${exit} return save(item);}`;
+    expect(kinds('state.ts', source)).not.toContain('state_guard');
+  });
+  it.each(['return;', 'return false;', 'return null;', 'return undefined;', '{ return; }', 'throw new Error("Unexpected state");'])('preserves a rejecting exit without work: %s', exit => {
+    const source = `import {save} from './service'; export function run(item){if(item.state!=='ready') ${exit} return save(item);}`;
+    expect(kinds('state.ts', source)).toContain('state_guard');
+  });
+  it('does not assume a shadowed Error constructor is harmless', () => {
+    const source = `import {save} from './service'; const Error=save; export function run(item){if(item.state!=='ready') throw new Error(item); return save(item);}`;
+    expect(kinds('state.ts', source)).not.toContain('state_guard');
+  });
+  it('does not award concurrency strength or publish a claim when both branches perform the operation', async () => {
+    const f = await narrativeFixture({ 'service.ts': service,
+      'state.ts': `import {save} from './service'; export async function run(item){if(item.state!=='ready') return await save(item); return save(item);}` });
+    expect(f.p.facts.aggregation.capabilities.find(c => c.capabilityId === 'reliability_concurrency')).toMatchObject({ state: 'not_observed', strength: 0 });
+    const report = renderNarrative(f.p, f.selection, f.modelRunId);
+    expect(report.claims.some(c => c.verification === 'verified' && c.capabilityIds.includes('reliability_concurrency'))).toBe(false);
+  });
+});
+
 describe('reachable straight-line detector observations', () => {
   it.each(stops)('rejects parsed-input and local-boundary credit after %s', stop => {
     const source = sample('request_validation').positive.replace('return save(parsed);', `${stop} save(parsed);`);
