@@ -4,7 +4,7 @@ import type { ExclusionReason } from "./policy";
 
 export function mandatoryExclusion(path: string, policyVersion = "1.0.0"): ExclusionReason | undefined {
   const parts = path.toLowerCase().split("/"); const base = parts[parts.length - 1];
-  const structural = policyVersion === "1.1.0" || policyVersion === "1.1.1";
+  const structural = ["1.1.0", "1.1.1", "1.1.2"].includes(policyVersion);
   const schemaSql = structural && (base === "schema.sql" || parts.includes("migrations"))
     && !parts.some(p => /(?:dump|backup|seed|fixture)|(?:^|[._-])(?:data|datasets?)(?:$|[._-])/.test(p)) && base.endsWith(".sql");
   const lockfile = structural && ["package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml", "yarn.lock"].includes(base);
@@ -40,6 +40,12 @@ export function decodeText(bytes: Buffer): { text: string } | { excluded: Exclus
   catch { return { excluded: "unsupported_encoding" }; }
 }
 
+// INSERT conflict/priority modifiers and REPLACE are data writes too. MySQL also
+// permits omitting INTO; require a target followed by a data clause in that form
+// so CREATE OR REPLACE declarations and the REPLACE(...) function stay eligible.
+const sqlIdentifier = String.raw`(?:[\p{L}_][\p{L}\p{N}_$]*|"(?:[^"]|"")+"|` + "`(?:[^`]|``)+`" + String.raw`|\[(?:[^\]]|\]\])+\])`;
+const sqlInsert = new RegExp(String.raw`\b(?:insert(?:\s+(?:or\s+(?:rollback|abort|replace|fail|ignore)|low_priority|delayed|high_priority|ignore))*|replace(?:\s+(?:low_priority|delayed))*)\s+(?:into\b|${sqlIdentifier}(?:\s*\.\s*${sqlIdentifier})*\s*(?:\(|(?:values?|select|table|set|default|partition)\b))`, "iu");
+
 /** Conservative DML screening for the schema-path exception. Only real comments
  * are removed; quoted comment markers must not hide subsequent statements.
  * Quoted bodies remain included, including stored SQL with separated keywords. */
@@ -48,12 +54,15 @@ export function containsSqlData(text: string): boolean {
 }
 function screenSqlData(text: string, depth: number): boolean {
   if (depth > 16) return true;
-  const storedSql = (body: string) => /\b(?:insert|load|merge|delete|copy|update)\b/i.test(body) && screenSqlData(body, depth + 1);
+  const storedSql = (body: string) => /\b(?:insert|replace|load|merge|delete|copy|update)\b/i.test(body) && screenSqlData(body, depth + 1);
   const chunks: string[] = []; let index = 0; let begin = 0;
   while (index < text.length) {
     if (text.startsWith("--", index)) {
       chunks.push(text.slice(begin, index), " "); const end = text.indexOf("\n", index); index = end < 0 ? text.length : end; begin = index;
     } else if (text.startsWith("/*", index)) {
+      // MySQL/MariaDB executable comments are not inert. Their dialect/version
+      // conditions are outside this filter, so do not grant a read capability.
+      if (text.startsWith("/*!", index) || text.slice(index, index + 4).toUpperCase() === "/*M!") return true;
       chunks.push(text.slice(begin, index), " "); let depth = 1; index += 2;
       while (index < text.length && depth) {
         if (text.startsWith("/*", index)) { depth++; index += 2; }
@@ -81,7 +90,7 @@ function screenSqlData(text: string, depth: number): boolean {
     } else index++;
   }
   chunks.push(text.slice(begin)); const normalized = chunks.join("");
-  return /\b(?:insert\s+into|load\s+data|merge\s+into|delete\s+from)\b/i.test(normalized)
+  return sqlInsert.test(normalized) || /\b(?:load\s+data|merge\s+into|delete\s+from)\b/i.test(normalized)
     || (/\bcopy\b/i.test(normalized) && /\bfrom\b/i.test(normalized))
     || (/\bupdate\b/i.test(normalized) && /\bset\b/i.test(normalized));
 }

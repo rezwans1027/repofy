@@ -209,7 +209,7 @@ export class IndexedFile {
           if (file && exported && !exported.written && !exported.mutable && exported.initializer) return file.origin(exported.initializer, depth + 1);
           return undefined;
         }
-        if (b.imported.source.startsWith(".") || this.project.isAlias(this.input.path, b.imported.source) || !this.project.externalAllowed(this.input.path)) return undefined;
+        if (!this.project.isExternal(this.input.path, b.imported.source)) return undefined;
         return { module: b.imported.source, member: b.imported.name };
       }
       return b.initializer ? this.origin(b.initializer, depth + 1) : undefined;
@@ -219,8 +219,7 @@ export class IndexedFile {
     if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
       if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "require" && !this.hasBinding(node.expression)
         && node.arguments.length === 1 && ts.isStringLiteral(node.arguments[0])) {
-        if (this.project.resolve(this.input.path, node.arguments[0].text) || node.arguments[0].text.startsWith(".")
-          || this.project.isAlias(this.input.path, node.arguments[0].text) || !this.project.externalAllowed(this.input.path)) return undefined;
+        if (this.project.resolve(this.input.path, node.arguments[0].text) || !this.project.isExternal(this.input.path, node.arguments[0].text)) return undefined;
         return { module: node.arguments[0].text, member: "*" };
       }
       const base = this.origin(node.expression, depth + 1); return base ? { ...base, member: `${base.member}()` } : undefined;
@@ -285,7 +284,11 @@ export class ProjectIndex {
     } catch { this.stats.aliasConfigurationsRejected++; }
   }
   private configuration(from: string) { let dir = directory(from); while (true) { if (this.aliases.has(dir)) return this.aliases.get(dir); if (!dir) return undefined; dir = directory(dir.slice(0, -1)); } }
-  externalAllowed(from: string) { return this.configuration(from) !== null; }
+  /** Literal external identity is supported statically; runtime package behavior remains unverified. */
+  isExternal(from: string, name: string) {
+    return name.length > 0 && !/^[./#]|\\/.test(name) && (!name.includes(":") || name.startsWith("node:"))
+      && !this.isAlias(from, name) && this.configuration(from) !== null;
+  }
   private aliasMatches(from: string, name: string) {
     const config = this.configuration(from); if (!config) return [];
     return config.paths.flatMap(([key, target]) => {
@@ -303,7 +306,10 @@ export class ProjectIndex {
     const matches = [...new Set(paths)].filter(path => this.files.has(path)); return matches.length === 1 ? matches[0] : undefined;
   }
   finish() {
-    for (const file of this.files.values()) for (const b of file.bindings) if (b.imported && !b.imported.typeOnly && !this.resolve(file.input.path, b.imported.source)) this.stats.unresolvedImports++;
+    for (const file of this.files.values()) for (const b of file.bindings) {
+      if (b.imported && !b.imported.typeOnly && !this.resolve(file.input.path, b.imported.source)
+        && !this.isExternal(file.input.path, b.imported.source)) this.stats.unresolvedImports++;
+    }
     this.resetTraversal();
   }
 }

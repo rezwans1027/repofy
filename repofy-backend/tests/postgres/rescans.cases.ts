@@ -7,6 +7,24 @@ import { rescanFixture } from '../helpers/rescan-fixture';
 import { RescanService } from '../../src/domain/rescans/service';
 
 export function registerRescanTests(db: pg.Client, config: pg.ClientConfig) {
+  for (const missing of [false, true]) test(`external imports preserve comparison scope; missing local import: ${missing}`, async () => {
+    const query = "import {Pool} from 'pg'; const pool=new Pool(); export async function read(id){return await pool.query('SELECT id FROM records WHERE id=$1',[id]);}";
+    const f = await rescanFixture(db, jobsRpc(db), 1, { 'query.ts': query + (missing ? "\nimport {value} from './missing';" : '') });
+    try {
+      f.commits.set(f.bindings[0].repositoryId, 'b'.repeat(40));
+      const result = await f.service.start(f.actor, f.baseline.report.reportId, f.request(), f.policy, 5);
+      assert.equal(result.state, 'queued'); if (result.state !== 'queued') throw new Error();
+      await f.worker.once();
+      const done = await f.jobs.read(f.actor, result.job.jobId); assert.equal(done.status, 'completed'); if (done.status !== 'completed') throw new Error();
+      assert.equal(f.baseline.report.coverage[0].implementation?.unresolvedImports, missing ? 1 : 0);
+      const diff = await f.service.compare(f.actor, f.baseline.report.reportId, { targetReportId: done.report.reportId });
+      assert.equal(diff.comparability, missing ? 'limited' : 'comparable');
+      assert.equal(diff.causes.includes('scope_incomplete'), missing);
+      assert.equal(diff.causes.includes('scope_changed'), false);
+      assert.equal(diff.counts.gained + diff.counts.lost, 0);
+      assert.ok(diff.counts.unchanged > 0);
+    } finally { await f.cleanup(); }
+  });
   test('concurrent rescan admission pins one SHA set, one job and one reservation under independent service connections', async () => {
     const a = new pg.Client(config), b = new pg.Client(config); await a.connect(); await b.connect();
     const f = await rescanFixture(db, jobsRpc(a));

@@ -6,8 +6,8 @@
     "splitPolicy": "Evaluation cases authored and frozen before first execution; excluded from earlier detector development. Same implementation agent authored references: not independent or blinded calibration. Never revise labels to match results.",
     "measurementUnit": "Individual TS/JS detector/file observations; recall covers the annotated supported static patterns only. Out-of-scope valid alternatives reported separately."
   },
-  "measuredAt": "2026-09-23T20:19:09.420Z",
-  "domainSourceSha256": "e503b28cb1215fc4f25a158a00556f63c7253dd34cea526a0f6edaa9127cbe27",
+  "measuredAt": "2026-09-24T15:45:37.490Z",
+  "domainSourceSha256": "549a48d9d78b89d824a22f3f324e18d204498603a213a61ff6d85581e273ce09",
   "developmentSources": [
     {
       "path": "tests/fixtures/evidence/repositories.json",
@@ -242,7 +242,7 @@
     "unsupportedMajorClaimRate": null,
     "roleRubricCalibration": null,
     "extractionThroughRenderingMs": {
-      "p50": 27,
+      "p50": 26,
       "p95": 34
     },
     "syntheticCasesCompleted": {
@@ -254,7 +254,7 @@
         1
       ]
     },
-    "peakRssMiB": 247,
+    "peakRssMiB": 246,
     "actualProviderCostUsd": 0,
     "providerCalls": 0,
     "modelQualityMeasured": false,
@@ -330,7 +330,7 @@
     ],
     "status": "stale",
     "reviewedDomainSourceSha256": "c2f8e497394a42288d4432b79726dcce901443dac44f27bf4e18f2f0121cb816",
-    "currentDomainSourceSha256": "e503b28cb1215fc4f25a158a00556f63c7253dd34cea526a0f6edaa9127cbe27",
+    "currentDomainSourceSha256": "549a48d9d78b89d824a22f3f324e18d204498603a213a61ff6d85581e273ce09",
     "historicalReview": {
       "reviewCount": 1,
       "completelyReviewed": 1,
@@ -815,7 +815,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 81,
+      "elapsedMs": 78,
       "capabilities": [
         {
           "id": "ai_context",
@@ -1118,14 +1118,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -1510,14 +1510,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -1603,7 +1603,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 33,
+      "elapsedMs": 32,
       "capabilities": [
         {
           "id": "ai_context",
@@ -1901,14 +1901,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -1995,7 +1995,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 29,
+      "elapsedMs": 31,
       "capabilities": [
         {
           "id": "ai_context",
@@ -2288,14 +2288,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -2382,7 +2382,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 29,
+      "elapsedMs": 30,
       "capabilities": [
         {
           "id": "ai_context",
@@ -2675,14 +2675,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -2768,7 +2768,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 27,
+      "elapsedMs": 26,
       "capabilities": [
         {
           "id": "ai_context",
@@ -3056,14 +3056,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -3150,7 +3150,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 27,
+      "elapsedMs": 25,
       "capabilities": [
         {
           "id": "ai_context",
@@ -3438,14 +3438,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -3819,14 +3819,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -3913,7 +3913,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 29,
+      "elapsedMs": 28,
       "capabilities": [
         {
           "id": "ai_context",
@@ -4206,14 +4206,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -4588,14 +4588,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -4969,14 +4969,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -5064,7 +5064,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 29,
+      "elapsedMs": 26,
       "capabilities": [
         {
           "id": "ai_context",
@@ -5352,14 +5352,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -5445,7 +5445,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 28,
+      "elapsedMs": 26,
       "capabilities": [
         {
           "id": "ai_context",
@@ -5733,14 +5733,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -5830,7 +5830,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 34,
+      "elapsedMs": 27,
       "capabilities": [
         {
           "id": "ai_context",
@@ -6118,14 +6118,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -6212,7 +6212,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 25,
+      "elapsedMs": 23,
       "capabilities": [
         {
           "id": "ai_context",
@@ -6495,14 +6495,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -6590,7 +6590,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 25,
+      "elapsedMs": 26,
       "capabilities": [
         {
           "id": "ai_context",
@@ -6883,14 +6883,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -6983,7 +6983,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 30,
+      "elapsedMs": 29,
       "capabilities": [
         {
           "id": "ai_context",
@@ -7281,14 +7281,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -7663,14 +7663,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -7757,7 +7757,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 27,
+      "elapsedMs": 28,
       "capabilities": [
         {
           "id": "ai_context",
@@ -8045,14 +8045,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -8138,7 +8138,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 24,
+      "elapsedMs": 23,
       "capabilities": [
         {
           "id": "ai_context",
@@ -8415,14 +8415,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -8512,7 +8512,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 22,
+      "elapsedMs": 23,
       "capabilities": [
         {
           "id": "ai_context",
@@ -8789,14 +8789,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -9175,14 +9175,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -9269,7 +9269,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 24,
+      "elapsedMs": 25,
       "capabilities": [
         {
           "id": "ai_context",
@@ -9562,14 +9562,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
@@ -9658,7 +9658,7 @@
         "confidenceModifier": null,
         "basis": "context_only_uncalibrated"
       },
-      "elapsedMs": 23,
+      "elapsedMs": 25,
       "capabilities": [
         {
           "id": "ai_context",
@@ -9946,14 +9946,14 @@
       "versions": {
         "contract": "1.0.0",
         "snapshotIdentity": "1.0.0",
-        "ingestionPolicyHash": "sha256:94631a2bc512c39e87eb2628bfcf902ed89ee93398cc3e9f5f826929ddc16a8f",
+        "ingestionPolicyHash": "sha256:423b70a8fc7dc4506014d7fd0f44ed02566604a6ecad5aa0054d7dfab3c5bcb3",
         "extractorBundle": {
           "id": "language_inventory",
           "version": "1.0.1"
         },
         "detectorBundle": {
           "id": "tsjs_implementation",
-          "version": "1.0.4"
+          "version": "1.0.5"
         },
         "coverageManifest": "1.2.1",
         "aggregationPolicy": {
