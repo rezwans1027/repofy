@@ -4,7 +4,7 @@ import type { ExclusionReason } from "./policy";
 
 export function mandatoryExclusion(path: string, policyVersion = "1.0.0"): ExclusionReason | undefined {
   const parts = path.toLowerCase().split("/"); const base = parts[parts.length - 1];
-  const structural = ["1.1.0", "1.1.1", "1.1.2"].includes(policyVersion);
+  const structural = ["1.1.0", "1.1.1", "1.1.2", "1.1.3", "1.1.4"].includes(policyVersion);
   const schemaSql = structural && (base === "schema.sql" || parts.includes("migrations"))
     && !parts.some(p => /(?:dump|backup|seed|fixture)|(?:^|[._-])(?:data|datasets?)(?:$|[._-])/.test(p)) && base.endsWith(".sql");
   const lockfile = structural && ["package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml", "yarn.lock"].includes(base);
@@ -45,6 +45,15 @@ export function decodeText(bytes: Buffer): { text: string } | { excluded: Exclus
 // so CREATE OR REPLACE declarations and the REPLACE(...) function stay eligible.
 const sqlIdentifier = String.raw`(?:[\p{L}_][\p{L}\p{N}_$]*|"(?:[^"]|"")+"|` + "`(?:[^`]|``)+`" + String.raw`|\[(?:[^\]]|\]\])+\])`;
 const sqlInsert = new RegExp(String.raw`\b(?:insert(?:\s+(?:or\s+(?:rollback|abort|replace|fail|ignore)|low_priority|delayed|high_priority|ignore))*|replace(?:\s+(?:low_priority|delayed))*)\s+(?:into\b|${sqlIdentifier}(?:\s*\.\s*${sqlIdentifier})*\s*(?:\(|(?:values?|select|table|set|default|partition)\b))`, "iu");
+// Oracle multitable INSERT can put ALL/FIRST and WHEN conditions before INTO.
+// ALL is optional for conditional inserts. Fail closed on each form's prefix;
+// interpreting its conditions or enumerating every target is unnecessary here.
+const sqlMultitableInsert = /\binsert\s+(?:all|first|when)\b/i;
+// CockroachDB UPSERT is a data write. SQL Server MERGE permits omitting INTO,
+// and permits TOP and table hints before USING. Screen these prefixes without
+// trying to interpret the data source or conditional INSERT/UPDATE branches.
+const sqlUpsert = /\bupsert\s+into\b/i;
+const sqlMerge = new RegExp(String.raw`\bmerge\s+(?:into\b|top\s*\(|${sqlIdentifier}(?:\s*\.\s*${sqlIdentifier})*\s+(?:(?:as\s+)?${sqlIdentifier}\s+)?(?:using\b|with\s*\())`, "iu");
 
 /** Conservative DML screening for the schema-path exception. Only real comments
  * are removed; quoted comment markers must not hide subsequent statements.
@@ -54,7 +63,7 @@ export function containsSqlData(text: string): boolean {
 }
 function screenSqlData(text: string, depth: number): boolean {
   if (depth > 16) return true;
-  const storedSql = (body: string) => /\b(?:insert|replace|load|merge|delete|copy|update)\b/i.test(body) && screenSqlData(body, depth + 1);
+  const storedSql = (body: string) => /\b(?:insert|upsert|replace|load|merge|delete|copy|update)\b/i.test(body) && screenSqlData(body, depth + 1);
   const chunks: string[] = []; let index = 0; let begin = 0;
   while (index < text.length) {
     if (text.startsWith("--", index)) {
@@ -90,7 +99,8 @@ function screenSqlData(text: string, depth: number): boolean {
     } else index++;
   }
   chunks.push(text.slice(begin)); const normalized = chunks.join("");
-  return sqlInsert.test(normalized) || /\b(?:load\s+data|merge\s+into|delete\s+from)\b/i.test(normalized)
+  return sqlInsert.test(normalized) || sqlMultitableInsert.test(normalized) || sqlUpsert.test(normalized) || sqlMerge.test(normalized)
+    || /\b(?:load\s+data|delete\s+from)\b/i.test(normalized)
     || (/\bcopy\b/i.test(normalized) && /\bfrom\b/i.test(normalized))
     || (/\bupdate\b/i.test(normalized) && /\bset\b/i.test(normalized));
 }

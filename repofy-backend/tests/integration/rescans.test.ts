@@ -155,7 +155,7 @@ it('qualifies unchanged implementation displaced by the detector file budget', a
     expect(files['retry.ts']).toBe(retrySource);
     expect(target.report.coverage[0].implementation).toMatchObject({ eligibleFiles: 258, analyzedFiles: 256, limitedFiles: 2 });
     const diff = await f.service.compare(f.actor, f.baseline.report.reportId, { targetReportId: job.report.reportId, change: 'lost' });
-    expect(diff.algorithm).toBe('evidence-diff-1.0.2');
+    expect(diff.algorithm).toBe('evidence-diff-1.0.3');
     expect(diff.comparability).toBe('limited');
     expect(diff.causes).toEqual(expect.arrayContaining(['scope_changed', 'scope_incomplete']));
     expect(diff.evidence.find(e => e.detector === 'tsjs.bounded_retry')).toMatchObject({ change: 'lost', interpretation: 'limited_by_scope_or_versions' });

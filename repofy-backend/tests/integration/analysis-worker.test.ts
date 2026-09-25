@@ -57,7 +57,7 @@ it('a lost completion acknowledgement leaves the saved report completed and sett
 it('missing handlers fail explicitly before fetching source',async()=>{
   const j=await start();await new AnalysisWorker(f.jobs,null,ingest,()=>f.crypto).once();expect(await f.jobs.read(f.actor,j.jobId)).toMatchObject({status:'failed',failureCode:'FEATURE_NOT_IMPLEMENTED'});expect(sources).toBe(0);
 });
-it.each(['1.0.0','1.0.1','1.0.2','1.0.3','1.0.4'])('rejects a job frozen to analyzer %s before acquiring source or invoking corrected handlers',async version=>{
+it.each(['1.0.0','1.0.1','1.0.2','1.0.3','1.0.4','1.0.5'])('rejects a job frozen to analyzer %s before acquiring source or invoking corrected handlers',async version=>{
   Object.assign(f.policy.versions,{extractorBundle:{id:'language_inventory',version:version==='1.0.0'?'1.0.0':'1.0.1'},
     detectorBundle:{id:'tsjs_implementation',version},coverageManifest:version==='1.0.0'?'1.2.0':'1.2.1'});
   const current=coverageProfile();
@@ -68,7 +68,7 @@ it.each(['1.0.0','1.0.1','1.0.2','1.0.3','1.0.4'])('rejects a job frozen to anal
   expect(await f.jobs.read(f.actor,j.jobId)).toMatchObject({status:'failed',failureCode:'FEATURE_NOT_IMPLEMENTED',retryable:false});
   expect(ingestion).not.toHaveBeenCalled();expect(handlers.extract).not.toHaveBeenCalled();expect(handlers.synthesize).not.toHaveBeenCalled();
 });
-it.each(['1.1.0', '1.1.1'] as const)('rejects a job pinned to SQL screening %s before acquiring source', async version => {
+it.each(['1.1.0', '1.1.1', '1.1.2', '1.1.3'] as const)('rejects a job pinned to SQL screening %s before acquiring source', async version => {
   const current = structuralSecurityPolicy();
   f.policy.security = { ...current, version, exclusions: `repofy-exclusions-${version}` };
   f.policy.versions.ingestionPolicyHash = policyHash(f.policy.security);

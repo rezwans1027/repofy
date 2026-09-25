@@ -32,6 +32,8 @@ it('reads frozen math, all role definitions and source-free projections without 
     const view = await f.reader.view(f.actor, f.report.reportId);
     expect(view.aggregation!.roles).toHaveLength(5); expect(view.roleDefinitions).toHaveLength(5); expect(view.categories).toHaveLength(14);
     expect(view.report.roles).toEqual(f.report.roles); expect(view.report.snapshots[0].repositoryLabel).toBe('Repository 1');
+    expect(view.roleAvailability).toHaveLength(5);
+    expect(view.roleAvailability!.every(r => r.state !== 'available')).toBe(true);
     expect(view.report.evidence.every(e => !e.location)).toBe(true);
     expect((await f.reader.history(f.actor, { limit: 1 })).items[0].reportId).toBe(f.report.reportId);
     expect(f.verifyRepository).not.toHaveBeenCalled();

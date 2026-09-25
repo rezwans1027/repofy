@@ -4,6 +4,7 @@ export const fixtureId = (n: number) => `00000000-0000-4000-8000-${String(n).pad
 export function readinessView() {
   const report = ReadinessReportResponseSchema.parse(createSyntheticReportFixture());
   report.versions.aggregationPolicy = { id: 'evidence_aggregation', version: '1.0.0' };
+  report.versions.taxonomy = { id: 'engineering_capabilities', version: '1.0.0' };
   report.snapshots[0].repositoryLabel = 'Repository 1'; report.evidence[0].strength = .65; report.evidence[0].confidence = .55;
   report.evidence[0].location = undefined;
   const assessment = report.capabilityGroups[0].capabilities[0]; if (assessment.state === 'assessed') { assessment.strength = .65; assessment.confidence = .55; }

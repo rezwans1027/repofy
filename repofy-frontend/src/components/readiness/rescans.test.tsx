@@ -83,7 +83,9 @@ it('deduplicates rapid rescan submission and ignores a late response after unmou
 });
 it('shows separate strength/confidence/unknown values, accessible filters, paging and immutable evidence links', async () => {
   const { container } = render(wrap(<ReportComparison baselineId={view.report.reportId} targetId={fixtureId(70)} />)); await screen.findByRole('heading', { name: 'Changes in your project evidence' });
-  expect(screen.getByText('Strength 55% → 65% · +10 percentage points')).toBeInTheDocument(); expect(screen.getByText('Confidence 55% → 55% · 0 percentage points')).toBeInTheDocument(); expect(screen.getAllByText(/Coverage Unknown → Unknown/)).toHaveLength(5);
+  expect(screen.getByText('Strength 55% → 65% · +10 percentage points')).toBeInTheDocument(); expect(screen.getByText('Confidence 55% → 55% · 0 percentage points')).toBeInTheDocument();
+  expect(screen.getAllByText(/Role readiness comparison unavailable/)).toHaveLength(5);
+  expect(screen.queryByText(/Coverage Unknown → Unknown/)).not.toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Inspect target evidence' })).toHaveAttribute('href', `/readiness/reports/${fixtureId(70)}?evidence=${view.report.evidence[0].evidenceId}`);
   await userEvent.click(screen.getByRole('button', { name: 'More changes' })); await waitFor(() => expect(fetch).toHaveBeenCalledWith(expect.stringContaining('offset=30'), expect.anything())); await screen.findByRole('combobox', { name: 'Evidence change' });
   await userEvent.selectOptions(screen.getByLabelText('Evidence change'), 'gained'); await waitFor(() => expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/offset=0.*change=gained/), expect.anything())); await screen.findByRole('heading', { name: 'Changes in your project evidence' });
@@ -94,4 +96,12 @@ it.each(['foreign pair', 'raw field'])('fails closed on a %s comparison without 
   vi.mocked(fetch).mockResolvedValue(success(kind === 'raw field' ? { ...data, rawSource: 'PRIVATE_SOURCE_SENTINEL' } : data));
   render(wrap(<ReportComparison baselineId={view.report.reportId} targetId={fixtureId(70)} />)); await screen.findByRole('heading', { name: 'Comparison unavailable' });
   expect(screen.queryByText('PRIVATE_SOURCE_SENTINEL')).not.toBeInTheDocument(); expect(screen.queryByRole('heading', { name: 'Changes in your project evidence' })).not.toBeInTheDocument();
+});
+it('withholds legacy role deltas returned before availability-aware comparisons', async () => {
+  const legacy = comparison(); legacy.roles[0] = { ...legacy.roles[0], baseline: 0, target: .0325, coverageDelta: .0325, confidenceDelta: .01 };
+  vi.mocked(fetch).mockResolvedValue(success(legacy));
+  render(wrap(<ReportComparison baselineId={view.report.reportId} targetId={fixtureId(70)} />));
+  await screen.findByRole('heading', { name: 'Changes in your project evidence' });
+  expect(screen.getAllByText(/Role readiness comparison unavailable/)).toHaveLength(5);
+  expect(screen.queryByText(/3.25/)).not.toBeInTheDocument();
 });

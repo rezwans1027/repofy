@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import type { AggregatedCapability, ReportView } from "@repofy/contracts";
+import { roleAvailability, type AggregatedCapability, type ReportView } from "@repofy/contracts";
 import { Button } from "@/components/ui/button";
 import { FindingFeedbackControl } from "./finding-feedback";
 import { cardClass, ClaimText, percent, recordReportEvent, words, type OpenEvidence } from "./report-shared";
@@ -13,11 +13,11 @@ export function CapabilityMap({ view, openEvidence }: { view: ReportView; openEv
       <div className="grid gap-4 md:grid-cols-2">{group.capabilities.map(cap => {
         const trace = view.aggregation?.capabilities.find(c => c.capabilityId === cap.capabilityId);
         const label = view.capabilities.find(c => c.capabilityId === cap.capabilityId)?.label ?? words(cap.capabilityId);
-        return <article key={cap.capabilityId} className={cardClass}><h4 className="font-semibold">{label}</h4>
+        return <article key={cap.capabilityId} className={cardClass}><h4 id={`capability-${cap.capabilityId}`} tabIndex={-1} className="font-semibold">{label}</h4>
           <dl className="grid grid-cols-2 gap-4"><div><dt className="text-sm text-muted-foreground">Evidence strength</dt><dd className="font-medium">{cap.state === "assessed" ? `${percent(cap.strength)} · ${words(trace?.strengthBand ?? "assessed")}` : cap.state === "unknown" ? "Unknown · Not assessable" : "Not observed"}</dd></div>
             <div><dt className="text-sm text-muted-foreground">Confidence</dt><dd className="font-medium">{cap.state === "unknown" ? "Unknown" : `${percent(cap.confidence)}${trace?.confidenceLabel ? ` · ${words(trace.confidenceLabel)}` : ""}`}</dd></div></dl>
           {cap.state === "assessed" ? <ClaimText claim={cap.reasoning} openEvidence={openEvidence} /> : <p>{cap.explanation}</p>}
-          <details><summary className="cursor-pointer font-medium">Calculation and scope for {label}</summary><div className="mt-3 space-y-3">
+          <details id={`capability-scope-${cap.capabilityId}`}><summary className="cursor-pointer font-medium">Calculation and scope for {label}</summary><div className="mt-3 space-y-3">
             {trace ? <Calculation trace={trace} view={view} openEvidence={openEvidence} /> : <p>A detailed calculation trace was not retained for this older report.</p>}
           </div></details>
           {cap.state === "assessed" && <Button variant="outline" className="h-auto whitespace-normal" onClick={() => openEvidence({ capabilityId: cap.capabilityId })}>Explore all evidence for {label}</Button>}
@@ -41,16 +41,25 @@ function Calculation({ trace, view, openEvidence }: { trace: AggregatedCapabilit
 
 export function RoleViews({ view, openEvidence }: { view: ReportView; openEvidence: OpenEvidence }) {
   const label = (id: string) => view.capabilities.find(c => c.capabilityId === id)?.label ?? words(id);
+  const availability = view.roleAvailability ?? roleAvailability(view.report);
   return <section id="roles" className="space-y-4" aria-labelledby="roles-heading"><h2 id="roles-heading" className="text-2xl font-semibold">Five role views</h2>
     <p>Coverage describes repository evidence against a versioned role rubric. It is not a hiring recommendation, a candidate ranking, or a seniority estimate. The rubric and confidence values are not calibrated for those uses.</p>
     {view.report.roles.map(result => {
       const role = view.aggregation?.roles.find(r => r.template.roleId === result.template.roleId);
       const definition = view.roleDefinitions.find(r => r.roleId === result.template.roleId);
+      const status = availability.find(r => r.template.roleId === result.template.roleId)!;
       return <article key={result.template.roleId} className={cardClass}><h3 className="text-lg font-semibold">{definition?.name ?? words(result.template.roleId)}</h3>
-        <dl className="grid gap-4 sm:grid-cols-3"><div><dt className="text-sm text-muted-foreground">Weighted coverage</dt><dd className="text-xl font-semibold">{result.state === "unknown" ? "Unknown" : percent(result.coverage)}</dd></div>
-          <div><dt className="text-sm text-muted-foreground">Confidence</dt><dd>{result.state === "unknown" ? "Unknown" : percent(result.confidence)}</dd></div>
+        <dl className="grid gap-4 sm:grid-cols-2"><div><dt className="text-sm text-muted-foreground">Role readiness</dt><dd className="text-xl font-semibold">{status.state === "unknown" ? "Unknown" : status.state === "unavailable" ? "Unavailable" : result.state === "assessed" ? percent(result.coverage) : "Unknown"}</dd></div>
           <div><dt className="text-sm text-muted-foreground">Unknown requirement weight</dt><dd>{role ? percent(role.unknownWeight) : "Not retained"}</dd></div></dl>
-        {role && <><p>Coverage keeps all requirement weights in the denominator: {role.numerator} / {role.denominator}. Unknown requirements remain unknown; they are not observed weaknesses.</p>
+        {status.state !== "available" && <p>{status.reason === "required_confidence_unattainable"
+          ? "This analyzer cannot reach the confidence required by this role rubric. A low or zero rubric calculation does not measure your readiness. Review the observed capabilities and scope below."
+          : status.reason === "insufficient_coverage" ? "The selected snapshots do not provide assessable evidence for this role. Your readiness remains unknown."
+            : "This analysis policy has not been qualified for role readiness. Review the observed capabilities and scope below."}</p>}
+        {result.state === "assessed" && <details><summary className="cursor-pointer font-medium">Recorded rubric calculation for {definition?.name ?? words(result.template.roleId)}</summary>
+          <p className="mt-3">Limited calculation: {percent(result.coverage)} weighted coverage; {percent(result.confidence)} confidence. These are recorded policy values, not a usable readiness score.</p>
+          {role && <p>All requirement weights remain in the denominator: {role.numerator} / {role.denominator}. Unknown requirements are not observed weaknesses.</p>}
+        </details>}
+        {role && <>
           <div className="flex flex-wrap items-center gap-2"><span>Supporting capabilities:</span>{role.strongestCapabilityIds.length ? role.strongestCapabilityIds.map(id => <Button key={id} variant="outline" size="sm" className="h-auto whitespace-normal" onClick={() => openEvidence({ capabilityId: id })}>{label(id)}</Button>) : <span>None assessed.</span>}</div>
           <p>Contributing repositories: {role.leadingRepositories.length ? role.leadingRepositories.map(r => `${view.report.snapshots.find(s => s.repositoryId === r.repositoryId)?.repositoryLabel} (${percent(r.contribution)} weighted contribution)`).join("; ") : "No supporting repository contribution assessed."}</p>
           {role.gaps.length > 0 && <div><h4 className="font-medium">Important evidence gaps</h4><ul className="list-disc pl-5">{role.gaps.slice(0, 5).map(g => <li key={g.requirementId}>
@@ -71,14 +80,29 @@ export function RoleViews({ view, openEvidence }: { view: ReportView; openEviden
 
 export function Improvements({ view, openEvidence }: { view: ReportView; openEvidence: OpenEvidence }) {
   const [role, setRole] = useState(""); const [effort, setEffort] = useState("");
+  const label = (id: string) => view.capabilities.find(c => c.capabilityId === id)?.label ?? words(id);
+  function showScope(id: string) {
+    const scope = document.getElementById(`capability-scope-${id}`);
+    if (scope instanceof HTMLDetailsElement) scope.open = true;
+    document.getElementById(`capability-${id}`)?.focus();
+  }
   const items = view.report.improvements.filter(i => (!role || i.roleIds.some(id => id === role)) && (!effort || i.effort === effort));
   return <section id="improvements" className="space-y-4" aria-labelledby="improvements-heading"><h2 id="improvements-heading" className="text-2xl font-semibold">Prioritized improvements</h2>
     <p>These are proposals for future evidence. They are not achievements already observed in your projects.</p>
     <div className="flex flex-wrap gap-4"><label className="space-y-1 text-sm">Filter improvements by role<select className="block rounded-md border bg-background p-2" value={role} onChange={e => setRole(e.target.value)}><option value="">All roles</option>{view.roleDefinitions.map(r => <option key={r.roleId} value={r.roleId}>{r.name}</option>)}</select></label>
       <label className="space-y-1 text-sm">Filter improvements by effort<select className="block rounded-md border bg-background p-2" value={effort} onChange={e => setEffort(e.target.value)}><option value="">All efforts</option>{["small", "medium", "large", "unknown"].map(e => <option key={e} value={e}>{words(e)}</option>)}</select></label></div>
     {!items.length && <p>No improvement proposals match these filters.</p>}
-    <ol className="space-y-4">{items.map(item => <li key={item.improvementId} className={cardClass}><h3 className="text-lg font-semibold">{item.title}</h3>
+    <ol className="space-y-4">{items.map(item => <li key={item.improvementId} className={cardClass}><h3 className="text-lg font-semibold">{item.title}: {item.capabilityIds.map(label).join(", ")}</h3>
       <p>Proposed · {words(item.effort)} effort · Priority {item.priority}</p>
+      <p>Relevant roles: {item.roleIds.map(id => view.roleDefinitions.find(r => r.roleId === id)?.name ?? words(id)).join(", ")}</p>
+      <ul className="space-y-3" aria-label="Gaps addressed">{view.report.gaps.filter(g => item.gapIds.includes(g.gapId)).map(g => <li key={g.gapId}>
+        <p className="font-medium">{label(g.capabilityId)} · {g.state === "not_assessable" ? "Unknown, not assessable" : g.state === "not_observed" ? "Evidence not observed within assessed scope" : "Limited evidence"}</p>
+        <p>{g.explanation.text}</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <a href={`#capability-${g.capabilityId}`} className="underline" onClick={() => showScope(g.capabilityId)}>Review scope for {label(g.capabilityId)}</a>
+          {g.state === "limited_evidence" && <Button variant="outline" size="sm" className="h-auto max-w-full whitespace-normal" onClick={() => openEvidence({ capabilityId: g.capabilityId })}>Inspect evidence for {label(g.capabilityId)}</Button>}
+        </div>
+      </li>)}</ul>
       <ClaimText claim={item.rationale} openEvidence={openEvidence} />
       <details onToggle={event => { if (event.currentTarget.open) recordReportEvent(view.report.reportId, { event: "improvement_opened", objectId: item.improvementId }); }}><summary className="cursor-pointer font-medium">Plan and acceptance criteria</summary><div className="mt-4 space-y-3">
         <h4 className="font-medium">Expected evidence gained</h4><ul className="list-disc pl-5">{item.expectedProof.map((text, i) => <li key={i}>{text}</li>)}</ul>
@@ -86,7 +110,7 @@ export function Improvements({ view, openEvidence }: { view: ReportView; openEvi
         <h4 className="font-medium">Why this priority</h4><ul className="list-disc pl-5">{item.priorityReasons.map((text, i) => <li key={i}>{text}</li>)}</ul>
         {item.priorityTrace && <p>Relevance {item.priorityTrace.roleRelevance}; gap {item.priorityTrace.gap}; expected proof {item.priorityTrace.expectedProof}; confidence {item.priorityTrace.confidence}; effort factor {item.priorityTrace.effortCost}. {item.priorityTrace.confidenceBasis === "unknown" ? "Unknown scope has no measured gap and receives priority zero." : "Factors are calculated by the server."}</p>}
         <p>Relevant projects: {item.repositoryIds?.length ? item.repositoryIds.map(id => view.report.snapshots.find(s => s.repositoryId === id)?.repositoryLabel).join(", ") : "No specific project location identified."}</p>
-        <p>File locations are not supplied for this proposal. Inspect supporting evidence for permitted locations; a suggested change is not verified evidence.</p>
+        <p>A change location has not been established. For observed evidence, choose Inspect evidence, then Inspect permitted location to check the file and commit. Review scope when no supporting evidence was observed; a proposal is not verified evidence.</p>
       </div></details>
     </li>)}</ol>
   </section>;

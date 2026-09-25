@@ -1,5 +1,5 @@
 {
-  "assessedAt": "2026-09-24T15:48:26.067Z",
+  "assessedAt": "2026-09-25T17:34:05.034Z",
   "scope": "Feature 1 private internal rollout; no authorization to deploy or enable",
   "decision": "hold",
   "blockers": [
@@ -91,7 +91,7 @@
       "evidence": "Workflow defines a blocking feature-one-gate and rejects failed/cancelled/skipped dependencies. Remote CI execution and required branch-protection configuration were not changed or verified."
     }
   ],
-  "sourceSha256": "548ea7471087693edcca623c44ff50cf6250380a151b70ad1908bb0d902e7f7f",
+  "sourceSha256": "80914953202eedd3aee9bacb177856f871ad5308e2638ad75d426362e08d2ce8",
   "corpusSha256": "f80ca10b4235986ea71de3254e8f738a5c870e54b54e96a619fcaabfb4250efe",
   "deferred": [
     "ANA-020 GitHub issue creation",

@@ -31,6 +31,12 @@ test('authorized multi-repository workflow → real worker report → keyboard e
   const reportUrl = page.url(), reportId = reportUrl.split('/').at(-1)!;
   const data = (await (await request.get(`${backend}/api/v1/readiness-reports/${reportId}/view`, { headers: { Authorization: `Bearer ${session.token}` } })).json()).data;
   expect(data.report.snapshots).toHaveLength(2); expect(data.report.roles).toHaveLength(5);
+  expect(data.roleAvailability).toHaveLength(5);
+  expect(data.roleAvailability.every((r: { state: string }) => r.state !== 'available')).toBe(true);
+  const unavailable = data.roleAvailability.filter((r: { state: string }) => r.state === 'unavailable');
+  expect(unavailable.length).toBeGreaterThan(0);
+  await expect(page.locator('#roles').getByText('Unavailable', { exact: true })).toHaveCount(unavailable.length);
+  await expect(page.getByText(/^Limited calculation:/).first()).not.toBeVisible();
   for (const snapshot of data.report.snapshots) {
     const evidence = (await (await request.get(`${backend}/api/v1/readiness-reports/${reportId}/evidence?repositoryId=${snapshot.repositoryId}`, { headers: { Authorization: `Bearer ${session.token}` } })).json()).data;
     expect(evidence.items.length).toBeGreaterThan(0);
@@ -46,6 +52,18 @@ test('authorized multi-repository workflow → real worker report → keyboard e
   await expect(page.getByText('1 observations on this page.')).toBeVisible();
   await page.getByRole('button', { name: 'Close evidence and return' }).click(); await expect(citation).toBeFocused();
   await page.getByText('Plan and acceptance criteria', { exact: true }).first().click(); await expect(page.getByText('Expected evidence gained', { exact: true }).first()).toBeVisible();
+  // Repeated templates retain their capability identity; unknown gaps navigate
+  // to scope and positive gaps reach the existing permission-checked locator flow.
+  const scopeLink = page.locator('#improvements').getByRole('link', { name: /^Review scope for / }).first();
+  const scopeTarget = (await scopeLink.getAttribute('href'))!;
+  await scopeLink.focus(); await page.keyboard.press('Enter');
+  await expect(page.locator(scopeTarget)).toBeFocused();
+  await expect(page.locator(scopeTarget.replace('#capability-', '#capability-scope-'))).toHaveAttribute('open', '');
+  const improvementEvidence = page.locator('#improvements').getByRole('button', { name: /^Inspect evidence for / }).first();
+  await improvementEvidence.click(); await expect(page.getByRole('heading', { name: 'Evidence explorer' })).toBeFocused();
+  await expect(page.getByText(/observations on this page/)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Inspect permitted location' }).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Close evidence and return' }).click(); await expect(improvementEvidence).toBeFocused();
   await page.getByRole('button', { name: 'Browse evidence' }).click(); await page.getByRole('button', { name: 'Clear evidence filters' }).click();
   const publicSnapshot = data.report.snapshots.find((s: { repositoryVisibility: string }) => s.repositoryVisibility === 'public');
   await page.getByLabel('Repository', { exact: true }).selectOption(publicSnapshot.repositoryId);
@@ -68,7 +86,12 @@ test('authorized multi-repository workflow → real worker report → keyboard e
   await page.getByRole('heading', { name: 'Your project evidence' }).scrollIntoViewIfNeeded(); await page.screenshot({ path: 'test-results/run13-summary-desktop.png' });
   await page.setViewportSize({ width: 390, height: 844 }); await page.screenshot({ path: 'test-results/run13-report-mobile.png', fullPage: true });
   await page.getByRole('heading', { name: 'Your project evidence' }).scrollIntoViewIfNeeded(); await page.screenshot({ path: 'test-results/run13-summary-mobile.png' });
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  const mobileLayout = await page.evaluate(() => ({ width: document.documentElement.scrollWidth, viewport: window.innerWidth,
+    overflow: Array.from(document.querySelectorAll('main *')).filter(e => e.getBoundingClientRect().right > window.innerWidth)
+      .map(e => ({ tag: e.tagName, text: e.textContent?.slice(0, 100), width: e.getBoundingClientRect().width })).slice(0, 10) }));
+  expect(mobileLayout.width, JSON.stringify(mobileLayout.overflow)).toBeLessThanOrEqual(mobileLayout.viewport);
+  await page.locator('#roles > article').first().screenshot({ path: 'test-results/prd-role-status-mobile.png' });
+  await page.locator('#improvements > ol > li').first().screenshot({ path: 'test-results/prd-improvement-mobile.png' });
   expect(await page.evaluate(async () => (await (window as unknown as { axe: { run: (target: string) => Promise<{ violations: unknown[] }> } }).axe.run('#main-content')).violations)).toEqual([]);
   const other = await (await request.get(`${backend}/__test/session?actor=2`)).json();
   for (const suffix of ['', '/view', '/evidence', `/evidence/${data.report.evidence[0].evidenceId}`]) expect((await request.get(`${backend}/api/v1/readiness-reports/${reportId}${suffix}`, { headers: { Authorization: `Bearer ${other.token}` } })).status()).toBe(404);

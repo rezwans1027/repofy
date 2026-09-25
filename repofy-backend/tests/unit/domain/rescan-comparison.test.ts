@@ -15,6 +15,18 @@ beforeEach(() => {
   input = { baseline: view, target, baselineFacts: facts, targetFacts, baselineInventory: [], targetInventory: [] };
 });
 const compare = (query = {}) => compareReports(input, ComparisonQuerySchema.parse({ targetReportId: input.target.report.reportId, ...query }));
+it('withholds role deltas under an unattainable confidence policy while retaining the stored calculations', () => {
+  for (const [i, view] of [input.baseline, input.target].entries()) {
+    view.report.versions.aggregationPolicy = { id: 'evidence_aggregation', version: '1.1.0' };
+    view.report.roles[0] = { state: 'assessed', template: view.report.roles[0].template, coverage: .02 + i * .02, confidence: .15,
+      assessedRequirementIds: ['testing'], unknownRequirementIds: [], limitations: [] };
+  }
+  const before = structuredClone(input), diff = compare();
+  expect(diff.algorithm).toBe('evidence-diff-1.0.3');
+  expect(diff.roles.every(r => r.baseline === null && r.target === null && r.coverageDelta === null && r.confidenceDelta === null)).toBe(true);
+  expect(diff.notes.join(' ')).toContain('Role readiness is unavailable');
+  expect(input).toEqual(before);
+});
 it('does not count pure prose, source-line offsets or snapshot symbol IDs as an improvement', () => {
   input.target.report.claims[0].text = 'Different validated narrative wording';
   input.targetFacts[0].observation.observations = ['Different observation phrasing'];

@@ -5,8 +5,30 @@ import pg from 'pg';
 import { jobsRpc } from './jobs.cases';
 import { rescanFixture } from '../helpers/rescan-fixture';
 import { RescanService } from '../../src/domain/rescans/service';
+import { policyHash } from '../../src/domain/ingestion/policy';
 
 export function registerRescanTests(db: pg.Client, config: pg.ClientConfig) {
+  test('detector and SQL-screening versions invalidate unchanged rescans and source reuse independently', async () => {
+    const f = await rescanFixture(db, jobsRpc(db));
+    try {
+      for (const changed of ['detector', 'security']) {
+        const policy = structuredClone(f.policy);
+        if (changed === 'detector') policy.versions.detectorBundle.version = '1.0.5';
+        else {
+          policy.security = { ...policy.security, version: '1.1.3', exclusions: 'repofy-exclusions-1.1.3' };
+          policy.versions.ingestionPolicyHash = policyHash(policy.security);
+        }
+        const result = await f.service.start(f.actor, f.baseline.report.reportId, f.request(), policy, 5);
+        assert.equal(result.state, 'queued'); if (result.state !== 'queued') throw new Error();
+        const claim = (await f.jobs.claim())!; assert.equal(claim.jobId, result.job.jobId);
+        assert.equal(await f.jobs.reuseSnapshot(claim, f.bindings[0].repositoryId), null);
+        assert.equal(await f.jobs.reuseSnapshot(claim, f.bindings[0].repositoryId, true), null);
+        assert.equal((await db.query('SELECT count(*)::int n FROM feature_one_private.analysis_snapshot_outputs WHERE job_id=$1', [claim.jobId])).rows[0].n, 0);
+        await f.jobs.cancel(f.actor, claim.jobId, randomUUID());
+      }
+      assert.deepEqual((await f.reader.view(f.actor, f.baseline.report.reportId)).report, f.baseline.report);
+    } finally { await f.cleanup(); }
+  });
   for (const missing of [false, true]) test(`external imports preserve comparison scope; missing local import: ${missing}`, async () => {
     const query = "import {Pool} from 'pg'; const pool=new Pool(); export async function read(id){return await pool.query('SELECT id FROM records WHERE id=$1',[id]);}";
     const f = await rescanFixture(db, jobsRpc(db), 1, { 'query.ts': query + (missing ? "\nimport {value} from './missing';" : '') });

@@ -15,7 +15,7 @@ async function captured(fixture: Awaited<ReturnType<typeof coverageJobFixture>>)
   await new EvidenceRepository(capture).storeSnapshot(fixture.f.actor, fixture.f.bindings[0].grantId, fixture.bundle, fixture.f.crypto);
   return args;
 }
-function legacy(bundle: any, declaration: unknown, version: '1.0.0' | '1.0.1' | '1.0.2' | '1.0.3' | '1.0.4') {
+function legacy(bundle: any, declaration: unknown, version: '1.0.0' | '1.0.1' | '1.0.2' | '1.0.3' | '1.0.4' | '1.0.5') {
   const structuralVersion = version === '1.0.0' ? '1.0.0' : '1.0.1';
   bundle.snapshot.extractionPolicyVersion = bundle.versions.extractorBundle.version = bundle.inventorySummary.extractorBundle.version = structuralVersion;
   bundle.versions.detectorBundle.version = bundle.coverage.detectorBundle.version = bundle.coverage.implementation.bundle.version = version;
@@ -27,7 +27,7 @@ function legacy(bundle: any, declaration: unknown, version: '1.0.0' | '1.0.1' | 
 export function registerAnalyzerVersionTests(db: pg.Client) {
   test('analyzer corrections append immutable definitions and preserve every legacy coverage declaration', async () => {
     const detectors = await db.query('SELECT bundle_version,count(*)::int n FROM feature_one_private.implementation_detectors GROUP BY bundle_version ORDER BY bundle_version');
-    assert.deepEqual(detectors.rows, [{ bundle_version: '1.0.0', n: 16 }, { bundle_version: '1.0.1', n: 16 }, { bundle_version: '1.0.2', n: 16 }, { bundle_version: '1.0.3', n: 16 }, { bundle_version: '1.0.4', n: 16 }, { bundle_version: '1.0.5', n: 16 }]);
+    assert.deepEqual(detectors.rows, [{ bundle_version: '1.0.0', n: 16 }, { bundle_version: '1.0.1', n: 16 }, { bundle_version: '1.0.2', n: 16 }, { bundle_version: '1.0.3', n: 16 }, { bundle_version: '1.0.4', n: 16 }, { bundle_version: '1.0.5', n: 16 }, { bundle_version: '1.0.6', n: 16 }]);
     const manifests = await db.query("SELECT old.declaration AS old, corrected.declaration AS corrected FROM feature_one_private.analyzer_coverage_manifests old JOIN feature_one_private.analyzer_coverage_manifests corrected ON corrected.version='1.2.1'||substring(old.version from 6) WHERE split_part(old.version,'-',1)='1.2.0'");
     assert.equal(manifests.rowCount, 8);
     for (const row of manifests.rows) assert.deepEqual(row.corrected, { ...row.old, version: row.old.version.replace('1.2.0', '1.2.1') });
@@ -44,12 +44,14 @@ export function registerAnalyzerVersionTests(db: pg.Client) {
         [(b: any) => { b.evidence.find((e: any) => e.observation.implementation).observation.detector.version = '1.0.2'; }, 'UNSUPPORTED_CLAIM'],
         [(b: any) => { b.evidence.find((e: any) => e.observation.implementation).observation.detector.version = '1.0.3'; }, 'UNSUPPORTED_CLAIM'],
         [(b: any) => { b.evidence.find((e: any) => e.observation.implementation).observation.detector.version = '1.0.4'; }, 'UNSUPPORTED_CLAIM'],
+        [(b: any) => { b.evidence.find((e: any) => e.observation.implementation).observation.detector.version = '1.0.5'; }, 'UNSUPPORTED_CLAIM'],
         [(b: any) => { b.evidence.find((e: any) => e.observation.structural?.kind === 'schema').observation.detector.version = '1.0.0'; }, 'UNSUPPORTED_CLAIM'],
         [(b: any) => { b.coverage.implementation.detectors[0].version = '1.0.0'; }, 'INCOMPLETE_ANALYSIS'],
         [(b: any) => { b.coverage.implementation.detectors[0].version = '1.0.1'; }, 'INCOMPLETE_ANALYSIS'],
         [(b: any) => { b.coverage.implementation.detectors[0].version = '1.0.2'; }, 'INCOMPLETE_ANALYSIS'],
         [(b: any) => { b.coverage.implementation.detectors[0].version = '1.0.3'; }, 'INCOMPLETE_ANALYSIS'],
         [(b: any) => { b.coverage.implementation.detectors[0].version = '1.0.4'; }, 'INCOMPLETE_ANALYSIS'],
+        [(b: any) => { b.coverage.implementation.detectors[0].version = '1.0.5'; }, 'INCOMPLETE_ANALYSIS'],
         [(b: any) => { b.coverage.manifestVersion = b.versions.coverageManifest = b.coverage.assessment.declaration.version = '1.2.0'; }, 'INCOMPLETE_ANALYSIS'],
         [(b: any) => { b.versions.extractorBundle.version = b.inventorySummary.extractorBundle.version = b.snapshot.extractionPolicyVersion = '1.0.0';
           b.evidence.find((e: any) => e.observation.structural?.kind === 'schema').observation.detector.version = '1.0.0'; }, 'INCOMPLETE_ANALYSIS'],
@@ -63,7 +65,7 @@ export function registerAnalyzerVersionTests(db: pg.Client) {
       assert.equal(AnalyzerCoverageSchema.parse(stored).manifestVersion, '1.2.1');
     } finally { await fixture.cleanup(); }
   });
-  for (const version of ['1.0.0', '1.0.1', '1.0.2', '1.0.3', '1.0.4'] as const) test(`${version} snapshot and evidence remain readable while rejecting mismatched rows`, async () => {
+  for (const version of ['1.0.0', '1.0.1', '1.0.2', '1.0.3', '1.0.4', '1.0.5'] as const) test(`${version} snapshot and evidence remain readable while rejecting mismatched rows`, async () => {
     const fixture = await coverageJobFixture(db, jobsRpc(db), files);
     try {
       const args = await captured(fixture);
@@ -73,7 +75,7 @@ export function registerAnalyzerVersionTests(db: pg.Client) {
       for (const kind of ['implementation', 'schema']) {
         const mixed = structuredClone(args);
         const observation = mixed.p_bundle.evidence.find((e: any) => kind === 'implementation' ? e.observation.implementation : e.observation.structural?.kind === 'schema').observation;
-        observation.detector.version = kind === 'implementation' ? '1.0.5' : version === '1.0.0' ? '1.0.1' : '1.0.0';
+        observation.detector.version = kind === 'implementation' ? '1.0.6' : version === '1.0.0' ? '1.0.1' : '1.0.0';
         assert.equal((await jobsRpc(db).rpc('feature_one_store_snapshot', mixed)).error?.message, 'UNSUPPORTED_CLAIM');
       }
       assert.equal((await jobsRpc(db).rpc('feature_one_store_snapshot', args)).error, null);

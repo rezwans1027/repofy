@@ -3,6 +3,28 @@ const assert = require('node:assert/strict');
 const { ReportHistoryQuerySchema, ReportEvidenceQuerySchema, EvidenceLocationResponseSchema, ReportEventSchema, isPinnedGitHubUrl, ReportViewSchema } = require('../dist');
 const { createSyntheticReportFixture } = require('../dist/testing');
 const id = '00000000-0000-4000-8000-000000000001';
+const { roleAvailability } = require('../dist');
+test('role availability is explicit for limited, unknown and unqualified policies without rewriting saved math', () => {
+  for (const version of ['1.0.0', '1.1.0', '2.0.0']) {
+    const report = createSyntheticReportFixture();
+    report.versions.aggregationPolicy = { id: 'evidence_aggregation', version };
+    report.versions.taxonomy = { id: 'engineering_capabilities', version: '1.0.0' };
+    report.roles[0] = { state: 'assessed', template: report.roles[0].template, coverage: .03, confidence: .15,
+      assessedRequirementIds: ['testing'], unknownRequirementIds: [], limitations: [] };
+    const before = structuredClone(report), statuses = roleAvailability(report);
+    assert.deepEqual(statuses[0], { template: report.roles[0].template, state: 'unavailable',
+      reason: version === '2.0.0' ? 'policy_not_qualified' : 'required_confidence_unattainable' });
+    assert.ok(statuses.slice(1).every(s => s.state === 'unknown' && s.reason === 'insufficient_coverage'));
+    assert.deepEqual(report, before);
+    const view = { report, aggregation: null, repositories: report.snapshots.map(s => ({ snapshotId: s.snapshotId, repositoryId: s.repositoryId,
+      visibility: s.repositoryVisibility, access: 'active' })), categories: [], capabilities: [], roleDefinitions: [], roleAvailability: statuses };
+    assert.equal(ReportViewSchema.safeParse(view).success, true);
+    view.roleAvailability[0] = { template: report.roles[0].template, state: 'available' };
+    assert.equal(ReportViewSchema.safeParse(view).success, false);
+    view.roleAvailability = [statuses[1], ...statuses.slice(1)];
+    assert.equal(ReportViewSchema.safeParse(view).success, false);
+  }
+});
 test('read pagination and telemetry accept only bounded parameters, enums and opaque IDs', () => {
   for (const limit of [0, -1, 1.2, 51, '20']) assert.equal(ReportHistoryQuerySchema.safeParse({ limit }).success, false);
   assert.equal(ReportEvidenceQuerySchema.safeParse({ requirementId: 'api_design' }).success, false);

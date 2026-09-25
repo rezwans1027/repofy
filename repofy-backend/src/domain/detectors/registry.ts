@@ -18,11 +18,11 @@ const definitions: Record<ImplementationKind, Definition> = {
     required: "The first effect in a route callback parses request input with a local Zod object schema; a later local call consumes that parsed binding.",
     observation: "A route parses request input with a Zod object schema before passing the parsed value to a local function.", limitation: "Only a straight-line parse path is supported; schema completeness, error middleware and other routes are unknown." },
   authentication_guard: { capabilities: ["api_boundary_validation"], ecosystems: ["express"],
-    required: "A leading missing-user guard returns a 401 JSON response before a local call consumes that request user.",
-    observation: "A route returns a 401 response when its request user is absent before a local call consumes that user.", limitation: "This is an authentication-state guard, not proof of credential verification or resource authorization." },
+    required: "A leading missing-user guard returns a 401 response with an inert literal JSON payload before a local call consumes that request user.",
+    observation: "A route returns a 401 response when its request user is absent before a local call consumes that user.", limitation: "Only inert literal JSON denial payloads are supported. This is an authentication-state guard, not proof of credential verification or resource authorization." },
   ownership_guard: { capabilities: ["security_authorization"], ecosystems: ["express"],
-    required: "A direct actor-id versus loaded owner-id inequality guard returns 403 before a local operation consumes that same resource.",
-    observation: "A route compares a loaded resource owner with its request actor and returns 403 before a subsequent local resource operation.", limitation: "Does not prove actor authenticity, safe loading, role authorization, race safety or protection of other routes." },
+    required: "A direct actor-id versus loaded owner-id inequality guard returns 403 with an inert literal JSON payload before a local operation consumes that same resource.",
+    observation: "A route compares a loaded resource owner with its request actor and returns 403 before a subsequent local resource operation.", limitation: "Only inert literal JSON denial payloads are supported. Does not prove actor authenticity, safe loading, role authorization, race safety or protection of other routes." },
   structured_error: { capabilities: ["api_design"], ecosystems: ["express"],
     required: "A route returns a literal 4xx/5xx status and an object with a literal error code through its response parameter.",
     observation: "A route returns an explicit error status with a structured literal error code.", limitation: "No claim about a universal error contract, safe message content or matching consumer behavior." },
@@ -60,7 +60,7 @@ const definitions: Record<ImplementationKind, Definition> = {
     required: "An awaited ai.generateObject call supplies a Zod object schema, explicit bounded maxRetries and native AbortSignal.timeout.",
     observation: "A structured model call supplies an output schema, an explicit retry ceiling and a timeout signal.", limitation: "SDK enforcement, model availability, output quality, context authorization and prompt-injection defenses are unverified." },
 };
-export const DETECTORS = Object.freeze(IMPLEMENTATION_KINDS.map(kind => Object.freeze({ kind, id: `tsjs.${kind}`, version: "1.0.5" as const,
+export const DETECTORS = Object.freeze(IMPLEMENTATION_KINDS.map(kind => Object.freeze({ kind, id: `tsjs.${kind}`, version: "1.0.6" as const,
   capabilityIds: Object.freeze([...definitions[kind].capabilities]), ecosystems: Object.freeze([...definitions[kind].ecosystems]),
   requiredObservations: definitions[kind].required, observation: definitions[kind].observation, limitation: definitions[kind].limitation,
   forbiddenOverclaims: Object.freeze(["Execution or passing tests from source alone", "System-wide security, correctness or concurrency safety", "Authorship, proficiency or employment suitability"]),
@@ -78,6 +78,6 @@ export const CAPABILITY_COVERAGE = Object.freeze(initialRubricCatalog.taxonomy.c
 export function implementationProfile(disabled: readonly ImplementationKind[] = []) {
   if (new Set(disabled).size !== disabled.length || disabled.some(id => !IMPLEMENTATION_KINDS.includes(id))) throw new Error("Invalid detector quarantine");
   const quarantine = Object.freeze(IMPLEMENTATION_KINDS.filter(k => disabled.includes(k)));
-  return Object.freeze({ ...extractionProfile(), detectorBundle: { id: "tsjs_implementation", version: `1.0.5${disabled.length ? `-q${IMPLEMENTATION_KINDS.map(k => disabled.includes(k) ? 1 : 0).join("")}` : ""}` },
+  return Object.freeze({ ...extractionProfile(), detectorBundle: { id: "tsjs_implementation", version: `1.0.6${disabled.length ? `-q${IMPLEMENTATION_KINDS.map(k => disabled.includes(k) ? 1 : 0).join("")}` : ""}` },
     coverageManifest: "1.1.1", implementation: Object.freeze({ disabled: quarantine }) });
 }

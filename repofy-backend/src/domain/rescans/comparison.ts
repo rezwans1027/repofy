@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ComparisonSchema, OwnerEvidenceSchema, EVIDENCE_CHANGES, type Comparison, type ComparisonEvidence, type ComparisonQuery, type ReportView } from "@repofy/contracts";
+import { ComparisonSchema, OwnerEvidenceSchema, EVIDENCE_CHANGES, roleAvailability, type Comparison, type ComparisonEvidence, type ComparisonQuery, type ReportView } from "@repofy/contracts";
 import { canonical } from "../aggregation/input";
 import { JobError } from "../jobs/policy";
 
@@ -125,9 +125,13 @@ export function compareReports(input: ComparisonInput, query: ComparisonQuery): 
     label: b.capabilities.find(c => c.capabilityId === id)?.label ?? a.capabilities.find(c => c.capabilityId === id)?.label ?? id,
     baseline: left, target: right, strengthDelta: delta(left?.strength, right?.strength), confidenceDelta: delta(left?.confidence, right?.confidence),
     assessabilityChanged: (left?.state === "unknown") !== (right?.state === "unknown") || left?.assessableFraction !== right?.assessableFraction }; });
+  const availabilityA = roleAvailability(a.report), availabilityB = roleAvailability(b.report);
+  if ([...availabilityA, ...availabilityB].some(r => r.state !== "available")) notes.push("Role readiness is unavailable or unknown under the recorded policies. Role coverage and confidence changes are withheld; the original rubric calculations remain inspectable in each report.");
   const roles = b.report.roles.map(right => { const left = a.report.roles.find(r => r.template.roleId === right.template.roleId);
-    const baseline = left?.state === "assessed" ? left.coverage : null, target = right.state === "assessed" ? right.coverage : null;
-    return { roleId: right.template.roleId, baseline, target, coverageDelta: delta(baseline, target), confidenceDelta: delta(left?.state === "assessed" ? left.confidence : null, right.state === "assessed" ? right.confidence : null),
+    const leftAvailable = availabilityA.find(r => r.template.roleId === right.template.roleId)?.state === "available";
+    const rightAvailable = availabilityB.find(r => r.template.roleId === right.template.roleId)?.state === "available";
+    const baseline = leftAvailable && left?.state === "assessed" ? left.coverage : null, target = rightAvailable && right.state === "assessed" ? right.coverage : null;
+    return { roleId: right.template.roleId, baseline, target, coverageDelta: delta(baseline, target), confidenceDelta: delta(leftAvailable && left?.state === "assessed" ? left.confidence : null, rightAvailable && right.state === "assessed" ? right.confidence : null),
       baselineUnknownWeight: a.aggregation?.roles.find(r => r.template.roleId === right.template.roleId)?.unknownWeight ?? null,
       targetUnknownWeight: b.aggregation?.roles.find(r => r.template.roleId === right.template.roleId)?.unknownWeight ?? null }; });
   const counts = Object.fromEntries(EVIDENCE_CHANGES.map(key => [key, rows.filter(r => r.change === key).length]));
@@ -139,7 +143,7 @@ export function compareReports(input: ComparisonInput, query: ComparisonQuery): 
   for (const row of rows) row.capabilityIds = [...new Set([...row.capabilityIds, ...support.get(row.baselineEvidenceId ?? "") ?? [], ...support.get(row.targetEvidenceId ?? "") ?? []])].sort();
   const filtered = rows.filter(r => (!query.repositoryId || r.repositoryId === query.repositoryId) && (!query.change || r.change === query.change) && (!query.capabilityId || r.capabilityIds.includes(query.capabilityId)))
     .sort((x, y) => x.repositoryId.localeCompare(y.repositoryId) || (x.baselineEvidenceId ?? x.targetEvidenceId!).localeCompare(y.baselineEvidenceId ?? y.targetEvidenceId!));
-  return ComparisonSchema.parse({ algorithm: "evidence-diff-1.0.2", baseline: { reportId: a.report.reportId, createdAt: a.report.createdAt, versions: av },
+  return ComparisonSchema.parse({ algorithm: "evidence-diff-1.0.3", baseline: { reportId: a.report.reportId, createdAt: a.report.createdAt, versions: av },
     target: { reportId: b.report.reportId, createdAt: b.report.createdAt, versions: bv }, comparability: limited ? "limited" : "comparable", causes: [...causes].sort(), notes,
     repositories, counts, capabilities, roles, evidence: filtered.slice(query.offset, query.offset + query.limit), filteredCount: filtered.length,
     nextOffset: query.offset + query.limit < filtered.length ? query.offset + query.limit : null });

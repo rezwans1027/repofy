@@ -28,7 +28,11 @@ beforeEach(() => {
 it('renders separate strength/confidence, all role views, unknown weight and observed/unknown scope without a fake overall score', async () => {
   render(wrap(<ReadinessReport reportId={view.report.reportId} />)); await screen.findByRole('heading', { name: 'Your project evidence' });
   expect(screen.getByText('65% · strong')).toBeInTheDocument(); expect(screen.getAllByText('55% · low')).toHaveLength(2);
-  expect(screen.getByText('3.25%')).toBeInTheDocument(); expect(screen.getByText('95%')).toBeInTheDocument();
+  expect(screen.getByText('Unavailable', { selector: 'dd' })).toBeVisible(); expect(screen.getByText('95%')).toBeInTheDocument();
+  expect(screen.getByText(/This analyzer cannot reach the confidence/)).toBeVisible();
+  const recorded = screen.getByText(/Limited calculation: 3.25%/);
+  expect(recorded).not.toBeVisible();
+  await userEvent.click(screen.getByText('Recorded rubric calculation for backend')); expect(recorded).toBeVisible();
   expect(screen.getByText('Unknown · Not assessable', { selector: 'dd' })).toBeInTheDocument(); expect(screen.getByText('Not observed', { selector: 'dd' })).toBeInTheDocument();
   for (const role of view.report.roles) expect(screen.getByRole('heading', { name: role.template.roleId })).toBeInTheDocument();
   expect(screen.queryByText(/overall score/i)).not.toBeInTheDocument();
@@ -49,6 +53,34 @@ it('expands future improvements without generating text and sends only a closed 
   await userEvent.click(screen.getByText('Plan and acceptance criteria')); expect(screen.getByText(view.report.improvements[0].acceptanceCriteria[0])).toBeVisible();
   await waitFor(() => expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/events'), expect.objectContaining({ body: JSON.stringify({ event: 'improvement_opened', objectId: view.report.improvements[0].improvementId }) })));
   await userEvent.selectOptions(screen.getByLabelText('Filter improvements by role'), 'mobile'); expect(screen.getByText('No improvement proposals match these filters.')).toBeInTheDocument();
+});
+it('distinguishes identical improvement templates and links to the specific evidence or unknown scope', async () => {
+  const original = view.report.improvements[0], gap = view.report.gaps[0];
+  view.report.improvements.push({ ...structuredClone(original), improvementId: fixtureId(70) as never,
+    capabilityIds: ['mobile'], gapIds: [fixtureId(71) as never] });
+  view.report.gaps.push({ ...structuredClone(gap), gapId: fixtureId(71) as never, capabilityId: 'mobile', state: 'not_assessable' });
+  view.report.improvements.push({ ...structuredClone(original), improvementId: fixtureId(72) as never,
+    capabilityIds: ['api'], gapIds: [fixtureId(73) as never] });
+  view.report.gaps.push({ ...structuredClone(gap), gapId: fixtureId(73) as never, capabilityId: 'api', state: 'not_observed' });
+  render(wrap(<ReadinessReport reportId={view.report.reportId} />)); await screen.findByRole('heading', { name: 'Your project evidence' });
+  const testing = screen.getByRole('heading', { name: `${original.title}: Testing` }).closest('li')!;
+  const mobile = screen.getByRole('heading', { name: `${original.title}: Mobile` }).closest('li')!;
+  expect(within(testing).getByText('Testing · Limited evidence')).toBeVisible();
+  expect(within(mobile).getByText('Mobile · Unknown, not assessable')).toBeVisible();
+  expect(within(mobile).getByText('Relevant roles: backend')).toBeVisible();
+  expect(within(mobile).queryByRole('button', { name: 'Inspect evidence for Mobile' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Inspect evidence for Api' })).not.toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Review scope for Api' })).toBeVisible();
+  await userEvent.click(within(mobile).getByRole('link', { name: 'Review scope for Mobile' }));
+  expect(document.getElementById('capability-mobile')).toHaveFocus();
+  expect(document.getElementById('capability-scope-mobile')).toHaveAttribute('open');
+  const button = within(testing).getByRole('button', { name: 'Inspect evidence for Testing' });
+  await userEvent.click(button);
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Evidence explorer' })).toHaveFocus());
+  await screen.findByText('1 observations on this page.');
+  expect(fetch).toHaveBeenCalledWith(expect.stringContaining('evidence?capabilityId=testing'), expect.anything());
+  expect(screen.getByRole('button', { name: 'Inspect permitted location' })).toBeVisible();
+  await userEvent.click(screen.getByRole('button', { name: 'Close evidence and return' })); expect(button).toHaveFocus();
 });
 it('fails closed on malformed responses, foreign owners, and server errors without rendering their raw text', async () => {
   response = { ...view, report: { ...view.report, rawSource: 'PRIVATE_SOURCE_SENTINEL' } };

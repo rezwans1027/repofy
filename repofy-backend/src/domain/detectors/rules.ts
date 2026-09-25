@@ -32,6 +32,19 @@ function firstEffect(body: ts.Block): ts.Statement | undefined {
   return undefined;
 }
 function bodyOf(fn: FunctionNode): ts.Block | undefined { return fn.body && ts.isBlock(fn.body) ? fn.body : undefined; }
+function inertJsonValue(file: IndexedFile, value: ts.Expression): boolean {
+  file.project.tick();
+  if (ts.isParenthesizedExpression(value) || ts.isAsExpression(value) || ts.isTypeAssertionExpression(value)
+    || ts.isNonNullExpression(value) || ts.isSatisfiesExpression(value)) return inertJsonValue(file, value.expression);
+  if (ts.isStringLiteral(value) || ts.isNoSubstitutionTemplateLiteral(value) || ts.isNumericLiteral(value)
+    || [ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(value.kind)) return true;
+  if (ts.isPrefixUnaryExpression(value) && [ts.SyntaxKind.PlusToken, ts.SyntaxKind.MinusToken].includes(value.operator))
+    return ts.isNumericLiteral(value.operand);
+  if (ts.isArrayLiteralExpression(value)) return value.elements.every(element => inertJsonValue(file, element));
+  return ts.isObjectLiteralExpression(value) && value.properties.every(property => ts.isPropertyAssignment(property)
+    && (ts.isIdentifier(property.name) || ts.isStringLiteral(property.name) || ts.isNumericLiteral(property.name))
+    && inertJsonValue(file, property.initializer));
+}
 function statusReturn(file: IndexedFile, statement: ts.Statement, response: ts.Identifier, status?: number) {
   if (ts.isBlock(statement)) { if (statement.statements.length !== 1) return false; statement = statement.statements[0]; }
   if (!ts.isReturnStatement(statement) || !statement.expression) return false;
@@ -40,7 +53,11 @@ function statusReturn(file: IndexedFile, statement: ts.Statement, response: ts.I
     || !ts.isIdentifier(call.expression.expression) || !same(file, call.expression.expression, response) || call.arguments.length !== 1
     || !ts.isNumericLiteral(call.arguments[0]) || value.arguments.length !== 1 || !ts.isObjectLiteralExpression(value.arguments[0])) return false;
   const code = Number(call.arguments[0].text); const errorCode = objectProperty(value.arguments[0], "code");
-  return (status === undefined ? code >= 400 && code <= 599 : code === status) && !!errorCode && ts.isStringLiteral(errorCode) && !!errorCode.text;
+  // Guard denials must be inert through payload evaluation and JSON serialization.
+  // References, getters, toJSON methods, spreads and computed keys can perform work.
+  // Structured-error observations alone make no claim that protected work is denied.
+  return (status === undefined ? code >= 400 && code <= 599 : code === status && inertJsonValue(file, value.arguments[0]))
+    && !!errorCode && ts.isStringLiteral(errorCode) && !!errorCode.text;
 }
 function routeContexts(file: IndexedFile): Route[] {
   return file.calls.flatMap(call => {

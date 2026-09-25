@@ -14,6 +14,7 @@ export * from "./assessability";
 export * from "./aggregation";
 export * from "./narrative";
 export * from "./report-view";
+export * from "./role-availability";
 export * from "./rescans";
 export * from "./finding-feedback";
 export * from "./provenance";

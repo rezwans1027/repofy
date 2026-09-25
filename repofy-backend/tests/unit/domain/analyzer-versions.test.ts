@@ -9,15 +9,15 @@ import { policyHash, structuralSecurityPolicy } from '../../../src/domain/ingest
 
 it('pins corrected semantics to distinct structural, implementation, and language analyzer profiles', () => {
   expect(extractionProfile()).toMatchObject({ extractorBundle: { version: '1.0.1' }, detectorBundle: { version: '1.0.1' }, coverageManifest: '1.0.1' });
-  expect(implementationProfile()).toMatchObject({ extractorBundle: { version: '1.0.1' }, detectorBundle: { version: '1.0.5' }, coverageManifest: '1.1.1' });
-  expect(coverageProfile()).toMatchObject({ extractorBundle: { version: '1.0.1' }, detectorBundle: { version: '1.0.5' }, coverageManifest: '1.2.1' });
+  expect(implementationProfile()).toMatchObject({ extractorBundle: { version: '1.0.1' }, detectorBundle: { version: '1.0.6' }, coverageManifest: '1.1.1' });
+  expect(coverageProfile()).toMatchObject({ extractorBundle: { version: '1.0.1' }, detectorBundle: { version: '1.0.6' }, coverageManifest: '1.2.1' });
   expect(coverageProfile(['python'], ['request_validation'])).toMatchObject({ extractorBundle: { version: '1.0.1-p100' },
-    detectorBundle: { version: '1.0.5-q0100000000000000' }, coverageManifest: '1.2.1-p100' });
+    detectorBundle: { version: '1.0.6-q0100000000000000' }, coverageManifest: '1.2.1-p100' });
 });
 it('gives corrected SQL screening a distinct security-policy hash', () => {
   const policy = structuralSecurityPolicy();
-  expect(policy).toMatchObject({ version: '1.1.2', exclusions: 'repofy-exclusions-1.1.2' });
-  for (const version of ['1.1.0', '1.1.1'] as const) {
+  expect(policy).toMatchObject({ version: '1.1.4', exclusions: 'repofy-exclusions-1.1.4' });
+  for (const version of ['1.1.0', '1.1.1', '1.1.2', '1.1.3'] as const) {
     expect(policyHash(policy)).not.toBe(policyHash({ ...policy, version, exclusions: `repofy-exclusions-${version}` }));
   }
 });
@@ -30,7 +30,7 @@ it('rejects an old structural profile before interpreting source with corrected 
       detectorBundle: profile.detectorBundle, coverageManifest: profile.coverageManifest } })).rejects.toMatchObject({ code: 'ANALYSIS_VALIDATION_FAILED' });
   } finally { await fixture.cleanup(); }
 });
-it.each(['1.0.0', '1.0.1', '1.0.2', '1.0.3', '1.0.4'])('does not run corrected semantics under detector %s', async version => {
+it.each(['1.0.0', '1.0.1', '1.0.2', '1.0.3', '1.0.4', '1.0.5'])('does not run corrected semantics under detector %s', async version => {
   const fixture = await coverageFixture({ 'query.ts': "import {Pool} from 'pg';export const Fake=class Pool {};" });
   try {
     const profile = { ...coverageProfile(), detectorBundle: { id: 'tsjs_implementation', version } };

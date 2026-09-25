@@ -3,6 +3,7 @@ import { AggregationResultSchema, AggregationEvidenceQuerySchema, AggregationSup
 import { ReadinessReportResponseSchema, CapabilityDefinitionSchema } from "./readiness";
 import { OwnerEvidenceSchema } from "./evidence";
 import { KeySchema, RoleIdSchema, ShortTextSchema, TimestampSchema, GitHubCommitShaSchema } from "./primitives";
+import { RoleAvailabilitySchema, roleAvailability } from "./role-availability";
 
 export const ReportHistoryQuerySchema = z.strictObject({ afterReportId: z.uuid().optional(), limit: z.number().int().min(1).max(50).default(20) });
 export const ReportHistorySchema = z.strictObject({ items: z.array(z.strictObject({
@@ -15,6 +16,8 @@ export const ReportRepositoryAccessSchema = z.strictObject({
 });
 export const ReportViewSchema = z.strictObject({
   report: ReadinessReportResponseSchema, aggregation: AggregationResultSchema.nullable(),
+  // Older API responses may omit this projection; readers derive the same status.
+  roleAvailability: z.array(RoleAvailabilitySchema).length(5).optional(),
   repositories: z.array(ReportRepositoryAccessSchema).min(1).max(10),
   categories: z.array(z.strictObject({ categoryId: KeySchema, label: ShortTextSchema })).max(30),
   capabilities: z.array(CapabilityDefinitionSchema).max(100),
@@ -23,6 +26,13 @@ export const ReportViewSchema = z.strictObject({
   })).max(5),
 }).superRefine((view, ctx) => {
   const { report: r, aggregation: a } = view;
+  if (view.roleAvailability) {
+    const expected = roleAvailability(r);
+    if (new Set(view.roleAvailability.map(s => s.template.roleId)).size !== 5 || view.roleAvailability.some(s => {
+      const e = expected.find(e => e.template.roleId === s.template.roleId);
+      return !e || e.template.version !== s.template.version || JSON.stringify(e) !== JSON.stringify(s);
+    })) ctx.addIssue({ code: "custom", message: "Role availability differs from the recorded policy" });
+  }
   if (view.repositories.length !== r.snapshots.length || new Set(view.repositories.map(s => s.snapshotId)).size !== r.snapshots.length ||
     view.repositories.some(s => !r.snapshots.some(t => t.snapshotId === s.snapshotId && t.repositoryId === s.repositoryId && t.repositoryVisibility === s.visibility)) ||
     a && (a.runId !== r.analysisRunId || a.jobId !== r.jobId || a.ownerUserId !== r.ownerUserId ||
