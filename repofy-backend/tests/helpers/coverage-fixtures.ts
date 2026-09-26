@@ -2,8 +2,8 @@ import { implementationFixture } from './implementation-fixtures';
 import { coverageProfile } from '../../src/domain/coverage/manifest';
 import type { BaselineParser } from '@repofy/contracts';
 
-export async function coverageFixture(files: Record<string, string | Buffer>, disabled: readonly BaselineParser[] = [], enhanced = false) {
-  const f = await implementationFixture(files); const profile = coverageProfile(disabled, [], enhanced);
+export async function coverageFixture(files: Record<string, string | Buffer>, disabled: readonly BaselineParser[] = [], enhanced = false, revision = "2.0.1") {
+  const f = await implementationFixture(files); const profile = coverageProfile(disabled, [], enhanced, revision);
   f.input.profile = profile;
   Object.assign(f.input.versions, { extractorBundle: profile.extractorBundle, detectorBundle: profile.detectorBundle, coverageManifest: profile.coverageManifest });
   return f;

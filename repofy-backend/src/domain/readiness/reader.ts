@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ReportViewSchema, ReportHistorySchema, ReportHistoryQuerySchema, ReportEvidenceQuerySchema, ReportEvidencePageSchema,
-  ReportEventSchema, EvidenceLocationResponseSchema, ReadinessReportResponseSchema, roleAvailability, type ReportView } from "@repofy/contracts";
+  ReportEventSchema, EvidenceLocationResponseSchema, ReadinessReportResponseSchema, roleAvailability, improvementEvidenceReferences, type ReportView } from "@repofy/contracts";
 import type { FeatureOneRpcClient } from "../analysis/persistence";
 import type { LocatorCrypto } from "../evidence/locator-crypto";
 import type { GitHubConnectionService } from "../github-app/service";
@@ -26,7 +26,8 @@ export function projectReportView(raw: ReportView): ReportView {
   report.evidence = report.evidence.map(({ location: _location, ...e }) => ({ ...e,
     repositoryVisibility: access.get(e.snapshotId)?.visibility ?? "private" }));
   report.improvements = report.improvements.map(i => ({ ...i, permittedLocations: [] }));
-  return ReportViewSchema.parse({ ...raw, report, repositories, roleAvailability: roleAvailability(report) });
+  return ReportViewSchema.parse({ ...raw, report, repositories, roleAvailability: roleAvailability(report),
+    improvementEvidence: improvementEvidenceReferences(report, raw.aggregation) });
 }
 
 /** No provider or model calls in ordinary reads. Every RPC checks report ownership. */

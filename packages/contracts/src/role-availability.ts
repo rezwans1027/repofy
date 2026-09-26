@@ -26,7 +26,7 @@ export function roleAvailability(report: Pick<ReadinessReportResponse, "versions
   // calibrated readiness remains gated. Old results are never reinterpreted.
   const registeredAnalyzer = ["2.0.0", "2.1.0"].includes(policy.version)
     ? report.versions.detectorBundle.version === "1.0.6" && report.versions.coverageManifest === "1.2.1"
-    : ["3.0.0", "3.1.0"].includes(policy.version) && report.versions.detectorBundle.version === "2.0.0" && report.versions.coverageManifest === "1.3.0";
+    : ["3.0.0", "3.1.0"].includes(policy.version) && ["2.0.0", "2.0.1"].includes(report.versions.detectorBundle.version) && report.versions.coverageManifest === "1.3.0";
   const provisional = policy.id === "evidence_aggregation" && registeredAnalyzer
     && report.versions.taxonomy.id === "engineering_capabilities" && report.versions.taxonomy.version === "1.0.0"
     && report.versions.detectorBundle.id === "tsjs_implementation"

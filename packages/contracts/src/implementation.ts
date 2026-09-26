@@ -41,7 +41,7 @@ export const ImplementationCoverageSchema = z.strictObject({
   unresolvedImports: CountSchema, dynamicReferences: CountSchema, ambiguousBindings: CountSchema,
   indexedNodes: CountSchema, indexedBytes: CountSchema, aliasConfigurationsRejected: CountSchema,
   evidenceTruncated: z.boolean(), disabledDetectors: uniqueArray(ImplementationKindSchema, IMPLEMENTATION_KINDS.length),
-  detectors: z.array(z.strictObject({ kind: ImplementationKindSchema, version: z.enum(["1.0.0", "1.0.1", "1.0.2", "1.0.3", "1.0.4", "1.0.5", "1.0.6", "2.0.0"]),
+  detectors: z.array(z.strictObject({ kind: ImplementationKindSchema, version: z.enum(["1.0.0", "1.0.1", "1.0.2", "1.0.3", "1.0.4", "1.0.5", "1.0.6", "2.0.0", "2.0.1"]),
     capabilityIds: uniqueArray(KeySchema, 4, 1), state: z.enum(["enabled", "quarantined"]), observations: CountSchema })).min(LEGACY_IMPLEMENTATION_KINDS.length).max(IMPLEMENTATION_KINDS.length),
   limitations: LimitationsSchema.min(1),
 }).refine(v => v.eligibleFiles === v.analyzedFiles + v.parseFailures + v.limitedFiles + v.unsupportedFiles + v.generatedFiles
@@ -49,9 +49,9 @@ export const ImplementationCoverageSchema = z.strictObject({
   && v.detectors.every(d => (d.state === "quarantined") === v.disabledDetectors.includes(d.kind)
     && (d.state !== "quarantined" || d.observations === 0)), "Implementation coverage counters mismatch")
   .refine(v => {
-    const version = v.bundle.version.split("-")[0], kinds = version === "2.0.0" ? IMPLEMENTATION_KINDS : LEGACY_IMPLEMENTATION_KINDS;
+    const version = v.bundle.version.split("-")[0], kinds = ["2.0.0", "2.0.1"].includes(version) ? IMPLEMENTATION_KINDS : LEGACY_IMPLEMENTATION_KINDS;
     const suffix = v.disabledDetectors.length ? `-q${kinds.map(k => v.disabledDetectors.includes(k) ? 1 : 0).join("")}` : "";
-    return v.bundle.id === "tsjs_implementation" && ["1.0.0", "1.0.1", "1.0.2", "1.0.3", "1.0.4", "1.0.5", "1.0.6", "2.0.0"].includes(version)
+    return v.bundle.id === "tsjs_implementation" && ["1.0.0", "1.0.1", "1.0.2", "1.0.3", "1.0.4", "1.0.5", "1.0.6", "2.0.0", "2.0.1"].includes(version)
       && v.bundle.version === version + suffix && v.detectors.length === kinds.length
       && v.detectors.every(d => (kinds as readonly string[]).includes(d.kind) && d.version === version)
       && v.disabledDetectors.every(k => (kinds as readonly string[]).includes(k));

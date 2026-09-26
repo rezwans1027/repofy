@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { AggregationResultSchema, AggregationEvidenceQuerySchema, AggregationSupportSchema } from "./aggregation";
-import { ReadinessReportResponseSchema, CapabilityDefinitionSchema } from "./readiness";
+import { AggregationResultSchema, AggregationEvidenceQuerySchema, AggregationSupportSchema, type AggregationResult } from "./aggregation";
+import { ReadinessReportResponseSchema, CapabilityDefinitionSchema, type ReadinessReportResponse } from "./readiness";
 import { OwnerEvidenceSchema } from "./evidence";
 import { KeySchema, RoleIdSchema, ShortTextSchema, TimestampSchema, GitHubCommitShaSchema } from "./primitives";
 import { RoleAvailabilitySchema, roleAvailability } from "./role-availability";
@@ -15,12 +15,27 @@ export const ReportRepositoryAccessSchema = z.strictObject({
   repositoryId: z.uuid(), snapshotId: z.uuid(), visibility: z.enum(["public", "private"]),
   access: z.enum(["active", "revoked"]),
 });
+/** Evidence identifiers only: file paths still require the live location permission check. */
+export function improvementEvidenceReferences(report: ReadinessReportResponse, aggregation: AggregationResult | null) {
+  return report.improvements.flatMap(item => {
+    const capabilities = item.capabilityIds.filter(id => report.gaps.some(g => item.gapIds.includes(g.gapId)
+      && g.capabilityId === id && g.state === "limited_evidence"));
+    const evidenceIds = report.evidence.filter(e => ["code", "test", "config", "docs", "dependency"].includes(e.sourceType)
+      && item.repositoryIds?.includes(e.repositoryId) && capabilities.some(id => e.capabilityIds.includes(id)
+        && aggregation?.capabilities.some(c => c.capabilityId === id && c.state === "assessed" && c.support.some(s => s.evidenceId === e.evidenceId
+          && s.snapshotId === e.snapshotId && s.repositoryId === e.repositoryId))))
+      .map(e => e.evidenceId).sort().slice(0, 20);
+    return evidenceIds.length ? [{ improvementId: item.improvementId, evidenceIds }] : [];
+  });
+}
 export const ReportViewSchema = z.strictObject({
   report: ReadinessReportResponseSchema, aggregation: AggregationResultSchema.nullable(),
   // Older API responses may omit this projection; readers derive the same status.
   roleAvailability: z.array(RoleAvailabilitySchema).length(5).optional(),
   // Original job choices, separate from immutable report content and captured availability.
   metadataOptions: MetadataOptionsSchema.optional(),
+  // Derived from saved supporting evidence, never a verified recommendation to edit a file.
+  improvementEvidence: z.array(z.strictObject({ improvementId: z.uuid(), evidenceIds: z.array(z.uuid()).min(1).max(20) })).max(100).optional(),
   repositories: z.array(ReportRepositoryAccessSchema).min(1).max(10),
   categories: z.array(z.strictObject({ categoryId: KeySchema, label: ShortTextSchema })).max(30),
   capabilities: z.array(CapabilityDefinitionSchema).max(100),
@@ -29,6 +44,9 @@ export const ReportViewSchema = z.strictObject({
   })).max(5),
 }).superRefine((view, ctx) => {
   const { report: r, aggregation: a } = view;
+  if (view.improvementEvidence && JSON.stringify(view.improvementEvidence) !== JSON.stringify(improvementEvidenceReferences(r, a))) {
+    ctx.addIssue({ code: "custom", message: "Improvement evidence differs from saved support" });
+  }
   if (view.roleAvailability) {
     const expected = roleAvailability(r);
     if (new Set(view.roleAvailability.map(s => s.template.roleId)).size !== 5 || view.roleAvailability.some(s => {

@@ -13,8 +13,8 @@ export function selection(input: PreparedNarrative['input']) {
     improvements: input.gaps.map(g => ({ gapId: g.gapId, templateId: g.templates[0].templateId, focus: 'proof' })) };
 }
 export const syntheticGateway: ModelGateway = { async generate(input) { return { selection: selection(input), usage: { code: 'valid', inputTokens: 1000, outputTokens: 1000, latencyMs: 1 } }; } };
-export async function narrativeFixture(files: Record<string,string> = aggregationFiles, version: AggregationResult['policy']['version'] = '1.0.0') {
-  const { input,bundle } = await extractedAggregation(files, version.startsWith("3."));
+export async function narrativeFixture(files: Record<string,string> = aggregationFiles, version: AggregationResult['policy']['version'] = '1.0.0', revision = '2.0.1') {
+  const { input,bundle } = await extractedAggregation(files, version.startsWith("3."), revision);
   input.versions.synthesis = synthesisVersion(); input.versions.disclosurePolicy = { id: 'candidate_private', version: '1.0.0' };
   input.versions.aggregationPolicy.version = version;
   const aggregation = aggregateEvidence(input);

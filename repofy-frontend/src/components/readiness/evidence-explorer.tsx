@@ -1,11 +1,11 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { EvidenceLocationResponseSchema, ReportEvidencePageSchema, type EvidenceLocationResponse, type ReportEvidenceItem,
+import { ReportEvidencePageSchema, type ReportEvidenceItem,
   type ReportEvidencePage, type ReportEvidenceQuery, type ReportView } from "@repofy/contracts";
 import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
+import { EvidenceLocationDetails, useEvidenceLocation } from "./evidence-location";
 import { FindingFeedbackControl } from "./finding-feedback";
 import { cardClass, percent, words, privateQueryOptions, ReadinessError, recordReportEvent, type OpenEvidence } from "./report-shared";
 
@@ -42,22 +42,8 @@ export function EvidenceExplorer({ actor, view, filter, setFilter }: { actor: st
   </div>;
 }
 export function EvidenceCard({ actor, reportId, item, repositoryLabel }: { actor?: string; reportId: string; item: ReportEvidenceItem; repositoryLabel: string }) {
-  const { evidence: e } = item; const [location, setLocation] = useState<EvidenceLocationResponse>(); const [busy, setBusy] = useState(false);
-  const alive = useRef(true), generation = useRef(0);
-  useEffect(() => {
-    alive.current = true; generation.current++;
-    const clear = () => { generation.current++; setLocation(undefined); setBusy(false); };
-    window.addEventListener("blur", clear); document.addEventListener("visibilitychange", clear);
-    return () => { alive.current = false; window.removeEventListener("blur", clear); document.removeEventListener("visibilitychange", clear); };
-  }, []);
-  async function resolveLocation() {
-    const current = ++generation.current; setBusy(true); setLocation(undefined);
-    try {
-      const result = await api.post<EvidenceLocationResponse>(`/v1/readiness-reports/${reportId}/evidence/${e.evidenceId}/location`, { cache: "no-store", schema: EvidenceLocationResponseSchema });
-      if (alive.current && current === generation.current) setLocation(result);
-    } catch { if (alive.current && current === generation.current) setLocation({ state: "unavailable", evidenceId: e.evidenceId }); }
-    finally { if (alive.current && current === generation.current) setBusy(false); }
-  }
+  const { evidence: e } = item;
+  const { location, busy, resolveLocation } = useEvidenceLocation(reportId, e.evidenceId);
   const privateEvidence = e.repositoryVisibility === "private" || location?.state === "available" && location.visibility === "private";
   return <article className={cardClass}><header className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">{repositoryLabel} · {words(e.sourceType)} observation</h3>
     <span className="rounded-md border border-border px-2 py-1 text-xs">{privateEvidence ? "Verified private evidence" : "Verified public evidence"} · Owner only</span></header>
@@ -73,9 +59,6 @@ export function EvidenceCard({ actor, reportId, item, repositoryLabel }: { actor
       </div></details>
     {item.access === "active" && <Button variant="outline" disabled={busy} onClick={resolveLocation}>{busy ? "Checking permission…" : "Inspect permitted location"}</Button>}
     {actor && <FindingFeedbackControl actor={actor} reportId={reportId} finding={{ kind: "evidence", id: e.evidenceId }} label={`${repositoryLabel} ${words(e.sourceType)} observation`} />}
-    {location && <div role="status" className="space-y-2">{location.state === "available" ? <><p>{location.repositoryLabel}: <code>{location.label}</code>{location.lines && ` · lines ${location.lines.start}–${location.lines.end}`}</p>
-      {location.url && !privateEvidence && <a className="underline" href={location.url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">Open exact commit on GitHub</a>}
-      {location.visibility === "private" && <p>Verified private evidence. Location visible only after your permission check.</p>}</>
-      : <p>{location.state === "access_revoked" ? "Repository access changed. Location hidden; reconnect GitHub before trying again." : location.state === "not_retained" ? "A file location is not retained for this provider observation." : "The location could not be verified. Try again later; no source was fetched."}</p>}</div>}
+    <EvidenceLocationDetails location={item.access === "active" ? location : undefined} privateEvidence={privateEvidence} />
   </article>;
 }

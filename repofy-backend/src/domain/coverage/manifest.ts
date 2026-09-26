@@ -33,11 +33,11 @@ const entries: Entry[] = [
   entry("ai_runtime", [], [], [], [], "unsupported", ["ai_runtime_not_assessed"]),
   entry("other_ecosystems", [], [], [], [], "inventory", ["unsupported_depth"]),
 ];
-export function coverageProfile(disabledParsers: readonly BaselineParser[] = [], disabledDetectors: readonly ImplementationKind[] = [], enhanced = false) {
+export function coverageProfile(disabledParsers: readonly BaselineParser[] = [], disabledDetectors: readonly ImplementationKind[] = [], enhanced = false, revision = "2.0.1") {
   if (new Set(disabledParsers).size !== disabledParsers.length || disabledParsers.some(p => !BASELINE_PARSERS.includes(p))) throw new Error("Invalid parser quarantine");
   const disabled = Object.freeze(BASELINE_PARSERS.filter(p => disabledParsers.includes(p)));
   const suffix = disabled.length ? `-p${BASELINE_PARSERS.map(p => disabled.includes(p) ? 1 : 0).join("")}` : "";
-  return Object.freeze({ ...implementationProfile(disabledDetectors, enhanced), extractorBundle: { id: "language_inventory", version: `1.0.1${suffix}` },
+  return Object.freeze({ ...implementationProfile(disabledDetectors, enhanced, revision), extractorBundle: { id: "language_inventory", version: `1.0.1${suffix}` },
     coverageManifest: `${enhanced ? "1.3.0" : "1.2.1"}${suffix}`, coverage: Object.freeze({ disabledParsers: disabled, selection }) });
 }
 export function coverageDeclaration(disabled: readonly BaselineParser[] = [], enhanced = false): CoverageDeclaration {

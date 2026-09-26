@@ -3,6 +3,7 @@ import { useState } from "react";
 import { roleAvailability, type AggregatedCapability, type ReportView } from "@repofy/contracts";
 import { Button } from "@/components/ui/button";
 import { FindingFeedbackControl } from "./finding-feedback";
+import { ImprovementFile } from "./evidence-location";
 import { cardClass, ClaimText, percent, recordReportEvent, words, type OpenEvidence } from "./report-shared";
 
 export function CapabilityMap({ view, openEvidence }: { view: ReportView; openEvidence: OpenEvidence }) {
@@ -112,7 +113,17 @@ export function Improvements({ view, openEvidence }: { view: ReportView; openEvi
         <h4 className="font-medium">Why this priority</h4><ul className="list-disc pl-5">{item.priorityReasons.map((text, i) => <li key={i}>{text}</li>)}</ul>
         {item.priorityTrace && <p>Relevance {item.priorityTrace.roleRelevance}; gap {item.priorityTrace.gap}; expected proof {item.priorityTrace.expectedProof}; confidence {item.priorityTrace.confidence}; effort factor {item.priorityTrace.effortCost}. {item.priorityTrace.confidenceBasis === "unknown" ? "Unknown scope has no measured gap and receives priority zero." : "Factors are calculated by the server."}</p>}
         <p>Relevant projects: {item.repositoryIds?.length ? item.repositoryIds.map(id => view.report.snapshots.find(s => s.repositoryId === id)?.repositoryLabel).join(", ") : "No specific project location identified."}</p>
-        <p>A change location has not been established. For observed evidence, choose Inspect evidence, then Inspect permitted location to check the file and commit. Review scope when no supporting evidence was observed; a proposal is not verified evidence.</p>
+        {view.improvementEvidence?.find(ref => ref.improvementId === item.improvementId) ? <div className="space-y-3">
+          <h4 className="font-medium">Relevant existing files</h4>
+          <p>These files support the observed capability. Inspect them to plan the improvement; an exact edit location has not been verified. Each file requires a fresh permission check.</p>
+          <ul className="space-y-3">{view.improvementEvidence.find(ref => ref.improvementId === item.improvementId)!.evidenceIds.map((id, index) => {
+            const evidence = view.report.evidence.find(e => e.evidenceId === id)!;
+            const repository = view.repositories.find(r => r.snapshotId === evidence.snapshotId)!;
+            return <ImprovementFile key={`${view.report.ownerUserId}:${view.report.reportId}:${id}:${repository.access}:${repository.visibility}`}
+              reportId={view.report.reportId} evidenceId={id} visibility={repository.visibility} access={repository.access}
+              label={`${view.report.snapshots.find(s => s.snapshotId === evidence.snapshotId)?.repositoryLabel} · ${index + 1}`} />;
+          })}</ul>
+        </div> : <p>No relevant file reference was established from the retained supporting evidence. Review the capability scope before choosing where to add proof.</p>}
       </div></details>
     </li>)}</ol>
   </section>;

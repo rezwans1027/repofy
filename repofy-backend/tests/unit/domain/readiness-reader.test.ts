@@ -14,6 +14,14 @@ function fixture() {
   const reader = new ReadinessReader({ rpc }, () => crypto, { verifyRepository });
   return { actor, report, evidence, crypto, data, rpc, verifyRepository, reader };
 }
+it('refuses foreign-report and revoked locations before calling the provider or decrypting', async () => {
+  const f = fixture();
+  f.rpc.mockResolvedValueOnce({ data: null, error: { message: 'NOT_FOUND' } });
+  await expect(f.reader.location(f.actor, f.report, f.evidence)).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  f.rpc.mockResolvedValueOnce({ data: null, error: { message: 'ACCESS_REVOKED' } });
+  expect(await f.reader.location(f.actor, f.report, f.evidence)).toEqual({ state: 'access_revoked', evidenceId: f.evidence });
+  expect(f.verifyRepository).not.toHaveBeenCalled();
+});
 it('returns fixed location states on provider or decryption failure without revealing exception text', async () => {
   const f = fixture(); f.verifyRepository.mockRejectedValueOnce(new Error('PRIVATE_SOURCE_SENTINEL'));
   expect(await f.reader.location(f.actor, f.report, f.evidence)).toEqual({ state: 'unavailable', evidenceId: f.evidence });

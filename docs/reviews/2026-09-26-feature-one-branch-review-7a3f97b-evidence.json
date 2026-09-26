@@ -1,0 +1,1046 @@
+{
+  "reviewedAt": "2026-09-26T22:47:14.004223+00:00",
+  "branch": "feature/project-evidence-readiness",
+  "head": "7a3f97b50904dc6378b8d749e1ed5eb6bce04f8e",
+  "base": "3dd07620fc2412e6570beedb035d9a919a8df660",
+  "initialWorkingTreeClean": true,
+  "scope": "PRD Feature 1 and supporting foundations; local synthetic verification; read-only remote CI/protection observations",
+  "verificationMethod": {
+    "source": "repofy-backend/scripts/release/verify.mjs",
+    "adaptation": "Temporary copy fixed root/import paths, omitted --record for benchmark and load, and redirected verification JSON outside repository. Same 22 commands and sequential execution. Historical release artifacts unchanged.",
+    "logsDirectory": "/var/folders/3j/2y9xr9rj0vq1j5jwgmzc01vc0000gn/T/repofy-run16-verification-Xc76Uw"
+  },
+  "verification": {
+    "startedAt": "2026-09-26T22:39:56.927Z",
+    "updatedAt": "2026-09-26T22:44:45.741Z",
+    "node": "v22.23.2",
+    "sourceSha256": "047d29cece3090555f194fda048dc6784e4b08489afcb733af5f9d16830d9596",
+    "sourceUnchanged": true,
+    "expectedChecks": [
+      "contracts_typecheck",
+      "contracts",
+      "backend_typecheck",
+      "release_typecheck",
+      "backend_tests",
+      "postgres",
+      "ingestion",
+      "worker",
+      "extraction",
+      "detectors",
+      "coverage",
+      "aggregation",
+      "rubrics",
+      "benchmark",
+      "load",
+      "frontend_lint",
+      "frontend_typecheck",
+      "frontend_tests",
+      "frontend_build",
+      "readiness_routes",
+      "selection_browser",
+      "report_browser"
+    ],
+    "checks": [
+      {
+        "id": "contracts_typecheck",
+        "command": "npm --prefix packages/contracts run typecheck",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:39:56.980Z",
+        "finishedAt": "2026-09-26T22:39:57.944Z",
+        "durationMs": 964,
+        "logSha256": "d3bf7a634d85914a3551078a080cb1b4e338d7978a46edc801fac846ab13fc95",
+        "logBytes": 261
+      },
+      {
+        "id": "contracts",
+        "command": "npm --prefix packages/contracts test",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:39:57.989Z",
+        "finishedAt": "2026-09-26T22:39:59.302Z",
+        "durationMs": 1313,
+        "logSha256": "3f83053a9de48866b749e008f83f876eb23fcf42afbe567eb32a01d9d62af7d2",
+        "logBytes": 16984
+      },
+      {
+        "id": "backend_typecheck",
+        "command": "npm --prefix repofy-backend run typecheck",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:39:59.348Z",
+        "finishedAt": "2026-09-26T22:40:01.847Z",
+        "durationMs": 2499,
+        "logSha256": "37aa9373fd867619d5ecc76c3fd1b0374e8ee6d366f844ed56939ee58addc86e",
+        "logBytes": 50
+      },
+      {
+        "id": "release_typecheck",
+        "command": "npm --prefix repofy-backend run release:typecheck",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:40:01.892Z",
+        "finishedAt": "2026-09-26T22:40:03.869Z",
+        "durationMs": 1977,
+        "logSha256": "4bfd49d8e0fea3aeaa21ad203009e64ed4bab8496a93ecc5fcc91b6fab17b4de",
+        "logBytes": 74
+      },
+      {
+        "id": "backend_tests",
+        "command": "npm --prefix repofy-backend test -- --coverage --maxWorkers=1",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:40:03.917Z",
+        "finishedAt": "2026-09-26T22:41:05.941Z",
+        "durationMs": 62024,
+        "logSha256": "71833068ab98bba73deb601d00ea2ac260f9583c7765a409b69df93cf23c463f",
+        "logBytes": 11540
+      },
+      {
+        "id": "postgres",
+        "command": "npm --prefix repofy-backend run test:postgres",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:41:05.991Z",
+        "finishedAt": "2026-09-26T22:41:13.010Z",
+        "durationMs": 7020,
+        "logSha256": "7070e6cfab3067ed7aa5e86c922d70ff2444b88a0a61e1eaaa69ef2c0849c997",
+        "logBytes": 32160
+      },
+      {
+        "id": "ingestion",
+        "command": "npm --prefix repofy-backend run ingestion:verify",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:41:13.059Z",
+        "finishedAt": "2026-09-26T22:41:13.663Z",
+        "durationMs": 604,
+        "logSha256": "76e4ba84a4a348a8f8e5dd224ed4534d084345a39e47aa8fd62e5cdb68144cfb",
+        "logBytes": 160
+      },
+      {
+        "id": "worker",
+        "command": "npm --prefix repofy-backend run worker:verify",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:41:13.710Z",
+        "finishedAt": "2026-09-26T22:41:17.267Z",
+        "durationMs": 3556,
+        "logSha256": "a37a877f2f13e892f61e8a7042e74f60dc87cc474707da41a64574be6306fc3c",
+        "logBytes": 254
+      },
+      {
+        "id": "extraction",
+        "command": "npm --prefix repofy-backend run extraction:verify",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:41:17.316Z",
+        "finishedAt": "2026-09-26T22:41:20.459Z",
+        "durationMs": 3143,
+        "logSha256": "aac30b9f6faef1f87c6324125e3628d9ecd03e43bd147a6d0ddc0e37a9e37621",
+        "logBytes": 220
+      },
+      {
+        "id": "detectors",
+        "command": "npm --prefix repofy-backend run detectors:verify",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:41:20.504Z",
+        "finishedAt": "2026-09-26T22:41:24.287Z",
+        "durationMs": 3783,
+        "logSha256": "dfc96b27f244955fb29644af3a6e593e0e4d7e4f227bd31e97798882dde14aaa",
+        "logBytes": 576
+      },
+      {
+        "id": "coverage",
+        "command": "npm --prefix repofy-backend run coverage:verify",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:41:24.331Z",
+        "finishedAt": "2026-09-26T22:41:27.503Z",
+        "durationMs": 3172,
+        "logSha256": "4c8ccd5a4e8e4d7d3fd6491239e879c29636f59587bfd00397cd0329052f82f5",
+        "logBytes": 300
+      },
+      {
+        "id": "aggregation",
+        "command": "npm --prefix repofy-backend run aggregation:verify",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:41:27.552Z",
+        "finishedAt": "2026-09-26T22:41:33.159Z",
+        "durationMs": 5607,
+        "logSha256": "0e2ba87f6cc5fd8ad6d03267b9a2cb4751eb5108f63e4401309ee0a424e37e6b",
+        "logBytes": 333
+      },
+      {
+        "id": "rubrics",
+        "command": "npm --prefix repofy-backend run rubrics:validate",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:41:33.206Z",
+        "finishedAt": "2026-09-26T22:41:33.364Z",
+        "durationMs": 157,
+        "logSha256": "7f9fe58109032a84afa978137357675660445f35f22cc10c1d7713570ed6ea05",
+        "logBytes": 178
+      },
+      {
+        "id": "benchmark",
+        "command": "npm --prefix repofy-backend run release:benchmark",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:41:33.408Z",
+        "finishedAt": "2026-09-26T22:41:34.630Z",
+        "durationMs": 1222,
+        "logSha256": "d3c5df04415f01ff23747c152db9aedc43138fcc4b8a6aa78dd0d37619074c17",
+        "logBytes": 5364
+      },
+      {
+        "id": "load",
+        "command": "npm --prefix repofy-backend run release:load",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:41:34.675Z",
+        "finishedAt": "2026-09-26T22:41:43.273Z",
+        "durationMs": 8597,
+        "logSha256": "94176e12a8d59a2aa80715bb46c44e923aa017d470226501dd626112ae2d8db0",
+        "logBytes": 6491
+      },
+      {
+        "id": "frontend_lint",
+        "command": "npm --prefix repofy-frontend run lint",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:41:43.320Z",
+        "finishedAt": "2026-09-26T22:41:48.459Z",
+        "durationMs": 5139,
+        "logSha256": "48d576f7ce662d1fc9e93bc92de8acffa41e9a8911fed34fb64362adce98f003",
+        "logBytes": 40
+      },
+      {
+        "id": "frontend_typecheck",
+        "command": "npm --prefix repofy-frontend run typecheck",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:41:48.504Z",
+        "finishedAt": "2026-09-26T22:41:49.690Z",
+        "durationMs": 1187,
+        "logSha256": "e7faa54b65ba5b5501ee08ad51e331cd9c9bfc1c97de0679e28ccec2c820c549",
+        "logBytes": 51
+      },
+      {
+        "id": "frontend_tests",
+        "command": "npm --prefix repofy-frontend test -- --coverage --maxWorkers=1",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:41:49.734Z",
+        "finishedAt": "2026-09-26T22:42:41.851Z",
+        "durationMs": 52117,
+        "logSha256": "59fcbff8a24114c76fff849e0ef32fe7c303f8fc8381375da761296c9c2d20e1",
+        "logBytes": 8911
+      },
+      {
+        "id": "frontend_build",
+        "command": "npm --prefix repofy-frontend run build",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:42:41.899Z",
+        "finishedAt": "2026-09-26T22:43:03.095Z",
+        "durationMs": 21195,
+        "logSha256": "9d7edbd78c6b2d1d12d47231f1a8b058e8efd8b91df46b7f6ba94bc77f853098",
+        "logBytes": 3488
+      },
+      {
+        "id": "readiness_routes",
+        "command": "npm --prefix repofy-frontend run test:e2e:readiness",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:43:03.177Z",
+        "finishedAt": "2026-09-26T22:43:05.313Z",
+        "durationMs": 2136,
+        "logSha256": "cc60886a5e300a4ac769e354f645de8f3e71ea6bcbfb12439bcfd103af6a7cf3",
+        "logBytes": 3043
+      },
+      {
+        "id": "selection_browser",
+        "command": "npm --prefix repofy-frontend run test:e2e:selection",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:43:05.370Z",
+        "finishedAt": "2026-09-26T22:43:18.416Z",
+        "durationMs": 13045,
+        "logSha256": "48abf6e69c35aa59fd9e858df2b6c299916cd7694175257db435ffc2e0d6be52",
+        "logBytes": 12537
+      },
+      {
+        "id": "report_browser",
+        "command": "npm --prefix repofy-frontend run test:e2e:report",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T22:43:18.461Z",
+        "finishedAt": "2026-09-26T22:44:45.697Z",
+        "durationMs": 87235,
+        "logSha256": "3c5a56b9f93bfc1223e5a54229493a83a21138d45853e77d27f98b6e398f5372",
+        "logBytes": 64703
+      }
+    ],
+    "allPassed": true,
+    "scope": "Local synthetic CI parity; no live provider, hosted account, human assistive-technology or deployed infrastructure verification"
+  },
+  "testCounts": {
+    "contracts": 85,
+    "backend": 1636,
+    "postgres": 129,
+    "frontend": 591,
+    "total": 2441,
+    "http": 8,
+    "selectionBrowser": 2,
+    "reportBrowser": 7,
+    "httpAndBrowserTotal": 17
+  },
+  "coveragePercent": {
+    "backend": {
+      "lines": 91.32,
+      "branches": 87.01
+    },
+    "frontend": {
+      "lines": 84.53,
+      "branches": 75.97
+    }
+  },
+  "legacyBenchmark": {
+    "corpus": {
+      "id": "feature_one_release",
+      "version": "1.0.0",
+      "sha256": "f80ca10b4235986ea71de3254e8f738a5c870e54b54e96a619fcaabfb4250efe",
+      "splitPolicy": "Evaluation cases authored and frozen before first execution; excluded from earlier detector development. Same implementation agent authored references: not independent or blinded calibration. Never revise labels to match results.",
+      "measurementUnit": "Individual TS/JS detector/file observations; recall covers the annotated supported static patterns only. Out-of-scope valid alternatives reported separately."
+    },
+    "metrics": {
+      "knownDetectorObservations": {
+        "tp": 24,
+        "fp": 0,
+        "fn": 1,
+        "missing": [
+          {
+            "detector": "tsjs.route_service",
+            "path": "workspace_layers/packages/api/endpoint.ts"
+          }
+        ],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 0.96
+      },
+      "byDetector": [
+        {
+          "detector": "tsjs.route_service",
+          "tp": 4,
+          "fp": 0,
+          "fn": 1,
+          "missing": [
+            {
+              "detector": "tsjs.route_service",
+              "path": "workspace_layers/packages/api/endpoint.ts"
+            }
+          ],
+          "unexpected": [],
+          "precision": 1,
+          "recall": 0.8
+        },
+        {
+          "detector": "tsjs.request_validation",
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "missing": [],
+          "unexpected": [],
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "detector": "tsjs.authentication_guard",
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "missing": [],
+          "unexpected": [],
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "detector": "tsjs.ownership_guard",
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "missing": [],
+          "unexpected": [],
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "detector": "tsjs.structured_error",
+          "tp": 3,
+          "fp": 0,
+          "fn": 0,
+          "missing": [],
+          "unexpected": [],
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "detector": "tsjs.form_validation",
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "missing": [],
+          "unexpected": [],
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "detector": "tsjs.request_state",
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "missing": [],
+          "unexpected": [],
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "detector": "tsjs.accessible_action",
+          "tp": 3,
+          "fp": 0,
+          "fn": 0,
+          "missing": [],
+          "unexpected": [],
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "detector": "tsjs.parameterized_query",
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "missing": [],
+          "unexpected": [],
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "detector": "tsjs.transaction",
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "missing": [],
+          "unexpected": [],
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "detector": "tsjs.schema_constraint",
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "missing": [],
+          "unexpected": [],
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "detector": "tsjs.bounded_retry",
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "missing": [],
+          "unexpected": [],
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "detector": "tsjs.state_guard",
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "missing": [],
+          "unexpected": [],
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "detector": "tsjs.failure_cleanup",
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "missing": [],
+          "unexpected": [],
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "detector": "tsjs.asserted_call",
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "missing": [],
+          "unexpected": [],
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "detector": "tsjs.bounded_model_output",
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "missing": [],
+          "unexpected": [],
+          "precision": 1,
+          "recall": 1
+        }
+      ],
+      "validReferences": {
+        "successes": 127,
+        "total": 127,
+        "rate": 1,
+        "interval95": [
+          0.9706403547062367,
+          1
+        ]
+      },
+      "validMajorClaimReferences": {
+        "successes": 58,
+        "total": 58,
+        "rate": 1,
+        "interval95": [
+          0.9378821442127971,
+          1
+        ]
+      },
+      "privateDisclosureFailures": 0,
+      "contributionConfidenceErrors": 0,
+      "humanClaimSupport": null,
+      "unsupportedMajorClaimRate": null,
+      "roleRubricCalibration": null,
+      "extractionThroughRenderingMs": {
+        "p50": 28,
+        "p95": 36
+      },
+      "syntheticCasesCompleted": {
+        "successes": 24,
+        "total": 24,
+        "rate": 1,
+        "interval95": [
+          0.8620237953250198,
+          1
+        ]
+      },
+      "peakRssMiB": 249,
+      "actualProviderCostUsd": 0,
+      "providerCalls": 0,
+      "modelQualityMeasured": false,
+      "configuredJobCostCapUsd": 0.1
+    }
+  },
+  "syntheticWorkload": {
+    "measuredAt": "2026-09-26T22:41:43.073Z",
+    "corpus": {
+      "id": "feature_one_release",
+      "version": "1.0.0",
+      "sha256": "f80ca10b4235986ea71de3254e8f738a5c870e54b54e96a619fcaabfb4250efe"
+    },
+    "environment": {
+      "node": "v22.23.2",
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpu": "Apple M4 Pro",
+      "logicalCpus": 12,
+      "memoryGiB": 24,
+      "workerConcurrency": 1,
+      "maximumQueuedTogether": 2,
+      "maximumSelectedRepositories": 5,
+      "maximumEligibleFiles": 10000,
+      "database": "disposable PostgreSQL 17",
+      "providerTransports": "synthetic",
+      "host": "shared_local_development_machine"
+    },
+    "completion": {
+      "successes": 13,
+      "total": 13,
+      "rate": 1,
+      "interval95": [
+        0.7719046276458016,
+        0.9999999999999999
+      ]
+    },
+    "validWorkloads": [
+      {
+        "scenario": "backend_parse",
+        "status": "completed",
+        "failureCode": null,
+        "queueMs": 30,
+        "processingMs": 165,
+        "totalMs": 195
+      },
+      {
+        "scenario": "frontend_request",
+        "status": "completed",
+        "failureCode": null,
+        "queueMs": 93,
+        "processingMs": 95,
+        "totalMs": 188
+      },
+      {
+        "scenario": "model_adapter",
+        "status": "completed",
+        "failureCode": null,
+        "queueMs": 45,
+        "processingMs": 86,
+        "totalMs": 131
+      },
+      {
+        "scenario": "dependency_only",
+        "status": "completed",
+        "failureCode": null,
+        "queueMs": 72,
+        "processingMs": 110,
+        "totalMs": 182
+      },
+      {
+        "scenario": "python_baseline",
+        "status": "completed",
+        "failureCode": null,
+        "queueMs": 67,
+        "processingMs": 95,
+        "totalMs": 162
+      },
+      {
+        "scenario": "java_baseline",
+        "status": "completed",
+        "failureCode": null,
+        "queueMs": 61,
+        "processingMs": 82,
+        "totalMs": 143
+      },
+      {
+        "scenario": "mobile_native_unknown",
+        "status": "completed",
+        "failureCode": null,
+        "queueMs": 96,
+        "processingMs": 78,
+        "totalMs": 174
+      },
+      {
+        "scenario": "empty_unknown",
+        "status": "completed",
+        "failureCode": null,
+        "queueMs": 92,
+        "processingMs": 73,
+        "totalMs": 165
+      },
+      {
+        "scenario": "private_sentinels",
+        "status": "completed",
+        "failureCode": null,
+        "queueMs": 90,
+        "processingMs": 85,
+        "totalMs": 175
+      },
+      {
+        "scenario": "backend_parse+python_baseline+java_baseline+frontend_request+model_adapter",
+        "status": "completed",
+        "failureCode": null,
+        "queueMs": 72,
+        "processingMs": 229,
+        "totalMs": 301
+      },
+      {
+        "scenario": "queued_pair_2",
+        "status": "completed",
+        "failureCode": null,
+        "queueMs": 36,
+        "processingMs": 110,
+        "totalMs": 146
+      },
+      {
+        "scenario": "queued_pair_1",
+        "status": "completed",
+        "failureCode": null,
+        "queueMs": 238,
+        "processingMs": 82,
+        "totalMs": 320
+      },
+      {
+        "scenario": "limit_10000",
+        "status": "completed",
+        "failureCode": null,
+        "queueMs": 83,
+        "processingMs": 1964,
+        "totalMs": 2047
+      }
+    ],
+    "rejectedWorkloads": [
+      {
+        "scenario": "too_many_eligible",
+        "status": "failed",
+        "failureCode": "REPOSITORY_TOO_LARGE",
+        "queueMs": 43,
+        "processingMs": 247,
+        "totalMs": 290
+      }
+    ],
+    "latencyMs": {
+      "queue": {
+        "samples": 13,
+        "p50": 72,
+        "p95": 238,
+        "max": 238
+      },
+      "processing": {
+        "samples": 13,
+        "p50": 95,
+        "p95": 1964,
+        "max": 1964
+      },
+      "endToEnd": {
+        "samples": 13,
+        "p50": 175,
+        "p95": 2047,
+        "max": 2047
+      },
+      "api": {
+        "save_selection": {
+          "samples": 1,
+          "p50": 21.32,
+          "p95": 21.32,
+          "max": 21.32
+        },
+        "start": {
+          "samples": 15,
+          "p50": 6.92,
+          "p95": 13.72,
+          "max": 13.72
+        },
+        "job_read": {
+          "samples": 118,
+          "p50": 6.03,
+          "p95": 15.89,
+          "max": 175.97
+        },
+        "report_view": {
+          "samples": 60,
+          "p50": 14.27,
+          "p95": 15.77,
+          "max": 16.28
+        },
+        "history": {
+          "samples": 50,
+          "p50": 7.18,
+          "p95": 7.73,
+          "max": 8.72
+        },
+        "evidence": {
+          "samples": 50,
+          "p50": 6.61,
+          "p95": 7.51,
+          "max": 8.5
+        },
+        "foreign_denial": {
+          "samples": 2,
+          "p50": 5.37,
+          "p95": 5.54,
+          "max": 5.54
+        }
+      },
+      "stages": {
+        "downloading": {
+          "samples": 18,
+          "p50": 1,
+          "p95": 62,
+          "max": 62
+        },
+        "inventorying": {
+          "samples": 18,
+          "p50": 4,
+          "p95": 625,
+          "max": 625
+        },
+        "extracting": {
+          "samples": 17,
+          "p50": 15,
+          "p95": 1091,
+          "max": 1091
+        },
+        "aggregating": {
+          "samples": 13,
+          "p50": 24,
+          "p95": 148,
+          "max": 148
+        },
+        "synthesizing": {
+          "samples": 13,
+          "p50": 18,
+          "p95": 33,
+          "max": 33
+        },
+        "validating": {
+          "samples": 13,
+          "p50": 15,
+          "p95": 30,
+          "max": 30
+        }
+      }
+    },
+    "peakServerRssMiB": 448,
+    "peakGeneratedArchiveBytes": 105169,
+    "cleanup": {
+      "terminalWorkspacesRemaining": 0,
+      "emptyWorkspaceChecks": 13,
+      "terminalToEmptyCheckMs": {
+        "samples": 13,
+        "p50": 30,
+        "p95": 53,
+        "max": 53
+      },
+      "jobPollIntervalMs": 30,
+      "productionSweeperVerified": false
+    },
+    "cost": {
+      "actualProviderUsd": 0,
+      "syntheticUsage": {
+        "calls": 13,
+        "input_tokens": 13000,
+        "output_tokens": 13000,
+        "estimated_cost": 0.026
+      },
+      "configuredPerJobCapUsd": 0.1,
+      "productionProviderCostMeasured": false
+    },
+    "invariants": {
+      "duplicateStartCreatedOneJob": true,
+      "savedReadsDuringProviderOutage": true,
+      "foreignReportReadsDenied": true
+    },
+    "limitations": [
+      "Local synthetic transports exclude provider/auth network latency and rate limits",
+      "A small workload is not a production completion/latency SLA",
+      "Stage intervals include database bookkeeping and adjacent stage work; downloading includes some authorization",
+      "Archive bytes are not a measured container-volume high-water mark",
+      "Cleanup observed at terminal polling; deployed supervision and outage behavior remain external gates"
+    ]
+  },
+  "productionDependencyAudits": {
+    "backend": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "frontend": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    }
+  },
+  "counterexampleMethod": {
+    "fixtures": "repofy-backend/tests/helpers/role-coverage-v3.ts:implementedRolePortfolio",
+    "pipeline": "narrativeFixture(files, \"3.0.0\") -> real ingestion/extraction/aggregation -> renderNarrative -> validateRendered; closed synthetic model selection, no provider calls or repository code execution",
+    "baseline": {
+      "frontendCoverage": 0.5525,
+      "aiApplicationCoverage": 0.546,
+      "selectedCapabilityStrength": 0.65,
+      "selectedCapabilityConfidence": "moderate"
+    },
+    "negativeControl": {
+      "mutation": "Object.defineProperty(allowed, \"includes\", {value: () => true})",
+      "modelActionGuardPresent": false,
+      "aiSafetyStrength": 0,
+      "aiRoleCoverage": 0.468
+    }
+  },
+  "counterexamples": [
+    {
+      "id": "unreachable_label",
+      "changedFixture": "Form.jsx",
+      "replacement": {
+        "from": "<label htmlFor=\"name\">Name</label>",
+        "to": "{false && <label htmlFor=\"name\">Name</label>}"
+      },
+      "analyzer": {
+        "id": "tsjs_implementation",
+        "version": "2.0.0"
+      },
+      "aggregation": {
+        "id": "evidence_aggregation",
+        "version": "3.0.0"
+      },
+      "capability": "frontend_accessibility",
+      "strength": 0.65,
+      "strengthBand": "strong",
+      "confidence": "moderate",
+      "roleCoverage": 0.5525,
+      "validationAccepted": true,
+      "claim": {
+        "verification": "verified",
+        "text": "A form connects a labelled controlled input and a named submit action. Static label wiring does not establish computed accessibility, keyboard behavior, focus recovery or conformance. A linked test assertion is present in source; passing execution is unverified. Evidence confidence is moderate; proficiency and authorship are unverified."
+      }
+    },
+    {
+      "id": "unreachable_input",
+      "changedFixture": "Form.jsx",
+      "replacement": {
+        "from": "<input id=\"name\" value={name} onChange={change}/>",
+        "to": "{false && <input id=\"name\" value={name} onChange={change}/>}"
+      },
+      "analyzer": {
+        "id": "tsjs_implementation",
+        "version": "2.0.0"
+      },
+      "aggregation": {
+        "id": "evidence_aggregation",
+        "version": "3.0.0"
+      },
+      "capability": "frontend_accessibility",
+      "strength": 0.65,
+      "strengthBand": "strong",
+      "confidence": "moderate",
+      "roleCoverage": 0.5525,
+      "validationAccepted": true,
+      "claim": {
+        "verification": "verified",
+        "text": "A form connects a labelled controlled input and a named submit action. Static label wiring does not establish computed accessibility, keyboard behavior, focus recovery or conformance. A linked test assertion is present in source; passing execution is unverified. Evidence confidence is moderate; proficiency and authorship are unverified."
+      }
+    },
+    {
+      "id": "unreachable_submit",
+      "changedFixture": "Form.jsx",
+      "replacement": {
+        "from": "<button type=\"submit\">Save</button>",
+        "to": "{false && <button type=\"submit\">Save</button>}"
+      },
+      "analyzer": {
+        "id": "tsjs_implementation",
+        "version": "2.0.0"
+      },
+      "aggregation": {
+        "id": "evidence_aggregation",
+        "version": "3.0.0"
+      },
+      "capability": "frontend_interaction",
+      "strength": 0.65,
+      "strengthBand": "strong",
+      "confidence": "moderate",
+      "roleCoverage": 0.5525,
+      "validationAccepted": true,
+      "claim": {
+        "verification": "verified",
+        "text": "A form connects a labelled controlled input and a named submit action. Static label wiring does not establish computed accessibility, keyboard behavior, focus recovery or conformance. A linked test assertion is present in source; passing execution is unverified. Evidence confidence is moderate; proficiency and authorship are unverified."
+      }
+    },
+    {
+      "id": "input_extended_allowlist",
+      "changedFixture": "model-guard.ts",
+      "replacement": {
+        "from": "model:'fixture-model'",
+        "to": "model:(allowed.push(prompt),'fixture-model')"
+      },
+      "analyzer": {
+        "id": "tsjs_implementation",
+        "version": "2.0.0"
+      },
+      "aggregation": {
+        "id": "evidence_aggregation",
+        "version": "3.0.0"
+      },
+      "capability": "ai_safety",
+      "strength": 0.65,
+      "strengthBand": "strong",
+      "confidence": "moderate",
+      "roleCoverage": 0.546,
+      "validationAccepted": true,
+      "claim": {
+        "verification": "verified",
+        "text": "A model-selected action is checked against a literal allowlist before local dispatch. This bounded dispatch guard does not establish prompt-injection resistance, tool authorization or safe model behavior overall. A linked test assertion is present in source; passing execution is unverified. Evidence confidence is moderate; proficiency and authorship are unverified."
+      }
+    },
+    {
+      "id": "bypassed_allowlist",
+      "changedFixture": "model-guard.ts",
+      "replacement": {
+        "from": "export async function choose",
+        "to": "Object.setPrototypeOf(allowed,{includes(){return true;}});export async function choose"
+      },
+      "analyzer": {
+        "id": "tsjs_implementation",
+        "version": "2.0.0"
+      },
+      "aggregation": {
+        "id": "evidence_aggregation",
+        "version": "3.0.0"
+      },
+      "capability": "ai_safety",
+      "strength": 0.65,
+      "strengthBand": "strong",
+      "confidence": "moderate",
+      "roleCoverage": 0.546,
+      "validationAccepted": true,
+      "claim": {
+        "verification": "verified",
+        "text": "A model-selected action is checked against a literal allowlist before local dispatch. This bounded dispatch guard does not establish prompt-injection resistance, tool authorization or safe model behavior overall. A linked test assertion is present in source; passing execution is unverified. Evidence confidence is moderate; proficiency and authorship are unverified."
+      }
+    }
+  ],
+  "releaseDecision": {
+    "command": "npm --prefix repofy-backend run release:decision",
+    "exitCode": 1,
+    "message": "Benchmark predates current domain implementation",
+    "savedDomainDigest": "c0f688dacf32a86afd0ffa58c4b08cd88cc7846664cfd4690156145545ba67f8",
+    "currentDomainDigest": "28b45e6c4a0a464d8ada6cd79ea58f4dcf661d6bf10a08131b07b1089b530d8a",
+    "historicalArtifactsOverwritten": false
+  },
+  "remoteReadOnly": [
+    {
+      "command": "gh pr list --head feature/project-evidence-readiness --state all --json number,title,state,url,baseRefName,headRefOid",
+      "exitCode": 0,
+      "result": []
+    },
+    {
+      "command": "gh run list --branch feature/project-evidence-readiness --limit 10 --json databaseId,headSha,status,conclusion,workflowName,url",
+      "exitCode": 0,
+      "result": []
+    },
+    {
+      "command": "gh api repos/rezwans1027/repofy/branches/main/protection/required_status_checks",
+      "exitCode": 1,
+      "status": 404,
+      "message": "Branch not protected"
+    },
+    {
+      "command": "gh api repos/rezwans1027/repofy/rules/branches/main",
+      "exitCode": 0,
+      "result": []
+    }
+  ],
+  "visualInspection": [
+    "repofy-frontend/test-results/prd-role-status-mobile.png",
+    "repofy-frontend/test-results/prd-improvement-mobile.png"
+  ],
+  "limitations": [
+    "No live GitHub App or model qualification",
+    "No human screen-reader or independent role calibration",
+    "No deployed capacity, retention, secrets or remote migration validation",
+    "Synthetic response listener warnings observed; no persistent production leak established",
+    "Targeted counterexamples do not measure population false-positive rate"
+  ],
+  "findings": {
+    "critical": 0,
+    "high": 2,
+    "medium": 1,
+    "low": 1
+  },
+  "applicationChanges": false
+}

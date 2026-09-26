@@ -1,6 +1,6 @@
 import * as ts from "typescript";
 
-function booleanLiteral(expression: ts.Expression): boolean | undefined {
+export function booleanLiteral(expression: ts.Expression): boolean | undefined {
   while (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression)
     || ts.isNonNullExpression(expression) || ts.isSatisfiesExpression(expression)) expression = expression.expression;
   if (expression.kind === ts.SyntaxKind.TrueKeyword) return true;

@@ -54,7 +54,8 @@ export class ImplementationPass {
     for (const file of this.project.files.values()) {
       this.project.resetTraversal();
       try {
-        const findings = detect(file, this.profile.detectorBundle.version.startsWith("2.0.0")).filter(f => !this.profile.implementation.disabled.includes(f.kind));
+        const version = this.profile.detectorBundle.version.split("-")[0];
+        const findings = detect(file, ["2.0.0", "2.0.1"].includes(version), version === "2.0.1").filter(f => !this.profile.implementation.disabled.includes(f.kind));
         const selected = findings.slice(0, LIMIT.findingsPerFile); if (findings.length > selected.length) this.coverage.evidenceTruncated = true;
         const items = selected.map(finding => {
           const definition = detectorDefinitions(this.profile.detectorBundle.version).find(d => d.kind === finding.kind)!; const ref = reference(file, finding.concept);

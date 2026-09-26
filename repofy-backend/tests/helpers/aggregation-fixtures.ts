@@ -24,8 +24,8 @@ export function aggregationInput(bundles: SnapshotBundle[]) {
       contentFingerprint: fingerprint.digest }))),
   });
 }
-export async function extractedAggregation(files: Record<string, string> = aggregationFiles, enhanced = false) {
-  const f = await coverageFixture(files, [], enhanced);
+export async function extractedAggregation(files: Record<string, string> = aggregationFiles, enhanced = false, revision = "2.0.1") {
+  const f = await coverageFixture(files, [], enhanced, revision);
   try { const { bundle } = await f.extract(); return { input: aggregationInput([bundle]), bundle }; }
   finally { await f.cleanup(); }
 }

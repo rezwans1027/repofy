@@ -52,6 +52,24 @@ test('authorized multi-repository workflow → real worker report → keyboard e
   await expect(page.getByRole('heading', { name: 'Evidence explorer' })).toBeFocused();
   await expect(page.getByText('1 observations on this page.')).toBeVisible();
   await page.getByRole('button', { name: 'Close evidence and return' }).click(); await expect(citation).toBeFocused();
+  // Improvement file references use saved support and the same live permission check.
+  const fileReference = data.improvementEvidence[0];
+  expect(fileReference).toBeDefined();
+  const fileId = fileReference.evidenceIds[0];
+  const fileEvidence = data.report.evidence.find((e: { evidenceId: string }) => e.evidenceId === fileId);
+  const plan = page.locator('#improvements > ol > li').nth(data.report.improvements.findIndex((i: { improvementId: string }) => i.improvementId === fileReference.improvementId));
+  await plan.getByText('Plan and acceptance criteria', { exact: true }).click();
+  await expect(plan.getByRole('heading', { name: 'Relevant existing files' })).toBeVisible();
+  const permitted = page.waitForResponse(response => response.url().endsWith(`/evidence/${fileId}/location`));
+  await plan.getByRole('button', { name: /^Inspect relevant file/ }).nth(fileReference.evidenceIds.indexOf(fileId)).click();
+  const resolvedFile = (await (await permitted).json()).data;
+  expect(resolvedFile).toMatchObject({ state: 'available', evidenceId: fileId, visibility: fileEvidence.repositoryVisibility });
+  if (resolvedFile.visibility === 'private') expect(resolvedFile.url).toBeUndefined();
+  else expect(resolvedFile.url).toContain(`/blob/${fileEvidence.commitSha}/`);
+  await expect(plan.locator('code').filter({ hasText: resolvedFile.label })).toBeVisible();
+  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  await expect(plan.locator('code')).toHaveCount(0);
+  await plan.getByText('Plan and acceptance criteria', { exact: true }).click();
   await page.getByText('Plan and acceptance criteria', { exact: true }).first().click(); await expect(page.getByText('Expected evidence gained', { exact: true }).first()).toBeVisible();
   // Repeated templates retain their capability identity; unknown gaps navigate
   // to scope and positive gaps reach the existing permission-checked locator flow.
@@ -95,6 +113,7 @@ test('authorized multi-repository workflow → real worker report → keyboard e
   await page.locator('#improvements > ol > li').first().screenshot({ path: 'test-results/prd-improvement-mobile.png' });
   expect(await page.evaluate(async () => (await (window as unknown as { axe: { run: (target: string) => Promise<{ violations: unknown[] }> } }).axe.run('#main-content')).violations)).toEqual([]);
   const other = await (await request.get(`${backend}/__test/session?actor=2`)).json();
+  expect((await request.post(`${backend}/api/v1/readiness-reports/${reportId}/evidence/${fileId}/location`, { headers: { Authorization: `Bearer ${other.token}` } })).status()).toBe(404);
   for (const suffix of ['', '/view', '/evidence', `/evidence/${data.report.evidence[0].evidenceId}`]) expect((await request.get(`${backend}/api/v1/readiness-reports/${reportId}${suffix}`, { headers: { Authorization: `Bearer ${other.token}` } })).status()).toBe(404);
   await context.addCookies([{ name: 'access_token', value: other.token, domain: '127.0.0.1', path: '/' }]); await page.reload();
   await expect(page.getByRole('main').getByRole('alert')).toContainText('unavailable'); await expect(page.getByRole('heading', { name: 'Your project evidence' })).toHaveCount(0);
@@ -401,7 +420,7 @@ test('implemented role requirements survive an asset-only rescan through worker,
   await page.getByRole('link', { name: 'View saved report' }).click();
   await expect(page.getByRole('heading', { name: 'Your project evidence' })).toBeVisible();
   const baselineId = page.url().split('/').at(-1)!, baseline = await get(baselineId);
-  expect(baseline.report.versions).toMatchObject({ aggregationPolicy: { version: '3.0.0' }, detectorBundle: { version: '2.0.0' }, coverageManifest: '1.3.0' });
+  expect(baseline.report.versions).toMatchObject({ aggregationPolicy: { version: '3.0.0' }, detectorBundle: { version: '2.0.1' }, coverageManifest: '1.3.0' });
   const required = baseline.aggregation!.roles.flatMap(role => role.requirements.filter(req => req.required));
   expect(required).toHaveLength(31);
   expect(required.every(req => req.state === 'satisfied')).toBe(true);

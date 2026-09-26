@@ -8,7 +8,7 @@ import {
 import { InternalEvidenceObservationSchema, InternalLocatorSchema } from "@repofy/contracts/internal";
 import { canonicalAnalysisRequest } from "./request";
 import type { LocatorCrypto } from "../evidence/locator-crypto";
-import { detectorDefinitions, implementationProfile } from "../detectors/registry";
+import { usesRoleDetectors, detectorDefinitions, implementationProfile } from "../detectors/registry";
 import { coverageProfile } from "../coverage/manifest";
 import { achievedCoverage } from "../coverage/achieved";
 import { extractionProfile, structuralDetectorVersion } from "../extraction/policy";
@@ -59,10 +59,10 @@ export const SnapshotBundleSchema = z.strictObject({
     || coverage.structural.sources.reduce((sum, item) => sum + item.analyzedFiles, 0) !== inventory.analyzedFiles)) fail();
   for (const file of bundle.files) if (file.structure?.projectLocatorId && !filesById.has(file.structure.projectLocatorId)) fail();
   const implementation = coverage.implementation;
-  const enhanced = versions.detectorBundle.version.startsWith("2.0.0");
+  const enhanced = usesRoleDetectors(versions.detectorBundle.version);
   const definitions = detectorDefinitions(versions.detectorBundle.version);
   if (implementation) {
-    const expected = coverage.assessment ? coverageProfile(coverage.assessment.declaration.disabledParsers, implementation.disabledDetectors, enhanced) : implementationProfile(implementation.disabledDetectors, enhanced);
+    const expected = coverage.assessment ? coverageProfile(coverage.assessment.declaration.disabledParsers, implementation.disabledDetectors, enhanced, versions.detectorBundle.version.split("-")[0]) : implementationProfile(implementation.disabledDetectors, enhanced, versions.detectorBundle.version.split("-")[0]);
     if (!inventory.structural || versions.taxonomy.id !== "engineering_capabilities" || versions.taxonomy.version !== "1.0.0"
       || JSON.stringify(implementation.bundle) !== JSON.stringify(expected.detectorBundle)
       || JSON.stringify(versions.detectorBundle) !== JSON.stringify(expected.detectorBundle) || versions.coverageManifest !== expected.coverageManifest
@@ -77,7 +77,7 @@ export const SnapshotBundleSchema = z.strictObject({
   if (coverage.assessment) {
     if (!coverage.structural || !implementation || bundle.files.some(f => !f.structure?.coverage)) fail();
     else {
-      const profile = coverageProfile(coverage.assessment.declaration.disabledParsers, implementation.disabledDetectors, enhanced);
+      const profile = coverageProfile(coverage.assessment.declaration.disabledParsers, implementation.disabledDetectors, enhanced, versions.detectorBundle.version.split("-")[0]);
       if (JSON.stringify(versions.extractorBundle) !== JSON.stringify(profile.extractorBundle) || versions.coverageManifest !== profile.coverageManifest
         || JSON.stringify(coverage.assessment) !== JSON.stringify(achievedCoverage(bundle, profile))) fail();
       const states = { analyzedFiles: "analyzed", parseFailures: "parse_failure", limitedFiles: "limited", unsupportedFiles: "unsupported", generatedFiles: "generated" } as const;

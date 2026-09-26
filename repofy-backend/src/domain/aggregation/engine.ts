@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { OwnerEvidenceSchema, AggregationResultSchema, aggregationUsesProvenance, isTestImplementation, type OwnerEvidence, type AggregatedCapability, type AggregationResult,
   type AggregationSupport, type AggregationValidationCode, type ClusterCalculation } from "@repofy/contracts";
-import { detectorDefinitions } from "../detectors/registry";
+import { usesRoleDetectors, detectorDefinitions } from "../detectors/registry";
 import { coverageProfile, coverageDeclaration } from "../coverage/manifest";
 import { initialRubricCatalog } from "../rubrics/catalog";
 import { strengthBand } from "../rubrics/policy";
@@ -96,9 +96,9 @@ export function aggregateEvidence(raw: unknown): AggregationResult {
     if (s.coverage.snapshotId !== s.snapshotId || s.coverage.manifestVersion !== input.versions.coverageManifest ||
       canonical(s.coverage.detectorBundle) !== canonical(input.versions.detectorBundle) || new Set(s.files.map(f => f.fileId)).size !== s.files.length) fail();
     if (s.coverage.assessment) {
-      const expected = coverageProfile(s.coverage.assessment.declaration.disabledParsers, s.coverage.implementation?.disabledDetectors ?? [], input.versions.detectorBundle.version.startsWith("2.0.0"));
+      const expected = coverageProfile(s.coverage.assessment.declaration.disabledParsers, s.coverage.implementation?.disabledDetectors ?? [], usesRoleDetectors(input.versions.detectorBundle.version), input.versions.detectorBundle.version.split("-")[0]);
       if (canonical(expected.detectorBundle) !== canonical(input.versions.detectorBundle) || canonical(expected.extractorBundle) !== canonical(input.versions.extractorBundle)
-        || expected.coverageManifest !== input.versions.coverageManifest || canonical(s.coverage.assessment.declaration) !== canonical(coverageDeclaration(expected.coverage.disabledParsers, input.versions.detectorBundle.version.startsWith("2.0.0")))) fail();
+        || expected.coverageManifest !== input.versions.coverageManifest || canonical(s.coverage.assessment.declaration) !== canonical(coverageDeclaration(expected.coverage.disabledParsers, usesRoleDetectors(input.versions.detectorBundle.version)))) fail();
     }
   }
   const filesBySnapshot = new Map(input.snapshots.map(s => [s.snapshotId, new Map(s.files.map(f => [f.fileId as string, f]))]));

@@ -13,12 +13,12 @@ import { initialRubricCatalog } from '../../src/domain/rubrics/catalog';
 import { createCoverageExtraction } from '../../src/domain/extraction/pipeline';
 import type { FeatureOneRpcClient } from '../../src/domain/analysis/persistence';
 
-export async function coverageJobFixture(db: Parameters<typeof seedAnalysisFixture>[0], rpc: FeatureOneRpcClient, files: Record<string, string>, aggregationPolicy?: { id: string; version: string }, narrative = false) {
+export async function coverageJobFixture(db: Parameters<typeof seedAnalysisFixture>[0], rpc: FeatureOneRpcClient, files: Record<string, string>, aggregationPolicy?: { id: string; version: string }, narrative = false, revision = "2.0.1") {
   const f = await seedAnalysisFixture(db, rpc); const root = await mkdtemp(join(tmpdir(), 'repofy-coverage-job-')); let context: SafeSnapshotContext | undefined;
   const cleanup = async () => { await context?.dispose(); await db.query('DELETE FROM auth.users WHERE id=$1', [f.actor]); await rm(root, { recursive: true, force: true }); };
   try {
     const enhanced = aggregationPolicy?.version.startsWith("3.") ?? false;
-    const profile = coverageProfile([], [], enhanced); const security = structuralSecurityPolicy(); f.policy.security = security;
+    const profile = coverageProfile([], [], enhanced, revision); const security = structuralSecurityPolicy(); f.policy.security = security;
     Object.assign(f.policy.versions, { extractorBundle: profile.extractorBundle, detectorBundle: profile.detectorBundle, coverageManifest: profile.coverageManifest, ingestionPolicyHash: policyHash(security),
       taxonomy: { id: initialRubricCatalog.taxonomy.id, version: initialRubricCatalog.taxonomy.version }, roleRubrics: initialRubricCatalog.rubrics.map(r => ({ roleId: r.roleId, version: r.version })) });
     if (aggregationPolicy) f.policy.versions.aggregationPolicy = aggregationPolicy;

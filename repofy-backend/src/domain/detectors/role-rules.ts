@@ -4,6 +4,7 @@ import type { RawFinding } from "./rules";
 import { bodyOf, directCall, same, memberOf, objectProperty, zodObject, rejectingStateExit, statePairs,
   jsxAttribute, nodes, awaited, inertJsonValue } from "./syntax";
 import { roleTests } from "./role-tests";
+import { immutableAllowlist, renderPath } from "./role-proof";
 
 type Emit = (finding: RawFinding) => void;
 const literal = (e: ts.Node | undefined): e is ts.StringLiteral => !!e && ts.isStringLiteral(e) && !!e.text.trim();
@@ -45,7 +46,7 @@ function hiddenAncestor(file: IndexedFile, node: ts.Node, component: FunctionNod
   }
   return false;
 }
-function ui(file: IndexedFile, emit: Emit) {
+function ui(file: IndexedFile, emit: Emit, corrected: boolean) {
   for (const element of file.nodes) {
     if (!ts.isJsxElement(element) && !ts.isJsxSelfClosingElement(element)) continue;
     const opening = ts.isJsxElement(element) ? element.openingElement : element, fn = file.enclosing(element);
@@ -57,14 +58,18 @@ function ui(file: IndexedFile, emit: Emit) {
       if (target && target.file === file && bodyOf(target.node)?.statements.length) emit({ kind: "native_accessible_action", node: element, concept: fn });
     }
     if (opening.tagName.text !== "form" || !ts.isJsxElement(element) || obscured(opening)) continue;
+    if (corrected && !bodyOf(fn)?.statements.some(s => ts.isReturnStatement(s) && s.expression
+      && file.contains(s.expression, element) && renderPath(file, s.expression, element) !== undefined)) continue;
     const submit = jsxAttribute(file, opening, "onSubmit"), handler = submit && file.localFunction(submit);
     if (!handler || handler.file !== file || !bodyOf(handler.node)?.statements.length) continue;
     const all = nodes(file, element), pairs = statePairs(file, fn);
-    const button = all.some(n => ts.isJsxElement(n) && ts.isIdentifier(n.openingElement.tagName) && n.openingElement.tagName.text === "button"
+    const buttons = all.filter(n => ts.isJsxElement(n) && ts.isIdentifier(n.openingElement.tagName) && n.openingElement.tagName.text === "button"
       && !obscured(n.openingElement) && !hiddenAncestor(file, n, fn) && literalAttribute(n.openingElement, "type") === "submit" && n.children.some(c => ts.isJsxText(c) && !!c.text.trim()));
-    if (!button) continue;
+    if (!buttons.length) continue;
     for (const input of all.filter(ts.isJsxSelfClosingElement)) {
       if (!ts.isIdentifier(input.tagName) || input.tagName.text !== "input" || obscured(input) || hiddenAncestor(file, input, fn) || literalAttribute(input,"type") === "hidden") continue;
+      const path = corrected ? renderPath(file, element, input) : "";
+      if (path === undefined || corrected && !buttons.some(button => renderPath(file, element, button) === path)) continue;
       const id = literalAttribute(input, "id"), value = jsxAttribute(file, input, "value"), change = jsxAttribute(file, input, "onChange");
       const pair = value && ts.isIdentifier(value) && pairs.find(p => same(file, p.value, value));
       const target = change && file.localFunction(change), body = target && bodyOf(target.node), call = body?.statements.length === 1 && directCall(body.statements[0]);
@@ -72,6 +77,7 @@ function ui(file: IndexedFile, emit: Emit) {
       if (!id || !pair || !call || !ts.isIdentifier(call.expression) || !same(file, call.expression, pair.setter) || call.arguments.length !== 1
         || !event || !ts.isIdentifier(event) || !memberOf(file, call.arguments[0], event, ["target", "value"])) continue;
       if (all.some(n => ts.isJsxElement(n) && ts.isIdentifier(n.openingElement.tagName) && n.openingElement.tagName.text === "label"
+        && (!corrected || renderPath(file, element, n) === path)
         && !obscured(n.openingElement) && !hiddenAncestor(file, n, fn) && literalAttribute(n.openingElement, "htmlFor") === id && n.children.some(c => ts.isJsxText(c) && !!c.text.trim())))
         emit({ kind: "labelled_control", node: element, concept: fn });
     }
@@ -181,7 +187,7 @@ function reachesModel(ref: FunctionRef, seen = new Set<ts.Node>(), depth = 0): b
   });
 }
 
-function model(file: IndexedFile, emit: Emit) {
+function model(file: IndexedFile, emit: Emit, corrected: boolean) {
   for (const fn of file.functions) {
     const body = bodyOf(fn); if (!body) continue;
     const statements = [...file.flow.statements(body)];
@@ -210,6 +216,7 @@ function model(file: IndexedFile, emit: Emit) {
       if (!ts.isCallExpression(includes) || !ts.isPropertyAccessExpression(includes.expression) || includes.expression.name.text !== "includes" || includes.arguments.length !== 1) continue;
       const allow = file.resolveValue(includes.expression.expression), candidate = includes.arguments[0];
       if (ts.isArrayLiteralExpression(allow) && allow.elements.length > 0 && allow.elements.length <= 20 && allow.elements.every(literal)
+        && (!corrected || immutableAllowlist(file, includes.expression.expression))
         && memberOf(file, candidate, result.name, ["object", "action"]) && action && action.arguments.length === 1
         && memberOf(file, action.arguments[0], result.name, ["object", "action"])) {
         const target = file.localFunction(action.expression); if (target) emit({ kind: "model_action_guard", node: guard, concept: fn, target });
@@ -234,7 +241,7 @@ function model(file: IndexedFile, emit: Emit) {
     }
   }
 }
-export function rolePatterns(file: IndexedFile, emit: Emit) {
+export function rolePatterns(file: IndexedFile, emit: Emit, corrected = true) {
   if (file.input.classification === "test") roleTests(file, emit);
-  else { ui(file, emit); functions(file, emit); model(file, emit); }
+  else { ui(file, emit, corrected); functions(file, emit); model(file, emit, corrected); }
 }

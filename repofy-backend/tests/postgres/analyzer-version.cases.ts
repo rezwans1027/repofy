@@ -6,6 +6,7 @@ import { jobsRpc } from './jobs.cases';
 import { coverageJobFixture } from '../helpers/coverage-job-fixture';
 import { detectorCases, service } from '../fixtures/evidence/implementation';
 import { EvidenceRepository, type FeatureOneRpcClient } from '../../src/domain/analysis/persistence';
+import { implementedRolePortfolio } from '../helpers/role-coverage-v3';
 
 const files = { 'service.ts': service, 'route.ts': detectorCases.find(c => c.kind === 'request_validation')!.positive,
   'schema.prisma': 'model Person {\n id Int @id\n}\n' };
@@ -25,9 +26,20 @@ function legacy(bundle: any, declaration: unknown, version: '1.0.0' | '1.0.1' | 
   bundle.evidence.forEach(({ observation: e }: any) => { e.detector.version = e.implementation ? version : e.structural?.kind === 'schema' ? structuralVersion : '1.0.0'; });
 }
 export function registerAnalyzerVersionTests(db: pg.Client) {
+  for (const revision of ['2.0.0', '2.0.1']) test(`SQL seals frozen role snapshots under detector ${revision} and rejects mixed revisions`, async () => {
+    const fixture = await coverageJobFixture(db, jobsRpc(db), implementedRolePortfolio(), { id: 'evidence_aggregation', version: '3.0.0' }, false, revision);
+    try {
+      const args = await captured(fixture), mixed = structuredClone(args);
+      mixed.p_bundle.evidence.find((e: any) => e.observation.implementation).observation.detector.version = revision === '2.0.0' ? '2.0.1' : '2.0.0';
+      assert.equal((await jobsRpc(db).rpc('feature_one_store_snapshot', mixed)).error?.message, 'UNSUPPORTED_CLAIM');
+      assert.equal((await jobsRpc(db).rpc('feature_one_store_snapshot', args)).error, null);
+      const stored = (await db.query('SELECT coverage FROM public.repository_snapshots WHERE id=$1', [fixture.bundle.snapshot.snapshotId])).rows[0].coverage;
+      assert.equal(AnalyzerCoverageSchema.parse(stored).implementation!.bundle.version, revision);
+    } finally { await fixture.cleanup(); }
+  });
   test('analyzer corrections append immutable definitions and preserve every legacy coverage declaration', async () => {
     const detectors = await db.query('SELECT bundle_version,count(*)::int n FROM feature_one_private.implementation_detectors GROUP BY bundle_version ORDER BY bundle_version');
-    assert.deepEqual(detectors.rows, [{ bundle_version: '1.0.0', n: 16 }, { bundle_version: '1.0.1', n: 16 }, { bundle_version: '1.0.2', n: 16 }, { bundle_version: '1.0.3', n: 16 }, { bundle_version: '1.0.4', n: 16 }, { bundle_version: '1.0.5', n: 16 }, { bundle_version: '1.0.6', n: 16 }, { bundle_version: '2.0.0', n: 34 }]);
+    assert.deepEqual(detectors.rows, [{ bundle_version: '1.0.0', n: 16 }, { bundle_version: '1.0.1', n: 16 }, { bundle_version: '1.0.2', n: 16 }, { bundle_version: '1.0.3', n: 16 }, { bundle_version: '1.0.4', n: 16 }, { bundle_version: '1.0.5', n: 16 }, { bundle_version: '1.0.6', n: 16 }, { bundle_version: '2.0.0', n: 34 }, { bundle_version: '2.0.1', n: 34 }]);
     const manifests = await db.query("SELECT old.declaration AS old, corrected.declaration AS corrected FROM feature_one_private.analyzer_coverage_manifests old JOIN feature_one_private.analyzer_coverage_manifests corrected ON corrected.version='1.2.1'||substring(old.version from 6) WHERE split_part(old.version,'-',1)='1.2.0'");
     assert.equal(manifests.rowCount, 8);
     for (const row of manifests.rows) assert.deepEqual(row.corrected, { ...row.old, version: row.old.version.replace('1.2.0', '1.2.1') });

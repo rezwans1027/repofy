@@ -26,8 +26,10 @@ export function productionHandlers(pinned?: ExecutionPolicy): AnalysisHandlers |
   const pinnedAggregation = pinned && AggregationPolicyReferenceSchema.safeParse(pinned.versions.aggregationPolicy);
   if (pinnedAggregation && !pinnedAggregation.success) return null;
   const version = pinnedAggregation?.data?.version;
+  const revision = pinned?.versions.detectorBundle.version.split("-")[0];
+  if (version?.startsWith("3.") && revision && !["2.0.0", "2.0.1"].includes(revision)) return null;
   const provenance = version ? aggregationUsesProvenance(version) : env.featureOne?.provenanceEnabled === true;
-  return { policy: narrativeExecutionPolicy(provenance, version), extract: (...args) => productionExtraction(version === undefined || version.startsWith("3.")).extract(...args),
+  return { policy: narrativeExecutionPolicy(provenance, version, revision), extract: (...args) => productionExtraction(version === undefined || version.startsWith("3.")).extract(...args),
     aggregate: c => productionAggregation().aggregate(c), synthesize: c => narrative.synthesize(c), validate: (r,c) => narrative.validate(r,c) };
 }
 /** Run 10 extraction, lazily installed by the Run 12 composition. */

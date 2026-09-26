@@ -2,7 +2,7 @@ import { AchievedCoverageSchema, type AchievedCoverage, type CoverageReason, typ
   type ImplementationCoverage, type InventorySummary } from "@repofy/contracts";
 import type { InternalEvidenceObservation } from "@repofy/contracts/internal";
 import { initialRubricCatalog } from "../rubrics/catalog";
-import { detectorDefinitions } from "../detectors/registry";
+import { usesRoleDetectors, detectorDefinitions } from "../detectors/registry";
 import { coverageDeclaration, type coverageProfile } from "./manifest";
 
 interface FileFact { language: string; classification: string; analyzed: boolean; structure?: { depth: string; coverage?: FileCoverageOutcome } }
@@ -15,7 +15,7 @@ const meaningful = (e: InternalEvidenceObservation) => !!e.implementation || !!e
 /** Facts for Run 11. No role scores, proficiency inference or replacement of unknowns with zero. */
 export function achievedCoverage(input: AssessmentInput, profile: ReturnType<typeof coverageProfile>): AchievedCoverage {
   const { files, evidence, inventorySummary: inventory, coverage } = input;
-  const enhanced = profile.detectorBundle.version.startsWith("2.0.0");
+  const enhanced = usesRoleDetectors(profile.detectorBundle.version);
   const nonSource = enhanced ? inventory.nonSourceExcludedFiles ?? 0 : 0;
   const detectorsForProfile = detectorDefinitions(profile.detectorBundle.version);
   const structural = coverage.structural!; const implementation = coverage.implementation!;

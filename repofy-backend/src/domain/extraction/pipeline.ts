@@ -17,7 +17,7 @@ import { boundedText } from "./parsers";
 import { emptyMetadata, METADATA_SOURCES, MetadataBatchSchema, requested, type MetadataBatch, type MetadataOptions } from "./metadata";
 import { EXTRACTION_LIMITS as LIMIT, extractionProfile, structuralDetectorVersion, ParseFailure, type ExtractionResult, type Family } from "./policy";
 import { ImplementationPass } from "../detectors/pass";
-import { detectorDefinitions, implementationProfile } from "../detectors/registry";
+import { usesRoleDetectors, detectorDefinitions, implementationProfile } from "../detectors/registry";
 import type { ImplementationKind } from "@repofy/contracts";
 import type { CoverageReason, BaselineParser } from "@repofy/contracts";
 import { coverageProfile } from "../coverage/manifest";
@@ -44,7 +44,7 @@ export interface SnapshotExtractionInput {
 export async function extractSnapshot(context: SafeSnapshotContext, input: SnapshotExtractionInput): Promise<{ bundle: SnapshotBundle; metrics: ExtractionMetrics }> {
   const { pin, versions, options, crypto, signal } = input; const profile = input.profile ?? extractionProfile();
   const expectedProfile = "implementation" in profile ? "coverage" in profile
-    ? coverageProfile(profile.coverage.disabledParsers, profile.implementation.disabled, profile.detectorBundle.version.startsWith("2.0.0")) : implementationProfile(profile.implementation.disabled, profile.detectorBundle.version.startsWith("2.0.0"))
+    ? coverageProfile(profile.coverage.disabledParsers, profile.implementation.disabled, usesRoleDetectors(profile.detectorBundle.version), profile.detectorBundle.version.split("-")[0]) : implementationProfile(profile.implementation.disabled, usesRoleDetectors(profile.detectorBundle.version), profile.detectorBundle.version.split("-")[0])
     : extractionProfile(profile.disabled);
   if (JSON.stringify(profile) !== JSON.stringify(expectedProfile) || "implementation" in profile
     && (versions.taxonomy.id !== "engineering_capabilities" || versions.taxonomy.version !== "1.0.0")) throw new JobError("ANALYSIS_VALIDATION_FAILED");
@@ -189,7 +189,7 @@ export async function extractSnapshot(context: SafeSnapshotContext, input: Snaps
     repositoryVisibility: pin.repositoryVisibility, snapshotIdentityVersion: versions.snapshotIdentity, extractionPolicyVersion: profile.extractorBundle.version,
     securityPolicyHash: pin.policyHash, createdAt }, versions, files, evidence,
     inventorySummary: { contractVersion: "1.0.0", snapshotId, extractorBundle: profile.extractorBundle, totalFiles: context.summary.totalFiles,
-      ...(profile.detectorBundle.version.startsWith("2.0.0") ? { nonSourceExcludedFiles: context.summary.nonSourceExcludedFiles ?? 0 } : {}),
+      ...(usesRoleDetectors(profile.detectorBundle.version) ? { nonSourceExcludedFiles: context.summary.nonSourceExcludedFiles ?? 0 } : {}),
       eligibleFiles: files.length, excludedFiles: context.summary.totalFiles - files.length, analyzedFiles,
       languages: [...counts].map(([language, count]) => ({ language, files: count.eligible })), frameworks: [...frameworks.values()],
       testFiles: files.filter(f => f.classification === "test").length, configFiles: files.filter(f => f.classification === "config").length,
@@ -245,7 +245,7 @@ export function createCoverageExtraction(crypto: LocatorCrypto, metadata?: Pick<
     // Resolve a supported immutable analyzer from the job pin, including jobs
     // admitted before the intake default changed. extractSnapshot validates all
     // version references against this exact profile before processing source.
-    const pinnedProfile = coverageProfile(disabled, [], claim.policy.versions.detectorBundle.version.startsWith("2.0.0"));
+    const pinnedProfile = coverageProfile(disabled, [], usesRoleDetectors(claim.policy.versions.detectorBundle.version), claim.policy.versions.detectorBundle.version.split("-")[0]);
     const result = await extractSnapshot(context, { pin, versions: claim.policy.versions, options: claim.request.includeMetadata, metadata: batch, crypto, signal, profile: pinnedProfile });
     recordMetrics?.(result.metrics); return result.bundle;
   };

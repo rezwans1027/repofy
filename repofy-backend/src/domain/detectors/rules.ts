@@ -233,7 +233,7 @@ function ai(file: IndexedFile, emit: (f: RawFinding) => void) {
     emit({ kind: "bounded_model_output", node: call, concept: file.enclosing(call) ?? call });
   }
 }
-export function detect(file: IndexedFile, enhanced = false): RawFinding[] {
+export function detect(file: IndexedFile, enhanced = false, corrected = true): RawFinding[] {
   const findings: RawFinding[] = []; const emit = (finding: RawFinding) => { if (file.flow.reachable(finding.node)) findings.push(finding); };
   if (file.input.classification === "test") testing(file, emit);
   else { backend(file, emit); frontend(file, emit); database(file, emit); reliability(file, emit); ai(file, emit); }
@@ -245,7 +245,7 @@ export function detect(file: IndexedFile, enhanced = false): RawFinding[] {
         if (component) finding.concept = component;
       }
     }
-    rolePatterns(file, emit);
+    rolePatterns(file, emit, corrected);
   }
   const seen = new Set<string>();
   return findings.filter(f => { const key = `${f.kind}:${f.node.pos}:${f.node.end}`; if (seen.has(key)) return false; seen.add(key); return true; });

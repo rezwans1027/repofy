@@ -61,9 +61,9 @@ const definitions: Record<typeof LEGACY_IMPLEMENTATION_KINDS[number], Definition
     required: "An awaited ai.generateObject call supplies a Zod object schema, explicit bounded maxRetries and native AbortSignal.timeout.",
     observation: "A structured model call supplies an output schema, an explicit retry ceiling and a timeout signal.", limitation: "SDK enforcement, model availability, output quality, context authorization and prompt-injection defenses are unverified." },
 };
-function registry(enhanced: boolean) {
+function registry(enhanced: boolean, revision: "2.0.0" | "2.0.1" = "2.0.1") {
  const all: Record<ImplementationKind, Definition> = { ...definitions, ...roleDefinitions };
- return Object.freeze((enhanced ? IMPLEMENTATION_KINDS : LEGACY_IMPLEMENTATION_KINDS).map(kind => Object.freeze({ kind, id: `tsjs.${kind}`, version: enhanced ? "2.0.0" as const : "1.0.6" as const,
+ return Object.freeze((enhanced ? IMPLEMENTATION_KINDS : LEGACY_IMPLEMENTATION_KINDS).map(kind => Object.freeze({ kind, id: `tsjs.${kind}`, version: enhanced ? revision : "1.0.6" as const,
   capabilityIds: Object.freeze([...all[kind].capabilities]), ecosystems: Object.freeze([...all[kind].ecosystems]),
   requiredObservations: all[kind].required, observation: all[kind].observation, limitation: all[kind].limitation,
   forbiddenOverclaims: Object.freeze(["Execution or passing tests from source alone", "System-wide security, correctness or concurrency safety", "Authorship, proficiency or employment suitability"]),
@@ -72,7 +72,10 @@ function registry(enhanced: boolean) {
 }))); }
 export const DETECTORS = registry(false);
 export const ROLE_DETECTORS = registry(true);
-export const detectorDefinitions = (version: string) => version.split("-")[0] === "2.0.0" ? ROLE_DETECTORS : DETECTORS;
+const PREVIOUS_ROLE_DETECTORS = registry(true, "2.0.0");
+export const usesRoleDetectors = (version: string) => ["2.0.0", "2.0.1"].includes(version.split("-")[0]);
+export const detectorDefinitions = (version: string) => version.split("-")[0] === "2.0.0" ? PREVIOUS_ROLE_DETECTORS
+  : version.split("-")[0] === "2.0.1" ? ROLE_DETECTORS : DETECTORS;
 for (const detector of ROLE_DETECTORS) for (const capability of detector.capabilityIds) {
   if (!initialRubricCatalog.taxonomy.capabilities.some(c => c.capabilityId === capability && c.evidenceFamilies.includes(isTestImplementation(detector.kind) ? "test" : "code"))) {
     throw new Error("Invalid detector capability registry");
@@ -81,10 +84,11 @@ for (const detector of ROLE_DETECTORS) for (const capability of detector.capabil
 export const CAPABILITY_COVERAGE = Object.freeze(initialRubricCatalog.taxonomy.capabilities.map(c => Object.freeze({ capabilityId: c.capabilityId,
   state: DETECTORS.some(d => d.capabilityIds.includes(c.capabilityId)) ? "partial" : "unsupported",
   detectors: Object.freeze(DETECTORS.filter(d => d.capabilityIds.includes(c.capabilityId)).map(d => d.id)) })));
-export function implementationProfile(disabled: readonly ImplementationKind[] = [], enhanced = false) {
+export function implementationProfile(disabled: readonly ImplementationKind[] = [], enhanced = false, revision = "2.0.1") {
+  if (enhanced && !["2.0.0", "2.0.1"].includes(revision)) throw new Error("Unsupported role detector revision");
   const kinds: readonly ImplementationKind[] = enhanced ? IMPLEMENTATION_KINDS : LEGACY_IMPLEMENTATION_KINDS;
   if (new Set(disabled).size !== disabled.length || disabled.some(id => !kinds.includes(id))) throw new Error("Invalid detector quarantine");
   const quarantine = Object.freeze(kinds.filter(k => disabled.includes(k)));
-  return Object.freeze({ ...extractionProfile(), detectorBundle: { id: "tsjs_implementation", version: `${enhanced ? "2.0.0" : "1.0.6"}${disabled.length ? `-q${kinds.map(k => disabled.includes(k) ? 1 : 0).join("")}` : ""}` },
+  return Object.freeze({ ...extractionProfile(), detectorBundle: { id: "tsjs_implementation", version: `${enhanced ? revision : "1.0.6"}${disabled.length ? `-q${kinds.map(k => disabled.includes(k) ? 1 : 0).join("")}` : ""}` },
     coverageManifest: "1.1.1", implementation: Object.freeze({ disabled: quarantine }) });
 }
