@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { lstat } from "node:fs/promises";
 import type { LocatorCrypto } from "../evidence/locator-crypto";
 import { visitArchive } from "./archive";
-import { containsSqlData, decodeText, ignoreMatcher, mandatoryExclusion } from "./exclusions";
+import { containsSqlData, decodeText, ignoreMatcher, mandatoryExclusion, nonSourceExclusion } from "./exclusions";
 import { bounded, IngestionError, checkSignal, safeError } from "./errors";
 import { ACCESS_POLL_MS, EXCLUSION_REASONS, MAX_WORKSPACE_AGE_MS, ScanSummarySchema, policyHash, securityPolicy, type ScanSummary, type SecurityPolicy } from "./policy";
 import { IngestionRequestSchema, requireMatchingPolicy, type IngestionRequest, type IngestionStore, type PinnedSnapshot, type SafeFile } from "./repository";
@@ -142,10 +142,11 @@ export class SnapshotIngestionService {
       }, (_entry, bytes) => { const decoded = decodeText(bytes); if (!("text" in decoded)) throw new IngestionError("INVALID_IGNORE"); ignoreText = decoded.text; });
       const ignored = ignoreMatcher(ignoreText); ignoreText = "";
       const excluded = Object.fromEntries(EXCLUSION_REASONS.map(key => [key, 0])) as ScanSummary["excluded"];
+      let nonSourceExcludedFiles = 0;
       const files: SafeFile[] = []; let textBytes = 0; let totalLines = 0;
       const stats = await visitArchive(workspace.archive, pin.policy.limits, signal, entry => {
         const reason = mandatoryExclusion(entry.path, pin.policy.version) ?? (entry.size > pin.policy.limits.fileBytes ? "oversized" : ignored(entry.path) ? "user_ignored" : undefined);
-        if (reason) { excluded[reason]++; return false; } return true;
+        if (reason) { excluded[reason]++; if (nonSourceExclusion(entry.path, reason)) nonSourceExcludedFiles++; return false; } return true;
       }, (entry, bytes) => {
         const decoded = decodeText(bytes);
         if (!("text" in decoded)) { excluded[decoded.excluded]++; return; }
@@ -162,7 +163,7 @@ export class SnapshotIngestionService {
         files.push({ locatorId, locator: { kind: "file", path: entry.path }, sizeBytes: bytes.length, lines,
           contentHash: hash.digest, contentHashKeyVersion: hash.keyVersion }); contents.set(locatorId, text);
       });
-      const summary = ScanSummarySchema.parse({ ...stats, eligibleFiles: files.length, textBytes, totalLines, excluded,
+      const summary = ScanSummarySchema.parse({ ...stats, eligibleFiles: files.length, textBytes, totalLines, excluded, nonSourceExcludedFiles,
         scope: stats.totalFiles === files.length ? "all_text" : "filtered", semanticAnalysis: "not_performed" });
       await checkpoint();
       await this.store.ready(request.actor, attemptId, leaseToken, pin, summary, files); await checkpoint();

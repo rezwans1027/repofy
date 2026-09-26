@@ -8,6 +8,15 @@ export const AGGREGATION_POLICY = Object.freeze({
   satisfaction: "minimum_strength_if_all_minima_pass_else_zero" as const,
   provenance: "not_inferred_v1" as const,
 });
+/** ADR 0017: confidence in the observed static pattern, with breadth still disclosed separately. */
+export const BOUNDED_AGGREGATION_POLICY = Object.freeze({ ...AGGREGATION_POLICY, version: "2.0.0" as const,
+  confidenceLabel: "bounded_observation_v1" as const,
+  scopeOnlyReasons: Object.freeze(["ai_runtime_not_assessed", "native_mobile_not_assessed", "no_observed_evidence",
+    "runtime_not_assessed", "uncalibrated", "unsupported_depth", "unsupported_version"] as const),
+});
+export const ROLE_AGGREGATION_POLICY = Object.freeze({ ...BOUNDED_AGGREGATION_POLICY, version: "3.0.0" as const,
+  scopeExclusions: "known_non_source_v1" as const, testCorroboration: "separate_success_failure_v1" as const,
+});
 export const round = (n: number) => Math.round((n + Number.EPSILON) * 1e6) / 1e6;
 export function calculateStrength(base: number, presence: boolean, independentFamilies: number) {
   if (!Number.isFinite(base) || base < 0 || base > 1 || !Number.isInteger(independentFamilies) || independentFamilies < 0 || independentFamilies > 4) throw new Error("Invalid strength inputs");

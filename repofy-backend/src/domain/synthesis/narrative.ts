@@ -1,10 +1,11 @@
+import { isTestImplementation } from "@repofy/contracts";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { AggregationResultSchema, OwnerSnapshotSchema, OwnerEvidenceSchema, AnalyzerCoverageSchema, NarrativeSelectionSchema,
   ReadinessReportResponseSchema, GeneralizedNarrativeSchema, type NarrativeSelection, type ReadinessReportResponse, type AggregatedCapability,
   type Improvement, type OwnerEvidence } from "@repofy/contracts";
 import { initialRubricCatalog as catalog } from "../rubrics/catalog";
-import { DETECTORS } from "../detectors/registry";
+import { detectorDefinitions } from "../detectors/registry";
 import { canonical, digest } from "../aggregation/input";
 import { round } from "../aggregation/policy";
 import { NARRATIVE_POLICY as P, SynthesisError, synthesisVersion } from "./policy";
@@ -32,8 +33,8 @@ function statement(c: AggregatedCapability, evidence: Map<string, OwnerEvidence>
   const base = evidence.get(cluster.baseEvidenceId);
   const support = c.support.find(s => s.evidenceId === cluster.baseEvidenceId);
   if (!base || !support) throw new SynthesisError("unsupported_selection");
-  const detector = base.implementation && DETECTORS.find(d => d.kind === base.implementation!.kind && d.id === base.detector.id);
-  const scope = base.implementation ? base.implementation.kind === "asserted_call" ? null : "repository_behavior"
+  const detector = base.implementation && detectorDefinitions(base.detector.version).find(d => d.kind === base.implementation!.kind && d.id === base.detector.id);
+  const scope = base.implementation ? isTestImplementation(base.implementation.kind) ? null : "repository_behavior"
     : ["dependency_presence", "source_structure_only"].includes(support.boundary) ? "technology_presence"
       : support.boundary === "configuration_presence" ? "configuration_observation" : support.boundary === "historical_context" ? "contribution_indicator" : null;
   // Null scope is an observation-only boundary, never upgraded to a behavioral claim.

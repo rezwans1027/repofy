@@ -32,6 +32,24 @@ test('read pagination and telemetry accept only bounded parameters, enums and op
   assert.equal(ReportEventSchema.safeParse({ event: 'improvement_opened', objectId: id }).success, true);
   for (const bad of [{ event: 'improvement_opened' }, { event: 'report_viewed', source: 'private' }, { event: 'custom_event' }]) assert.equal(ReportEventSchema.safeParse(bad).success, false);
 });
+test('only explicitly registered analyzer combinations expose provisional evidence coverage, never calibrated availability', () => {
+  for (const version of ['2.0.0', '2.1.0']) {
+    const report = createSyntheticReportFixture();
+    Object.assign(report.versions, { aggregationPolicy: { id: 'evidence_aggregation', version }, taxonomy: { id: 'engineering_capabilities', version: '1.0.0' },
+      detectorBundle: { id: 'tsjs_implementation', version: '1.0.6' }, extractorBundle: { id: 'language_inventory', version: '1.0.1' }, coverageManifest: '1.2.1' });
+    for (const coverage of report.coverage) { coverage.manifestVersion = report.versions.coverageManifest; coverage.detectorBundle = report.versions.detectorBundle; }
+    report.roles[0] = { state: 'assessed', template: report.roles[0].template, coverage: .18, confidence: .25, assessedRequirementIds: ['testing'], unknownRequirementIds: [], limitations: [] };
+    const availability = roleAvailability(report);
+    assert.deepEqual(availability[0], { template: report.roles[0].template, state: 'provisional', reason: 'calibration_pending' });
+    const view = { report, aggregation: null, repositories: report.snapshots.map(s => ({ snapshotId: s.snapshotId, repositoryId: s.repositoryId, visibility: s.repositoryVisibility, access: 'active' })),
+      categories: [], capabilities: [], roleDefinitions: [], roleAvailability: availability, metadataOptions: { commits: true, pullRequests: true, ci: false } };
+    assert.equal(ReportViewSchema.safeParse(view).success, true);
+    view.roleAvailability[0] = { template: report.roles[0].template, state: 'available' };
+    assert.equal(ReportViewSchema.safeParse(view).success, false);
+    report.versions.detectorBundle.version = '1.0.7';
+    assert.equal(roleAvailability(report)[0].state, 'unavailable');
+  }
+});
 test('public location links require GitHub, a matching commit, and safe repository-relative paths', () => {
   const url = `https://github.com/fixture/project/blob/${'a'.repeat(40)}/src/a%20b.ts#L3-L5`;
   assert.equal(isPinnedGitHubUrl(url), true);

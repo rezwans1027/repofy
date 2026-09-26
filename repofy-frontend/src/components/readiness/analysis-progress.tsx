@@ -11,28 +11,31 @@ import { api, ApiError } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { CoverageSummary } from "./analyzer-coverage";
 import { DeleteAnalysis } from "./report-shared";
+import { MetadataChoices, NO_METADATA, metadataScope, readMetadataChoice, saveMetadataChoice } from "./metadata-options";
 
 const options = { staleTime: 0, gcTime: 0, retry: false as const, refetchOnWindowFocus: true, refetchOnReconnect: true };
 const message = (error: unknown) => error instanceof ApiError ? error.message : "Unable to reach analysis. Reconnect and try again.";
 export function StartAnalysisButton({ actor, saved, disabled }: { actor: string; saved: SavedRepositorySelection; disabled: boolean }) {
   const router = useRouter(); const mounted = useRef(true); const pending = useRef(false);
-  const submitted = useRef<StartAnalysisRequest | null>(null); const [error, setError] = useState<string>(); const [busy, setBusy] = useState(false);
+  const preferencesKey = `repofy:analysis-metadata:${actor}:${saved.revision}`;
+  const [metadata, setMetadata] = useState(() => readMetadataChoice(preferencesKey, NO_METADATA));
+  const submitted = useRef<{ scope: string; request: StartAnalysisRequest } | null>(null); const [error, setError] = useState<string>(); const [busy, setBusy] = useState(false);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const available = useQuery({ queryKey: ["analyses", actor, "availability"], queryFn: ({ signal }) => api.get<{ available: boolean }>("/v1/analyses/availability", {
     signal, cache: "no-store", schema: z.strictObject({ available: z.boolean() }) }), ...options });
   async function start() {
     if (pending.current) return; pending.current = true; setBusy(true); setError(undefined);
-    const storageKey = `repofy:analysis-request:${actor}:${saved.revision}`;
+    const storageKey = `repofy:analysis-request:${actor}:${saved.revision}:${metadataScope(metadata)}`;
     try {
-      if (!submitted.current) {
+      if (submitted.current?.scope !== storageKey) {
         let key: string | null = null;
         try { key = sessionStorage.getItem(storageKey); } catch { /* Memory key still survives request replay. */ }
         if (!z.uuid().safeParse(key).success) key = crypto.randomUUID();
-        submitted.current = { contractVersion: "1.0.0", repositoryIds: saved.repositories.map(r => r.repositoryId),
-          includeMetadata: { commits: false, pullRequests: false, ci: false }, failurePolicy: "fail_all_v1", idempotencyKey: key! };
+        submitted.current = { scope: storageKey, request: { contractVersion: "1.0.0", repositoryIds: saved.repositories.map(r => r.repositoryId),
+          includeMetadata: metadata, failurePolicy: "fail_all_v1", idempotencyKey: key! } };
         try { sessionStorage.setItem(storageKey, key!); } catch { /* Storage may be disabled. */ }
       }
-      const job = await api.post<AnalysisJobResponse>("/v1/analyses", { body: submitted.current, schema: AnalysisJobResponseSchema });
+      const job = await api.post<AnalysisJobResponse>("/v1/analyses", { body: submitted.current.request, schema: AnalysisJobResponseSchema });
       if (mounted.current) {
         try { sessionStorage.removeItem(storageKey); } catch { /* Optional persistence. */ }
         router.push(`/readiness/jobs/${job.jobId}`);
@@ -40,7 +43,9 @@ export function StartAnalysisButton({ actor, saved, disabled }: { actor: string;
     } catch (error) { if (mounted.current) setError(message(error)); }
     finally { pending.current = false; if (mounted.current) setBusy(false); }
   }
-  return <div className="space-y-2"><Button disabled={disabled || busy || !available.data?.available} onClick={start} aria-describedby="analysis-availability">{busy ? "Starting…" : "Start Analysis"}</Button>
+  return <div className="space-y-2"><MetadataChoices value={metadata} repositories={saved.repositories} disabled={disabled || busy}
+    onChange={value => { setMetadata(value); saveMetadataChoice(preferencesKey, value); }} />
+    <Button disabled={disabled || busy || !available.data?.available} onClick={start} aria-describedby="analysis-availability">{busy ? "Starting…" : "Start Analysis"}</Button>
     <p id="analysis-availability" className="text-sm text-muted-foreground">{available.data?.available ? "Start with your saved selection. Analysis is private and currently costs no credits." : "Analysis is not available yet. Saving only updates repository authorization."}</p>
     {error && <p role="alert">{error}</p>}
     <Link href="/readiness/jobs" className="text-cyan underline">View previous analyses</Link>

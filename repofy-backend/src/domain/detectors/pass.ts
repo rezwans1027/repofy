@@ -1,9 +1,9 @@
-import { ImplementationObservationSchema, type ImplementationCoverage, type ImplementationObservation, type ImplementationKind } from "@repofy/contracts";
+import { ImplementationObservationSchema, isTestImplementation, type ImplementationCoverage, type ImplementationObservation, type ImplementationKind } from "@repofy/contracts";
 import * as ts from "typescript";
 import type { ProcessingState } from "../extraction/policy";
 import { ParseFailure } from "../extraction/policy";
 import { JobError } from "../jobs/policy";
-import { COMMON_LIMITATIONS, DETECTORS, DETECTOR_LIMITS as LIMIT, implementationProfile } from "./registry";
+import { COMMON_LIMITATIONS, detectorDefinitions, DETECTOR_LIMITS as LIMIT, implementationProfile } from "./registry";
 import { ProjectIndex, type IndexedFile, type SourceInput } from "./project";
 import { detect } from "./rules";
 
@@ -19,7 +19,7 @@ export class ImplementationPass {
       analyzedFiles: 0, parseFailures: 0, limitedFiles: 0, unsupportedFiles: 0, generatedFiles: 0, noSignalFiles: 0,
       unresolvedImports: 0, dynamicReferences: 0, ambiguousBindings: 0, aliasConfigurationsRejected: 0, indexedNodes: 0, indexedBytes: 0,
       evidenceTruncated: false, disabledDetectors: [...profile.implementation.disabled],
-      detectors: DETECTORS.map(d => ({ kind: d.kind, version: d.version, capabilityIds: [...d.capabilityIds],
+      detectors: detectorDefinitions(profile.detectorBundle.version).map(d => ({ kind: d.kind, version: d.version, capabilityIds: [...d.capabilityIds],
         state: profile.implementation.disabled.includes(d.kind) ? "quarantined" : "enabled", observations: 0 })),
       limitations: [...COMMON_LIMITATIONS, "Generated headers, dynamic resolution, re-exports, global test APIs, JSX spreads, inherited compiler configuration and unsupported frameworks are not assessed."] };
   }
@@ -54,16 +54,16 @@ export class ImplementationPass {
     for (const file of this.project.files.values()) {
       this.project.resetTraversal();
       try {
-        const findings = detect(file).filter(f => !this.profile.implementation.disabled.includes(f.kind));
+        const findings = detect(file, this.profile.detectorBundle.version.startsWith("2.0.0")).filter(f => !this.profile.implementation.disabled.includes(f.kind));
         const selected = findings.slice(0, LIMIT.findingsPerFile); if (findings.length > selected.length) this.coverage.evidenceTruncated = true;
         const items = selected.map(finding => {
-          const definition = DETECTORS.find(d => d.kind === finding.kind)!; const ref = reference(file, finding.concept);
+          const definition = detectorDefinitions(this.profile.detectorBundle.version).find(d => d.kind === finding.kind)!; const ref = reference(file, finding.concept);
           return { file: file.input, kind: finding.kind, detail: ImplementationObservationSchema.parse({ kind: finding.kind,
-            confidenceBasis: "resolved_static_pattern", calibration: "uncalibrated", claimBoundary: finding.kind === "asserted_call" ? "assertion_source" : finding.kind === "schema_constraint" ? "declared_constraint" : "observed_control",
+            confidenceBasis: "resolved_static_pattern", calibration: "uncalibrated", claimBoundary: isTestImplementation(finding.kind) ? "assertion_source" : finding.kind === "schema_constraint" ? "declared_constraint" : "observed_control",
             span: file.span(finding.node), symbolId: ref.symbolId, conceptId: ref.conceptId,
-            patternId: this.id("pattern", file.shape(finding.concept)), testBoundary: finding.kind !== "asserted_call" ? "not_a_test" : finding.mocked ? "mocked_or_intercepted" : "local_implementation",
-            relations: finding.target ? [{ ...reference(finding.target.file, finding.target.node), relationship: finding.kind === "asserted_call" ? "asserted_call" : "local_call",
-              independence: finding.kind !== "asserted_call" ? "same_source" : finding.mocked ? "mocked_test" : "separate_test" }] : [],
+            patternId: this.id("pattern", file.shape(finding.concept)), testBoundary: !isTestImplementation(finding.kind) ? "not_a_test" : finding.mocked ? "mocked_or_intercepted" : "local_implementation",
+            relations: finding.target ? [{ ...reference(finding.target.file, finding.target.node), relationship: isTestImplementation(finding.kind) ? "asserted_call" : "local_call",
+              independence: !isTestImplementation(finding.kind) ? "same_source" : finding.mocked ? "mocked_test" : "separate_test" }] : [],
             limitations: [...COMMON_LIMITATIONS, definition.limitation] }) };
         });
         output.push(...items); this.outcomes.set(file.input.path, "analyzed"); this.coverage.analyzedFiles++; if (!items.length) this.coverage.noSignalFiles++;

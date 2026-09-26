@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { OwnerEvidenceSchema, AggregationResultSchema, type OwnerEvidence, type AggregatedCapability, type AggregationResult,
+import { OwnerEvidenceSchema, AggregationResultSchema, aggregationUsesProvenance, isTestImplementation, type OwnerEvidence, type AggregatedCapability, type AggregationResult,
   type AggregationSupport, type AggregationValidationCode, type ClusterCalculation } from "@repofy/contracts";
-import { DETECTORS } from "../detectors/registry";
+import { detectorDefinitions } from "../detectors/registry";
 import { coverageProfile, coverageDeclaration } from "../coverage/manifest";
 import { initialRubricCatalog } from "../rubrics/catalog";
 import { strengthBand } from "../rubrics/policy";
 import { JobError } from "../jobs/policy";
-import { AGGREGATION_POLICY as P, round, calculateStrength } from "./policy";
+import { AGGREGATION_POLICY as P, BOUNDED_AGGREGATION_POLICY, round, calculateStrength } from "./policy";
 import { AggregationInputSchema, AggregationEvidenceInputSchema, canonical, digest, clusterKey, type AggregationInput } from "./input";
 import { matchRole } from "./roles";
 import { structuralDetectorVersion } from "../extraction/policy";
@@ -24,13 +24,14 @@ function presenceCapabilities(e: OwnerEvidence): string[] {
     commit: ["provenance_history"], pull_request: ["provenance_history"] };
   return kinds[s.kind] ?? [];
 }
-function coverageFor(s: Snapshot, id: string): AggregatedCapability["trace"]["coverage"][number] {
+function coverageFor(s: Snapshot, id: string, scoped = false): AggregatedCapability["trace"]["coverage"][number] {
   const achieved = s.coverage.assessment, c = achieved?.capabilities.find(c => c.capabilityId === id);
   const excludedFiles = achieved?.counts.excludedFiles ?? 0;
-  const denominator = (c?.eligibleFiles ?? 0) + excludedFiles;
+  const nonSource = scoped ? achieved?.counts.nonSourceExcludedFiles ?? 0 : 0;
+  const denominator = (c?.eligibleFiles ?? 0) + excludedFiles - nonSource;
   const fraction = !c || c.state === "not_assessable" ? 0 : denominator ? c.analyzedFiles / denominator : c.metadataAssessed ? 1 : 0;
   return { snapshotId: s.snapshotId, repositoryId: s.repositoryId, state: c?.state ?? "not_assessable",
-    analyzedFiles: c?.analyzedFiles ?? 0, eligibleFiles: c?.eligibleFiles ?? 0, excludedFiles, metadataAssessed: c?.metadataAssessed ?? false,
+    analyzedFiles: c?.analyzedFiles ?? 0, eligibleFiles: c?.eligibleFiles ?? 0, excludedFiles, ...(scoped ? { nonSourceExcludedFiles: nonSource } : {}), metadataAssessed: c?.metadataAssessed ?? false,
     fraction: round(fraction), confidenceCeiling: c?.confidenceCeiling ?? 0, reasons: sorted(c?.reasons ?? ["legacy_coverage_unknown"]) };
 }
 function supported(f: Fact, clusterId: string, basis: AggregationSupport["basis"] = f.basis): AggregationSupport {
@@ -54,13 +55,21 @@ function groups(facts: Fact[]): Fact[][] {
   const result = new Map<number, Fact[]>(); facts.forEach((f, i) => { const k = root(i); if (!result.has(k)) result.set(k, []); result.get(k)!.push(f); });
   return [...result.values()];
 }
-function linkedTest(test: Fact, members: Fact[]): boolean {
+function linkedTest(test: Fact, members: Fact[], expanded: boolean): boolean {
   const t = test.observation.implementation;
-  return t?.kind === "asserted_call" && t.testBoundary === "local_implementation" && members.some(m => {
+  return !!t && (expanded ? isTestImplementation(t.kind) : t.kind === "asserted_call") && t.testBoundary === "local_implementation" && members.some(m => {
     const d = m.observation.implementation;
-    return !!d && d.kind !== "asserted_call" && m.observation.snapshotId === test.observation.snapshotId && m.fileId !== test.fileId &&
-      t.relations.some(r => r.independence === "separate_test" && r.relationship === "asserted_call" && r.fileId === m.fileId
-        && r.conceptId === d.conceptId && r.symbolId === d.symbolId && r.lines.start <= d.span.lines.start && r.lines.end >= d.span.lines.end);
+    if (!d || m.observation.snapshotId !== test.observation.snapshotId || m.fileId === test.fileId) return false;
+    if (isTestImplementation(d.kind)) {
+      // Separate success/failure test sources must exercise the same production
+      // symbol. A test cannot corroborate itself, a clone or an unrelated test.
+      return expanded && d.testBoundary === "local_implementation" && (d.kind === "asserted_failure") !== (t.kind === "asserted_failure")
+        && m.contentFingerprint !== test.contentFingerprint && d.patternId !== t.patternId
+        && t.relations.some(r => r.independence === "separate_test" && d.relations.some(other => other.independence === "separate_test"
+          && r.fileId === other.fileId && r.conceptId === other.conceptId && r.symbolId === other.symbolId));
+    }
+    return t.relations.some(r => r.independence === "separate_test" && r.relationship === "asserted_call" && r.fileId === m.fileId
+      && r.conceptId === d.conceptId && r.symbolId === d.symbolId && r.lines.start <= d.span.lines.start && r.lines.end >= d.span.lines.end);
   });
 }
 
@@ -68,8 +77,12 @@ export function aggregateEvidence(raw: unknown): AggregationResult {
   if (Buffer.byteLength(canonical(raw)) > P.maxBytes) fail();
   const parsed = AggregationInputSchema.safeParse(raw); if (!parsed.success) fail();
   const input = parsed.data!;
-  const provenanceEnabled = input.versions.aggregationPolicy.id === P.id && input.versions.aggregationPolicy.version === "1.1.0";
-  if ((!provenanceEnabled && canonical(input.versions.aggregationPolicy) !== canonical({ id: P.id, version: P.version })) || canonical(input.catalog) !== canonical(initialRubricCatalog)
+  const version = input.versions.aggregationPolicy.version;
+  const provenanceEnabled = aggregationUsesProvenance(version);
+  const expanded = ["3.0.0", "3.1.0"].includes(version);
+  const boundedConfidence = expanded || ["2.0.0", "2.1.0"].includes(version);
+  const definitions = detectorDefinitions(input.versions.detectorBundle.version);
+  if (input.versions.aggregationPolicy.id !== P.id || !["1.0.0", "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0"].includes(version) || canonical(input.catalog) !== canonical(initialRubricCatalog)
     || input.versions.taxonomy.id !== input.catalog.taxonomy.id || input.versions.taxonomy.version !== input.catalog.taxonomy.version
     || input.catalog.rubrics.some(r => !input.versions.roleRubrics.some(v => v.roleId === r.roleId && v.version === r.version))) fail();
   input.snapshots.sort((a, b) => a.snapshotId.localeCompare(b.snapshotId));
@@ -83,9 +96,9 @@ export function aggregateEvidence(raw: unknown): AggregationResult {
     if (s.coverage.snapshotId !== s.snapshotId || s.coverage.manifestVersion !== input.versions.coverageManifest ||
       canonical(s.coverage.detectorBundle) !== canonical(input.versions.detectorBundle) || new Set(s.files.map(f => f.fileId)).size !== s.files.length) fail();
     if (s.coverage.assessment) {
-      const expected = coverageProfile(s.coverage.assessment.declaration.disabledParsers, s.coverage.implementation?.disabledDetectors ?? []);
+      const expected = coverageProfile(s.coverage.assessment.declaration.disabledParsers, s.coverage.implementation?.disabledDetectors ?? [], input.versions.detectorBundle.version.startsWith("2.0.0"));
       if (canonical(expected.detectorBundle) !== canonical(input.versions.detectorBundle) || canonical(expected.extractorBundle) !== canonical(input.versions.extractorBundle)
-        || expected.coverageManifest !== input.versions.coverageManifest || canonical(s.coverage.assessment.declaration) !== canonical(coverageDeclaration(expected.coverage.disabledParsers))) fail();
+        || expected.coverageManifest !== input.versions.coverageManifest || canonical(s.coverage.assessment.declaration) !== canonical(coverageDeclaration(expected.coverage.disabledParsers, input.versions.detectorBundle.version.startsWith("2.0.0")))) fail();
     }
   }
   const filesBySnapshot = new Map(input.snapshots.map(s => [s.snapshotId, new Map(s.files.map(f => [f.fileId as string, f]))]));
@@ -110,16 +123,17 @@ export function aggregateEvidence(raw: unknown): AggregationResult {
     if (item.fileId !== null && !file?.analyzed || e.implementation && !file) { exclude("foreign_evidence"); continue; }
     const d = e.implementation, structural = e.structural;
     if (d) {
-      const definition = DETECTORS.find(x => x.kind === d.kind)!;
+      const definition = definitions.find(x => x.kind === d.kind);
+      if (!definition) { exclude("version_mismatch"); continue; }
       if (s.coverage.implementation?.disabledDetectors.includes(d.kind)) { exclude("quarantined_detector"); continue; }
       const mocked = d.testBoundary === "mocked_or_intercepted";
       if (!s.coverage.implementation || file?.outcome?.implementation !== "analyzed" || e.detector.version !== definition.version
         || canonical(e.capabilityIds) !== canonical(definition.capabilityIds) || e.strength > (mocked ? .35 : definition.strength)
         || e.confidence > (mocked ? .4 : definition.confidence) || d.span.lines.end > file!.lines) { exclude("version_mismatch"); continue; }
-      if ((d.kind === "asserted_call" && !d.relations.length) || d.relations.some(r => {
+      if ((isTestImplementation(d.kind) && !d.relations.length) || d.relations.some(r => {
         const target = filesBySnapshot.get(s.snapshotId)!.get(r.fileId);
         return !target?.analyzed || target.classification !== "code" || r.lines.end > target.lines ||
-          (d.kind === "asserted_call" ? r.relationship !== "asserted_call" || r.independence !== (mocked ? "mocked_test" : "separate_test") || r.fileId === item.fileId
+          (isTestImplementation(d.kind) ? r.relationship !== "asserted_call" || r.independence !== (mocked ? "mocked_test" : "separate_test") || r.fileId === item.fileId
             : r.relationship !== "local_call" || r.independence !== "same_source");
       })) { exclude("invalid_relation"); continue; }
     } else if (structural) {
@@ -141,7 +155,7 @@ export function aggregateEvidence(raw: unknown): AggregationResult {
   const linkKey = (snapshot: string, file: string, concept: string, symbol: string) => `${snapshot}:${file}:${concept}:${symbol}`;
   for (const fact of facts) {
     const d = fact.observation.implementation;
-    if (d?.kind !== "asserted_call" || d.testBoundary !== "local_implementation") continue;
+    if (!d || !(expanded ? isTestImplementation(d.kind) : d.kind === "asserted_call") || d.testBoundary !== "local_implementation") continue;
     for (const relation of d.relations) {
       const key = linkKey(fact.observation.snapshotId, relation.fileId, relation.conceptId, relation.symbolId);
       if (!testIndex.has(key)) testIndex.set(key, []); testIndex.get(key)!.push(fact);
@@ -153,7 +167,7 @@ export function aggregateEvidence(raw: unknown): AggregationResult {
     return results.includes("success") && results.some(r => ["failure", "timed_out", "startup_failure"].includes(r));
   });
   const capabilities: AggregatedCapability[] = [...input.catalog.taxonomy.capabilities].sort((a, b) => a.capabilityId.localeCompare(b.capabilityId)).map(definition => {
-    const coverage = input.snapshots.map(s => coverageFor(s, definition.capabilityId));
+    const coverage = input.snapshots.map(s => coverageFor(s, definition.capabilityId, expanded));
     const support: AggregationSupport[] = [], calculations: ClusterCalculation[] = [];
     const candidates = facts.filter(f => f.capabilityIds.includes(definition.capabilityId));
     for (const members of groups(candidates)) {
@@ -161,8 +175,10 @@ export function aggregateEvidence(raw: unknown): AggregationResult {
       const strongest = Math.max(...members.map(m => m.observation.strength));
       for (const member of members.filter(m => m.observation.strength === strongest && m.basis === "implementation")) {
         const d = member.observation.implementation!;
-        const candidates = testIndex.get(linkKey(member.observation.snapshotId, member.fileId!, d.conceptId, d.symbolId)) ?? [];
-        linked.set(member.observation.evidenceId, candidates.find(t => linkedTest(t, [member])));
+        const candidates = expanded && isTestImplementation(d.kind)
+          ? d.relations.flatMap(r => testIndex.get(linkKey(member.observation.snapshotId, r.fileId, r.conceptId, r.symbolId)) ?? [])
+          : testIndex.get(linkKey(member.observation.snapshotId, member.fileId!, d.conceptId, d.symbolId)) ?? [];
+        linked.set(member.observation.evidenceId, candidates.find(t => linkedTest(t, [member], expanded)));
       }
       // A test must link to the chosen base itself, not merely another same-shape member.
       members.sort((a, b) => b.observation.strength - a.observation.strength || Number(!!linked.get(b.observation.evidenceId)) - Number(!!linked.get(a.observation.evidenceId))
@@ -188,9 +204,15 @@ export function aggregateEvidence(raw: unknown): AggregationResult {
     const bonus = winner?.corroboration.length ? P.confidenceSupportBonus : 0;
     const confidence = state === "unknown" ? null : round(Math.min(ceiling, reliability * round(.5 + .5 * fraction) + bonus));
     // Numeric values are conservative indices, not empirically calibrated probabilities.
-    const label = confidence === null ? null : coverage.every(c => c.state === "assessable" && c.fraction === 1) && confidence >= .5 ? "moderate" : "low";
+    // v2 can qualify a resolved observation without claiming full semantic coverage.
+    // Missing files, failed parsing/resolution, quarantine and invalid evidence still prevent Moderate.
+    const moderateScope = boundedConfidence
+      ? base?.basis === "implementation" && !counts.size && coverage.every(c => c.state !== "not_assessable" && c.fraction === 1
+        && c.reasons.every(r => (BOUNDED_AGGREGATION_POLICY.scopeOnlyReasons as readonly string[]).includes(r)))
+      : coverage.every(c => c.state === "assessable" && c.fraction === 1);
+    const label = confidence === null ? null : moderateScope && confidence >= .5 ? "moderate" : "low";
     const scopes: AggregatedCapability["allowedClaimScopes"] = [];
-    if (base?.basis === "implementation" && base.observation.implementation?.kind !== "asserted_call") scopes.push("repository_behavior");
+    if (base?.basis === "implementation" && !isTestImplementation(base.observation.implementation?.kind ?? "")) scopes.push("repository_behavior");
     if (base?.observation.structural?.claimBoundary === "configuration_presence") scopes.push("configuration_observation");
     if (base && ["language_presence", "framework_presence"].includes(definition.capabilityId)) scopes.push("technology_presence");
     if (base?.observation.structural?.provider && definition.capabilityId === "provenance_history") scopes.push("contribution_indicator");
@@ -208,7 +230,7 @@ export function aggregateEvidence(raw: unknown): AggregationResult {
         confidence: confidence === null ? null : { reliability, coverageFraction: fraction, coverageFactor: round(.5 + .5 * fraction), independentSupportBonus: bonus, ceiling, provenanceMultiplier: null } },
     };
   });
-  const result = AggregationResultSchema.parse({ contractVersion: "1.0.0", policy: { id: P.id, version: provenanceEnabled ? "1.1.0" : P.version },
+  const result = AggregationResultSchema.parse({ contractVersion: "1.0.0", policy: { id: P.id, version },
     ...(provenanceEnabled ? { provenance: input.provenance } : {}),
     runId: input.runId, jobId: input.jobId, ownerUserId: input.ownerUserId, visibility: "owner_only", versions: input.versions,
     snapshotIds: input.snapshots.map(s => s.snapshotId), inputHash: digest({ ...input, evidence: input.evidence.map(value => ({ value, key: canonical(value) })).sort((a, b) => a.key.localeCompare(b.key)).map(item => item.value) }),

@@ -1,5 +1,5 @@
 import { BASELINE_PARSERS, CoverageDeclarationSchema, type BaselineParser, type CoverageDeclaration, type ImplementationKind } from "@repofy/contracts";
-import { DETECTORS, implementationProfile } from "../detectors/registry";
+import { DETECTORS, ROLE_DETECTORS, implementationProfile } from "../detectors/registry";
 
 const selection = Object.freeze({ id: "all_safe_files_bounded_patterns_v1", order: "path_lexical", reducedScanOffered: false,
   ingestionLimitBehavior: "fail_entire_snapshot", maxFileBytes: 262144, maxParserNodes: 20000, maxParserDepth: 64,
@@ -33,16 +33,16 @@ const entries: Entry[] = [
   entry("ai_runtime", [], [], [], [], "unsupported", ["ai_runtime_not_assessed"]),
   entry("other_ecosystems", [], [], [], [], "inventory", ["unsupported_depth"]),
 ];
-export function coverageProfile(disabledParsers: readonly BaselineParser[] = [], disabledDetectors: readonly ImplementationKind[] = []) {
+export function coverageProfile(disabledParsers: readonly BaselineParser[] = [], disabledDetectors: readonly ImplementationKind[] = [], enhanced = false) {
   if (new Set(disabledParsers).size !== disabledParsers.length || disabledParsers.some(p => !BASELINE_PARSERS.includes(p))) throw new Error("Invalid parser quarantine");
   const disabled = Object.freeze(BASELINE_PARSERS.filter(p => disabledParsers.includes(p)));
   const suffix = disabled.length ? `-p${BASELINE_PARSERS.map(p => disabled.includes(p) ? 1 : 0).join("")}` : "";
-  return Object.freeze({ ...implementationProfile(disabledDetectors), extractorBundle: { id: "language_inventory", version: `1.0.1${suffix}` },
-    coverageManifest: `1.2.1${suffix}`, coverage: Object.freeze({ disabledParsers: disabled, selection }) });
+  return Object.freeze({ ...implementationProfile(disabledDetectors, enhanced), extractorBundle: { id: "language_inventory", version: `1.0.1${suffix}` },
+    coverageManifest: `${enhanced ? "1.3.0" : "1.2.1"}${suffix}`, coverage: Object.freeze({ disabledParsers: disabled, selection }) });
 }
-export function coverageDeclaration(disabled: readonly BaselineParser[] = []): CoverageDeclaration {
-  const profile = coverageProfile(disabled);
+export function coverageDeclaration(disabled: readonly BaselineParser[] = [], enhanced = false): CoverageDeclaration {
+  const profile = coverageProfile(disabled, [], enhanced);
   return CoverageDeclarationSchema.parse({ version: profile.coverageManifest, selection, disabledParsers: profile.coverage.disabledParsers,
     parsers: [{ id: "python", package: "lezer_python", version: "1.1.19" }, { id: "java", package: "lezer_java", version: "1.1.4" }, { id: "maven", package: "lezer_xml", version: "1.0.6" }],
-    entries: entries.map(e => disabled.includes(e.id as BaselineParser) ? { ...e, depth: "unsupported", confidenceCeiling: 0, reasons: [...e.reasons, "parser_disabled"] } : e) });
+    entries: entries.map(e => enhanced && e.id === "tsjs" ? { ...e, capabilities: [...new Set(ROLE_DETECTORS.flatMap(d => d.capabilityIds))].sort() } : e).map(e => disabled.includes(e.id as BaselineParser) ? { ...e, depth: "unsupported", confidenceCeiling: 0, reasons: [...e.reasons, "parser_disabled"] } : e) });
 }

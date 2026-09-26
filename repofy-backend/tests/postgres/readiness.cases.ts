@@ -18,6 +18,7 @@ export function registerReadinessTests(db: pg.Client, config: pg.ClientConfig) {
     const f = await saved();
     try {
       assert.equal((await f.reader.view(f.f.actor, f.report.reportId)).report.reportId, f.report.reportId);
+      assert.deepEqual((await f.reader.view(f.f.actor, f.report.reportId)).metadataOptions, { commits: false, pullRequests: false, ci: false });
       assert.ok((await f.reader.evidence(f.f.actor, f.report.reportId, {})).items.length);
       await assert.rejects(f.reader.view(randomUUID(), f.report.reportId), { code: 'NOT_FOUND' });
       await f.reader.event(f.f.actor, f.report.reportId, { event: 'improvement_opened', objectId: f.report.improvements[0].improvementId }, randomUUID());

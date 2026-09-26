@@ -10,6 +10,7 @@ import { JobRepository } from "./repository";
 import type { ExecutionPolicy } from "./policy";
 import { logger } from "../../lib/logger";
 import { AnalysisWorker, handlersComplete, type AnalysisHandlers } from "./worker";
+import { AggregationPolicyReferenceSchema, aggregationUsesProvenance } from "@repofy/contracts";
 
 // Lazy construction keeps flags-off/read/maintenance processes independent of model credentials.
 // No environment switch can install a synthetic adapter or change the provider host.
@@ -22,18 +23,21 @@ export function productionHandlers(pinned?: ExecutionPolicy): AnalysisHandlers |
   const { NarrativeService } = require("../synthesis/service") as typeof import("../synthesis/service");
   const narrative = new NarrativeService(jobRepository(),new OpenAIResponsesGateway(config.apiKey));
   // Rollout changes intake only. Supported queued versions retain their frozen policy.
-  const provenance = pinned ? pinned.versions.aggregationPolicy.version === "1.1.0" : env.featureOne?.provenanceEnabled === true;
-  return { policy: narrativeExecutionPolicy(provenance), extract: (...args) => productionExtraction().extract(...args),
+  const pinnedAggregation = pinned && AggregationPolicyReferenceSchema.safeParse(pinned.versions.aggregationPolicy);
+  if (pinnedAggregation && !pinnedAggregation.success) return null;
+  const version = pinnedAggregation?.data?.version;
+  const provenance = version ? aggregationUsesProvenance(version) : env.featureOne?.provenanceEnabled === true;
+  return { policy: narrativeExecutionPolicy(provenance, version), extract: (...args) => productionExtraction(version === undefined || version.startsWith("3.")).extract(...args),
     aggregate: c => productionAggregation().aggregate(c), synthesize: c => narrative.synthesize(c), validate: (r,c) => narrative.validate(r,c) };
 }
 /** Run 10 extraction, lazily installed by the Run 12 composition. */
-export function productionExtraction() {
+export function productionExtraction(enhanced = true) {
   // Fixed application modules, loaded only by the extraction composition. Flags-off
   // API/maintenance processes need neither parser heaps nor provider credentials.
   const { AuthorizedMetadataSource } = require("../github-app/metadata-client") as typeof import("../github-app/metadata-client");
   const { createCoverageExtraction } = require("../extraction/pipeline") as typeof import("../extraction/pipeline");
   return createCoverageExtraction(locatorCryptoFromEnvironment(process.env), new AuthorizedMetadataSource(githubConnectionService()), [],
-    metrics => logger.info("Evidence extraction completed", metrics));
+    metrics => logger.info("Evidence extraction completed", metrics), enhanced);
 }
 /** Run 11 deterministic stage used by the complete, gated composition. */
 export function productionAggregation() {

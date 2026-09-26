@@ -2,7 +2,7 @@ import { AchievedCoverageSchema, type AchievedCoverage, type CoverageReason, typ
   type ImplementationCoverage, type InventorySummary } from "@repofy/contracts";
 import type { InternalEvidenceObservation } from "@repofy/contracts/internal";
 import { initialRubricCatalog } from "../rubrics/catalog";
-import { DETECTORS } from "../detectors/registry";
+import { detectorDefinitions } from "../detectors/registry";
 import { coverageDeclaration, type coverageProfile } from "./manifest";
 
 interface FileFact { language: string; classification: string; analyzed: boolean; structure?: { depth: string; coverage?: FileCoverageOutcome } }
@@ -15,6 +15,9 @@ const meaningful = (e: InternalEvidenceObservation) => !!e.implementation || !!e
 /** Facts for Run 11. No role scores, proficiency inference or replacement of unknowns with zero. */
 export function achievedCoverage(input: AssessmentInput, profile: ReturnType<typeof coverageProfile>): AchievedCoverage {
   const { files, evidence, inventorySummary: inventory, coverage } = input;
+  const enhanced = profile.detectorBundle.version.startsWith("2.0.0");
+  const nonSource = enhanced ? inventory.nonSourceExcludedFiles ?? 0 : 0;
+  const detectorsForProfile = detectorDefinitions(profile.detectorBundle.version);
   const structural = coverage.structural!; const implementation = coverage.implementation!;
   const useful = evidence.filter(meaningful);
   const global: CoverageReason[] = ["runtime_not_assessed", "uncalibrated"];
@@ -28,7 +31,7 @@ export function achievedCoverage(input: AssessmentInput, profile: ReturnType<typ
   if (implementation.unresolvedImports || implementation.dynamicReferences || implementation.ambiguousBindings || implementation.aliasConfigurationsRejected) global.push("resolution_incomplete");
   for (const f of files) global.push(...f.structure!.coverage!.reasons);
   if (!useful.length) global.push("no_observed_evidence");
-  const counts = { totalFiles: inventory.totalFiles, excludedFiles: inventory.excludedFiles, eligibleFiles: files.length,
+  const counts = { ...(enhanced ? { nonSourceExcludedFiles: nonSource } : {}), totalFiles: inventory.totalFiles, excludedFiles: inventory.excludedFiles, eligibleFiles: files.length,
     analyzedFiles: inventory.analyzedFiles, unparsedFiles: files.length - inventory.analyzedFiles,
     analyzedFractionOfAllFiles: inventory.totalFiles ? inventory.analyzedFiles / inventory.totalFiles : null };
   const languages = [...new Set(files.map(f => f.language))].sort().map(language => {
@@ -39,7 +42,7 @@ export function achievedCoverage(input: AssessmentInput, profile: ReturnType<typ
       reasons: reasons([...selected.flatMap(f => f.structure!.coverage!.reasons), ...(!impl.length && selected.some(f => ["code", "test"].includes(f.classification)) ? ["unsupported_depth" as const] : [])]) };
   });
   const capabilities = initialRubricCatalog.taxonomy.capabilities.map(({ capabilityId }) => {
-    const detectors = DETECTORS.filter(d => d.capabilityIds.includes(capabilityId));
+    const detectors = detectorsForProfile.filter(d => d.capabilityIds.includes(capabilityId));
     const structuralKinds: Record<string, string[]> = { language_presence: ["structure"], framework_presence: ["dependency", "configuration"],
       data_modeling: ["schema"], delivery_automation: ["workflow"], delivery_reproducibility: ["container"],
       documentation_operability: ["documentation"], documentation_decisions: ["documentation"] };
@@ -62,7 +65,7 @@ export function achievedCoverage(input: AssessmentInput, profile: ReturnType<typ
     const why: CoverageReason[] = ["runtime_not_assessed", "uncalibrated", ...selected.flatMap(f => f.structure!.coverage!.reasons)];
     if (!supported || capabilityId !== "language_presence") why.push("unsupported_depth");
     if (!selected.length && !metadataAssessed) why.push("no_eligible_source");
-    if (inventory.excludedFiles) why.push("security_exclusions");
+    if (inventory.excludedFiles > nonSource) why.push("security_exclusions");
     if (detectors.some(d => implementation.disabledDetectors.includes(d.kind))) why.push("detector_disabled");
     if (detectors.length) why.push("unsupported_version", ...(global.filter(r => ["resolution_incomplete", "reduced_scan", "evidence_budget_exhausted"].includes(r))));
     if (capabilityId.startsWith("mobile_")) why.push("native_mobile_not_assessed");
@@ -76,7 +79,7 @@ export function achievedCoverage(input: AssessmentInput, profile: ReturnType<typ
       depth: detectors.length ? "bounded_patterns" as const : supported ? "baseline" as const : "unsupported" as const,
       confidenceCeiling: !analyzed.length && !metadataAssessed ? 0 : detectors.length ? 0.55 : 0.5, reasons: reasons(why) };
   });
-  return AchievedCoverageSchema.parse({ declaration: coverageDeclaration(profile.coverage.disabledParsers), counts, languages, capabilities,
+  return AchievedCoverageSchema.parse({ declaration: coverageDeclaration(profile.coverage.disabledParsers, enhanced), counts, languages, capabilities,
     state: !counts.analyzedFiles ? "not_assessable" : !useful.length ? "evidence_not_observed_within_assessed_scope"
       : counts.unparsedFiles || counts.excludedFiles || global.some(r => ["reduced_scan", "resolution_incomplete", "evidence_budget_exhausted", "dynamic_configuration", "unsupported_depth"].includes(r)) ? "partially_assessable" : "assessable",
     result: useful.length ? "evidence_available" : "insufficient_evidence", reasons: reasons(global) });

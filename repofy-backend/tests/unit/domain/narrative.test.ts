@@ -8,7 +8,7 @@ import { extractedAggregation,aggregationInput } from '../../helpers/aggregation
 import { aggregateEvidence } from '../../../src/domain/aggregation/engine';
 import { synthesisVersion } from '../../../src/domain/synthesis/policy';
 let f: Awaited<ReturnType<typeof narrativeFixture>>;
-beforeAll(async()=>{ f=await narrativeFixture(); });
+beforeAll(async()=>{ f=await narrativeFixture(undefined, '3.0.0'); });
 it('preserves exact aggregation scores, limitations, future proof, scoped gaps and explained ranking',()=>{
   const r=renderNarrative(f.p,f.selection,f.modelRunId); validateRendered(r,f.p);
   for(const c of f.p.facts.aggregation.capabilities){

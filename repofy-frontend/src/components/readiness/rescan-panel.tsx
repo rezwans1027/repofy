@@ -8,9 +8,12 @@ import { SavedRepositorySelectionSchema, RescanResponseSchema, RescanHistorySche
 import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { cardClass, privateQueryOptions, words } from "./report-shared";
+import { MetadataChoices, metadataScope, readMetadataChoice, reportMetadataOptions, saveMetadataChoice } from "./metadata-options";
 
 export function RescanPanel({ actor, view }: { actor: string; view: ReportView }) {
   const router = useRouter(), reportId = view.report.reportId, base = `/v1/readiness-reports/${reportId}`;
+  const preferencesKey = `repofy:rescan-metadata:${actor}:${reportId}`;
+  const [metadata, setMetadata] = useState(() => readMetadataChoice(preferencesKey, reportMetadataOptions(view)));
   const [after, setAfter] = useState<string>(), [selected, setSelected] = useState<string[] | null>(null), [busy, setBusy] = useState(false), [message, setMessage] = useState("");
   const pending = useRef(false);
   const alive = useRef(true), replay = useRef<{ scope: string; key: string } | null>(null);
@@ -26,14 +29,14 @@ export function RescanPanel({ actor, view }: { actor: string; view: ReportView }
   const ids = (selected ?? eligible.filter(r => view.report.snapshots.some(s => s.repositoryId === r.repositoryId)).map(r => r.repositoryId)).filter(id => eligible.some(r => r.repositoryId === id));
   async function start() {
     if (pending.current || !ids.length) return; pending.current = true; setBusy(true); setMessage("");
-    const storage = `repofy:rescan:${actor}:${reportId}:${selection.data?.revision}:${[...ids].sort().join(",")}`;
+    const storage = `repofy:rescan:${actor}:${reportId}:${selection.data?.revision}:${[...ids].sort().join(",")}:${metadataScope(metadata)}`;
     try {
       let key: string | null = replay.current?.scope === storage ? replay.current.key : null;
       try { key ??= sessionStorage.getItem(storage); } catch { /* In-memory replay remains available. */ }
       if (!z.uuid().safeParse(key).success) key = crypto.randomUUID();
       replay.current = { scope: storage, key: key! };
       try { sessionStorage.setItem(storage, key!); } catch { /* Optional persistence. */ }
-      const result = await api.post<RescanResponse>(`${base}/rescans`, { body: { repositoryIds: ids, idempotencyKey: key, includeMetadata: { commits: false, pullRequests: false, ci: false } }, cache: "no-store", schema: RescanResponseSchema });
+      const result = await api.post<RescanResponse>(`${base}/rescans`, { body: { repositoryIds: ids, idempotencyKey: key, includeMetadata: metadata }, cache: "no-store", schema: RescanResponseSchema });
       if (!alive.current) return;
       try { sessionStorage.removeItem(storage); } catch { /* Optional persistence. */ }
       replay.current = null;
@@ -46,11 +49,13 @@ export function RescanPanel({ actor, view }: { actor: string; view: ReportView }
   }
   return <section className={cardClass} aria-labelledby="rescans-heading"><h2 id="rescans-heading" className="text-xl font-semibold">Rescan and compare</h2>
     <p>This saved report is the baseline. A rescan pins the current commits of your chosen authorized repositories and preserves older reports. Unchanged compatible evidence is reused after permission checks. Internal rescans currently cost no credits.</p>
-    <p>Optional GitHub history and CI metadata are off for this rescan. Comparisons explain any change in metadata scope.</p>
+    <p>Metadata choices start from the original analysis. You can change them below; comparisons explain any change in scope.</p>
     {availability.data?.available ? <><fieldset className="space-y-2"><legend className="font-medium">Repositories for this rescan</legend>{eligible.map((r, index) => <label key={r.repositoryId} className="flex items-center gap-2">
       <input type="checkbox" checked={ids.includes(r.repositoryId)} disabled={busy} onChange={e => setSelected(e.target.checked ? [...ids, r.repositoryId] : ids.filter(id => id !== r.repositoryId))} />
       {view.report.snapshots.find(s => s.repositoryId === r.repositoryId)?.repositoryLabel ?? `Additional selected repository ${index + 1}`}</label>)}
       {!eligible.length && <p>No active saved repositories are available for this rescan.</p>}</fieldset>
+      <MetadataChoices value={metadata} repositories={eligible.filter(r => ids.includes(r.repositoryId))} disabled={busy}
+        onChange={value => { setMetadata(value); saveMetadataChoice(preferencesKey, value); }} />
       <Button disabled={busy || !ids.length || ids.length > (selection.data?.policy.maxRepositories ?? 0)} onClick={start}>{busy ? "Checking commits…" : "Rescan selected repositories"}</Button></>
       : <p>New rescans are unavailable. Saved reports remain readable.</p>}
     {selection.error && <p role="alert">Repository selection could not be loaded. Review access and try again.</p>}

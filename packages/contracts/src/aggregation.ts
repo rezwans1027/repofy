@@ -7,7 +7,8 @@ import { ConfidenceLabelSchema, ClaimScopeSchema } from "./rubrics";
 import { OwnerEvidenceSchema } from "./evidence";
 import { ProvenanceAssessmentSchema } from "./provenance";
 
-export const AggregationPolicyReferenceSchema = VersionReferenceSchema.extend({ id: z.literal("evidence_aggregation"), version: z.enum(["1.0.0", "1.1.0"]) });
+export const AggregationPolicyReferenceSchema = VersionReferenceSchema.extend({ id: z.literal("evidence_aggregation"), version: z.enum(["1.0.0", "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0"]) });
+export const aggregationUsesProvenance = (version: string) => ["1.1.0", "2.1.0", "3.1.0"].includes(version);
 export const AggregationUncertaintySchema = z.enum(["uncalibrated", "partial_coverage", "provenance_unknown", "provenance_not_applied",
   "static_only", "cross_repository_independence_unknown", "unlinked_context_not_corroboration", "invalid_evidence_excluded", "conflicting_metadata"]);
 export const AggregationValidationCodeSchema = z.enum(["invalid_shape", "foreign_evidence", "duplicate_id_conflict", "version_mismatch",
@@ -22,7 +23,7 @@ export const AggregationSupportSchema = z.strictObject({
 export const CapabilityCoverageTraceSchema = z.strictObject({
   snapshotId: SnapshotIdSchema, repositoryId: RepositoryIdSchema,
   state: z.enum(["assessable", "partially_assessable", "not_assessable", "evidence_not_observed_within_assessed_scope"]),
-  analyzedFiles: CountSchema, eligibleFiles: CountSchema, excludedFiles: CountSchema,
+  analyzedFiles: CountSchema, eligibleFiles: CountSchema, excludedFiles: CountSchema, nonSourceExcludedFiles: CountSchema.optional(),
   metadataAssessed: z.boolean(), fraction: ScoreSchema, confidenceCeiling: ScoreSchema,
   reasons: uniqueArray(CoverageReasonSchema, 30),
 });
@@ -91,8 +92,8 @@ export const AggregationResultSchema = z.strictObject({
 }).superRefine((v, ctx) => {
   const fail = (message: string) => ctx.addIssue({ code: "custom", message });
   if (v.versions.aggregationPolicy.id !== v.policy.id || v.versions.aggregationPolicy.version !== v.policy.version) fail("Aggregation dependency mismatch");
-  if (v.policy.version === "1.1.0" ? !v.provenance || v.provenance.snapshots.length !== v.snapshotIds.length || new Set(v.provenance.snapshots.map(s => s.snapshotId)).size !== v.snapshotIds.length || v.provenance.snapshots.some(s => !v.snapshotIds.includes(s.snapshotId)) : !!v.provenance) fail("Provenance policy membership mismatch");
-  if (v.capabilities.some(c => c.provenance.policy !== (v.policy.version === "1.1.0" ? "context_only_v1" : "not_inferred_v1"))) fail("Provenance policy mismatch");
+  if (aggregationUsesProvenance(v.policy.version) ? !v.provenance || v.provenance.snapshots.length !== v.snapshotIds.length || new Set(v.provenance.snapshots.map(s => s.snapshotId)).size !== v.snapshotIds.length || v.provenance.snapshots.some(s => !v.snapshotIds.includes(s.snapshotId)) : !!v.provenance) fail("Provenance policy membership mismatch");
+  if (v.capabilities.some(c => c.provenance.policy !== (aggregationUsesProvenance(v.policy.version) ? "context_only_v1" : "not_inferred_v1"))) fail("Provenance policy mismatch");
   if (new Set(v.capabilities.map(c => c.capabilityId)).size !== v.capabilities.length || new Set(v.roles.map(r => r.template.roleId)).size !== 5) fail("Duplicate assessments");
   for (const c of v.capabilities) if (c.support.some(s => !v.snapshotIds.includes(s.snapshotId)) ||
     c.trace.coverage.length !== v.snapshotIds.length || new Set(c.trace.coverage.map(s => s.snapshotId)).size !== v.snapshotIds.length ||

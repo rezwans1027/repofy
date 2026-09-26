@@ -17,7 +17,7 @@ it('explicit reanalysis freezes new provenance, reuses source, preserves old mea
     await f.workerFor(policy, provider).once(); const job = await f.jobs.read(f.actor, started.job.jobId);
     expect(job.status, JSON.stringify({ status: job.status, rpcErrors })).toBe('completed'); if (job.status !== 'completed') throw new Error('Expected completed analysis');
     const target = await f.reader.view(f.actor, job.report.reportId);
-    expect(target.report.versions.aggregationPolicy.version).toBe('1.1.0'); expect(target.aggregation!.provenance!.snapshots[0].signals).toContain('provider_fork');
+    expect(target.report.versions.aggregationPolicy.version).toBe('3.1.0'); expect(target.aggregation!.provenance!.snapshots[0].signals).toContain('provider_fork');
     expect(target.aggregation!.provenance!.snapshots[0].signals).toContain('provider_template_origin'); expect(target.aggregation!.provenance!.snapshots[0].contribution.confidence).toBeNull();
     expect(target.report.roles).toEqual(f.baseline.report.roles); expect(target.report.claims[0].text).toContain('Contribution confidence remains unknown');
     expect(f.counters.downloads).toBe(1); expect(JSON.stringify((await f.reader.view(f.actor, f.baseline.report.reportId)).report)).toBe(before);

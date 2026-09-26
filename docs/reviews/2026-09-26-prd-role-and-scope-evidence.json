@@ -1,0 +1,804 @@
+{
+  "date": "2026-09-26",
+  "branch": "feature/project-evidence-readiness",
+  "head": "8596ac8b99583e4f9e1f67e228c56095a7eda0d0",
+  "scope": "Uncommitted branch remediation, including prior authorized working-tree edits; synthetic local verification only",
+  "node": "22.23.2",
+  "finalImplementationSha256": "047d29cece3090555f194fda048dc6784e4b08489afcb733af5f9d16830d9596",
+  "sourceBindingNote": "Checks ran during remediation rather than one uninterrupted frozen verification run. The final aggregation factory default was aligned to v3 after the full suites; 27 aggregation tests, real PostgreSQL, the standalone role/rescan browser scenario and typechecks passed afterward. No historical human or release approval was rebound.",
+  "checks": [
+    {
+      "id": "contracts_typecheck",
+      "command": [
+        "npm",
+        "--prefix",
+        "packages/contracts",
+        "run",
+        "typecheck"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "d967c3a00bba00bc88b8abc5f7cb0ec1fc79646f31497e0dac781ff5bfbdb6ae",
+      "logCompletedAt": "2026-09-26T20:11:04.656827+00:00"
+    },
+    {
+      "id": "contracts",
+      "command": [
+        "npm",
+        "--prefix",
+        "packages/contracts",
+        "test"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "8334544e675b089b95342f376e7250940937753491634c6515a19e9ea235203f",
+      "logCompletedAt": "2026-09-26T20:07:42.109921+00:00"
+    },
+    {
+      "id": "backend_typecheck",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-backend",
+        "run",
+        "typecheck"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "37aa9373fd867619d5ecc76c3fd1b0374e8ee6d366f844ed56939ee58addc86e",
+      "logCompletedAt": "2026-09-26T20:13:29.914886+00:00"
+    },
+    {
+      "id": "release_typecheck",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-backend",
+        "run",
+        "release:typecheck"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "4bfd49d8e0fea3aeaa21ad203009e64ed4bab8496a93ecc5fcc91b6fab17b4de",
+      "logCompletedAt": "2026-09-26T20:13:29.915058+00:00"
+    },
+    {
+      "id": "backend_tests",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-backend",
+        "test",
+        "--",
+        "--coverage",
+        "--maxWorkers=1"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "f47b0386d4354c4d2abf21ddd0b066739f664f5d876a3bc73009b6736d10b29c",
+      "logCompletedAt": "2026-09-26T20:11:56.770435+00:00"
+    },
+    {
+      "id": "postgres",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-backend",
+        "run",
+        "test:postgres"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "0ededb5dec290cbd07bc4cd08813d38998025b67878728fd8c862e7d27115f53",
+      "logCompletedAt": "2026-09-26T20:13:11.365118+00:00"
+    },
+    {
+      "id": "ingestion_verify",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-backend",
+        "run",
+        "ingestion:verify"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "76e4ba84a4a348a8f8e5dd224ed4534d084345a39e47aa8fd62e5cdb68144cfb",
+      "logCompletedAt": "2026-09-26T20:09:58.435716+00:00"
+    },
+    {
+      "id": "worker_verify",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-backend",
+        "run",
+        "worker:verify"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "a37a877f2f13e892f61e8a7042e74f60dc87cc474707da41a64574be6306fc3c",
+      "logCompletedAt": "2026-09-26T20:10:02.024007+00:00"
+    },
+    {
+      "id": "extraction_verify",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-backend",
+        "run",
+        "extraction:verify"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "aac30b9f6faef1f87c6324125e3628d9ecd03e43bd147a6d0ddc0e37a9e37621",
+      "logCompletedAt": "2026-09-26T20:10:05.163670+00:00"
+    },
+    {
+      "id": "detectors_verify",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-backend",
+        "run",
+        "detectors:verify"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "02e526d92c69b2f0e0893d4513a6d24121ed316a288a6bf58a2adcf49d3cf669",
+      "logCompletedAt": "2026-09-26T20:10:08.932662+00:00"
+    },
+    {
+      "id": "coverage_verify",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-backend",
+        "run",
+        "coverage:verify"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "b6e6a66b643a9582f8118c4ccc2de61cbfb69c6d1b23eb157640ab464bbe2de0",
+      "logCompletedAt": "2026-09-26T20:10:12.068056+00:00"
+    },
+    {
+      "id": "aggregation_verify",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-backend",
+        "run",
+        "aggregation:verify"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "fc20b2e507fc7b2f623f1052943c435961d5a1f515a6ded140fcefd93e60a0f8",
+      "logCompletedAt": "2026-09-26T20:10:17.680894+00:00"
+    },
+    {
+      "id": "rubrics_validate",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-backend",
+        "run",
+        "rubrics:validate"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "7f9fe58109032a84afa978137357675660445f35f22cc10c1d7713570ed6ea05",
+      "logCompletedAt": "2026-09-26T20:10:17.843784+00:00"
+    },
+    {
+      "id": "release_benchmark",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-backend",
+        "run",
+        "release:benchmark"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "6185f3b4acc6cd55b9356d66643983575e6d010dc82e1ea27e8ebb2d59f2cf8c",
+      "logCompletedAt": "2026-09-26T20:10:19.073523+00:00"
+    },
+    {
+      "id": "frontend_lint",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-frontend",
+        "run",
+        "lint"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "48d576f7ce662d1fc9e93bc92de8acffa41e9a8911fed34fb64362adce98f003",
+      "logCompletedAt": "2026-09-26T20:08:17.190758+00:00"
+    },
+    {
+      "id": "frontend_typecheck",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-frontend",
+        "run",
+        "typecheck"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "e7faa54b65ba5b5501ee08ad51e331cd9c9bfc1c97de0679e28ccec2c820c549",
+      "logCompletedAt": "2026-09-26T20:13:29.924555+00:00"
+    },
+    {
+      "id": "frontend_tests",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-frontend",
+        "test",
+        "--",
+        "--coverage",
+        "--maxWorkers=1"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "6f8ee87fb54bf1e4ce9a405fda00a05c619e4ac65533c3d81c42d87311b4df3f",
+      "logCompletedAt": "2026-09-26T20:08:51.608071+00:00"
+    },
+    {
+      "id": "frontend_build",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-frontend",
+        "run",
+        "build"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "50032cf1e92a17acecd195333db31d241d11269c0b624f8a12b4ed59facd49d3",
+      "logCompletedAt": "2026-09-26T20:08:38.330159+00:00"
+    },
+    {
+      "id": "release_load",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-backend",
+        "run",
+        "release:load"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "5ae34078c3770f9359a49e5fc6ea792e6eab69d1ae7737f7643402b712bed284",
+      "logCompletedAt": "2026-09-26T20:12:25.865719+00:00"
+    },
+    {
+      "id": "test_e2e_readiness",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-frontend",
+        "run",
+        "test:e2e:readiness"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "8f65f5388fc3392f6b4ba8d67bdb631dafa7e712c33778aabbae81f9b4d50cbf",
+      "logCompletedAt": "2026-09-26T20:12:27.941970+00:00"
+    },
+    {
+      "id": "test_e2e_selection",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-frontend",
+        "run",
+        "test:e2e:selection"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "942cd717be9e936b2bd813d322587f84a0743c92a5ad69e330191b341af5970a",
+      "logCompletedAt": "2026-09-26T20:12:40.802779+00:00"
+    },
+    {
+      "id": "report_browser",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-frontend",
+        "run",
+        "test:e2e:report"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "5c1cf9968ef1369c213e3d12efd18d37edfd6716da9dfb0e29fe7db012a07b64",
+      "logCompletedAt": "2026-09-26T20:12:04.483332+00:00"
+    }
+  ],
+  "finalFollowupChecks": [
+    {
+      "command": [
+        "npx",
+        "--no-install",
+        "vitest",
+        "run",
+        "tests/integration/aggregation.test.ts",
+        "tests/unit/domain/aggregation/engine.test.ts"
+      ],
+      "directory": "repofy-backend",
+      "exitCode": 0,
+      "tests": 27
+    },
+    {
+      "id": "role_browser_independent_setup",
+      "command": [
+        "npm",
+        "--prefix",
+        "repofy-frontend",
+        "run",
+        "test:e2e:report",
+        "--",
+        "--grep",
+        "implemented role requirements"
+      ],
+      "status": "passed",
+      "exitCode": 0,
+      "logSha256": "9ffacbc3b5dfbab5651ddea4e9d7560f7d4a9acbd5a315f39a8e8c449fbf7d7d",
+      "logCompletedAt": "2026-09-26T20:13:22.719093+00:00"
+    }
+  ],
+  "tests": {
+    "contracts": 85,
+    "backend": 1636,
+    "backendFiles": 112,
+    "frontend": 591,
+    "frontendFiles": 89,
+    "postgres": 129,
+    "uniqueContractUnitIntegrationAndPostgres": 2441,
+    "httpBoundaries": 8,
+    "selectionBrowser": 2,
+    "reportBrowser": 7,
+    "uniqueHttpAndBrowserChecks": 17,
+    "roleAndNewDetectorRegressions": 100
+  },
+  "coverage": {
+    "backend": {
+      "lines": 91.32,
+      "branches": 86.97,
+      "statements": 88.75,
+      "functions": 90.43
+    },
+    "frontend": {
+      "lines": 84.53,
+      "branches": 75.97,
+      "statements": 83.9,
+      "functions": 79.78
+    },
+    "configuredGatesPassed": true
+  },
+  "roleSourceFixtures": [
+    {
+      "role": "backend",
+      "results": [
+        {
+          "independentAssertions": false,
+          "satisfiedRequired": 0,
+          "totalRequired": 6,
+          "coverage": 0.066,
+          "confidence": 0.4785,
+          "unknownWeight": 0.13
+        },
+        {
+          "independentAssertions": true,
+          "satisfiedRequired": 6,
+          "totalRequired": 6,
+          "coverage": 0.5375,
+          "confidence": 0.4785,
+          "unknownWeight": 0.13
+        }
+      ]
+    },
+    {
+      "role": "frontend",
+      "results": [
+        {
+          "independentAssertions": false,
+          "satisfiedRequired": 0,
+          "totalRequired": 6,
+          "coverage": 0.044,
+          "confidence": 0.495,
+          "unknownWeight": 0.1
+        },
+        {
+          "independentAssertions": true,
+          "satisfiedRequired": 6,
+          "totalRequired": 6,
+          "coverage": 0.5525,
+          "confidence": 0.495,
+          "unknownWeight": 0.1
+        }
+      ]
+    },
+    {
+      "role": "full_stack",
+      "results": [
+        {
+          "independentAssertions": false,
+          "satisfiedRequired": 0,
+          "totalRequired": 7,
+          "coverage": 0,
+          "confidence": 0.5005,
+          "unknownWeight": 0.09
+        },
+        {
+          "independentAssertions": true,
+          "satisfiedRequired": 7,
+          "totalRequired": 7,
+          "coverage": 0.5425,
+          "confidence": 0.5005,
+          "unknownWeight": 0.09
+        }
+      ]
+    },
+    {
+      "role": "mobile",
+      "results": [
+        {
+          "independentAssertions": false,
+          "satisfiedRequired": 0,
+          "totalRequired": 6,
+          "coverage": 0.077,
+          "confidence": 0.495,
+          "unknownWeight": 0.1
+        },
+        {
+          "independentAssertions": true,
+          "satisfiedRequired": 6,
+          "totalRequired": 6,
+          "coverage": 0.585,
+          "confidence": 0.495,
+          "unknownWeight": 0.1
+        }
+      ]
+    },
+    {
+      "role": "ai_application",
+      "results": [
+        {
+          "independentAssertions": false,
+          "satisfiedRequired": 0,
+          "totalRequired": 6,
+          "coverage": 0.033,
+          "confidence": 0.506,
+          "unknownWeight": 0.08
+        },
+        {
+          "independentAssertions": true,
+          "satisfiedRequired": 6,
+          "totalRequired": 6,
+          "coverage": 0.546,
+          "confidence": 0.506,
+          "unknownWeight": 0.08
+        }
+      ]
+    }
+  ],
+  "exclusionRegression": {
+    "invariantAdditions": [
+      "empty .repofyignore",
+      "public/logo.png",
+      ".env.example containing PORT=3000"
+    ],
+    "invariantMeasures": [
+      "capability strength",
+      "confidence value and label",
+      "required criterion state"
+    ],
+    "retainedUncertainty": [
+      "actually ignored source",
+      "vendor source",
+      "generated source",
+      "secret-screened source",
+      "executable binary"
+    ],
+    "browserCombinedAssetRescan": {
+      "excludedFiles": 3,
+      "nonSourceExcludedFiles": 3,
+      "comparison": "comparable",
+      "roleCoverageAndConfidenceDeltas": 0,
+      "baselineUnchanged": true
+    }
+  },
+  "postgresAdversarialChecks": [
+    "forged non-source exclusion count",
+    "forged total exclusion count",
+    "inflated High confidence",
+    "self-corroboration",
+    "unrelated test corroboration"
+  ],
+  "legacyBenchmark": {
+    "knownDetectorObservations": {
+      "tp": 24,
+      "fp": 0,
+      "fn": 1,
+      "missing": [
+        {
+          "detector": "tsjs.route_service",
+          "path": "workspace_layers/packages/api/endpoint.ts"
+        }
+      ],
+      "unexpected": [],
+      "precision": 1,
+      "recall": 0.96
+    },
+    "byDetector": [
+      {
+        "detector": "tsjs.route_service",
+        "tp": 4,
+        "fp": 0,
+        "fn": 1,
+        "missing": [
+          {
+            "detector": "tsjs.route_service",
+            "path": "workspace_layers/packages/api/endpoint.ts"
+          }
+        ],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 0.8
+      },
+      {
+        "detector": "tsjs.request_validation",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.authentication_guard",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.ownership_guard",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.structured_error",
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.form_validation",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.request_state",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.accessible_action",
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.parameterized_query",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.transaction",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.schema_constraint",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.bounded_retry",
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.state_guard",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.failure_cleanup",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.asserted_call",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.bounded_model_output",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      }
+    ],
+    "validReferences": {
+      "successes": 127,
+      "total": 127,
+      "rate": 1,
+      "interval95": [
+        0.9706403547062367,
+        1
+      ]
+    },
+    "validMajorClaimReferences": {
+      "successes": 58,
+      "total": 58,
+      "rate": 1,
+      "interval95": [
+        0.9378821442127971,
+        1
+      ]
+    },
+    "privateDisclosureFailures": 0,
+    "contributionConfidenceErrors": 0,
+    "humanClaimSupport": null,
+    "unsupportedMajorClaimRate": null,
+    "roleRubricCalibration": null,
+    "extractionThroughRenderingMs": {
+      "p50": 28,
+      "p95": 43
+    },
+    "syntheticCasesCompleted": {
+      "successes": 24,
+      "total": 24,
+      "rate": 1,
+      "interval95": [
+        0.8620237953250198,
+        1
+      ]
+    },
+    "peakRssMiB": 248,
+    "actualProviderCostUsd": 0,
+    "providerCalls": 0,
+    "modelQualityMeasured": false,
+    "configuredJobCostCapUsd": 0.1
+  },
+  "syntheticWorkload": {
+    "completion": {
+      "successes": 13,
+      "total": 13,
+      "rate": 1,
+      "interval95": [
+        0.7719046276458016,
+        0.9999999999999999
+      ]
+    },
+    "terminalWorkspacesRemaining": 0,
+    "invariants": {
+      "duplicateStartCreatedOneJob": true,
+      "savedReadsDuringProviderOutage": true,
+      "foreignReportReadsDenied": true
+    },
+    "actualProviderUsd": 0,
+    "limitations": [
+      "Local synthetic transports exclude provider/auth network latency and rate limits",
+      "A small workload is not a production completion/latency SLA",
+      "Stage intervals include database bookkeeping and adjacent stage work; downloading includes some authorization",
+      "Archive bytes are not a measured container-volume high-water mark",
+      "Cleanup observed at terminal polling; deployed supervision and outage behavior remain external gates"
+    ]
+  },
+  "visualReview": {
+    "inspected": [
+      "prd-v3-role-mobile.png",
+      "prd-v3-coverage-mobile.png",
+      "prd-v3-role-desktop.png"
+    ],
+    "mobileOverflow": false,
+    "roleAxeViolations": 0,
+    "desktopCaptureNote": "Fixed application chrome overlays part of the tall element capture; mobile standalone captures hide it for inspection. Interactive assertions and axe use the unmodified UI.",
+    "humanAssistiveTechnologyQualification": false
+  },
+  "knownHarnessWarning": "Existing MaxListenersExceededWarning messages remain in synthetic browser harness output; the checks pass. No persistent leak was established.",
+  "releaseDecision": {
+    "command": [
+      "npm",
+      "run",
+      "release:decision"
+    ],
+    "exitCode": 1,
+    "reason": "Benchmark predates current domain implementation",
+    "state": "HOLD"
+  },
+  "qualification": {
+    "codeGapsAddressed": true,
+    "calibratedReadiness": false,
+    "humanClaimReview": null,
+    "independentCalibration": null,
+    "liveProvidersVerified": false,
+    "deployed": false,
+    "remoteConfigurationChanged": false,
+    "historicalReleaseArtifactsOverwritten": false
+  }
+}

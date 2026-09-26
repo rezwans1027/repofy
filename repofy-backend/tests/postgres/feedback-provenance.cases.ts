@@ -6,6 +6,7 @@ import { jobsRpc } from './jobs.cases';
 import { rescanFixture } from '../helpers/rescan-fixture';
 import { FindingFeedbackService } from '../../src/domain/feedback/service';
 import { narrativeExecutionPolicy } from '../../src/domain/synthesis/composition';
+import { AggregationPolicyReferenceSchema, aggregationUsesProvenance } from '@repofy/contracts';
 import { emptyMetadata, providerDetail } from '../../src/domain/extraction/metadata';
 
 export function registerFeedbackProvenanceTests(db: pg.Client, config: pg.ClientConfig) {
@@ -78,14 +79,14 @@ export function registerFeedbackProvenanceTests(db: pg.Client, config: pg.Client
   });
   test('worker selects the supported frozen policy of a queued job across provenance rollout and rollback', async () => {
     const f = await rescanFixture(db, jobsRpc(db)), seen: string[] = [];
-    const worker = f.workerFor(claim => { seen.push(claim.policy.versions.aggregationPolicy.version); return narrativeExecutionPolicy(claim.policy.versions.aggregationPolicy.version === '1.1.0'); });
+    const worker = f.workerFor(claim => { seen.push(claim.policy.versions.aggregationPolicy.version); return narrativeExecutionPolicy(false, AggregationPolicyReferenceSchema.parse(claim.policy.versions.aggregationPolicy).version); });
     try {
-      for (const [version, sha] of [[false,'b'], [true,'c']] as const) {
-        f.commits.set(f.bindings[0].repositoryId, sha.repeat(40)); const queued = await f.service.start(f.actor, f.baseline.report.reportId, f.request(), narrativeExecutionPolicy(version), 5); if (queued.state !== 'queued') throw new Error();
+      for (const [version, sha] of [['1.0.0','b'], ['1.1.0','c'], ['2.0.0','d'], ['2.1.0','e'], ['3.0.0','f'], ['3.1.0','9']] as const) {
+        f.commits.set(f.bindings[0].repositoryId, sha.repeat(40)); const queued = await f.service.start(f.actor, f.baseline.report.reportId, f.request(), narrativeExecutionPolicy(false, version), 5); if (queued.state !== 'queued') throw new Error();
         await worker.once(); const job = await f.jobs.read(f.actor, queued.job.jobId); assert.equal(job.status, 'completed'); if (job.status !== 'completed') throw new Error();
-        const view = await f.reader.view(f.actor, job.report.reportId); assert.equal(view.report.versions.aggregationPolicy.version, version ? '1.1.0' : '1.0.0'); assert.equal(!!view.aggregation?.provenance, version);
+        const view = await f.reader.view(f.actor, job.report.reportId); assert.equal(view.report.versions.aggregationPolicy.version, version); assert.equal(!!view.aggregation?.provenance, aggregationUsesProvenance(version));
       }
-      assert.deepEqual(seen, ['1.0.0','1.1.0']);
+      assert.deepEqual(seen, ['1.0.0','1.1.0','2.0.0','2.1.0','3.0.0','3.1.0']);
     } finally { await f.cleanup(); }
   });
 }

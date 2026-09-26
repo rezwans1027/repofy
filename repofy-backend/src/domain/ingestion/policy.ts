@@ -48,7 +48,9 @@ export const ScanSummarySchema = z.strictObject({
   eligibleFiles: z.number().int().nonnegative().max(10000), textBytes: z.number().int().nonnegative().max(32 * MiB),
   totalLines: z.number().int().nonnegative().max(250000), decompressedBytes: z.number().int().nonnegative().max(512 * MiB),
   excluded: z.record(z.enum(EXCLUSION_REASONS), z.number().int().nonnegative().max(50000)),
+  nonSourceExcludedFiles: z.number().int().nonnegative().max(50000).optional(),
   scope: z.enum(["filtered", "all_text"]), semanticAnalysis: z.literal("not_performed"),
 }).refine(s => s.totalFiles === s.eligibleFiles + Object.values(s.excluded).reduce((a, b) => a + b, 0)
+  && (s.nonSourceExcludedFiles ?? 0) <= s.totalFiles - s.eligibleFiles
   && s.eligibleFiles <= s.archiveEntries && (s.scope === "all_text") === (s.totalFiles === s.eligibleFiles));
 export type ScanSummary = z.infer<typeof ScanSummarySchema>;

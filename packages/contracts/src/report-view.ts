@@ -4,6 +4,7 @@ import { ReadinessReportResponseSchema, CapabilityDefinitionSchema } from "./rea
 import { OwnerEvidenceSchema } from "./evidence";
 import { KeySchema, RoleIdSchema, ShortTextSchema, TimestampSchema, GitHubCommitShaSchema } from "./primitives";
 import { RoleAvailabilitySchema, roleAvailability } from "./role-availability";
+import { MetadataOptionsSchema } from "./api";
 
 export const ReportHistoryQuerySchema = z.strictObject({ afterReportId: z.uuid().optional(), limit: z.number().int().min(1).max(50).default(20) });
 export const ReportHistorySchema = z.strictObject({ items: z.array(z.strictObject({
@@ -18,6 +19,8 @@ export const ReportViewSchema = z.strictObject({
   report: ReadinessReportResponseSchema, aggregation: AggregationResultSchema.nullable(),
   // Older API responses may omit this projection; readers derive the same status.
   roleAvailability: z.array(RoleAvailabilitySchema).length(5).optional(),
+  // Original job choices, separate from immutable report content and captured availability.
+  metadataOptions: MetadataOptionsSchema.optional(),
   repositories: z.array(ReportRepositoryAccessSchema).min(1).max(10),
   categories: z.array(z.strictObject({ categoryId: KeySchema, label: ShortTextSchema })).max(30),
   capabilities: z.array(CapabilityDefinitionSchema).max(100),

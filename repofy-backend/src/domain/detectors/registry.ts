@@ -1,4 +1,5 @@
-import { IMPLEMENTATION_KINDS, type ImplementationKind } from "@repofy/contracts";
+import { IMPLEMENTATION_KINDS, LEGACY_IMPLEMENTATION_KINDS, isTestImplementation, type ImplementationKind } from "@repofy/contracts";
+import { roleDefinitions } from "./role-definitions";
 import { initialRubricCatalog } from "../rubrics/catalog";
 import { extractionProfile } from "../extraction/policy";
 
@@ -9,8 +10,8 @@ export const COMMON_LIMITATIONS = Object.freeze([
   "Confidence and strength are conservative uncalibrated policy values, not measured probabilities. Human precision review is pending.",
   "External package identity follows literal imports; installed versions, runtime patching, middleware order and deployment behavior are unverified.",
 ]);
-interface Definition { capabilities: readonly string[]; ecosystems: readonly string[]; required: string; observation: string; limitation: string; strength?: number }
-const definitions: Record<ImplementationKind, Definition> = {
+export interface Definition { capabilities: readonly string[]; ecosystems: readonly string[]; required: string; observation: string; limitation: string; strength?: number }
+const definitions: Record<typeof LEGACY_IMPLEMENTATION_KINDS[number], Definition> = {
   route_service: { capabilities: ["api_design", "architecture_modularity"], ecosystems: ["express"],
     required: "An Express factory-bound route callback directly calls an included local exported function.",
     observation: "An Express route callback calls a statically resolved local function boundary.", limitation: "Does not establish API stability, complete routing or separation of all responsibilities." },
@@ -60,24 +61,30 @@ const definitions: Record<ImplementationKind, Definition> = {
     required: "An awaited ai.generateObject call supplies a Zod object schema, explicit bounded maxRetries and native AbortSignal.timeout.",
     observation: "A structured model call supplies an output schema, an explicit retry ceiling and a timeout signal.", limitation: "SDK enforcement, model availability, output quality, context authorization and prompt-injection defenses are unverified." },
 };
-export const DETECTORS = Object.freeze(IMPLEMENTATION_KINDS.map(kind => Object.freeze({ kind, id: `tsjs.${kind}`, version: "1.0.6" as const,
-  capabilityIds: Object.freeze([...definitions[kind].capabilities]), ecosystems: Object.freeze([...definitions[kind].ecosystems]),
-  requiredObservations: definitions[kind].required, observation: definitions[kind].observation, limitation: definitions[kind].limitation,
+function registry(enhanced: boolean) {
+ const all: Record<ImplementationKind, Definition> = { ...definitions, ...roleDefinitions };
+ return Object.freeze((enhanced ? IMPLEMENTATION_KINDS : LEGACY_IMPLEMENTATION_KINDS).map(kind => Object.freeze({ kind, id: `tsjs.${kind}`, version: enhanced ? "2.0.0" as const : "1.0.6" as const,
+  capabilityIds: Object.freeze([...all[kind].capabilities]), ecosystems: Object.freeze([...all[kind].ecosystems]),
+  requiredObservations: all[kind].required, observation: all[kind].observation, limitation: all[kind].limitation,
   forbiddenOverclaims: Object.freeze(["Execution or passing tests from source alone", "System-wide security, correctness or concurrency safety", "Authorship, proficiency or employment suitability"]),
-  confidenceBasis: "resolved_static_pattern" as const, strength: definitions[kind].strength ?? 0.55, confidence: 0.55,
+  confidenceBasis: "resolved_static_pattern" as const, strength: all[kind].strength ?? 0.55, confidence: 0.55,
   fixtureExpectations: Object.freeze(["positive", "plausible_false_positive", "limitation", "mutation"]), budgets: DETECTOR_LIMITS,
-})));
-for (const detector of DETECTORS) for (const capability of detector.capabilityIds) {
-  if (!initialRubricCatalog.taxonomy.capabilities.some(c => c.capabilityId === capability && c.evidenceFamilies.includes(detector.kind === "asserted_call" ? "test" : "code"))) {
+}))); }
+export const DETECTORS = registry(false);
+export const ROLE_DETECTORS = registry(true);
+export const detectorDefinitions = (version: string) => version.split("-")[0] === "2.0.0" ? ROLE_DETECTORS : DETECTORS;
+for (const detector of ROLE_DETECTORS) for (const capability of detector.capabilityIds) {
+  if (!initialRubricCatalog.taxonomy.capabilities.some(c => c.capabilityId === capability && c.evidenceFamilies.includes(isTestImplementation(detector.kind) ? "test" : "code"))) {
     throw new Error("Invalid detector capability registry");
   }
 }
 export const CAPABILITY_COVERAGE = Object.freeze(initialRubricCatalog.taxonomy.capabilities.map(c => Object.freeze({ capabilityId: c.capabilityId,
   state: DETECTORS.some(d => d.capabilityIds.includes(c.capabilityId)) ? "partial" : "unsupported",
   detectors: Object.freeze(DETECTORS.filter(d => d.capabilityIds.includes(c.capabilityId)).map(d => d.id)) })));
-export function implementationProfile(disabled: readonly ImplementationKind[] = []) {
-  if (new Set(disabled).size !== disabled.length || disabled.some(id => !IMPLEMENTATION_KINDS.includes(id))) throw new Error("Invalid detector quarantine");
-  const quarantine = Object.freeze(IMPLEMENTATION_KINDS.filter(k => disabled.includes(k)));
-  return Object.freeze({ ...extractionProfile(), detectorBundle: { id: "tsjs_implementation", version: `1.0.6${disabled.length ? `-q${IMPLEMENTATION_KINDS.map(k => disabled.includes(k) ? 1 : 0).join("")}` : ""}` },
+export function implementationProfile(disabled: readonly ImplementationKind[] = [], enhanced = false) {
+  const kinds: readonly ImplementationKind[] = enhanced ? IMPLEMENTATION_KINDS : LEGACY_IMPLEMENTATION_KINDS;
+  if (new Set(disabled).size !== disabled.length || disabled.some(id => !kinds.includes(id))) throw new Error("Invalid detector quarantine");
+  const quarantine = Object.freeze(kinds.filter(k => disabled.includes(k)));
+  return Object.freeze({ ...extractionProfile(), detectorBundle: { id: "tsjs_implementation", version: `${enhanced ? "2.0.0" : "1.0.6"}${disabled.length ? `-q${kinds.map(k => disabled.includes(k) ? 1 : 0).join("")}` : ""}` },
     coverageManifest: "1.1.1", implementation: Object.freeze({ disabled: quarantine }) });
 }

@@ -1,0 +1,1482 @@
+{
+  "scope": "Read-only Feature 1 PRD review of the current working tree; synthetic checks do not qualify live services or human evaluation.",
+  "baseCommit": "3dd07620fc2412e6570beedb035d9a919a8df660",
+  "headCommit": "8596ac8b99583e4f9e1f67e228c56095a7eda0d0",
+  "localVerification": {
+    "startedAt": "2026-09-26T19:15:02.033Z",
+    "updatedAt": "2026-09-26T19:19:16.798Z",
+    "node": "v22.23.2",
+    "sourceSha256": "af3349ba7041aaeba5e6f3ff27de236e7a8eee27daa2115fc25efb98959b893c",
+    "sourceUnchanged": true,
+    "expectedChecks": [
+      "contracts_typecheck",
+      "contracts",
+      "backend_typecheck",
+      "release_typecheck",
+      "backend_tests",
+      "postgres",
+      "ingestion",
+      "worker",
+      "extraction",
+      "detectors",
+      "coverage",
+      "aggregation",
+      "rubrics",
+      "benchmark",
+      "load",
+      "frontend_lint",
+      "frontend_typecheck",
+      "frontend_tests",
+      "frontend_build",
+      "readiness_routes",
+      "selection_browser",
+      "report_browser"
+    ],
+    "checks": [
+      {
+        "id": "contracts_typecheck",
+        "command": "npm --prefix packages/contracts run typecheck",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:15:02.090Z",
+        "finishedAt": "2026-09-26T19:15:03.056Z",
+        "durationMs": 967
+      },
+      {
+        "id": "contracts",
+        "command": "npm --prefix packages/contracts test",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:15:03.099Z",
+        "finishedAt": "2026-09-26T19:15:04.405Z",
+        "durationMs": 1305
+      },
+      {
+        "id": "backend_typecheck",
+        "command": "npm --prefix repofy-backend run typecheck",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:15:04.448Z",
+        "finishedAt": "2026-09-26T19:15:07.116Z",
+        "durationMs": 2667
+      },
+      {
+        "id": "release_typecheck",
+        "command": "npm --prefix repofy-backend run release:typecheck",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:15:07.161Z",
+        "finishedAt": "2026-09-26T19:15:09.165Z",
+        "durationMs": 2004
+      },
+      {
+        "id": "backend_tests",
+        "command": "npm --prefix repofy-backend test -- --coverage --maxWorkers=1",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:15:09.212Z",
+        "finishedAt": "2026-09-26T19:16:08.375Z",
+        "durationMs": 59162
+      },
+      {
+        "id": "postgres",
+        "command": "npm --prefix repofy-backend run test:postgres",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:16:08.424Z",
+        "finishedAt": "2026-09-26T19:16:14.794Z",
+        "durationMs": 6370
+      },
+      {
+        "id": "ingestion",
+        "command": "npm --prefix repofy-backend run ingestion:verify",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:16:14.843Z",
+        "finishedAt": "2026-09-26T19:16:15.442Z",
+        "durationMs": 599
+      },
+      {
+        "id": "worker",
+        "command": "npm --prefix repofy-backend run worker:verify",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:16:15.487Z",
+        "finishedAt": "2026-09-26T19:16:18.984Z",
+        "durationMs": 3497
+      },
+      {
+        "id": "extraction",
+        "command": "npm --prefix repofy-backend run extraction:verify",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:16:19.031Z",
+        "finishedAt": "2026-09-26T19:16:22.115Z",
+        "durationMs": 3084
+      },
+      {
+        "id": "detectors",
+        "command": "npm --prefix repofy-backend run detectors:verify",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:16:22.161Z",
+        "finishedAt": "2026-09-26T19:16:25.450Z",
+        "durationMs": 3289
+      },
+      {
+        "id": "coverage",
+        "command": "npm --prefix repofy-backend run coverage:verify",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:16:25.494Z",
+        "finishedAt": "2026-09-26T19:16:28.579Z",
+        "durationMs": 3084
+      },
+      {
+        "id": "aggregation",
+        "command": "npm --prefix repofy-backend run aggregation:verify",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:16:28.623Z",
+        "finishedAt": "2026-09-26T19:16:34.127Z",
+        "durationMs": 5504
+      },
+      {
+        "id": "rubrics",
+        "command": "npm --prefix repofy-backend run rubrics:validate",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:16:34.174Z",
+        "finishedAt": "2026-09-26T19:16:34.338Z",
+        "durationMs": 164
+      },
+      {
+        "id": "benchmark",
+        "command": "npm --prefix repofy-backend run release:benchmark",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:16:34.383Z",
+        "finishedAt": "2026-09-26T19:16:35.600Z",
+        "durationMs": 1217
+      },
+      {
+        "id": "load",
+        "command": "npm --prefix repofy-backend run release:load",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:16:35.644Z",
+        "finishedAt": "2026-09-26T19:16:44.044Z",
+        "durationMs": 8400
+      },
+      {
+        "id": "frontend_lint",
+        "command": "npm --prefix repofy-frontend run lint",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:16:44.088Z",
+        "finishedAt": "2026-09-26T19:16:48.477Z",
+        "durationMs": 4389
+      },
+      {
+        "id": "frontend_typecheck",
+        "command": "npm --prefix repofy-frontend run typecheck",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:16:48.518Z",
+        "finishedAt": "2026-09-26T19:16:49.712Z",
+        "durationMs": 1194
+      },
+      {
+        "id": "frontend_tests",
+        "command": "npm --prefix repofy-frontend test -- --coverage --maxWorkers=1",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:16:49.756Z",
+        "finishedAt": "2026-09-26T19:17:41.339Z",
+        "durationMs": 51581
+      },
+      {
+        "id": "frontend_build",
+        "command": "npm --prefix repofy-frontend run build",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:17:41.385Z",
+        "finishedAt": "2026-09-26T19:17:48.178Z",
+        "durationMs": 6792
+      },
+      {
+        "id": "readiness_routes",
+        "command": "npm --prefix repofy-frontend run test:e2e:readiness",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:17:48.222Z",
+        "finishedAt": "2026-09-26T19:17:50.195Z",
+        "durationMs": 1973
+      },
+      {
+        "id": "selection_browser",
+        "command": "npm --prefix repofy-frontend run test:e2e:selection",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:17:50.239Z",
+        "finishedAt": "2026-09-26T19:18:03.261Z",
+        "durationMs": 13022
+      },
+      {
+        "id": "report_browser",
+        "command": "npm --prefix repofy-frontend run test:e2e:report",
+        "status": "passed",
+        "exitCode": 0,
+        "startedAt": "2026-09-26T19:18:03.305Z",
+        "finishedAt": "2026-09-26T19:19:16.752Z",
+        "durationMs": 73445
+      }
+    ],
+    "allPassed": true,
+    "scope": "Local synthetic CI parity; no live provider, hosted account, human assistive-technology or deployed infrastructure verification"
+  },
+  "testCounts": {
+    "contracts": 85,
+    "backend": 1536,
+    "postgres": 127,
+    "frontend": 591,
+    "readinessHttp": 8,
+    "selectionBrowser": 2,
+    "reportBrowser": 6
+  },
+  "coveragePercent": {
+    "backend": {
+      "lines": 90.98,
+      "branches": 86.07
+    },
+    "frontend": {
+      "lines": 84.53,
+      "branches": 76.03
+    }
+  },
+  "probe": {
+    "method": "For each variant call extractedAggregation({...rolePortfolio(), ...extraFiles}); set input.versions.aggregationPolicy.version to 2.0.0; call aggregateEvidence(input). Source is safely ingested/parsed, never executed.",
+    "variants": {
+      "baseline": {},
+      "empty_ignore": {
+        ".repofyignore": ""
+      },
+      "logo": {
+        "public/logo.png": "synthetic binary placeholder"
+      },
+      "safe_env_example": {
+        ".env.example": "PORT=3000"
+      }
+    },
+    "results": [
+      {
+        "variant": "baseline",
+        "excluded": 0,
+        "evidence": 16,
+        "validation": [],
+        "recovery": [
+          {
+            "strength": 0.65,
+            "confidence": 0.55,
+            "label": "moderate",
+            "reasons": [
+              "runtime_not_assessed",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "roles": [
+          {
+            "role": "ai_application",
+            "coverage": 0.065,
+            "requiredMet": 1,
+            "required": 6,
+            "unknownWeight": 0.64
+          },
+          {
+            "role": "backend",
+            "coverage": 0.104,
+            "requiredMet": 1,
+            "required": 6,
+            "unknownWeight": 0.42
+          },
+          {
+            "role": "frontend",
+            "coverage": 0.052,
+            "requiredMet": 0,
+            "required": 6,
+            "unknownWeight": 0.6
+          },
+          {
+            "role": "full_stack",
+            "coverage": 0.055,
+            "requiredMet": 1,
+            "required": 7,
+            "unknownWeight": 0.52
+          },
+          {
+            "role": "mobile",
+            "coverage": 0.052,
+            "requiredMet": 0,
+            "required": 6,
+            "unknownWeight": 0.82
+          }
+        ]
+      },
+      {
+        "variant": "empty_ignore",
+        "excluded": 1,
+        "evidence": 16,
+        "validation": [],
+        "recovery": [
+          {
+            "strength": 0.65,
+            "confidence": 0.55,
+            "label": "low",
+            "reasons": [
+              "runtime_not_assessed",
+              "security_exclusions",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "roles": [
+          {
+            "role": "ai_application",
+            "coverage": 0,
+            "requiredMet": 0,
+            "required": 6,
+            "unknownWeight": 0.64
+          },
+          {
+            "role": "backend",
+            "coverage": 0.0325,
+            "requiredMet": 0,
+            "required": 6,
+            "unknownWeight": 0.42
+          },
+          {
+            "role": "frontend",
+            "coverage": 0.052,
+            "requiredMet": 0,
+            "required": 6,
+            "unknownWeight": 0.6
+          },
+          {
+            "role": "full_stack",
+            "coverage": 0,
+            "requiredMet": 0,
+            "required": 7,
+            "unknownWeight": 0.52
+          },
+          {
+            "role": "mobile",
+            "coverage": 0.052,
+            "requiredMet": 0,
+            "required": 6,
+            "unknownWeight": 0.82
+          }
+        ]
+      },
+      {
+        "variant": "logo",
+        "excluded": 1,
+        "evidence": 16,
+        "validation": [],
+        "recovery": [
+          {
+            "strength": 0.65,
+            "confidence": 0.55,
+            "label": "low",
+            "reasons": [
+              "runtime_not_assessed",
+              "security_exclusions",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "roles": [
+          {
+            "role": "ai_application",
+            "coverage": 0,
+            "requiredMet": 0,
+            "required": 6,
+            "unknownWeight": 0.64
+          },
+          {
+            "role": "backend",
+            "coverage": 0.0325,
+            "requiredMet": 0,
+            "required": 6,
+            "unknownWeight": 0.42
+          },
+          {
+            "role": "frontend",
+            "coverage": 0.052,
+            "requiredMet": 0,
+            "required": 6,
+            "unknownWeight": 0.6
+          },
+          {
+            "role": "full_stack",
+            "coverage": 0,
+            "requiredMet": 0,
+            "required": 7,
+            "unknownWeight": 0.52
+          },
+          {
+            "role": "mobile",
+            "coverage": 0.052,
+            "requiredMet": 0,
+            "required": 6,
+            "unknownWeight": 0.82
+          }
+        ]
+      },
+      {
+        "variant": "safe_env_example",
+        "excluded": 1,
+        "evidence": 16,
+        "validation": [],
+        "recovery": [
+          {
+            "strength": 0.65,
+            "confidence": 0.55,
+            "label": "low",
+            "reasons": [
+              "runtime_not_assessed",
+              "security_exclusions",
+              "uncalibrated",
+              "unsupported_depth",
+              "unsupported_version"
+            ]
+          }
+        ],
+        "roles": [
+          {
+            "role": "ai_application",
+            "coverage": 0,
+            "requiredMet": 0,
+            "required": 6,
+            "unknownWeight": 0.64
+          },
+          {
+            "role": "backend",
+            "coverage": 0.0325,
+            "requiredMet": 0,
+            "required": 6,
+            "unknownWeight": 0.42
+          },
+          {
+            "role": "frontend",
+            "coverage": 0.052,
+            "requiredMet": 0,
+            "required": 6,
+            "unknownWeight": 0.6
+          },
+          {
+            "role": "full_stack",
+            "coverage": 0,
+            "requiredMet": 0,
+            "required": 7,
+            "unknownWeight": 0.52
+          },
+          {
+            "role": "mobile",
+            "coverage": 0.052,
+            "requiredMet": 0,
+            "required": 6,
+            "unknownWeight": 0.82
+          }
+        ]
+      }
+    ],
+    "requiredRequirementOptimisticStrengthBounds": [
+      {
+        "role": "backend",
+        "requirements": [
+          {
+            "id": "api_design",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "api_design",
+                "detectors": [
+                  "route_service",
+                  "structured_error"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "api_boundary_validation",
+                "detectors": [
+                  "request_validation",
+                  "authentication_guard"
+                ],
+                "optimisticStrength": 0.65
+              }
+            ]
+          },
+          {
+            "id": "data_modeling",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "data_modeling",
+                "detectors": [
+                  "schema_constraint"
+                ],
+                "optimisticStrength": 0.55
+              },
+              {
+                "id": "data_transactions",
+                "detectors": [
+                  "transaction"
+                ],
+                "optimisticStrength": 0.65
+              }
+            ]
+          },
+          {
+            "id": "reliability_recovery",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "reliability_recovery",
+                "detectors": [
+                  "bounded_retry",
+                  "failure_cleanup"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "reliability_concurrency",
+                "detectors": [
+                  "state_guard"
+                ],
+                "optimisticStrength": 0.55
+              }
+            ]
+          },
+          {
+            "id": "testing_behavior",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "testing_behavior",
+                "detectors": [
+                  "asserted_call"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "testing_failures",
+                "detectors": [],
+                "optimisticStrength": 0
+              }
+            ]
+          },
+          {
+            "id": "security_authorization",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "security_authorization",
+                "detectors": [
+                  "ownership_guard"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "security_input_handling",
+                "detectors": [
+                  "request_validation",
+                  "form_validation",
+                  "parameterized_query"
+                ],
+                "optimisticStrength": 0.65
+              }
+            ]
+          },
+          {
+            "id": "architecture_modularity",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "architecture_modularity",
+                "detectors": [
+                  "route_service"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "architecture_boundaries",
+                "detectors": [],
+                "optimisticStrength": 0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "role": "frontend",
+        "requirements": [
+          {
+            "id": "frontend_interaction",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "frontend_interaction",
+                "detectors": [
+                  "form_validation",
+                  "request_state"
+                ],
+                "optimisticStrength": 0.65
+              }
+            ]
+          },
+          {
+            "id": "frontend_state",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "frontend_state",
+                "detectors": [],
+                "optimisticStrength": 0
+              }
+            ]
+          },
+          {
+            "id": "frontend_accessibility",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "frontend_accessibility",
+                "detectors": [
+                  "accessible_action"
+                ],
+                "optimisticStrength": 0.5
+              }
+            ]
+          },
+          {
+            "id": "testing_behavior",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "testing_behavior",
+                "detectors": [
+                  "asserted_call"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "testing_failures",
+                "detectors": [],
+                "optimisticStrength": 0
+              }
+            ]
+          },
+          {
+            "id": "architecture_modularity",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "architecture_modularity",
+                "detectors": [
+                  "route_service"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "architecture_boundaries",
+                "detectors": [],
+                "optimisticStrength": 0
+              }
+            ]
+          },
+          {
+            "id": "security_input_handling",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "security_input_handling",
+                "detectors": [
+                  "request_validation",
+                  "form_validation",
+                  "parameterized_query"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "security_secrets",
+                "detectors": [],
+                "optimisticStrength": 0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "role": "full_stack",
+        "requirements": [
+          {
+            "id": "frontend_interaction",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "frontend_interaction",
+                "detectors": [
+                  "form_validation",
+                  "request_state"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "frontend_state",
+                "detectors": [],
+                "optimisticStrength": 0
+              }
+            ]
+          },
+          {
+            "id": "api_design",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "api_design",
+                "detectors": [
+                  "route_service",
+                  "structured_error"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "api_boundary_validation",
+                "detectors": [
+                  "request_validation",
+                  "authentication_guard"
+                ],
+                "optimisticStrength": 0.65
+              }
+            ]
+          },
+          {
+            "id": "data_modeling",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "data_modeling",
+                "detectors": [
+                  "schema_constraint"
+                ],
+                "optimisticStrength": 0.55
+              },
+              {
+                "id": "data_transactions",
+                "detectors": [
+                  "transaction"
+                ],
+                "optimisticStrength": 0.65
+              }
+            ]
+          },
+          {
+            "id": "architecture_boundaries",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "architecture_boundaries",
+                "detectors": [],
+                "optimisticStrength": 0
+              },
+              {
+                "id": "architecture_modularity",
+                "detectors": [
+                  "route_service"
+                ],
+                "optimisticStrength": 0.65
+              }
+            ]
+          },
+          {
+            "id": "testing_behavior",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "testing_behavior",
+                "detectors": [
+                  "asserted_call"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "testing_failures",
+                "detectors": [],
+                "optimisticStrength": 0
+              }
+            ]
+          },
+          {
+            "id": "security_authorization",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "security_authorization",
+                "detectors": [
+                  "ownership_guard"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "security_input_handling",
+                "detectors": [
+                  "request_validation",
+                  "form_validation",
+                  "parameterized_query"
+                ],
+                "optimisticStrength": 0.65
+              }
+            ]
+          },
+          {
+            "id": "reliability_recovery",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "reliability_recovery",
+                "detectors": [
+                  "bounded_retry",
+                  "failure_cleanup"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "reliability_concurrency",
+                "detectors": [
+                  "state_guard"
+                ],
+                "optimisticStrength": 0.55
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "role": "mobile",
+        "requirements": [
+          {
+            "id": "mobile_lifecycle",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "mobile_lifecycle",
+                "detectors": [],
+                "optimisticStrength": 0
+              }
+            ]
+          },
+          {
+            "id": "mobile_navigation",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "mobile_navigation",
+                "detectors": [],
+                "optimisticStrength": 0
+              }
+            ]
+          },
+          {
+            "id": "mobile_offline",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "mobile_offline",
+                "detectors": [],
+                "optimisticStrength": 0
+              },
+              {
+                "id": "reliability_recovery",
+                "detectors": [
+                  "bounded_retry",
+                  "failure_cleanup"
+                ],
+                "optimisticStrength": 0.65
+              }
+            ]
+          },
+          {
+            "id": "frontend_interaction",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "frontend_interaction",
+                "detectors": [
+                  "form_validation",
+                  "request_state"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "frontend_accessibility",
+                "detectors": [
+                  "accessible_action"
+                ],
+                "optimisticStrength": 0.5
+              }
+            ]
+          },
+          {
+            "id": "testing_behavior",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "testing_behavior",
+                "detectors": [
+                  "asserted_call"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "testing_failures",
+                "detectors": [],
+                "optimisticStrength": 0
+              }
+            ]
+          },
+          {
+            "id": "security_authorization",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "security_authorization",
+                "detectors": [
+                  "ownership_guard"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "security_secrets",
+                "detectors": [],
+                "optimisticStrength": 0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "role": "ai_application",
+        "requirements": [
+          {
+            "id": "ai_integration",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "ai_integration",
+                "detectors": [
+                  "bounded_model_output"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "api_boundary_validation",
+                "detectors": [
+                  "request_validation",
+                  "authentication_guard"
+                ],
+                "optimisticStrength": 0.65
+              }
+            ]
+          },
+          {
+            "id": "ai_context",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "ai_context",
+                "detectors": [],
+                "optimisticStrength": 0
+              }
+            ]
+          },
+          {
+            "id": "ai_evaluation",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "ai_evaluation",
+                "detectors": [],
+                "optimisticStrength": 0
+              }
+            ]
+          },
+          {
+            "id": "ai_safety",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "ai_safety",
+                "detectors": [],
+                "optimisticStrength": 0
+              },
+              {
+                "id": "security_secrets",
+                "detectors": [],
+                "optimisticStrength": 0
+              }
+            ]
+          },
+          {
+            "id": "reliability_recovery",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "reliability_recovery",
+                "detectors": [
+                  "bounded_retry",
+                  "failure_cleanup"
+                ],
+                "optimisticStrength": 0.65
+              }
+            ]
+          },
+          {
+            "id": "testing_behavior",
+            "minimum": 0.55,
+            "minimumCorroboration": 1,
+            "capabilities": [
+              {
+                "id": "testing_behavior",
+                "detectors": [
+                  "asserted_call"
+                ],
+                "optimisticStrength": 0.65
+              },
+              {
+                "id": "testing_failures",
+                "detectors": [],
+                "optimisticStrength": 0
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "upperBoundCaveat": "Detector maximum plus 0.1 is an optimistic bound, not a claim that corroboration is attainable. Zero means no implementation detector mapping, not a zero-skill assessment."
+  },
+  "benchmarkMetrics": {
+    "knownDetectorObservations": {
+      "tp": 24,
+      "fp": 0,
+      "fn": 1,
+      "missing": [
+        {
+          "detector": "tsjs.route_service",
+          "path": "workspace_layers/packages/api/endpoint.ts"
+        }
+      ],
+      "unexpected": [],
+      "precision": 1,
+      "recall": 0.96
+    },
+    "byDetector": [
+      {
+        "detector": "tsjs.route_service",
+        "tp": 4,
+        "fp": 0,
+        "fn": 1,
+        "missing": [
+          {
+            "detector": "tsjs.route_service",
+            "path": "workspace_layers/packages/api/endpoint.ts"
+          }
+        ],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 0.8
+      },
+      {
+        "detector": "tsjs.request_validation",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.authentication_guard",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.ownership_guard",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.structured_error",
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.form_validation",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.request_state",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.accessible_action",
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.parameterized_query",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.transaction",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.schema_constraint",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.bounded_retry",
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.state_guard",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.failure_cleanup",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.asserted_call",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "detector": "tsjs.bounded_model_output",
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "missing": [],
+        "unexpected": [],
+        "precision": 1,
+        "recall": 1
+      }
+    ],
+    "validReferences": {
+      "successes": 127,
+      "total": 127,
+      "rate": 1,
+      "interval95": [
+        0.9706403547062367,
+        1
+      ]
+    },
+    "validMajorClaimReferences": {
+      "successes": 58,
+      "total": 58,
+      "rate": 1,
+      "interval95": [
+        0.9378821442127971,
+        1
+      ]
+    },
+    "privateDisclosureFailures": 0,
+    "contributionConfidenceErrors": 0,
+    "humanClaimSupport": null,
+    "unsupportedMajorClaimRate": null,
+    "roleRubricCalibration": null,
+    "extractionThroughRenderingMs": {
+      "p50": 28,
+      "p95": 38
+    },
+    "syntheticCasesCompleted": {
+      "successes": 24,
+      "total": 24,
+      "rate": 1,
+      "interval95": [
+        0.8620237953250198,
+        1
+      ]
+    },
+    "peakRssMiB": 249,
+    "actualProviderCostUsd": 0,
+    "providerCalls": 0,
+    "modelQualityMeasured": false,
+    "configuredJobCostCapUsd": 0.1
+  },
+  "syntheticWorkload": {
+    "completion": {
+      "successes": 13,
+      "total": 13,
+      "rate": 1,
+      "interval95": [
+        0.7719046276458016,
+        0.9999999999999999
+      ]
+    },
+    "latencyMs": {
+      "queue": {
+        "samples": 13,
+        "p50": 70,
+        "p95": 225,
+        "max": 225
+      },
+      "processing": {
+        "samples": 13,
+        "p50": 88,
+        "p95": 1900,
+        "max": 1900
+      },
+      "endToEnd": {
+        "samples": 13,
+        "p50": 163,
+        "p95": 1970,
+        "max": 1970
+      },
+      "api": {
+        "save_selection": {
+          "samples": 1,
+          "p50": 23.35,
+          "p95": 23.35,
+          "max": 23.35
+        },
+        "start": {
+          "samples": 15,
+          "p50": 7.18,
+          "p95": 15.86,
+          "max": 15.86
+        },
+        "job_read": {
+          "samples": 115,
+          "p50": 6.2,
+          "p95": 19.65,
+          "max": 143.17
+        },
+        "report_view": {
+          "samples": 60,
+          "p50": 13.53,
+          "p95": 15.1,
+          "max": 16.05
+        },
+        "history": {
+          "samples": 50,
+          "p50": 7.07,
+          "p95": 7.42,
+          "max": 7.93
+        },
+        "evidence": {
+          "samples": 50,
+          "p50": 6.58,
+          "p95": 7.75,
+          "max": 8.18
+        },
+        "foreign_denial": {
+          "samples": 2,
+          "p50": 5.17,
+          "p95": 5.51,
+          "max": 5.51
+        }
+      },
+      "stages": {
+        "downloading": {
+          "samples": 18,
+          "p50": 1,
+          "p95": 62,
+          "max": 62
+        },
+        "inventorying": {
+          "samples": 18,
+          "p50": 4,
+          "p95": 633,
+          "max": 633
+        },
+        "extracting": {
+          "samples": 17,
+          "p50": 15,
+          "p95": 1028,
+          "max": 1028
+        },
+        "aggregating": {
+          "samples": 13,
+          "p50": 25,
+          "p95": 142,
+          "max": 142
+        },
+        "synthesizing": {
+          "samples": 13,
+          "p50": 17,
+          "p95": 30,
+          "max": 30
+        },
+        "validating": {
+          "samples": 13,
+          "p50": 14,
+          "p95": 28,
+          "max": 28
+        }
+      }
+    },
+    "cleanup": {
+      "terminalWorkspacesRemaining": 0,
+      "emptyWorkspaceChecks": 13,
+      "terminalToEmptyCheckMs": {
+        "samples": 13,
+        "p50": 35,
+        "p95": 42,
+        "max": 42
+      },
+      "jobPollIntervalMs": 30,
+      "productionSweeperVerified": false
+    }
+  },
+  "releaseDecision": {
+    "command": "npm run release:decision",
+    "exitCode": 1,
+    "reason": "Benchmark predates current domain implementation",
+    "historicalArtifactsPreserved": true
+  },
+  "productionDependencyAudits": {
+    "command": "npm audit --omit=dev --json",
+    "backendReportedVulnerabilities": 0,
+    "frontendReportedVulnerabilities": 0
+  },
+  "readOnlyGitHubQueries": {
+    "branch": "feature/project-evidence-readiness",
+    "pullRequests": [],
+    "workflowRuns": [],
+    "mainClassicRequiredStatusChecks": {
+      "httpStatus": 404,
+      "message": "Branch not protected"
+    },
+    "mainEffectiveBranchRules": []
+  },
+  "limitations": [
+    "No live GitHub App installation smoke",
+    "No live or paid model call",
+    "No hosted account regression",
+    "No deployed capacity or operations test",
+    "No new human calibration or screen-reader qualification",
+    "Fresh local verification does not refresh historical human approvals"
+  ]
+}

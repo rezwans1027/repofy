@@ -35,7 +35,11 @@ import { IngestionRepository } from '../../src/domain/ingestion/repository';
 import { SnapshotIngestionService } from '../../src/domain/ingestion/service';
 import { WorkspaceManager } from '../../src/domain/ingestion/workspace';
 import { aggregationFiles } from '../helpers/aggregation-fixtures';
+import { implementedRolePortfolio } from '../helpers/role-coverage-v3';
 import { archiveFixture } from '../helpers/ingestion-fixtures';
+import { AuthorizedMetadataSource, GitHubMetadataClient } from '../../src/domain/github-app/metadata-client';
+import { metadataTransport } from '../helpers/metadata-transport';
+import { AggregationPolicyReferenceSchema } from '@repofy/contracts';
 // @ts-expect-error Operational ESM migration module.
 import { migrate } from '../../scripts/db/migrations.mjs';
 
@@ -97,7 +101,8 @@ async function main() {
     sessions.set(`header.${Buffer.from(JSON.stringify({ sub: actor, session_id: session })).toString('base64url')}.fixture`, actor);
   }
   let modelCalls = 0, enabled = true, paused = false, busy = false, stopping = false, downloads = 0, provenance = false, feedback = false;
-  let modelUnavailable = false, peakArchiveBytes = 0;
+  let modelUnavailable = false, metadataUnavailable = false, peakArchiveBytes = 0;
+  const metadata = metadataTransport(() => metadataUnavailable);
   let heldClaim: Claim | null = null;
   const root = await mkdtemp(join(tmpdir(), 'repofy-run13-e2e-')); const policy = () => narrativeExecutionPolicy(provenance);
   const branchHeads = new Map<string,string>(), archives = new Map<string,Record<string,string>>();
@@ -118,7 +123,8 @@ async function main() {
     return Response.json({ status: 'completed', model: MODEL.version, usage: { input_tokens: 1000, output_tokens: 1000 },
       output: [{ type: 'message', role: 'assistant', status: 'completed', content: [{ type: 'output_text', text: JSON.stringify(selectNarrative(input)) }] }] });
   }));
-  const worker = new AnalysisWorker(jobs, claim => ({ policy: narrativeExecutionPolicy(claim.policy.versions.aggregationPolicy.version === '1.1.0'), extract: createCoverageExtraction(crypto).extract,
+  const worker = new AnalysisWorker(jobs, claim => ({ policy: narrativeExecutionPolicy(false, AggregationPolicyReferenceSchema.parse(claim.policy.versions.aggregationPolicy).version),
+    extract: createCoverageExtraction(crypto, new AuthorizedMetadataSource(github, new GitHubMetadataClient(metadata.fetcher))).extract,
     aggregate: createAggregation(jobs, new ProvenanceService(jobs, github)).aggregate,
     synthesize: c => narrative.synthesize(c), validate: (report, c) => narrative.validate(report, c) }),
     c => new SnapshotIngestionService(new IngestionRepository(jobs.ingestionClient(c), crypto), source, crypto, new WorkspaceManager(root), c.policy.security), () => crypto);
@@ -131,6 +137,12 @@ async function main() {
     if (typeof req.body.enabled === 'boolean') enabled = req.body.enabled; if (typeof req.body.paused === 'boolean') paused = req.body.paused;
     if (typeof req.body.provenance === 'boolean') { provenance = req.body.provenance; Object.assign(provider.repositories.get('301')!, { fork: true, template_repository: { id: '900' } }); }
     if (typeof req.body.feedback === 'boolean') feedback = req.body.feedback; res.json({ enabled, paused });
+  });
+  app.post('/__test/metadata', (req, res) => {
+    metadataUnavailable = req.body.limited === true;
+    provider.installations.get('500')!.permissions = { contents: 'read', metadata: 'read', checks: 'read', statuses: 'read', actions: 'read',
+      ...(metadataUnavailable ? {} : { pull_requests: 'read' }) };
+    res.json({ limited: metadataUnavailable });
   });
   app.post('/__test/outage', (req, res) => {
     provider.failure = req.body.github === true ? new GitHubAppError('provider_unavailable') : undefined;
@@ -148,6 +160,13 @@ async function main() {
     const sha = createHash('sha1').update(`run16:${req.body.scenarioId}:${req.body.repositoryId}`).digest('hex');
     archives.set(sha, files); exactArchives.add(sha); branchHeads.set(req.body.repositoryId, sha); res.json({ fileCount: Object.keys(files).length });
   });
+  app.post('/__test/role-portfolio', (req,res) => {
+    if(typeof req.body.repositoryId!=='string' || !['implemented','assets'].includes(req.body.variant)) {res.sendStatus(400);return;}
+    const files=implementedRolePortfolio();
+    if(req.body.variant==='assets') Object.assign(files,{'.repofyignore':'','public/logo.png':'','.env.example':'PORT=3000'});
+    const sha=createHash('sha1').update(`role-v3:${req.body.variant}`).digest('hex');
+    archives.set(sha,files);exactArchives.add(sha);branchHeads.set(req.body.repositoryId,sha);res.json({commitSha:sha});
+  });
   app.get('/__test/metrics', async (_req, res) => res.json({ peakArchiveBytes, peakRssMiB: Math.ceil(process.resourceUsage().maxRSS / 1024),
     stageMarks: [...stageMarks].map(([jobId, marks]) => ({ jobId, marks })),
     model: (await db.query('SELECT count(*)::int calls, coalesce(sum(input_tokens),0)::int input_tokens, coalesce(sum(output_tokens),0)::int output_tokens, coalesce(sum(estimated_cost),0)::float8 estimated_cost FROM model_runs')).rows[0],
@@ -162,7 +181,7 @@ async function main() {
   });
   app.post('/__test/claim', async (_req, res) => { heldClaim = await jobs.claim(); res.json({ jobId: heldClaim?.jobId }); });
   app.post('/__test/stale-heartbeat', async (_req, res) => { try { if (!heldClaim) throw new Error(); await jobs.heartbeat(heldClaim); res.json({ blocked: false }); } catch { res.json({ blocked: true }); } });
-  app.get('/__test/state', async (_req, res) => res.json({ modelCalls, downloads, workspaceFiles: (await readdir(root)).length,
+  app.get('/__test/state', async (_req, res) => res.json({ modelCalls, downloads, metadataCalls: metadata.calls, workspaceFiles: (await readdir(root)).length,
     jobs: (await db.query('SELECT id,status FROM analysis_jobs ORDER BY created_at')).rows,
     events: (await db.query("SELECT action,safe_metadata FROM audit_events WHERE action IN ('improvement_opened','evidence_opened','report_viewed','rescan_started','rescan_completed','comparison_viewed')")).rows }));
   app.post('/__test/revoke', async (req, res) => { await new EvidenceRepository(rpc).revokeGrant(actor1, req.body.grantId, randomUUID()); res.json({ revoked: true }); });

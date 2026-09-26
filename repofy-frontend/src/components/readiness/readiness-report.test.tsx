@@ -9,6 +9,7 @@ import { ReadinessReport } from './readiness-report';
 import { ReadinessHistory } from './report-history';
 import { EvidenceCard } from './evidence-explorer';
 import { DeleteAnalysis } from './report-shared';
+import { RoleViews } from './report-assessments';
 vi.mock('@/components/providers/auth-provider', () => ({ useAuth: vi.fn() }));
 let view: ReturnType<typeof readinessView>, client: QueryClient;
 let response: unknown, status: number;
@@ -47,6 +48,17 @@ it('opens a positive claim in its own report, focuses evidence and returns to th
   await userEvent.selectOptions(screen.getByLabelText('Role', { exact: true }), 'backend'); await userEvent.selectOptions(screen.getByLabelText('Role requirement'), 'testing');
   await waitFor(() => expect(fetch).toHaveBeenCalledWith(expect.stringContaining('requirementId=testing'), expect.anything()));
   await userEvent.click(screen.getByRole('button', { name: 'Close evidence and return' })); expect(button).toHaveFocus();
+});
+it('labels registered bounded role values as provisional and preserves unknown requirement weight', () => {
+  Object.assign(view.report.versions, { aggregationPolicy: { id: 'evidence_aggregation', version: '2.0.0' }, detectorBundle: { id: 'tsjs_implementation', version: '1.0.6' },
+    extractorBundle: { id: 'language_inventory', version: '1.0.1' }, coverageManifest: '1.2.1' });
+  delete view.roleAvailability;
+  render(<RoleViews view={view} openEvidence={vi.fn()} />);
+  expect(screen.getByText('Provisional role evidence coverage')).toBeVisible();
+  expect(screen.getByText('3.25%', { selector: 'dd' })).toBeVisible();
+  expect(screen.getByText(/Independent calibration is pending/)).toBeVisible();
+  expect(screen.getByText('95%')).toBeVisible();
+  expect(screen.getAllByText('Unknown', { selector: 'dd' })).toHaveLength(4);
 });
 it('expands future improvements without generating text and sends only a closed event', async () => {
   render(wrap(<ReadinessReport reportId={view.report.reportId} />)); await screen.findByRole('heading', { name: 'Your project evidence' });

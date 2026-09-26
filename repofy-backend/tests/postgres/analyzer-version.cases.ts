@@ -27,7 +27,7 @@ function legacy(bundle: any, declaration: unknown, version: '1.0.0' | '1.0.1' | 
 export function registerAnalyzerVersionTests(db: pg.Client) {
   test('analyzer corrections append immutable definitions and preserve every legacy coverage declaration', async () => {
     const detectors = await db.query('SELECT bundle_version,count(*)::int n FROM feature_one_private.implementation_detectors GROUP BY bundle_version ORDER BY bundle_version');
-    assert.deepEqual(detectors.rows, [{ bundle_version: '1.0.0', n: 16 }, { bundle_version: '1.0.1', n: 16 }, { bundle_version: '1.0.2', n: 16 }, { bundle_version: '1.0.3', n: 16 }, { bundle_version: '1.0.4', n: 16 }, { bundle_version: '1.0.5', n: 16 }, { bundle_version: '1.0.6', n: 16 }]);
+    assert.deepEqual(detectors.rows, [{ bundle_version: '1.0.0', n: 16 }, { bundle_version: '1.0.1', n: 16 }, { bundle_version: '1.0.2', n: 16 }, { bundle_version: '1.0.3', n: 16 }, { bundle_version: '1.0.4', n: 16 }, { bundle_version: '1.0.5', n: 16 }, { bundle_version: '1.0.6', n: 16 }, { bundle_version: '2.0.0', n: 34 }]);
     const manifests = await db.query("SELECT old.declaration AS old, corrected.declaration AS corrected FROM feature_one_private.analyzer_coverage_manifests old JOIN feature_one_private.analyzer_coverage_manifests corrected ON corrected.version='1.2.1'||substring(old.version from 6) WHERE split_part(old.version,'-',1)='1.2.0'");
     assert.equal(manifests.rowCount, 8);
     for (const row of manifests.rows) assert.deepEqual(row.corrected, { ...row.old, version: row.old.version.replace('1.2.0', '1.2.1') });

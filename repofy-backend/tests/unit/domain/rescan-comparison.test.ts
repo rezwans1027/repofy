@@ -22,9 +22,9 @@ it('withholds role deltas under an unattainable confidence policy while retainin
       assessedRequirementIds: ['testing'], unknownRequirementIds: [], limitations: [] };
   }
   const before = structuredClone(input), diff = compare();
-  expect(diff.algorithm).toBe('evidence-diff-1.0.3');
+  expect(diff.algorithm).toBe('evidence-diff-1.0.4');
   expect(diff.roles.every(r => r.baseline === null && r.target === null && r.coverageDelta === null && r.confidenceDelta === null)).toBe(true);
-  expect(diff.notes.join(' ')).toContain('Role readiness is unavailable');
+  expect(diff.notes.join(' ')).toContain('Some role assessments are unavailable');
   expect(input).toEqual(before);
 });
 it('does not count pure prose, source-line offsets or snapshot symbol IDs as an improvement', () => {

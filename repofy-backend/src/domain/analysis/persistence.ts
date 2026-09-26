@@ -3,12 +3,12 @@ import {
   AccessGrantIdSchema, AnalysisJobIdSchema, AnalysisRunIdSchema, AnalyzerCoverageSchema, AttestationIdSchema,
   CountSchema, GitHubProviderIdSchema, InventorySummarySchema, KeySchema, LocatorIdSchema, ReadinessReportResponseSchema, Sha256Schema,
   ReportIdSchema, RepositorySnapshotSchema, SnapshotIdSchema, TimestampSchema, UserIdSchema, VersionDependenciesSchema, VersionSchema,
-  FileCoverageOutcomeSchema,
+  FileCoverageOutcomeSchema, isTestImplementation,
 } from "@repofy/contracts";
 import { InternalEvidenceObservationSchema, InternalLocatorSchema } from "@repofy/contracts/internal";
 import { canonicalAnalysisRequest } from "./request";
 import type { LocatorCrypto } from "../evidence/locator-crypto";
-import { DETECTORS, implementationProfile } from "../detectors/registry";
+import { detectorDefinitions, implementationProfile } from "../detectors/registry";
 import { coverageProfile } from "../coverage/manifest";
 import { achievedCoverage } from "../coverage/achieved";
 import { extractionProfile, structuralDetectorVersion } from "../extraction/policy";
@@ -59,14 +59,17 @@ export const SnapshotBundleSchema = z.strictObject({
     || coverage.structural.sources.reduce((sum, item) => sum + item.analyzedFiles, 0) !== inventory.analyzedFiles)) fail();
   for (const file of bundle.files) if (file.structure?.projectLocatorId && !filesById.has(file.structure.projectLocatorId)) fail();
   const implementation = coverage.implementation;
+  const enhanced = versions.detectorBundle.version.startsWith("2.0.0");
+  const definitions = detectorDefinitions(versions.detectorBundle.version);
   if (implementation) {
-    const expected = coverage.assessment ? coverageProfile(coverage.assessment.declaration.disabledParsers, implementation.disabledDetectors) : implementationProfile(implementation.disabledDetectors);
+    const expected = coverage.assessment ? coverageProfile(coverage.assessment.declaration.disabledParsers, implementation.disabledDetectors, enhanced) : implementationProfile(implementation.disabledDetectors, enhanced);
     if (!inventory.structural || versions.taxonomy.id !== "engineering_capabilities" || versions.taxonomy.version !== "1.0.0"
       || JSON.stringify(implementation.bundle) !== JSON.stringify(expected.detectorBundle)
       || JSON.stringify(versions.detectorBundle) !== JSON.stringify(expected.detectorBundle) || versions.coverageManifest !== expected.coverageManifest
       || implementation.eligibleFiles !== bundle.files.filter(f => f.eligible && ["code", "test"].includes(f.classification) && ["typescript", "javascript"].includes(f.language)).length) fail();
     for (const row of implementation.detectors) {
-      const definition = DETECTORS.find(d => d.kind === row.kind)!;
+      const definition = definitions.find(d => d.kind === row.kind);
+      if (!definition) { fail(); continue; }
       if (row.version !== definition.version || JSON.stringify(row.capabilityIds) !== JSON.stringify(definition.capabilityIds)
         || row.observations !== bundle.evidence.filter(e => e.implementation?.kind === row.kind).length) fail();
     }
@@ -74,7 +77,7 @@ export const SnapshotBundleSchema = z.strictObject({
   if (coverage.assessment) {
     if (!coverage.structural || !implementation || bundle.files.some(f => !f.structure?.coverage)) fail();
     else {
-      const profile = coverageProfile(coverage.assessment.declaration.disabledParsers, implementation.disabledDetectors);
+      const profile = coverageProfile(coverage.assessment.declaration.disabledParsers, implementation.disabledDetectors, enhanced);
       if (JSON.stringify(versions.extractorBundle) !== JSON.stringify(profile.extractorBundle) || versions.coverageManifest !== profile.coverageManifest
         || JSON.stringify(coverage.assessment) !== JSON.stringify(achievedCoverage(bundle, profile))) fail();
       const states = { analyzedFiles: "analyzed", parseFailures: "parse_failure", limitedFiles: "limited", unsupportedFiles: "unsupported", generatedFiles: "generated" } as const;
@@ -98,7 +101,8 @@ export const SnapshotBundleSchema = z.strictObject({
     if (item.structural?.provider && (item.locator.kind !== "provider_metadata" || item.structural.provider.relationship !== item.locator.commitRelationship
       || (item.structural.provider.relationship === "exact_commit" && item.structural.provider.subjectSha !== snapshot.commitSha))) fail();
     if (item.implementation) {
-      const detail = item.implementation; const definition = DETECTORS.find(d => d.kind === detail.kind)!;
+      const detail = item.implementation; const definition = definitions.find(d => d.kind === detail.kind);
+      if (!definition) { fail(); continue; }
       const file = item.locator.kind === "file" && filesByPath.get(item.locator.path);
       const mocked = detail.testBoundary === "mocked_or_intercepted";
       if (!implementation || implementation.disabledDetectors.includes(detail.kind) || !file || !file.structure || !["typescript", "javascript"].includes(file.language)
@@ -108,10 +112,10 @@ export const SnapshotBundleSchema = z.strictObject({
       for (const relation of detail.relations) {
         const target = filesById.get(relation.fileId);
         if (!target?.analyzed || !target.structure || target.classification !== "code" || relation.lines.end > target.structure.lines
-          || (detail.kind === "asserted_call" ? relation.relationship !== "asserted_call" || relation.independence !== (mocked ? "mocked_test" : "separate_test")
+          || (isTestImplementation(detail.kind) ? relation.relationship !== "asserted_call" || relation.independence !== (mocked ? "mocked_test" : "separate_test")
             || relation.fileId === (file && file.locatorId) : relation.relationship !== "local_call" || relation.independence !== "same_source")) fail();
       }
-      if (detail.kind === "asserted_call" && !detail.relations.length) fail();
+      if (isTestImplementation(detail.kind) && !detail.relations.length) fail();
     }
   }
 });

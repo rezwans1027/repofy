@@ -41,6 +41,7 @@ export const InventorySummarySchema = z.strictObject({
   totalFiles: CountSchema,
   eligibleFiles: CountSchema,
   excludedFiles: CountSchema,
+  nonSourceExcludedFiles: CountSchema.optional(),
   analyzedFiles: CountSchema,
   languages: z.array(z.strictObject({ language: KeySchema, files: CountSchema })).max(100),
   frameworks: z.array(z.strictObject({ name: ShortTextSchema, basis: z.enum(["dependency", "configuration", "implementation"]) })).max(100),
@@ -49,7 +50,7 @@ export const InventorySummarySchema = z.strictObject({
   limitations: LimitationsSchema,
   structural: StructuralInventorySchema.optional(),
 }).refine((value) => value.totalFiles === value.eligibleFiles + value.excludedFiles &&
-  value.analyzedFiles <= value.eligibleFiles &&
+  value.analyzedFiles <= value.eligibleFiles && (value.nonSourceExcludedFiles ?? 0) <= value.excludedFiles &&
   [value.testFiles, value.configFiles, value.documentationFiles, value.ciFiles].every((count) => count <= value.totalFiles),
 "Inventory counts are inconsistent").refine(value => !value.structural ||
   (Object.values(value.structural.exclusions).reduce((a, b) => a + b, 0) === value.excludedFiles

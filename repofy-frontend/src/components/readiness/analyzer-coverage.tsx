@@ -34,7 +34,10 @@ export function CoverageSummary({ coverage, label = "Analyzer coverage" }: { cov
     <p className="font-medium">{states[achieved.state]} · coverage {achieved.declaration.version}</p>
     {achieved.result === "insufficient_evidence" && <p>Insufficient evidence. Choose repositories with supported source or wait for broader analyzer support. Repeating this scan will not add language support.</p>}
     <p>{counts.analyzedFiles} of {counts.totalFiles} discovered files structurally analyzed; {counts.eligibleFiles} eligible, {counts.excludedFiles} excluded, {counts.unparsedFiles} eligible files unparsed or unsupported.</p>
-    <p>These are file processing counts, not skill scores. Excluded files have unknown language and capability scope.</p>
+    <p>These are file processing counts, not skill scores.</p>
+    {counts.nonSourceExcludedFiles === undefined
+      ? <p>Excluded files have unknown language and capability scope.</p>
+      : <p>{counts.nonSourceExcludedFiles} excluded files are known assets, ignore files or environment templates. They do not reduce confidence in observed source. {counts.excludedFiles - counts.nonSourceExcludedFiles} exclusions remain unassessed.</p>}
     {achieved.languages.length > 0 && <><div className="hidden overflow-x-auto sm:block"><table className="w-full text-left text-sm [&_th]:pr-3 [&_td]:pr-3"><caption className="text-left font-medium">Achieved language coverage</caption>
       <thead><tr><th scope="col">Language</th><th scope="col">Depth achieved</th><th scope="col">Files analyzed / eligible</th><th scope="col">Implementation pass</th></tr></thead>
       <tbody>{achieved.languages.map(row => <tr key={row.language}><th scope="row">{languages[row.language] ?? "Other language"}</th><td>{depths[row.depth]}</td>

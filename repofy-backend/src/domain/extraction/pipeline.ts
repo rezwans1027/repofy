@@ -1,5 +1,5 @@
 import { setImmediate } from "node:timers/promises";
-import { SOURCE_FAMILIES, StructuralObservationSchema, type StructuralCoverage, type VersionDependencies } from "@repofy/contracts";
+import { SOURCE_FAMILIES, isTestImplementation, StructuralObservationSchema, type StructuralCoverage, type VersionDependencies } from "@repofy/contracts";
 import { InternalEvidenceObservationSchema, type InternalEvidenceObservation, type InternalLocator } from "@repofy/contracts/internal";
 import { SnapshotBundleSchema, type SnapshotBundle } from "../analysis/persistence";
 import type { LocatorCrypto } from "../evidence/locator-crypto";
@@ -17,7 +17,7 @@ import { boundedText } from "./parsers";
 import { emptyMetadata, METADATA_SOURCES, MetadataBatchSchema, requested, type MetadataBatch, type MetadataOptions } from "./metadata";
 import { EXTRACTION_LIMITS as LIMIT, extractionProfile, structuralDetectorVersion, ParseFailure, type ExtractionResult, type Family } from "./policy";
 import { ImplementationPass } from "../detectors/pass";
-import { DETECTORS, implementationProfile } from "../detectors/registry";
+import { detectorDefinitions, implementationProfile } from "../detectors/registry";
 import type { ImplementationKind } from "@repofy/contracts";
 import type { CoverageReason, BaselineParser } from "@repofy/contracts";
 import { coverageProfile } from "../coverage/manifest";
@@ -44,7 +44,7 @@ export interface SnapshotExtractionInput {
 export async function extractSnapshot(context: SafeSnapshotContext, input: SnapshotExtractionInput): Promise<{ bundle: SnapshotBundle; metrics: ExtractionMetrics }> {
   const { pin, versions, options, crypto, signal } = input; const profile = input.profile ?? extractionProfile();
   const expectedProfile = "implementation" in profile ? "coverage" in profile
-    ? coverageProfile(profile.coverage.disabledParsers, profile.implementation.disabled) : implementationProfile(profile.implementation.disabled)
+    ? coverageProfile(profile.coverage.disabledParsers, profile.implementation.disabled, profile.detectorBundle.version.startsWith("2.0.0")) : implementationProfile(profile.implementation.disabled, profile.detectorBundle.version.startsWith("2.0.0"))
     : extractionProfile(profile.disabled);
   if (JSON.stringify(profile) !== JSON.stringify(expectedProfile) || "implementation" in profile
     && (versions.taxonomy.id !== "engineering_capabilities" || versions.taxonomy.version !== "1.0.0")) throw new JobError("ANALYSIS_VALIDATION_FAILED");
@@ -151,13 +151,13 @@ export async function extractSnapshot(context: SafeSnapshotContext, input: Snaps
   if (implementation) {
     for (const finding of implementation.finish()) {
       if (evidence.length >= LIMIT.evidence) { truncated = true; implementation.coverage.evidenceTruncated = true; continue; }
-      const definition = DETECTORS.find(d => d.kind === finding.kind)!;
+      const definition = detectorDefinitions(profile.detectorBundle.version).find(d => d.kind === finding.kind)!;
       const naturalKey = [definition.id, finding.file.fileId, finding.detail.span];
       const safe = safeByPath.get(finding.file.path)!;
       const mocked = finding.detail.testBoundary === "mocked_or_intercepted";
       evidence.push(InternalEvidenceObservationSchema.parse({ contractVersion: "1.0.0", evidenceId: id("evidence", naturalKey), snapshotId,
         repositoryId: pin.repositoryId, commitSha: pin.commitSha, repositoryVisibility: pin.repositoryVisibility, visibility: "owner_only",
-        sourceType: finding.kind === "asserted_call" ? "test" : "code", detector: { id: definition.id, version: definition.version },
+        sourceType: isTestImplementation(finding.kind) ? "test" : "code", detector: { id: definition.id, version: definition.version },
         capabilityIds: definition.capabilityIds, observations: [definition.observation], relevance: 0.7,
         confidence: mocked ? 0.4 : definition.confidence, strength: mocked ? 0.35 : definition.strength,
         contribution: { state: "unknown", reasons: ["insufficient_evidence"], signals: [], limitations: ["Contribution and authorship have not been assessed."] },
@@ -189,6 +189,7 @@ export async function extractSnapshot(context: SafeSnapshotContext, input: Snaps
     repositoryVisibility: pin.repositoryVisibility, snapshotIdentityVersion: versions.snapshotIdentity, extractionPolicyVersion: profile.extractorBundle.version,
     securityPolicyHash: pin.policyHash, createdAt }, versions, files, evidence,
     inventorySummary: { contractVersion: "1.0.0", snapshotId, extractorBundle: profile.extractorBundle, totalFiles: context.summary.totalFiles,
+      ...(profile.detectorBundle.version.startsWith("2.0.0") ? { nonSourceExcludedFiles: context.summary.nonSourceExcludedFiles ?? 0 } : {}),
       eligibleFiles: files.length, excludedFiles: context.summary.totalFiles - files.length, analyzedFiles,
       languages: [...counts].map(([language, count]) => ({ language, files: count.eligible })), frameworks: [...frameworks.values()],
       testFiles: files.filter(f => f.classification === "test").length, configFiles: files.filter(f => f.classification === "config").length,
@@ -236,12 +237,16 @@ export function createImplementationExtraction(crypto: LocatorCrypto, metadata?:
   return Object.freeze({ profile, extract });
 }
 
-export function createCoverageExtraction(crypto: LocatorCrypto, metadata?: Pick<AuthorizedMetadataSource, "collect">, disabled: readonly BaselineParser[] = [], recordMetrics?: (metrics: ExtractionMetrics) => void) {
-  const profile = coverageProfile(disabled);
+export function createCoverageExtraction(crypto: LocatorCrypto, metadata?: Pick<AuthorizedMetadataSource, "collect">, disabled: readonly BaselineParser[] = [], recordMetrics?: (metrics: ExtractionMetrics) => void, enhanced = false) {
+  const profile = coverageProfile(disabled, [], enhanced);
   const extract: AnalysisHandlers["extract"] = async (context, claim, signal, pin) => {
     const checkpoint = async () => { checkSignal(signal); await context.files(); };
     const batch = metadata ? await metadata.collect(claim.actor, pin, claim.request.includeMetadata, signal, checkpoint) : undefined;
-    const result = await extractSnapshot(context, { pin, versions: claim.policy.versions, options: claim.request.includeMetadata, metadata: batch, crypto, signal, profile });
+    // Resolve a supported immutable analyzer from the job pin, including jobs
+    // admitted before the intake default changed. extractSnapshot validates all
+    // version references against this exact profile before processing source.
+    const pinnedProfile = coverageProfile(disabled, [], claim.policy.versions.detectorBundle.version.startsWith("2.0.0"));
+    const result = await extractSnapshot(context, { pin, versions: claim.policy.versions, options: claim.request.includeMetadata, metadata: batch, crypto, signal, profile: pinnedProfile });
     recordMetrics?.(result.metrics); return result.bundle;
   };
   return Object.freeze({ profile, extract });

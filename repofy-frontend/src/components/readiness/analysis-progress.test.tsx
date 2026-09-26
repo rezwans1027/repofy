@@ -29,12 +29,29 @@ it('retains one key through a timeout, rapid repeated clicks and remount',async(
   const user=userEvent.setup();vi.mocked(api.post).mockRejectedValueOnce(new Error('timeout'));
   const first=render(view(<StartAnalysisButton actor={actor} saved={saved} disabled={false}/>));
   await waitFor(()=>expect(screen.getByRole('button',{name:'Start Analysis'})).toBeEnabled());
+  await user.click(screen.getByRole('checkbox',{name:/Include commit history/}));
+  await user.click(screen.getByRole('checkbox',{name:/Include CI results/}));
   await user.click(screen.getByRole('button',{name:'Start Analysis'}));await screen.findByRole('alert');const body=vi.mocked(api.post).mock.calls[0][1]?.body;
+  expect(body).toMatchObject({includeMetadata:{commits:true,pullRequests:false,ci:true}});
   first.unmount();render(view(<StartAnalysisButton actor={actor} saved={saved} disabled={false}/>));
   await waitFor(()=>expect(screen.getByRole('button',{name:'Start Analysis'})).toBeEnabled());
   await user.dblClick(screen.getByRole('button',{name:'Start Analysis'}));
   expect(vi.mocked(api.post).mock.calls[1][1]?.body).toEqual(body);
   expect(useRouter().push).toHaveBeenCalledWith(`/readiness/jobs/${jobId}`);
+});
+it('uses a distinct replay key when metadata choices change and restores a still-pending scope',async()=>{
+  const user=userEvent.setup();vi.mocked(api.post).mockRejectedValue(new Error('timeout'));
+  render(view(<StartAnalysisButton actor={actor} saved={saved} disabled={false}/>));
+  const button=screen.getByRole('button',{name:'Start Analysis'});await waitFor(()=>expect(button).toBeEnabled());
+  await user.click(button);await screen.findByRole('alert');
+  await user.click(screen.getByRole('checkbox',{name:/Include pull request metadata/}));
+  await user.click(button);await screen.findByRole('alert');
+  await user.click(screen.getByRole('checkbox',{name:/Include pull request metadata/}));
+  await user.click(button);await screen.findByRole('alert');
+  const bodies=vi.mocked(api.post).mock.calls.map(call=>call[1]!.body as {idempotencyKey:string;includeMetadata:unknown});
+  expect(bodies[1].idempotencyKey).not.toBe(bodies[0].idempotencyKey);
+  expect(bodies[1].includeMetadata).toEqual({commits:false,pullRequests:true,ci:false});
+  expect(bodies[2]).toEqual(bodies[0]);
 });
 it('resumes a job from its URL, shows real stage and cancels through the owner route',async()=>{
   const running={...queued,status:'running',stage:'extracting',analysisRunId:null,attempt:{attemptId:id(9),number:2,startedAt:now},progress:{kind:'indeterminate',stage:'extracting'}};

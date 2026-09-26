@@ -20,7 +20,7 @@ export const COVERAGE_REASON_LABELS: Readonly<Record<CoverageReason, string>> = 
   parser_disabled: "A parser is disabled in this analyzer version.",
   metadata_unavailable: "Optional repository history or CI results were not available.",
   history_bounded: "History covers at most two pages of 50 records per source; it is not complete history.",
-  security_exclusions: "Excluded files remain in the total file count; their language and capabilities are unknown.",
+  security_exclusions: "Excluded files remain in the inventory and do not provide implementation evidence.",
   reduced_scan: "The bounded implementation pass assessed only part of the eligible source.",
   dynamic_configuration: "Dynamic build or configuration behavior was not evaluated.",
   unsupported_version: "Installed framework versions and runtime changes were not verified.",
@@ -28,8 +28,8 @@ export const COVERAGE_REASON_LABELS: Readonly<Record<CoverageReason, string>> = 
   detector_disabled: "Some implementation detectors are disabled in this analyzer version.",
   resolution_incomplete: "Some imports or bindings could not be resolved within the static scope.",
   runtime_not_assessed: "Repository code, tests and builds were not run.",
-  native_mobile_not_assessed: "Native mobile lifecycle, navigation and offline behavior are not assessed.",
-  ai_runtime_not_assessed: "Model quality, retrieval quality, evaluation and runtime safety are not assessed.",
+  native_mobile_not_assessed: "Native platform execution, permission recovery and device behavior are not verified.",
+  ai_runtime_not_assessed: "Model quality, retrieval quality, evaluation results and runtime safety are not verified.",
   uncalibrated: "Confidence values are conservative policy limits, not calibrated accuracy estimates.",
   legacy_coverage_unknown: "This older result did not record achieved coverage.",
   generated_source: "Generated source does not establish implementation evidence.",
@@ -64,10 +64,10 @@ const consistent = (v: { eligibleFiles: number; analyzedFiles: number; unparsedF
 export const AchievedCoverageSchema = z.strictObject({
   declaration: CoverageDeclarationSchema, state: CoverageStateSchema,
   result: z.enum(["evidence_available", "insufficient_evidence"]), reasons: CoverageReasonsSchema,
-  counts: z.strictObject({ totalFiles: CountSchema, excludedFiles: CountSchema, ...scopeCounts,
+  counts: z.strictObject({ totalFiles: CountSchema, excludedFiles: CountSchema, nonSourceExcludedFiles: CountSchema.optional(), ...scopeCounts,
     // All discovered files, including unclassified exclusions. Null means no denominator.
     analyzedFractionOfAllFiles: ScoreSchema.nullable(),
-  }).refine(v => consistent(v) && v.totalFiles === v.eligibleFiles + v.excludedFiles
+  }).refine(v => consistent(v) && (v.nonSourceExcludedFiles ?? 0) <= v.excludedFiles && v.totalFiles === v.eligibleFiles + v.excludedFiles
     && (v.totalFiles === 0 ? v.analyzedFractionOfAllFiles === null : v.analyzedFractionOfAllFiles !== null
       && Math.abs(v.analyzedFractionOfAllFiles - v.analyzedFiles / v.totalFiles) < 1e-6)),
   languages: z.array(z.strictObject({ language: KeySchema, depth: CoverageDepthSchema, ...scopeCounts,

@@ -2,6 +2,15 @@ import ignore from "ignore";
 import { IngestionError } from "./errors";
 import type { ExclusionReason } from "./policy";
 
+/** Classification uses only a known path/reason, never reads excluded content.
+ * Executable binaries, generated/vendor source, user omissions and undecodable
+ * text remain unassessed. These counts qualify static observations only. */
+export function nonSourceExclusion(path: string, reason: ExclusionReason): boolean {
+  const base = path.toLowerCase().split("/").at(-1)!;
+  return reason === "policy_file" || reason === "binary" && /\.(?:png|jpe?g|gif|webp|ico|woff2?|ttf|eot|mp[34]|wav|ogg)$/.test(base)
+    || reason === "sensitive_path" && /^\.env\.(?:example|sample|template)$/.test(base);
+}
+
 export function mandatoryExclusion(path: string, policyVersion = "1.0.0"): ExclusionReason | undefined {
   const parts = path.toLowerCase().split("/"); const base = parts[parts.length - 1];
   const structural = ["1.1.0", "1.1.1", "1.1.2", "1.1.3", "1.1.4"].includes(policyVersion);

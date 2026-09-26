@@ -6,6 +6,7 @@ import type { ReadinessReportResponse } from "./readiness";
 export const RoleAvailabilitySchema = z.discriminatedUnion("state", [
   // Reserved for a policy explicitly qualified in roleAvailability below.
   z.strictObject({ template: RoleTemplateReferenceSchema, state: z.literal("available") }),
+  z.strictObject({ template: RoleTemplateReferenceSchema, state: z.literal("provisional"), reason: z.literal("calibration_pending") }),
   z.strictObject({ template: RoleTemplateReferenceSchema, state: z.literal("unavailable"),
     reason: z.enum(["required_confidence_unattainable", "policy_not_qualified"]) }),
   z.strictObject({ template: RoleTemplateReferenceSchema, state: z.literal("unknown"), reason: z.literal("insufficient_coverage") }),
@@ -14,15 +15,26 @@ export type RoleAvailability = z.infer<typeof RoleAvailabilitySchema>;
 
 export function roleAvailability(report: Pick<ReadinessReportResponse, "versions" | "roles">): RoleAvailability[] {
   const policy = report.versions.aggregationPolicy;
-  // ADR 0011's behavioral scopes are partial: both registered policies cap the
+  // ADR 0011's behavioral scopes are partial: the two v1 policies cap the
   // label at Low while the initial rubrics require Moderate. A numerical result
   // is still a reproducible calculation, but cannot be a role readiness score.
   // A future policy must explicitly qualify this projection; an unknown version
   // must never silently enable scores. No frozen math or confidence is rewritten.
   const limited = policy.id === "evidence_aggregation" && ["1.0.0", "1.1.0"].includes(policy.version)
     && report.versions.taxonomy.id === "engineering_capabilities" && report.versions.taxonomy.version === "1.0.0";
+  // Explicitly registered for bounded evidence coverage only; independently
+  // calibrated readiness remains gated. Old results are never reinterpreted.
+  const registeredAnalyzer = ["2.0.0", "2.1.0"].includes(policy.version)
+    ? report.versions.detectorBundle.version === "1.0.6" && report.versions.coverageManifest === "1.2.1"
+    : ["3.0.0", "3.1.0"].includes(policy.version) && report.versions.detectorBundle.version === "2.0.0" && report.versions.coverageManifest === "1.3.0";
+  const provisional = policy.id === "evidence_aggregation" && registeredAnalyzer
+    && report.versions.taxonomy.id === "engineering_capabilities" && report.versions.taxonomy.version === "1.0.0"
+    && report.versions.detectorBundle.id === "tsjs_implementation"
+    && report.versions.extractorBundle.id === "language_inventory" && report.versions.extractorBundle.version === "1.0.1";
   return report.roles.map(role => role.state === "unknown"
     ? { template: role.template, state: "unknown", reason: "insufficient_coverage" }
+    : provisional && role.template.version === "1.0.0"
+    ? { template: role.template, state: "provisional", reason: "calibration_pending" }
     : { template: role.template, state: "unavailable", reason: limited && role.template.version === "1.0.0"
       ? "required_confidence_unattainable" : "policy_not_qualified" });
 }

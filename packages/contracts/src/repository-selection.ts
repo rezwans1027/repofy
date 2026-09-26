@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { GitHubRepositorySummarySchema } from "./github-app";
+import { GitHubRepositorySummarySchema, GitHubPermissionStatusSchema } from "./github-app";
 import { CoverageDeclarationSchema } from "./assessability";
 
 export const REPOSITORY_ATTESTATION_VERSION = "1.0.0" as const;
@@ -13,6 +13,8 @@ export const SaveRepositorySelectionSchema = z.strictObject({
 export const SelectedRepositorySchema = GitHubRepositorySummarySchema.extend({
   ownerType: z.enum(["User", "Organization"]), grantId: z.uuid(), accessRevision: z.uuid(),
   status: z.enum(["active", "revoked"]), attestedAt: z.iso.datetime(),
+  // Last verified installation scopes are explanatory only; workers reauthorize every fetch.
+  metadataPermissions: GitHubPermissionStatusSchema.optional(),
 });
 export const SavedRepositorySelectionSchema = z.strictObject({
   revision: z.uuid(), repositories: z.array(SelectedRepositorySchema).max(10),

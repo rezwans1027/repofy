@@ -40,7 +40,9 @@ function scope(coverage: ReportView["report"]["coverage"][number] | undefined) {
 }
 function incomplete(coverage: ReportView["report"]["coverage"][number]) {
   const i = coverage.implementation, s = coverage.structural;
-  return !!(s?.evidenceTruncated || i?.evidenceTruncated || coverage.assessment?.counts.excludedFiles
+  const counts = coverage.assessment?.counts;
+  const unassessedExclusions = (counts?.excludedFiles ?? 0) - (coverage.manifestVersion.startsWith("1.3.0") ? counts?.nonSourceExcludedFiles ?? 0 : 0);
+  return !!(s?.evidenceTruncated || i?.evidenceTruncated || unassessedExclusions
     || s?.sources.some(row => row.parseFailures || row.limitedFiles || row.unsupportedFiles)
     || i && (i.parseFailures || i.limitedFiles || i.unsupportedFiles || i.generatedFiles
       || i.unresolvedImports || i.dynamicReferences || i.ambiguousBindings || i.aliasConfigurationsRejected));
@@ -70,7 +72,10 @@ export function compareReports(input: ComparisonInput, query: ComparisonQuery): 
     if (!left) causes.add("repository_added"); else if (!right) causes.add("repository_removed"); else {
       if (left.commitSha !== right.commitSha) causes.add("commit_changed");
       const ac = a.report.coverage.find(c => c.snapshotId === left.snapshotId), bc = b.report.coverage.find(c => c.snapshotId === right.snapshotId);
-      if (canonical(scope(ac)) !== canonical(scope(bc)) || canonical(input.baselineInventory.find(i => i.snapshotId === left.snapshotId)?.exclusions) !== canonical(input.targetInventory.find(i => i.snapshotId === right.snapshotId)?.exclusions)) causes.add("scope_changed");
+      const classifiedNonSourceOnly = (c: typeof ac) => c?.manifestVersion.startsWith("1.3.0")
+        && c.assessment?.counts.nonSourceExcludedFiles !== undefined && c.assessment.counts.excludedFiles === c.assessment.counts.nonSourceExcludedFiles;
+      if (canonical(scope(ac)) !== canonical(scope(bc)) || !(classifiedNonSourceOnly(ac) && classifiedNonSourceOnly(bc))
+        && canonical(input.baselineInventory.find(i => i.snapshotId === left.snapshotId)?.exclusions) !== canonical(input.targetInventory.find(i => i.snapshotId === right.snapshotId)?.exclusions)) causes.add("scope_changed");
       if (canonical(ac?.structural?.metadata.map(m => [m.source, m.state])) !== canonical(bc?.structural?.metadata.map(m => [m.source, m.state]))) {
         causes.add("scope_changed");
         if (canonical(ac?.structural?.metadata.filter(m => m.state === "permission_denied").map(m => m.source)) !== canonical(bc?.structural?.metadata.filter(m => m.state === "permission_denied").map(m => m.source))) causes.add("metadata_permission_changed");
@@ -126,12 +131,16 @@ export function compareReports(input: ComparisonInput, query: ComparisonQuery): 
     baseline: left, target: right, strengthDelta: delta(left?.strength, right?.strength), confidenceDelta: delta(left?.confidence, right?.confidence),
     assessabilityChanged: (left?.state === "unknown") !== (right?.state === "unknown") || left?.assessableFraction !== right?.assessableFraction }; });
   const availabilityA = roleAvailability(a.report), availabilityB = roleAvailability(b.report);
-  if ([...availabilityA, ...availabilityB].some(r => r.state !== "available")) notes.push("Role readiness is unavailable or unknown under the recorded policies. Role coverage and confidence changes are withheld; the original rubric calculations remain inspectable in each report.");
+  const usable = (state: string | undefined) => state === "available" || state === "provisional";
+  if ([...availabilityA, ...availabilityB].some(r => !usable(r.state))) notes.push("Some role assessments are unavailable or unknown under the recorded policies. Their coverage and confidence changes are withheld; the original rubric calculations remain inspectable in each report.");
+  if ([...availabilityA, ...availabilityB].some(r => r.state === "provisional")) notes.push("Role values are provisional evidence coverage, not calibrated readiness scores. A gain describes additional rubric evidence within the recorded scope; it does not establish increased professional ability.");
+  const roleComparable = !limited;
+  if (!roleComparable) notes.push("Role deltas are withheld because scope, access or measurement versions differ or are incomplete.");
   const roles = b.report.roles.map(right => { const left = a.report.roles.find(r => r.template.roleId === right.template.roleId);
-    const leftAvailable = availabilityA.find(r => r.template.roleId === right.template.roleId)?.state === "available";
-    const rightAvailable = availabilityB.find(r => r.template.roleId === right.template.roleId)?.state === "available";
+    const leftAvailable = usable(availabilityA.find(r => r.template.roleId === right.template.roleId)?.state);
+    const rightAvailable = usable(availabilityB.find(r => r.template.roleId === right.template.roleId)?.state);
     const baseline = leftAvailable && left?.state === "assessed" ? left.coverage : null, target = rightAvailable && right.state === "assessed" ? right.coverage : null;
-    return { roleId: right.template.roleId, baseline, target, coverageDelta: delta(baseline, target), confidenceDelta: delta(leftAvailable && left?.state === "assessed" ? left.confidence : null, rightAvailable && right.state === "assessed" ? right.confidence : null),
+    return { roleId: right.template.roleId, baseline, target, coverageDelta: roleComparable ? delta(baseline, target) : null, confidenceDelta: roleComparable ? delta(leftAvailable && left?.state === "assessed" ? left.confidence : null, rightAvailable && right.state === "assessed" ? right.confidence : null) : null,
       baselineUnknownWeight: a.aggregation?.roles.find(r => r.template.roleId === right.template.roleId)?.unknownWeight ?? null,
       targetUnknownWeight: b.aggregation?.roles.find(r => r.template.roleId === right.template.roleId)?.unknownWeight ?? null }; });
   const counts = Object.fromEntries(EVIDENCE_CHANGES.map(key => [key, rows.filter(r => r.change === key).length]));
@@ -143,7 +152,7 @@ export function compareReports(input: ComparisonInput, query: ComparisonQuery): 
   for (const row of rows) row.capabilityIds = [...new Set([...row.capabilityIds, ...support.get(row.baselineEvidenceId ?? "") ?? [], ...support.get(row.targetEvidenceId ?? "") ?? []])].sort();
   const filtered = rows.filter(r => (!query.repositoryId || r.repositoryId === query.repositoryId) && (!query.change || r.change === query.change) && (!query.capabilityId || r.capabilityIds.includes(query.capabilityId)))
     .sort((x, y) => x.repositoryId.localeCompare(y.repositoryId) || (x.baselineEvidenceId ?? x.targetEvidenceId!).localeCompare(y.baselineEvidenceId ?? y.targetEvidenceId!));
-  return ComparisonSchema.parse({ algorithm: "evidence-diff-1.0.3", baseline: { reportId: a.report.reportId, createdAt: a.report.createdAt, versions: av },
+  return ComparisonSchema.parse({ algorithm: "evidence-diff-1.0.4", baseline: { reportId: a.report.reportId, createdAt: a.report.createdAt, versions: av },
     target: { reportId: b.report.reportId, createdAt: b.report.createdAt, versions: bv }, comparability: limited ? "limited" : "comparable", causes: [...causes].sort(), notes,
     repositories, counts, capabilities, roles, evidence: filtered.slice(query.offset, query.offset + query.limit), filteredCount: filtered.length,
     nextOffset: query.offset + query.limit < filtered.length ? query.offset + query.limit : null });

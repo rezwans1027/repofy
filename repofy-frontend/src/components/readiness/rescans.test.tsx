@@ -67,12 +67,31 @@ it('drops a late role preference response after account switch without restoring
   expect(client.getQueriesData({ queryKey: ['readiness', view.report.ownerUserId] })).toEqual([]); expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
 });
 it('keeps the same rescan key after an uncertain network failure and explains the unchanged result', async () => {
+  view.metadataOptions = { commits: true, pullRequests: true, ci: true };
   const fallback = vi.mocked(fetch).getMockImplementation()!; let fail = true;
   vi.mocked(fetch).mockImplementation((input, options) => { if (options?.method === 'POST' && fail) { fail = false; return Promise.reject(new Error('Connection lost')); } return fallback(input, options); });
   render(wrap(<RescanPanel actor={view.report.ownerUserId} view={view} />)); const button = await screen.findByRole('button', { name: 'Rescan selected repositories' }); await waitFor(() => expect(button).toBeEnabled());
   await userEvent.click(button); await screen.findByText(/rescan could not be confirmed/); await userEvent.click(button); await screen.findByText(/Nothing relevant changed/);
   const calls = vi.mocked(fetch).mock.calls.filter(([, options]) => options?.method === 'POST'); expect(calls).toHaveLength(2); expect(calls[0][1]!.body).toBe(calls[1][1]!.body);
+  expect(JSON.parse(calls[0][1]!.body as string).includeMetadata).toEqual(view.metadataOptions);
   expect(JSON.parse(calls[0][1]!.body as string).repositoryIds).toEqual([view.report.snapshots[0].repositoryId]); expect(navState.push).not.toHaveBeenCalled(); expect(screen.queryByText(/PRIVATE_NAME_SENTINEL/)).not.toBeInTheDocument();
+});
+it('preserves changed rescan choices and replay keys across remounts, isolating each metadata scope', async () => {
+  view.metadataOptions = { commits: true, pullRequests: true, ci: true };
+  const fallback = vi.mocked(fetch).getMockImplementation()!;
+  vi.mocked(fetch).mockImplementation((input, options) => options?.method === 'POST' ? Promise.reject(new Error('Connection lost')) : fallback(input, options));
+  const first = render(wrap(<RescanPanel actor={view.report.ownerUserId} view={view} />));
+  let button = await screen.findByRole('button', { name: 'Rescan selected repositories' }); await waitFor(() => expect(button).toBeEnabled());
+  await userEvent.click(button); await screen.findByText(/rescan could not be confirmed/);
+  await userEvent.click(screen.getByRole('checkbox', { name: /Include pull request metadata/ }));
+  await userEvent.click(button); await screen.findByText(/rescan could not be confirmed/);
+  first.unmount(); render(wrap(<RescanPanel actor={view.report.ownerUserId} view={view} />));
+  button = await screen.findByRole('button', { name: 'Rescan selected repositories' }); await waitFor(() => expect(button).toBeEnabled());
+  expect(screen.getByRole('checkbox', { name: /Include pull request metadata/ })).not.toBeChecked();
+  await userEvent.click(button); await screen.findByText(/rescan could not be confirmed/);
+  const bodies = vi.mocked(fetch).mock.calls.filter(([, options]) => options?.method === 'POST').map(([, options]) => JSON.parse(options!.body as string));
+  expect(bodies[0].idempotencyKey).not.toBe(bodies[1].idempotencyKey); expect(bodies[2]).toEqual(bodies[1]);
+  expect(bodies[2].includeMetadata).toEqual({ commits: true, pullRequests: false, ci: true });
 });
 it('deduplicates rapid rescan submission and ignores a late response after unmount', async () => {
   const fallback = vi.mocked(fetch).getMockImplementation()!; let finish!: (value: Response) => void;
@@ -104,4 +123,11 @@ it('withholds legacy role deltas returned before availability-aware comparisons'
   await screen.findByRole('heading', { name: 'Changes in your project evidence' });
   expect(screen.getAllByText(/Role readiness comparison unavailable/)).toHaveLength(5);
   expect(screen.queryByText(/3.25/)).not.toBeInTheDocument();
+});
+it('presents comparable v2 role deltas as provisional evidence coverage', async () => {
+  const data = comparison(); data.algorithm = 'evidence-diff-1.0.4';
+  data.roles[0] = { ...data.roles[0], baseline: .1, target: .2, coverageDelta: .1, confidenceDelta: 0 };
+  vi.mocked(fetch).mockResolvedValue(success(data));
+  render(wrap(<ReportComparison baselineId={view.report.reportId} targetId={fixtureId(70)} />));
+  expect(await screen.findByText('Provisional evidence coverage 10% → 20% · +10 percentage points')).toBeVisible();
 });

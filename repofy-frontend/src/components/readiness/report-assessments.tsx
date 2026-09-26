@@ -34,6 +34,7 @@ function Calculation({ trace, view, openEvidence }: { trace: AggregatedCapabilit
       <ul className="space-y-2">{selected.corroboration.map(c => <li key={c.evidenceId}>{words(c.sourceType)} corroboration: +{percent(c.bonus)} strength. <Button variant="outline" size="sm" onClick={() => openEvidence({ evidenceId: c.evidenceId })}>Inspect corroboration</Button></li>)}</ul></>}
     {trace.trace.confidence && <p>Detector reliability {percent(trace.trace.confidence.reliability)}; assessed coverage {percent(trace.trace.confidence.coverageFraction)}; coverage factor {trace.trace.confidence.coverageFactor}; independent support bonus {percent(trace.trace.confidence.independentSupportBonus)}; confidence ceiling {percent(trace.trace.confidence.ceiling)}.</p>}
     <ul className="list-disc space-y-2 pl-5">{trace.trace.coverage.map(c => <li key={c.snapshotId}>{view.report.snapshots.find(s => s.snapshotId === c.snapshotId)?.repositoryLabel}: {words(c.state)}. {c.analyzedFiles} / {c.eligibleFiles} eligible files assessed; {c.excludedFiles} excluded.
+      {c.nonSourceExcludedFiles !== undefined && <span> {c.nonSourceExcludedFiles} are known non-source files; {c.excludedFiles - c.nonSourceExcludedFiles} remain unassessed.</span>}
       {c.reasons.length > 0 && <p>Scope: {c.reasons.map(words).join("; ")}.</p>}</li>)}</ul>
     <p>Contribution confidence: Unknown. Authorship is not inferred.</p><p>Limitations: {trace.uncertainty.map(words).join("; ")}.</p>
   </>;
@@ -49,14 +50,15 @@ export function RoleViews({ view, openEvidence }: { view: ReportView; openEviden
       const definition = view.roleDefinitions.find(r => r.roleId === result.template.roleId);
       const status = availability.find(r => r.template.roleId === result.template.roleId)!;
       return <article key={result.template.roleId} className={cardClass}><h3 className="text-lg font-semibold">{definition?.name ?? words(result.template.roleId)}</h3>
-        <dl className="grid gap-4 sm:grid-cols-2"><div><dt className="text-sm text-muted-foreground">Role readiness</dt><dd className="text-xl font-semibold">{status.state === "unknown" ? "Unknown" : status.state === "unavailable" ? "Unavailable" : result.state === "assessed" ? percent(result.coverage) : "Unknown"}</dd></div>
+        <dl className="grid gap-4 sm:grid-cols-2"><div><dt className="text-sm text-muted-foreground">{status.state === "provisional" ? "Provisional role evidence coverage" : "Role readiness"}</dt><dd className="text-xl font-semibold">{status.state === "unknown" ? "Unknown" : status.state === "unavailable" ? "Unavailable" : result.state === "assessed" ? percent(result.coverage) : "Unknown"}</dd></div>
           <div><dt className="text-sm text-muted-foreground">Unknown requirement weight</dt><dd>{role ? percent(role.unknownWeight) : "Not retained"}</dd></div></dl>
         {status.state !== "available" && <p>{status.reason === "required_confidence_unattainable"
           ? "This analyzer cannot reach the confidence required by this role rubric. A low or zero rubric calculation does not measure your readiness. Review the observed capabilities and scope below."
+          : status.reason === "calibration_pending" ? "This is provisional coverage of observed static evidence against the role rubric. Moderate confidence applies to supported observations within the declared scope, not whole-system correctness. Independent calibration is pending; this is not a calibrated readiness score."
           : status.reason === "insufficient_coverage" ? "The selected snapshots do not provide assessable evidence for this role. Your readiness remains unknown."
             : "This analysis policy has not been qualified for role readiness. Review the observed capabilities and scope below."}</p>}
         {result.state === "assessed" && <details><summary className="cursor-pointer font-medium">Recorded rubric calculation for {definition?.name ?? words(result.template.roleId)}</summary>
-          <p className="mt-3">Limited calculation: {percent(result.coverage)} weighted coverage; {percent(result.confidence)} confidence. These are recorded policy values, not a usable readiness score.</p>
+          <p className="mt-3">{status.state === "provisional" ? "Provisional calculation" : "Limited calculation"}: {percent(result.coverage)} weighted coverage; {percent(result.confidence)} confidence. {status.state === "provisional" ? "These uncalibrated policy values summarize bounded evidence, not overall professional ability." : "These are recorded policy values, not a usable readiness score."}</p>
           {role && <p>All requirement weights remain in the denominator: {role.numerator} / {role.denominator}. Unknown requirements are not observed weaknesses.</p>}
         </details>}
         {role && <>

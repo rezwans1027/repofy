@@ -27,9 +27,9 @@ test('old and corrected detector coverage stays readable, with mixed versions re
     eligibleFiles: 0, analyzedFiles: 0, parseFailures: 0, limitedFiles: 0, unsupportedFiles: 0, generatedFiles: 0, noSignalFiles: 0,
     unresolvedImports: 0, dynamicReferences: 0, ambiguousBindings: 0, indexedNodes: 0, indexedBytes: 0, aliasConfigurationsRejected: 0,
     evidenceTruncated: false, disabledDetectors: [], limitations: ['Static only.'],
-    detectors: c.IMPLEMENTATION_KINDS.map(kind => ({ kind, version, capabilityIds: ['api_design'], state: 'enabled', observations: 0 })),
+    detectors: (version === '2.0.0' ? c.IMPLEMENTATION_KINDS : c.LEGACY_IMPLEMENTATION_KINDS).map(kind => ({ kind, version, capabilityIds: ['api_design'], state: 'enabled', observations: 0 })),
   });
-  for (const version of ['1.0.0', '1.0.1', '1.0.2', '1.0.3', '1.0.4', '1.0.5', '1.0.6']) assert.ok(c.ImplementationCoverageSchema.parse(coverage(version)));
+  for (const version of ['1.0.0', '1.0.1', '1.0.2', '1.0.3', '1.0.4', '1.0.5', '1.0.6', '2.0.0']) assert.ok(c.ImplementationCoverageSchema.parse(coverage(version)));
   for (const version of ['1.0.0', '1.0.1', '1.0.2', '1.0.3', '1.0.4', '1.0.5']) {
     const mixed = coverage('1.0.6'); mixed.detectors[0].version = version;
     assert.equal(c.ImplementationCoverageSchema.safeParse(mixed).success, false);

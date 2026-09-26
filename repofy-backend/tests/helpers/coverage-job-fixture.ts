@@ -17,7 +17,8 @@ export async function coverageJobFixture(db: Parameters<typeof seedAnalysisFixtu
   const f = await seedAnalysisFixture(db, rpc); const root = await mkdtemp(join(tmpdir(), 'repofy-coverage-job-')); let context: SafeSnapshotContext | undefined;
   const cleanup = async () => { await context?.dispose(); await db.query('DELETE FROM auth.users WHERE id=$1', [f.actor]); await rm(root, { recursive: true, force: true }); };
   try {
-    const profile = coverageProfile(); const security = structuralSecurityPolicy(); f.policy.security = security;
+    const enhanced = aggregationPolicy?.version.startsWith("3.") ?? false;
+    const profile = coverageProfile([], [], enhanced); const security = structuralSecurityPolicy(); f.policy.security = security;
     Object.assign(f.policy.versions, { extractorBundle: profile.extractorBundle, detectorBundle: profile.detectorBundle, coverageManifest: profile.coverageManifest, ingestionPolicyHash: policyHash(security),
       taxonomy: { id: initialRubricCatalog.taxonomy.id, version: initialRubricCatalog.taxonomy.version }, roleRubrics: initialRubricCatalog.rubrics.map(r => ({ roleId: r.roleId, version: r.version })) });
     if (aggregationPolicy) f.policy.versions.aggregationPolicy = aggregationPolicy;
@@ -35,7 +36,7 @@ export async function coverageJobFixture(db: Parameters<typeof seedAnalysisFixtu
     }, f.crypto, new WorkspaceManager(root), security);
     const request = { actor: f.actor, jobId: job.jobId, repositoryId: f.bindings[0].repositoryId };
     const pin = await ingestion.resolveSnapshot(request); context = await ingestion.prepareSafeSnapshot(request);
-    const bundle = await createCoverageExtraction(f.crypto).extract(context, claim, new AbortController().signal, pin);
+    const bundle = await createCoverageExtraction(f.crypto, undefined, [], undefined, enhanced).extract(context, claim, new AbortController().signal, pin);
     return { f, job, claim, bundle, cleanup };
   } catch (error) { await cleanup(); throw error; }
 }

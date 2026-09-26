@@ -62,6 +62,7 @@ it('saves authorized choices with machine-readable errors and allows read/remova
   expect((await post(body)).body.code).toBe('CONSENT_REQUIRED');
   const saved = await post({ ...body, attestation: { accepted: true, version: '1.0.0' } }); expect(saved.status).toBe(200);
   const grant = saved.body.data.repositories[0];
+  expect(grant.metadataPermissions).toMatchObject({ contents: 'read', pullRequests: 'read', checks: 'none', actions: 'none', commitStatuses: 'none' });
   enabled = false;
   expect((await post(body)).status).toBe(503); expect((await get()).status).toBe(200);
   const removed = await request(application).delete(`/api/v1/repository-selections/${grant.grantId}`).set('Authorization', `Bearer ${jwt()}`);

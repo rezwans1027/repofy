@@ -9,8 +9,10 @@ if (process.argv[2] === '--child') {
   const { ImplementationPass } = require('../../dist/domain/detectors/pass.js');
   const { implementationProfile, DETECTOR_LIMITS } = require('../../dist/domain/detectors/registry.js');
   const { sourceFile } = require('../../dist/domain/extraction/parsers.js');
+  const enhanced = process.argv.includes('--enhanced');
+  const profile = implementationProfile([], enhanced);
   const started = performance.now();
-  const pass = new ImplementationPass(implementationProfile(), () => randomUUID());
+  const pass = new ImplementationPass(profile, () => randomUUID());
   pass.config('tsconfig.json', '{"compilerOptions":{"baseUrl":".","paths":{"@local/*":["src/*"]}}}');
   pass.add({path:'src/service.ts',classification:'code',fileId:randomUUID(),text:`globalThis.__repositoryExecuted=true; export function save(value){return {saved:value};}`},'analyzed');
   for (let n=0;n<DETECTOR_LIMITS.files;n++) {
@@ -29,17 +31,18 @@ if (process.argv[2] === '--child') {
     'const broken = {', 'export const many=['+'1,'.repeat(21000)+'0];']) {
     assert.throws(()=>sourceFile(source,'fixture.ts'),e=>['limited','parse_failure'].includes(e.message));
   }
-  const dense = new ImplementationPass(implementationProfile(),()=>randomUUID());
+  const dense = new ImplementationPass(profile,()=>randomUUID());
   for(let n=0;n<100;n++) dense.add({path:`dense${n}.ts`,classification:'code',fileId:randomUUID(),text:'export const values=['+'1,'.repeat(1500)+'0];'},'analyzed');
   dense.finish();assert.ok(dense.coverage.limitedFiles>0);assert.ok(dense.coverage.indexedNodes<=DETECTOR_LIMITS.nodes+1);
-  const long = new ImplementationPass(implementationProfile(),()=>randomUUID());
+  const long = new ImplementationPass(profile,()=>randomUUID());
   for(let n=0;n<12;n++) long.add({path:`large${n}.ts`,classification:'code',fileId:randomUUID(),text:'// '+'x'.repeat(200000)+'\nexport const x=1;'},'analyzed');
   long.finish();assert.ok(long.coverage.limitedFiles>0);assert.ok(long.coverage.indexedBytes<=DETECTOR_LIMITS.bytes);
-  const metrics={status:'implementation-boundaries-ok',files:pass.coverage.analyzedFiles,observations:observations.length,
+  const metrics={status:'implementation-boundaries-ok',version:profile.detectorBundle.version,files:pass.coverage.analyzedFiles,observations:observations.length,
     nodes:pass.coverage.indexedNodes,bytes:pass.coverage.indexedBytes,elapsedMs:Math.ceil(performance.now()-started),maxRssMiB:Math.ceil(process.resourceUsage().maxRSS/1024)};
   process.stdout.write(JSON.stringify(metrics)+'\n');
 } else {
-  const child=spawn(process.execPath,['--max-old-space-size=256',fileURLToPath(import.meta.url),'--child'],{
+  for (const enhanced of [false, true]) {
+  const child=spawn(process.execPath,['--max-old-space-size=256',fileURLToPath(import.meta.url),'--child',...(enhanced?['--enhanced']:[])],{
     env:{PATH:process.env.PATH,NODE_ENV:'test'},stdio:['ignore','pipe','pipe']});
   let output='',timedOut=false;const timer=setTimeout(()=>{timedOut=true;child.kill('SIGKILL');},15000);
   const capture=chunk=>{output+=chunk;if(output.length>8192)child.kill('SIGKILL');};child.stdout.on('data',capture);child.stderr.on('data',capture);
@@ -50,4 +53,5 @@ if (process.argv[2] === '--child') {
     assert.ok(Number.isInteger(metrics.maxRssMiB)&&metrics.maxRssMiB>0&&metrics.maxRssMiB<384);
     process.stdout.write(`TS/JS detector verification passed (256 MiB heap; 15 second watchdog): ${JSON.stringify(metrics)}\n`);
   }finally{clearTimeout(timer);if(child.exitCode===null)child.kill('SIGKILL');}
+  }
 }
